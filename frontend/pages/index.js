@@ -50,7 +50,7 @@ export default function Home() {
           <nav className={styles.nav}>
             <div className={styles.logo}>
               <img 
-                src="/img/Logo-Onety.png" 
+                src="/img/Logo-Onety-Preta.png" 
                 alt="Onety Logo" 
                 className={styles.logoImage}
               />
@@ -216,7 +216,7 @@ export default function Home() {
           <div className={styles.footerContent}>
             <div className={styles.footerLogo}>
               <img 
-                src="/ChatGPT Image 29 de set. de 2025, 12_20_53.png" 
+                src="/img/Logo-Onety.png" 
                 alt="Onety Logo" 
                 className={styles.footerLogoImage}
               />
