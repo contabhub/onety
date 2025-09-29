@@ -14,6 +14,7 @@ export default function Modulos() {
   const [hasLoaded, setHasLoaded] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedModulo, setSelectedModulo] = useState(null)
+  const [carouselRef, setCarouselRef] = useState(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -103,10 +104,73 @@ export default function Modulos() {
     }
   }, [])
 
+  // Ordem desejada dos módulos
+  const moduleOrder = [
+    'atendimento',
+    'comercial', 
+    'contratual',
+    'financeiro',
+    'gestão de processos',
+    'auditoria',
+    'estrategico'
+  ]
+
+
+  const getModuleLogo = (modulo) => {
+    if (modulo?.logo_url) {
+      return (
+        <img 
+          src={modulo.logo_url} 
+          alt={`Logo do módulo ${modulo.nome || modulo.name}`}
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'contain',
+            borderRadius: 'inherit'
+          }}
+        />
+      )
+    }
+    
+    // Fallback para ícone padrão se não houver logo_url
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    )
+  }
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase()
-    if (!term) return modulos
-    return modulos.filter((m) => `${m.nome || m.name || ''}`.toLowerCase().includes(term))
+    let filteredModules = modulos
+    
+    if (term) {
+      filteredModules = modulos.filter((m) => `${m.nome || m.name || ''}`.toLowerCase().includes(term))
+    }
+    
+    // Ordena os módulos conforme a ordem especificada
+    return filteredModules.sort((a, b) => {
+      const nameA = (a.nome || a.name || '').toLowerCase()
+      const nameB = (b.nome || b.name || '').toLowerCase()
+      
+      const indexA = moduleOrder.findIndex(order => nameA.includes(order))
+      const indexB = moduleOrder.findIndex(order => nameB.includes(order))
+      
+      // Se ambos estão na lista de ordem, ordena pela posição
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB
+      }
+      
+      // Se apenas A está na lista, A vem primeiro
+      if (indexA !== -1) return -1
+      
+      // Se apenas B está na lista, B vem primeiro
+      if (indexB !== -1) return 1
+      
+      // Se nenhum está na lista, mantém ordem alfabética
+      return nameA.localeCompare(nameB)
+    })
   }, [modulos, search])
 
   // Define o módulo selecionado quando os módulos são carregados
@@ -137,17 +201,35 @@ export default function Modulos() {
     console.log('Acessando módulo:', modulo.nome || modulo.name)
   }
 
+  const scrollToIndex = (index) => {
+    if (carouselRef) {
+      const itemWidth = 380 + 16 // largura do item + margin
+      const containerWidth = carouselRef.offsetWidth
+      const scrollPosition = (index * itemWidth) - (containerWidth / 2) + (itemWidth / 2)
+      
+      carouselRef.scrollTo({
+        left: Math.max(0, scrollPosition),
+        behavior: 'smooth'
+      })
+    }
+  }
+
   const nextModulo = () => {
-    setCurrentIndex((prev) => (prev + 1) % filtered.length)
+    const nextIndex = (currentIndex + 1) % filtered.length
+    setCurrentIndex(nextIndex)
+    scrollToIndex(nextIndex)
   }
 
   const prevModulo = () => {
-    setCurrentIndex((prev) => (prev - 1 + filtered.length) % filtered.length)
+    const prevIndex = (currentIndex - 1 + filtered.length) % filtered.length
+    setCurrentIndex(prevIndex)
+    scrollToIndex(prevIndex)
   }
 
   const selectModulo = (modulo, index) => {
     setSelectedModulo(modulo)
     setCurrentIndex(index)
+    scrollToIndex(index)
   }
 
   const getStatusColor = (status) => {
@@ -210,36 +292,80 @@ export default function Modulos() {
                 </svg>
               </button>
 
-              <div className={styles.carouselTrack}>
+               <div 
+                 className={styles.carouselTrack}
+                 ref={setCarouselRef}
+               >
                 {filtered.map((m, index) => (
                   <div 
                     key={m.id} 
                     className={`${styles.carouselItem} ${index === currentIndex ? styles.active : ''}`}
                     onClick={() => selectModulo(m, index)}
                   >
-                    <div className={styles.card}>
-                      <div className={styles.cardHeader}>
-                        <div className={styles.badge}>{getInitials(m.nome || m.name)}</div>
-                        <div className={styles.title}>{m.nome || m.name}</div>
-                      </div>
-                      <div className={styles.meta}>
-                        <div className={styles.metaItem}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
-                          </svg>
-                          <span>{m.descricao || 'Sem descrição'}</span>
-                        </div>
-                        <div className={styles.metaItem}>
-                          <div 
-                            className={styles.statusBadge}
-                            style={{ backgroundColor: getStatusColor(m.status) }}
-                          >
-                            {getStatusText(m.status)}
+                      {index === currentIndex ? (
+                        // Preview expandido quando selecionado
+                        <div className={styles.previewCardInline}>
+                          <div className={styles.previewHeader}>
+                            <div className={styles.moduleIconLarge}>
+                              {getModuleLogo(m)}
+                            </div>
+                            <div className={styles.previewTitle}>
+                              <h2>{m.nome || m.name}</h2>
+                              <div 
+                                className={styles.statusBadge}
+                                style={{ backgroundColor: getStatusColor(m.status) }}
+                              >
+                                {getStatusText(m.status)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className={styles.previewContent}>
+                            <p>{m.descricao || 'Sem descrição disponível'}</p>
+                            <div className={styles.previewPlaceholder}>
+                              <div className={styles.placeholderIcon}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                              </div>
+                              <h3>Preview do Módulo</h3>
+                              <p>Em breve você poderá visualizar o conteúdo do módulo aqui</p>
+                            </div>
+                            <div className={styles.previewActions}>
+                              <button 
+                                className={styles.accessBtn}
+                                onClick={() => handleAccessModulo(m)}
+                                disabled={m.status === 'bloqueado'}
+                              >
+                                {m.status === 'bloqueado' ? 'Módulo Bloqueado' : 'Acessar Módulo'}
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      ) : (
+                        // Card normal quando não selecionado
+                        <div className={styles.card}>
+                          <div className={styles.cardHeader}>
+                            <div className={styles.moduleIcon}>
+                              {getModuleLogo(m)}
+                            </div>
+                            <div className={styles.title}>{m.nome || m.name}</div>
+                          </div>
+                          <div className={styles.meta}>
+                            <div className={styles.metaItem}>
+                              <span>{m.descricao || 'Sem descrição'}</span>
+                            </div>
+                            <div className={styles.metaItem}>
+                              <div 
+                                className={styles.statusBadge}
+                                style={{ backgroundColor: getStatusColor(m.status) }}
+                              >
+                                {getStatusText(m.status)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
@@ -261,49 +387,14 @@ export default function Modulos() {
                 <button
                   key={index}
                   className={`${styles.indicator} ${index === currentIndex ? styles.active : ''}`}
-                  onClick={() => setCurrentIndex(index)}
+                  onClick={() => {
+                    setCurrentIndex(index)
+                    scrollToIndex(index)
+                  }}
                 />
               ))}
             </div>
 
-            {/* Preview do módulo selecionado */}
-            {selectedModulo && (
-              <div className={styles.previewSection}>
-                <div className={styles.previewCard}>
-                  <div className={styles.previewHeader}>
-                    <h2>{selectedModulo.nome || selectedModulo.name}</h2>
-                    <div 
-                      className={styles.statusBadge}
-                      style={{ backgroundColor: getStatusColor(selectedModulo.status) }}
-                    >
-                      {getStatusText(selectedModulo.status)}
-                    </div>
-                  </div>
-                  <div className={styles.previewContent}>
-                    <p>{selectedModulo.descricao || 'Sem descrição disponível'}</p>
-                    <div className={styles.previewPlaceholder}>
-                      <div className={styles.placeholderIcon}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                      </div>
-                      <h3>Preview do Módulo</h3>
-                      <p>Em breve você poderá visualizar o conteúdo do módulo aqui</p>
-                    </div>
-                    <div className={styles.previewActions}>
-                      <button 
-                        className={styles.accessBtn}
-                        onClick={() => handleAccessModulo(selectedModulo)}
-                        disabled={selectedModulo.status === 'bloqueado'}
-                      >
-                        {selectedModulo.status === 'bloqueado' ? 'Módulo Bloqueado' : 'Acessar Módulo'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div className={styles.noResults}>

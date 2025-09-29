@@ -1,8 +1,105 @@
 .page {
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--onity-color-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Background animado com estrelas e linhas neurais */
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.2), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: sparkle 20s linear infinite;
+  z-index: 0;
+}
+
+/* Sparkle mais escuro para tema escuro - mais estrelas */
+:root[data-theme='dark'] .page::before {
+  background: 
+    radial-gradient(2px 2px at 20px 30px, rgba(200,200,255,0.4), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(180,180,255,0.3), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(220,220,255,0.5), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(190,190,255,0.4), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(170,170,255,0.3), transparent),
+    radial-gradient(1px 1px at 60px 50px, rgba(200,200,255,0.4), transparent),
+    radial-gradient(2px 2px at 110px 20px, rgba(180,180,255,0.3), transparent),
+    radial-gradient(1px 1px at 150px 60px, rgba(220,220,255,0.4), transparent),
+    radial-gradient(1px 1px at 180px 10px, rgba(190,190,255,0.3), transparent),
+    radial-gradient(2px 2px at 30px 90px, rgba(170,170,255,0.4), transparent);
+  background-size: 200px 100px;
+}
+
+/* Linhas neurais animadas - mais sutis */
+.page::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(45deg, transparent 49%, rgba(46, 74, 255, 0.03) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(3, 8, 66, 0.02) 50%, transparent 51%);
+  background-size: 80px 80px;
+  animation: neural 15s linear infinite;
+  z-index: 0;
+}
+
+/* Linhas mais aparentes para tema escuro */
+:root[data-theme='dark'] .page::after {
+  background: 
+    linear-gradient(45deg, transparent 48%, rgba(138, 43, 226, 0.12) 49%, rgba(138, 43, 226, 0.12) 51%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, rgba(75, 0, 130, 0.08) 49%, rgba(75, 0, 130, 0.08) 51%, transparent 52%);
+  background-size: 60px 60px;
+}
+
+/* Animações */
+@keyframes sparkle {
+  0% { transform: translateY(0px) translateX(0px); }
+  25% { transform: translateY(-10px) translateX(5px); }
+  50% { transform: translateY(-5px) translateX(-5px); }
+  75% { transform: translateY(-15px) translateX(3px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
+
+@keyframes neural {
+  0% { transform: translateX(0px) translateY(0px); }
+  25% { transform: translateX(10px) translateY(-5px); }
+  50% { transform: translateX(-5px) translateY(10px); }
+  75% { transform: translateX(-10px) translateY(-3px); }
+  100% { transform: translateX(0px) translateY(0px); }
+}
+
+/* Tema claro - sparkles mais escuros */
+:root[data-theme='light'] .page::before {
+  background: 
+    radial-gradient(2px 2px at 20px 30px, rgba(3, 8, 66, 0.7), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(3, 8, 66, 0.6), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(3, 8, 66, 0.8), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(3, 8, 66, 0.65), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(3, 8, 66, 0.6), transparent);
+}
+
+:root[data-theme='light'] .page::after {
+  background: 
+    linear-gradient(45deg, transparent 49%, rgba(46, 74, 255, 0.05) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(3, 8, 66, 0.04) 50%, transparent 51%);
+  background-size: 80px 80px;
 }
 
 .header {
@@ -10,7 +107,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  margin: 60px 0 40px 0;
+  margin: 40px 0 20px 0;
+  flex-shrink: 0;
+  z-index: 1;
 }
 
 .header h1 {
@@ -30,10 +129,12 @@
   padding: 16px 18px;
   border: 1px solid var(--onity-color-border);
   border-radius: 12px;
-  max-width: 460px;
+  max-width: 500px;
   margin: 0 auto 24px auto;
   background: var(--onity-color-surface);
   box-shadow: var(--onity-elev-low);
+  position: relative;
+  z-index: 1;
 }
 
 .searchBox input {
@@ -73,8 +174,8 @@
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-l);
-  padding: var(--onity-space-l);
-  min-height: 200px;
+  padding: var(--onity-space-s);
+  min-height: 140px;
   box-shadow: var(--onity-elev-med);
   display: flex;
   flex-direction: column;
@@ -89,9 +190,11 @@
 
 .cardHeader {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--onity-space-s);
-  margin-bottom: var(--onity-space-s);
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
+  text-align: center;
 }
 
 .badge {
@@ -105,6 +208,36 @@
   justify-content: center;
   font-weight: bold;
   font-size: 16px;
+}
+
+.moduleIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--onity-radius-m);
+  background: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.moduleIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
+.carouselItem.active .moduleIcon {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+  transform: scale(1.05);
 }
 
 .title {
@@ -181,6 +314,10 @@
 .carouselContainer {
   max-width: 1200px;
   margin: 0 auto;
+  overflow: visible;
+  padding: 0 var(--onity-space-l);
+  position: relative;
+  z-index: 1;
 }
 
 .carousel {
@@ -220,17 +357,31 @@
 .carouselTrack {
   flex: 1;
   display: flex;
-  gap: var(--onity-space-m);
-  overflow: hidden;
-  padding: var(--onity-space-s) 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: var(--onity-space-m) var(--onity-space-s) var(--onity-space-l) var(--onity-space-s);
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  align-items: stretch;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .carouselItem {
-  flex: 0 0 280px;
+  flex: 0 0 380px;
+  flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s ease;
   opacity: 0.6;
   transform: scale(0.95);
+  min-width: 380px;
+  margin: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .carouselItem.active {
@@ -245,6 +396,148 @@
 
 .carouselItem.active:hover {
   transform: scale(1.02);
+}
+
+/* Preview Card Inline */
+.previewCardInline {
+  background: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-l);
+  padding: var(--onity-space-l);
+  min-height: 240px;
+  max-height: none;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.previewCardInline::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, var(--onity-color-primary), var(--onity-color-primary-hover));
+  border-radius: var(--onity-radius-l);
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-xs);
+  flex-shrink: 0;
+}
+
+.moduleIconLarge {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--onity-radius-l);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--onity-elev-med);
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.moduleIconLarge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
+.moduleIconLarge svg {
+  width: 32px;
+  height: 32px;
+}
+
+.previewTitle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.previewTitle h2 {
+  color: var(--onity-color-text);
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.previewContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+  flex: 1;
+}
+
+.previewContent p {
+  color: var(--onity-color-text);
+  opacity: 0.8;
+  line-height: 1.5;
+  margin: 0;
+  font-size: 13px;
+}
+
+.previewPlaceholder {
+  background: var(--onity-color-bg);
+  border: 2px dashed var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-s);
+  text-align: center;
+  margin: var(--onity-space-xs) 0;
+  flex-shrink: 0;
+}
+
+.placeholderIcon {
+  color: var(--onity-color-text);
+  opacity: 0.4;
+  margin-bottom: var(--onity-space-s);
+}
+
+.placeholderIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.previewPlaceholder h3 {
+  color: var(--onity-color-text);
+  margin: 0 0 var(--onity-space-xs) 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.previewPlaceholder p {
+  color: var(--onity-color-text);
+  opacity: 0.6;
+  margin: 0;
+  font-size: 11px;
+}
+
+.previewActions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--onity-space-xs);
+  flex-shrink: 0;
+}
+
+.previewActions .accessBtn {
+  padding: var(--onity-space-xs) var(--onity-space-m);
+  font-size: 13px;
 }
 
 /* Indicadores */
@@ -277,6 +570,14 @@
 /* Preview Section */
 .previewSection {
   margin-top: var(--onity-space-xl);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(-20px);
+  opacity: 1;
+}
+
+.previewSection .previewCard {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  border-color: var(--onity-color-primary);
 }
 
 .previewCard {
@@ -390,7 +691,9 @@
   }
   
   .carouselItem {
-    flex: 0 0 240px;
+    flex: 0 0 340px;
+    min-width: 340px;
+    margin: 0 var(--onity-space-xs);
   }
   
   .carouselTrack {
@@ -412,7 +715,9 @@
 
 @media (max-width: 480px) {
   .carouselItem {
-    flex: 0 0 200px;
+    flex: 0 0 300px;
+    min-width: 300px;
+    margin: 0 var(--onity-space-xs);
   }
   
   .navButton {
