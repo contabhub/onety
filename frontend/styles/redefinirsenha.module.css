@@ -1,0 +1,306 @@
+/* Estilo para o fundo da página - igual ao login */
+.background {
+  display: flex;
+  position: relative;
+  height: 100vh;
+  z-index: 0;
+}
+
+.videoContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.videoBackground {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Desloca o GIF para a esquerda quando o tema for light */
+:root[data-theme='light'] .videoBackground {
+  object-position: 20% center;
+}
+
+/* Container do lado esquerdo (logo e mensagem) - igual ao login */
+.leftContainer {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--onity-space-l);
+  color: var(--onity-color-primary-contrast);
+  text-align: center;
+  background: #00000073;
+}
+
+.leftContainer .logo {
+  width: 300px;
+  margin-bottom: 15px;
+  margin-left: 30px;
+  filter: brightness(0) invert(1);
+}
+
+.leftContainer h1 {
+  font-size: 4.5rem;
+  margin-bottom: var(--onity-space-l);
+  margin-top: 0;
+}
+
+.leftContainer p {
+  font-size: 1.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
+/* Container do lado direito (formulário) - igual ao login */
+.rightContainer {
+  flex: 0.6;
+  display: flex;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.589);
+  box-shadow: var(--onity-elev-high);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Estilo do formulário - igual ao login */
+.formContainer {
+  width: 100%;
+  padding: var(--onity-space-xl);
+}
+
+.formContainer h1 {
+  margin-bottom: 10px;
+  font-size: 2rem;
+  color: var(--onity-color-text);
+  text-align: center;
+  font-weight: bold;
+  margin-top: 0;
+  transform: translateY(-20px);
+}
+
+/* Estilo para o parágrafo (p) de introdução */
+.formContainer p {
+  margin-bottom: 0;
+  font-size: 1rem;
+  color: var(--onity-color-text);
+  text-align: left;
+  margin-top: var(--onity-space-xs);
+}
+
+.formContainer form {
+  margin-top: var(--onity-space-l);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Wrapper para input com ícone interno - igual ao login */
+.inputGroup {
+  position: relative;
+  margin-bottom: var(--onity-space-l);
+}
+
+.inputGroup input {
+  margin-bottom: 0;
+  padding: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 16px;
+  font-size: 16px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.inputGroup input {
+  padding-left: calc(var(--onity-space-m) + 24px);
+  border-radius: 16px;
+}
+
+.inputIcon {
+  position: absolute;
+  top: 60%;
+  left: 12px;
+  transform: translateY(-90%);
+  color: var(--onity-color-text);
+  opacity: 0.8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Focus styles para modo escuro - igual ao login */
+:root[data-theme='dark'] .inputGroup input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Focus styles para modo claro */
+:root[data-theme='light'] .inputGroup input:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Estilos específicos para tema light */
+:root[data-theme='light'] .inputGroup input {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:root[data-theme='light'] .inputGroup input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Ícones mais claros no tema light */
+:root[data-theme='light'] .inputIcon {
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+}
+
+/* Botão principal - igual ao login */
+.formContainer button {
+  margin-top: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease; 
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.formContainer button:hover {
+  background: var(--onity-color-primary-hover);
+  box-shadow: var(--onity-elev-low);
+}
+
+.formContainer button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Container de voltar */
+.backContainer {
+  text-align: center;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.backLink {
+  color: var(--onity-color-primary-contrast);
+  text-decoration: none;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.backLink:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: var(--onity-color-primary-contrast);
+  text-decoration: none;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  padding: var(--onity-space-s);
+}
+
+.backButton:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .background {
+    flex-direction: column;
+  }
+  
+  .leftContainer {
+    flex: 0.3;
+    padding: var(--onity-space-l);
+  }
+  
+  .leftContainer h1 {
+    font-size: 2rem;
+  }
+  
+  .leftContainer p {
+    font-size: 1rem;
+  }
+  
+  .rightContainer {
+    flex: 0.7;
+    padding: var(--onity-space-l);
+  }
+  
+  .formContainer {
+    padding: var(--onity-space-xl);
+    min-height: 350px;
+  }
+  
+  .formContainer h1 {
+    font-size: 2rem;
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 480px) {
+  .leftContainer {
+    flex: 0.25;
+    padding: var(--onity-space-m);
+  }
+  
+  .leftContainer h1 {
+    font-size: 1.5rem;
+  }
+  
+  .leftContainer p {
+    font-size: 0.9rem;
+  }
+  
+  .rightContainer {
+    flex: 0.75;
+    padding: var(--onity-space-m);
+  }
+  
+  .formContainer {
+    padding: var(--onity-space-l);
+    min-height: 320px;
+  }
+  
+  .formContainer h1 {
+    font-size: 1.8rem;
+    transform: translateY(-5px);
+  }
+  
+  .inputGroup input {
+    padding: var(--onity-space-s) var(--onity-space-s) var(--onity-space-s) calc(var(--onity-space-s) + 30px);
+  }
+  
+  .formContainer button[type="submit"] {
+    padding: var(--onity-space-s);
+  }
+}
