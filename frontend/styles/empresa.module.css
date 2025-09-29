@@ -1,0 +1,158 @@
+.page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 60px 0 40px 0;
+}
+
+.header h1 {
+  font-size: 42px;
+  color: var(--onity-color-text);
+}
+
+.themeWrap {
+  position: absolute;
+  right: 24px; /* aproxima da esquerda do canto */
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 18px; /* aumenta a altura */
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  max-width: 460px; /* ligeiramente mais estreita */
+  margin: 0 auto 24px auto;
+  background: rgba(0,0,0,0.4);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.searchBox input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--onity-color-text);
+  font-weight: 500; /* Font-weight mais forte */
+}
+
+.searchBox input::placeholder {
+  font-weight: 500; /* Font-weight mais forte para o placeholder */
+  opacity: 0.8; /* Ligeiramente mais visível */
+}
+
+.error {
+  color: #ff7777;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Quando houver apenas um card, deixamos mais compacto e centralizado */
+.single {
+  grid-template-columns: minmax(240px, 560px);
+  max-width: 400px;
+}
+
+.card {
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px; /* altura um pouco maior */
+  min-height: 180px; /* aumenta a altura dos cards */
+  box-shadow: var(--onity-elev-high);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Tema claro: card e busca mais claros, seguindo tokens do globals.css */
+:root[data-theme='light'] .card {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+}
+
+:root[data-theme='light'] .searchBox {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: var(--onity-color-border);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #3b82f6;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.title {
+  color: var(--onity-color-text);
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.meta {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--onity-color-text);
+  opacity: .85;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.accessBtn {
+  padding: 10px 18px;
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.loading {
+  color: var(--onity-color-text);
+}
+
+

@@ -65,6 +65,7 @@
   color: var(--onity-color-text);
   text-align: center;
   font-weight: bold;
+  margin-top: -6px; /* sobe levemente o título */
 }
 
 /* Estilo para o parágrafo (p) de introdução */
@@ -73,6 +74,7 @@
   font-size: 1rem;
   color: var(--onity-color-text);
   text-align: left;
+  margin-top: var(--onity-space-xs); /* espaçamento pequeno do título */
 }
 
 .forgotPasswordContainer {
@@ -126,21 +128,67 @@
 }
 
 .formContainer input {
-  margin-bottom: var(--onity-space-m);
+  margin-bottom: 0; /* Removido pois agora é controlado pelo .inputGroup */
   padding: var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-m); /* Mais arredondado */
   font-size: 16px;
   background-color: transparent;
   color: var(--onity-color-text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Estilos específicos para tema light */
+:root[data-theme='light'] .formContainer input {
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Borda mais sutil no light */
+  color: rgba(255, 255, 255, 0.9); /* Fonte mais clara no light */
+}
+
+:root[data-theme='light'] .formContainer input::placeholder {
+  color: rgba(255, 255, 255, 0.7); /* Placeholder mais claro no light */
+}
+
+/* Wrapper para input com ícone interno */
+.inputGroup {
+  position: relative;
+}
+
+.inputGroup {
+  margin-bottom: var(--onity-space-l); /* Espaçamento entre os inputs */
+}
+
+.inputGroup input {
+  padding-left: calc(var(--onity-space-m) + 24px); /* mantém altura/largura, só cria espaço pro ícone */
+  border-radius: var(--onity-radius-m); /* Mais arredondado */
+}
+
+.inputIcon {
+  position: absolute;
+  top: 60%;
+  left: 12px;
+  transform: translateY(-90%); /* leve ajuste para cima */
+  color: var(--onity-color-text);
+  opacity: 0.8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Ícones mais claros no tema light */
+:root[data-theme='light'] .inputIcon {
+  color: rgba(255, 255, 255, 0.8); /* Ícones mais claros no light */
+  opacity: 1;
 }
 
 .formContainer button {
+  margin-top: var(--onity-space-m); /* Espaçamento do botão */
   padding: var(--onity-space-m);
   background: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: var(--onity-radius-m);
+  border-radius: var(--onity-radius-l); /* Mais arredondado */
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease; 
   font-size: 18px;
@@ -151,6 +199,14 @@
   background: var(--onity-color-primary-hover);
   box-shadow: var(--onity-elev-low);
   /* transform: translateY(-2px);  */
+}
+
+/* Estilo para mensagem de erro */
+.formContainer .error {
+  text-align: center;
+  margin-top: var(--onity-space-m);
+  color: #ff7777;
+  font-size: 14px;
 }
 
 .signupLink {
@@ -167,7 +223,8 @@
 
 .logo{
   width: 300px;
-  margin-bottom: -15px;
+  margin-bottom: 15px;
+  margin-left: 30px;
 }
 
 .stepsContainer {
@@ -236,6 +293,11 @@
   position: absolute;
   top: 0;
   left: 0;
+}
+
+/* Desloca o GIF para a esquerda quando o tema for light */
+:root[data-theme='light'] .videoBackground {
+  object-position: 20% center; /* mais à esquerda para destacar a parte clara */
 }
 
 
