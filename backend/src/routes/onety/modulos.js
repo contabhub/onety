@@ -1,5 +1,22 @@
 const express = require("express");
+const multer = require("multer");
 const pool = require("../../config/database");
+const cloudinary = require("../../config/cloudinary");
+
+// Configuração do multer para upload de arquivos
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas arquivos de imagem são permitidos'), false);
+    }
+  }
+});
 
 const router = express.Router();
 
@@ -40,14 +57,33 @@ router.get("/:id", async (req, res) => {
 });
 
 // Criar módulo
-router.post("/", async (req, res) => {
+router.post("/", upload.single('logo'), async (req, res) => {
   try {
     const { nome, descricao = null, logo_url = null } = req.body || {};
     if (!nome) return res.status(400).json({ error: "Campo obrigatório: nome." });
 
+    let finalLogoUrl = logo_url;
+    
+    // Se foi enviado um arquivo de logo
+    if (req.file) {
+      try {
+        // Converter buffer para base64 para enviar ao Cloudinary
+        const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        
+        const uploaded = await cloudinary.uploader.upload(base64, {
+          folder: "onety/modulos",
+          resource_type: "image",
+        });
+        finalLogoUrl = uploaded?.secure_url || finalLogoUrl;
+      } catch (err) {
+        console.error("Erro ao enviar logo para Cloudinary:", err);
+        return res.status(400).json({ error: "Falha no upload da logo." });
+      }
+    }
+
     const [result] = await pool.query(
       `INSERT INTO modulos (nome, descricao, logo_url) VALUES (?,?,?)`,
-      [nome, descricao, logo_url]
+      [nome, descricao, finalLogoUrl]
     );
 
     const [created] = await pool.query(
@@ -62,10 +98,27 @@ router.post("/", async (req, res) => {
 });
 
 // Atualização parcial
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", upload.single('logo'), async (req, res) => {
   try {
     const { id } = req.params;
     const body = req.body || {};
+
+    // Se foi enviado um arquivo de logo
+    if (req.file) {
+      try {
+        // Converter buffer para base64 para enviar ao Cloudinary
+        const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        
+        const uploaded = await cloudinary.uploader.upload(base64, {
+          folder: "onety/modulos",
+          resource_type: "image",
+        });
+        body.logo_url = uploaded?.secure_url;
+      } catch (err) {
+        console.error("Erro ao enviar logo para Cloudinary:", err);
+        return res.status(400).json({ error: "Falha no upload da logo." });
+      }
+    }
 
     const allowed = ["nome", "descricao", "logo_url"];
     const fields = [];
