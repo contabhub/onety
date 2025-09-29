@@ -64,7 +64,8 @@
   color: var(--onity-color-text);
   text-align: center;
   font-weight: bold;
-  margin-top: -6px; /* sobe levemente o título */
+  margin-top: 0;
+  transform: translateY(-20px); /* move apenas o h1 para cima */
 }
 
 /* Estilo para o parágrafo (p) de introdução */
@@ -130,18 +131,31 @@
   margin-bottom: 0; /* Removido pois agora é controlado pelo .inputGroup */
   padding: var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-m); /* Mais arredondado */
+  border-radius: 16px; /* Muito mais arredondado */
   font-size: 16px;
   background-color: transparent;
   color: var(--onity-color-text);
   width: 100%;
   box-sizing: border-box;
+  outline: none; /* Remove o outline padrão */
+}
+
+/* Focus styles para modo escuro - outline mais sutil */
+:root[data-theme='dark'] .formContainer input:focus {
+  border-color: rgba(255, 255, 255, 0.3); /* Borda mais sutil no focus */
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1); /* Sombra suave ao invés de outline */
+}
+
+/* Focus styles para modo claro */
+:root[data-theme='light'] .formContainer input:focus {
+  border-color: rgba(255, 255, 255, 0.5); /* Borda um pouco mais visível no light */
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2); /* Sombra suave */
 }
 
 /* Estilos específicos para tema light */
 :root[data-theme='light'] .formContainer input {
   border: 1px solid rgba(255, 255, 255, 0.3); /* Borda mais sutil no light */
-  color: rgba(255, 255, 255, 0.9); /* Fonte mais clara no light */
+  color: rgba(255, 255, 255, 0.7); /* Fonte mais clara no light */
 }
 
 :root[data-theme='light'] .formContainer input::placeholder {
@@ -159,7 +173,12 @@
 
 .inputGroup input {
   padding-left: calc(var(--onity-space-m) + 24px); /* mantém altura/largura, só cria espaço pro ícone */
-  border-radius: var(--onity-radius-m); /* Mais arredondado */
+  border-radius: 16px; /* Muito mais arredondado */
+}
+
+/* Input de senha com espaço para o toggle */
+.passwordInput {
+  padding-right: calc(var(--onity-space-m) + 24px) !important; /* Espaço para o botão de toggle */
 }
 
 .inputIcon {
@@ -181,13 +200,47 @@
   opacity: 1;
 }
 
+/* Botão de toggle da senha */
+.passwordToggle {
+  position: absolute;
+  top: 60%;
+  right: 12px;
+  transform: translateY(-90%);
+  background: none !important;
+  border: none !important;
+  color: var(--onity-color-text);
+  opacity: 0.6;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  padding: 0;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.passwordToggle:hover {
+  opacity: 1;
+}
+
+/* Ícones mais claros no tema light */
+:root[data-theme='light'] .passwordToggle {
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 0.7;
+}
+
+:root[data-theme='light'] .passwordToggle:hover {
+  opacity: 1;
+}
+
 .formContainer button {
   margin-top: var(--onity-space-m); /* Espaçamento do botão */
   padding: var(--onity-space-m);
   background: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: var(--onity-radius-l); /* Mais arredondado */
+  border-radius: 16px; /* Muito mais arredondado */
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease; 
   font-size: 18px;
