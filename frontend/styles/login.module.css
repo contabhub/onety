@@ -1,0 +1,259 @@
+/* Estilo para o fundo da página */
+.background {
+  display: flex;
+  position: relative;
+  height: 100vh;
+  z-index: 0;
+
+  /* background: linear-gradient(to right, #141414, #243B55); */
+}
+
+/* Container do lado esquerdo (exemplo de texto ou imagem) */
+.leftContainer {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--onity-space-l);
+  color: var(--onity-color-primary-contrast);
+  text-align: center;
+  background: #00000073;
+}
+
+.paragraph{
+  margin-bottom: -25px;
+}
+
+.leftContainer h1 {
+  font-size: 4.5rem;
+  margin-bottom: var(--onity-space-l);
+  margin-top: 0;
+}
+
+.leftContainer p {
+  font-size: 1.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
+/* Container do lado direito (formulário de login) */
+.rightContainer {
+  flex: 0.6;
+  display: flex;
+  justify-content: center;
+  /* background-color: #222121; */
+  background: rgba(0, 0, 0, 0.589);
+  box-shadow: var(--onity-elev-high);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+}
+
+/* Estilo do formulário */
+.formContainer {
+  width: 100%;
+  padding: var(--onity-space-xl);
+  
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+}
+
+.formContainer h1 {
+  margin-bottom: 10px;
+  font-size: 2rem;
+  color: var(--onity-color-text);
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Estilo para o parágrafo (p) de introdução */
+.formContainer p {
+  margin-bottom: 0;
+  font-size: 1rem;
+  color: var(--onity-color-text);
+  text-align: left;
+}
+
+.forgotPasswordContainer {
+  display: flex; /* Flexbox para centralização */
+  justify-content: center; /* Centraliza horizontalmente */
+}
+
+.forgotPassword{
+  display: inline-block;
+  margin-top: 15px;
+  color: var(--onity-color-text);
+  font-size: 1rem;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+
+.forgotPassword:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+.concluidoTitle{
+  text-align: center;
+  font-size: 40px;
+}
+
+.login{
+  display: inline-block;
+  margin-top: 17px;
+  color: var(--onity-color-primary);
+  font-size: 1rem;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.login:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+.formContainer form {
+  margin-top: var(--onity-space-l);
+  display: flex;
+  flex-direction: column;
+}
+
+.formContainer label {
+  margin-bottom: var(--onity-space-xs);
+  text-align: left;
+  font-size: 18px;
+  color: var(--onity-color-text);
+}
+
+.formContainer input {
+  margin-bottom: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: 16px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+}
+
+.formContainer button {
+  padding: var(--onity-space-m);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  border-radius: var(--onity-radius-m);
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease; 
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.formContainer button:hover {
+  background: var(--onity-color-primary-hover);
+  box-shadow: var(--onity-elev-low);
+  /* transform: translateY(-2px);  */
+}
+
+.signupLink {
+  display: block;
+  margin-top: 15px;
+  color: var(--onity-color-primary);
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.signupLink:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+.logo{
+  width: 300px;
+  margin-bottom: -15px;
+}
+
+.stepsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: var(--onity-space-l); /* Distância entre os passos */
+}
+
+.step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--onity-color-border);
+  color: var(--onity-color-primary-contrast);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.activeStep {
+  background-color: var(--onity-color-primary); /* Cor para o step ativo */
+}
+
+.inactiveStep {
+  background-color: var(--onity-color-border); /* Cor para o step inativo */
+}
+
+.step::after {
+  content: '';
+  position: absolute;
+  width: 40px; /* Tamanho da linha */
+  height: 4px;
+  background-color: var(--onity-color-border);
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+}
+
+.activeStep::after {
+  background-color: var(--onity-color-primary); /* Cor da linha do step ativo */
+}
+
+/* Ajuste na linha de conexão entre o último e penúltimo passo */
+.stepsContainer span:last-child::after {
+  content: none; /* Remove a linha do último item */
+}
+.videoContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1; /* Garantir que o vídeo fique atrás do conteúdo */
+  pointer-events: none;
+}
+
+.videoBackground {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Garantir que o vídeo cubra a tela sem distorcer */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .background {
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .leftContainer {
+    display: none; /* Opcional para ocultar em telas pequenas */
+  }
+
+  .rightContainer {
+    border-radius: 0;
+  }
+  .formContainer {
+    width: 60%;
+  }
+}
