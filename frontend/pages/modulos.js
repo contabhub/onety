@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import ThemeToggle from '../components/menu/ThemeToggle'
+import Header from '../components/menu/Header'
 import styles from '../styles/modulos.module.css'
 import { toast } from 'react-toastify'
 
@@ -21,9 +22,10 @@ export default function Modulos() {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
-    const userId = userRaw ? (JSON.parse(userRaw)?.id) : null
-    const empresaId = typeof window !== 'undefined' ? localStorage.getItem('selectedEmpresaId') : null
-    const empresaNome = typeof window !== 'undefined' ? localStorage.getItem('selectedEmpresaName') : null
+    const user = userRaw ? JSON.parse(userRaw) : null
+    const userId = user?.id || null
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null
+    const empresaNome = user?.EmpresaNome || user?.empresa?.nome || null
     
     const fetchModulos = async () => {
       if (hasLoaded) return // Evita múltiplas execuções
@@ -257,11 +259,9 @@ export default function Modulos() {
       </Head>
 
       <div className={styles.page}>
+        <Header />
         <div className={styles.header}>
           <h1>Módulos - {empresaName}</h1>
-          <div className={styles.themeWrap}>
-            <ThemeToggle />
-          </div>
         </div>
 
         <div className={styles.searchBox}>

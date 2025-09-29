@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import ThemeToggle from '../components/menu/ThemeToggle'
+import Header from '../components/menu/Header'
 import bgStyles from '../styles/login.module.css'
 import styles from '../styles/empresa.module.css'
 import { toast } from 'react-toastify'
@@ -134,9 +135,19 @@ export default function Empresa() {
   }
 
   const handleAccessCompany = (company) => {
-    // Salva o empresaId no localStorage e redireciona
-    localStorage.setItem('selectedEmpresaId', company.id)
-    localStorage.setItem('selectedEmpresaName', company.nome || company.name)
+    // Atualiza o userData no localStorage com a empresa selecionada
+    try {
+      const userRaw = localStorage.getItem('userData')
+      const user = userRaw ? JSON.parse(userRaw) : {}
+      const updated = {
+        ...user,
+        EmpresaId: company.id,
+        EmpresaNome: company.nome || company.name
+      }
+      localStorage.setItem('userData', JSON.stringify(updated))
+    } catch {
+      // Se falhar o parse/serialize, segue o fluxo de navegação
+    }
     router.push('/modulos')
   }
 
@@ -152,11 +163,9 @@ export default function Empresa() {
         </div>
 
         <div className={styles.page}>
+          <Header />
           <div className={styles.header}>
             <h1>Escolha sua Empresa</h1>
-            <div className={styles.themeWrap}>
-              <ThemeToggle />
-            </div>
           </div>
 
           <div className={styles.searchBox}>

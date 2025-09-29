@@ -1,9 +1,22 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const pool = require("../../config/database");
+const multer = require("multer");
+const cloudinary = require("../../config/cloudinary");
 
 const router = express.Router();
 const SALT_ROUNDS = 10;
+
+// Configuração de upload (memória) e filtro de imagens
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    cb(new Error("Formato de arquivo inválido. Use JPG, PNG, WEBP ou GIF."));
+  },
+});
 
 // Campos permitidos para update parcial
 const ALLOWED_UPDATE_FIELDS = [
@@ -158,6 +171,50 @@ router.put("/:id", async (req, res) => {
   // Redireciona para mesma lógica do PATCH
   req.method = "PATCH";
   return router.handle(req, res);
+});
+
+// Upload de avatar do usuário (Cloudinary)
+router.patch("/:id/avatar", upload.single("avatar"), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Valida existência do usuário
+    const [existing] = await pool.query("SELECT id FROM usuarios WHERE id = ?", [id]);
+    if (existing.length === 0) return res.status(404).json({ error: "Usuário não encontrado." });
+
+    if (!req.file) return res.status(400).json({ error: "Arquivo 'avatar' é obrigatório." });
+
+    // Upload para Cloudinary usando buffer
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "onety/avatar_url",
+          resource_type: "image",
+          transformation: [{ width: 512, height: 512, crop: "limit" }],
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const avatarUrl = uploadResult?.secure_url;
+    if (!avatarUrl) return res.status(500).json({ error: "Falha ao enviar imagem." });
+
+    await pool.query("UPDATE usuarios SET avatar_url = ? WHERE id = ?", [avatarUrl, id]);
+
+    const [updated] = await pool.query(
+      "SELECT id, nome, email, telefone, avatar_url, criado_em, status, preferencias FROM usuarios WHERE id = ?",
+      [id]
+    );
+
+    return res.json(updated[0]);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Erro ao atualizar avatar do usuário." });
+  }
 });
 
 // Remover usuário
