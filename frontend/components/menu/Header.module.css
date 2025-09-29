@@ -1,0 +1,99 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--onity-color-background);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* removed alternate logo */
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--onity-color-surface);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--onity-color-muted);
+  color: var(--onity-color-foreground);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.userName {
+  font-size: 14px;
+  color: var(--onity-color-foreground);
+}
+
+.caret {
+  color: var(--onity-color-foreground-2);
+}
+
+.dropdown {
+  position: absolute;
+  right: 20px;
+  top: 56px;
+  display: grid;
+  gap: 4px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.dropdownItem {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--onity-color-foreground);
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: var(--onity-color-muted);
+}
+
+
