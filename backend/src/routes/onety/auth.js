@@ -6,25 +6,25 @@ const pool = require("../../config/database");
 const router = express.Router();
 const saltRounds = 10;
 
-// Rota de registro de usuário
+// Rota de registro de usuário (tabela: usuarios)
 router.post("/register", async (req, res) => {
-  const { email, password, full_name } = req.body;
+  const { nome, email, senha, telefone = null, avatar_url = null } = req.body;
 
   try {
     // Verifica se o usuário já existe
-    const [existingUser] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [existingUser] = await pool.query("SELECT id FROM usuarios WHERE email = ?", [email]);
 
     if (existingUser.length > 0) {
       return res.status(400).json({ error: "E-mail já cadastrado." });
     }
 
     // Criptografa a senha
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(senha, saltRounds);
 
     // Insere o usuário no banco de dados
     await pool.query(
-      "INSERT INTO users (email, password_hash, full_name) VALUES (?, ?, ?)",
-      [email, hashedPassword, full_name]
+      "INSERT INTO usuarios (nome, email, senha, telefone, avatar_url, status) VALUES (?, ?, ?, ?, ?, 'ativo')",
+      [nome, email, hashedPassword, telefone, avatar_url]
     );
 
     res.status(201).json({ message: "Usuário cadastrado com sucesso!" });
@@ -34,23 +34,16 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Rota de login
+// Rota de login (tabela: usuarios)
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, senha } = req.body;
 
   try {
     // Busca o usuário no banco de dados
-    const [user] = await pool.query(`
-      SELECT 
-        id, 
-        email, 
-        full_name,
-        password_hash,
-         avatar_url,
-         role
-      FROM users
-      WHERE email = ?
-    `, [email]);
+    const [user] = await pool.query(
+      `SELECT id, nome, email, senha, avatar_url, status FROM usuarios WHERE email = ? LIMIT 1`,
+      [email]
+    );
 
     if (user.length === 0) {
       return res.status(400).json({ error: "E-mail ou senha inválidos." });
@@ -58,8 +51,13 @@ router.post("/login", async (req, res) => {
 
     const userData = user[0];
 
+    // Verifica se o usuário está ativo
+    if (userData.status && userData.status !== "ativo") {
+      return res.status(403).json({ error: "Usuário inativo." });
+    }
+
     // Verifica se a senha está correta
-    const validPassword = await bcrypt.compare(password, userData.password_hash);
+    const validPassword = await bcrypt.compare(senha, userData.senha);
 
     if (!validPassword) {
       return res.status(400).json({ error: "E-mail ou senha inválidos." });
@@ -78,9 +76,8 @@ router.post("/login", async (req, res) => {
       user: {
         id: userData.id,
         email: userData.email,
-        full_name: userData.full_name,
+        nome: userData.nome,
         avatar_url: userData.avatar_url,
-        role: userData.role
       }
     });
   } catch (error) {
