@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Aplicação Next.js
+  front-aura8:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: front-aura8-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - front-aura8-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Serviço para desenvolvimento (opcional)
+  front-aura8-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: front-aura8-dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    networks:
+      - front-aura8-network
+    profiles:
+      - dev
+
+networks:
+  front-aura8-network:
+    driver: bridge
+
+# Volumes para persistência (se necessário)
+volumes:
+  node_modules:
+  next_cache:

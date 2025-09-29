@@ -1,0 +1,27 @@
+# Dockerfile para desenvolvimento
+FROM node:18-alpine
+
+# Instalar dependências necessárias para o Alpine
+RUN apk add --no-cache libc6-compat
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos de dependências
+COPY package.json package-lock.json* ./
+
+# Instalar todas as dependências (incluindo devDependencies)
+RUN npm ci
+
+# Copiar código fonte
+COPY . .
+
+# Configurar variáveis de ambiente para desenvolvimento
+ENV NODE_ENV development
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Expor porta
+EXPOSE 3000
+
+# Comando para desenvolvimento com hot reload
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/dashboard.js", "pages/company-selection.js", "pages/login.js", "pages/settings.js", "components/Layout/Header.js", "components/Layout/Sidebar.js", "components/Layout/WebSocketStatus.js", "components/Router.js", "components/Settings/AccountSection.js", "components/Settings/AddChannelModal.js", "components/Settings/AddEvolutionModal.js", "components/Settings/AddInstanceModal.js", "components/Settings/ChannelsSection.js", "components/Settings/CreateTeamModal.js", "components/Settings/EditTeamModal.js", "components/Settings/TeamsSection.js", "components/Settings/UsersSection.js", "components/Chat/ChatWindow.js", "components/Chat/ContactsModal.js", "components/Chat/ConversationList.js", "components/Chat/InstanceSelectionModal.js", "components/Chat/TeamSelectionModal.js", "components/Chat/TransferModal.js"],
+  "exclude": ["node_modules"]
+}
