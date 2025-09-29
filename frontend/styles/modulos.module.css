@@ -463,6 +463,7 @@
   display: none; /* Chrome/Safari */
 }
 
+
 .carouselItem {
   flex: 0 0 380px;
   flex-shrink: 0;
@@ -524,6 +525,7 @@
   z-index: -1;
   opacity: 0.1;
 }
+
 
 .previewHeader {
   display: flex;
