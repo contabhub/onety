@@ -244,7 +244,7 @@ export default function Login({ auth }) {
                             {error && <p className={styles.error}>{error}</p>}
                         </form>
                         <div className={styles.forgotPasswordContainer}>
-                            <a href="/ResetPassword" className={styles.forgotPassword}>Esqueci minha senha</a>
+                            <Link href="/redefinir-senha" className={styles.forgotPassword}>Esqueci minha senha</Link>
                         </div>
                         {/* <div className={styles.forgotPasswordContainer}>
                             <p className={styles.paragraph}>ou</p>
