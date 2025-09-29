@@ -205,7 +205,7 @@ export default function Modulos() {
 
   const scrollToIndex = (index) => {
     if (carouselRef) {
-      const itemWidth = 380 + 16 // largura do item + margin
+      const itemWidth = 380 + 40 // largura do item + margin (20px de cada lado)
       const containerWidth = carouselRef.offsetWidth
       const scrollPosition = (index * itemWidth) - (containerWidth / 2) + (itemWidth / 2)
       
