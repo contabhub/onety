@@ -16,12 +16,23 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
-    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
-    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.3), transparent),
-    radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.2), transparent);
+  background: radial-gradient(
+      2px 2px at 20px 30px,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    ),
+    radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(
+      1px 1px at 130px 80px,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 160px 30px,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
   background-repeat: repeat;
   background-size: 200px 100px;
   animation: sparkle 20s linear infinite;
@@ -30,17 +41,40 @@
 
 /* Sparkle mais escuro para tema escuro - mais estrelas */
 :root[data-theme='dark'] .page::before {
-  background: 
-    radial-gradient(2px 2px at 20px 30px, rgba(200,200,255,0.4), transparent),
-    radial-gradient(2px 2px at 40px 70px, rgba(180,180,255,0.3), transparent),
-    radial-gradient(1px 1px at 90px 40px, rgba(220,220,255,0.5), transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(190,190,255,0.4), transparent),
-    radial-gradient(2px 2px at 160px 30px, rgba(170,170,255,0.3), transparent),
-    radial-gradient(1px 1px at 60px 50px, rgba(200,200,255,0.4), transparent),
-    radial-gradient(2px 2px at 110px 20px, rgba(180,180,255,0.3), transparent),
-    radial-gradient(1px 1px at 150px 60px, rgba(220,220,255,0.4), transparent),
-    radial-gradient(1px 1px at 180px 10px, rgba(190,190,255,0.3), transparent),
-    radial-gradient(2px 2px at 30px 90px, rgba(170,170,255,0.4), transparent);
+  background: radial-gradient(
+      2px 2px at 20px 30px,
+      rgba(200, 200, 255, 0.4),
+      transparent
+    ),
+    radial-gradient(2px 2px at 40px 70px, rgba(180, 180, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(220, 220, 255, 0.5), transparent),
+    radial-gradient(
+      1px 1px at 130px 80px,
+      rgba(190, 190, 255, 0.4),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 160px 30px,
+      rgba(170, 170, 255, 0.3),
+      transparent
+    ),
+    radial-gradient(1px 1px at 60px 50px, rgba(200, 200, 255, 0.4), transparent),
+    radial-gradient(
+      2px 2px at 110px 20px,
+      rgba(180, 180, 255, 0.3),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 150px 60px,
+      rgba(220, 220, 255, 0.4),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 180px 10px,
+      rgba(190, 190, 255, 0.3),
+      transparent
+    ),
+    radial-gradient(2px 2px at 30px 90px, rgba(170, 170, 255, 0.4), transparent);
   background-size: 200px 100px;
 }
 
@@ -52,9 +86,18 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    linear-gradient(45deg, transparent 49%, rgba(46, 74, 255, 0.03) 50%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, rgba(3, 8, 66, 0.02) 50%, transparent 51%);
+  background: linear-gradient(
+      45deg,
+      transparent 49%,
+      rgba(46, 74, 255, 0.03) 50%,
+      transparent 51%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 49%,
+      rgba(3, 8, 66, 0.02) 50%,
+      transparent 51%
+    );
   background-size: 80px 80px;
   animation: neural 15s linear infinite;
   z-index: 0;
@@ -62,33 +105,67 @@
 
 /* Linhas mais aparentes para tema escuro */
 :root[data-theme='dark'] .page::after {
-  background: 
-    linear-gradient(45deg, transparent 48%, rgba(138, 43, 226, 0.12) 49%, rgba(138, 43, 226, 0.12) 51%, transparent 52%),
-    linear-gradient(-45deg, transparent 48%, rgba(75, 0, 130, 0.08) 49%, rgba(75, 0, 130, 0.08) 51%, transparent 52%);
+  background: linear-gradient(
+      45deg,
+      transparent 48%,
+      rgba(138, 43, 226, 0.12) 49%,
+      rgba(138, 43, 226, 0.12) 51%,
+      transparent 52%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 48%,
+      rgba(75, 0, 130, 0.08) 49%,
+      rgba(75, 0, 130, 0.08) 51%,
+      transparent 52%
+    );
   background-size: 60px 60px;
 }
 
 /* Animações */
 @keyframes sparkle {
-  0% { transform: translateY(0px) translateX(0px); }
-  25% { transform: translateY(-10px) translateX(5px); }
-  50% { transform: translateY(-5px) translateX(-5px); }
-  75% { transform: translateY(-15px) translateX(3px); }
-  100% { transform: translateY(0px) translateX(0px); }
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
 }
 
 @keyframes neural {
-  0% { transform: translateX(0px) translateY(0px); }
-  25% { transform: translateX(10px) translateY(-5px); }
-  50% { transform: translateX(-5px) translateY(10px); }
-  75% { transform: translateX(-10px) translateY(-3px); }
-  100% { transform: translateX(0px) translateY(0px); }
+  0% {
+    transform: translateX(0px) translateY(0px);
+  }
+  25% {
+    transform: translateX(10px) translateY(-5px);
+  }
+  50% {
+    transform: translateX(-5px) translateY(10px);
+  }
+  75% {
+    transform: translateX(-10px) translateY(-3px);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
 }
 
 /* Tema claro - sparkles mais escuros */
 :root[data-theme='light'] .page::before {
-  background: 
-    radial-gradient(2px 2px at 20px 30px, rgba(3, 8, 66, 0.7), transparent),
+  background: radial-gradient(
+      2px 2px at 20px 30px,
+      rgba(3, 8, 66, 0.7),
+      transparent
+    ),
     radial-gradient(2px 2px at 40px 70px, rgba(3, 8, 66, 0.6), transparent),
     radial-gradient(1px 1px at 90px 40px, rgba(3, 8, 66, 0.8), transparent),
     radial-gradient(1px 1px at 130px 80px, rgba(3, 8, 66, 0.65), transparent),
@@ -96,9 +173,18 @@
 }
 
 :root[data-theme='light'] .page::after {
-  background: 
-    linear-gradient(45deg, transparent 49%, rgba(46, 74, 255, 0.05) 50%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, rgba(3, 8, 66, 0.04) 50%, transparent 51%);
+  background: linear-gradient(
+      45deg,
+      transparent 49%,
+      rgba(46, 74, 255, 0.05) 50%,
+      transparent 51%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 49%,
+      rgba(3, 8, 66, 0.04) 50%,
+      transparent 51%
+    );
   background-size: 80px 80px;
 }
 
@@ -201,7 +287,11 @@
   width: 48px;
   height: 48px;
   border-radius: var(--onity-radius-m);
-  background: linear-gradient(135deg, var(--onity-color-primary) 0%, var(--onity-color-primary-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--onity-color-primary) 0%,
+    var(--onity-color-primary-hover) 100%
+  );
   color: var(--onity-color-primary-contrast);
   display: inline-flex;
   align-items: center;
@@ -269,6 +359,8 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  justify-content: center;
+  display: flex;
 }
 
 .cardFooter {
@@ -359,7 +451,8 @@
   display: flex;
   overflow-x: auto;
   overflow-y: visible;
-  padding: var(--onity-space-m) var(--onity-space-s) var(--onity-space-l) var(--onity-space-s);
+  padding: var(--onity-space-m) var(--onity-space-s) var(--onity-space-l)
+    var(--onity-space-s);
   scroll-behavior: smooth;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
@@ -422,7 +515,11 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(135deg, var(--onity-color-primary), var(--onity-color-primary-hover));
+  background: linear-gradient(
+    135deg,
+    var(--onity-color-primary),
+    var(--onity-color-primary-hover)
+  );
   border-radius: var(--onity-radius-l);
   z-index: -1;
   opacity: 0.1;
@@ -668,46 +765,46 @@
   .page {
     padding: var(--onity-space-m);
   }
-  
+
   .header h1 {
     font-size: 32px;
   }
-  
+
   .themeWrap {
     right: 16px;
   }
-  
+
   .searchBox {
     max-width: 100%;
   }
-  
+
   .carousel {
     gap: var(--onity-space-s);
   }
-  
+
   .navButton {
     width: 40px;
     height: 40px;
   }
-  
+
   .carouselItem {
     flex: 0 0 340px;
     min-width: 340px;
     margin: 0 var(--onity-space-xs);
   }
-  
+
   .carouselTrack {
     gap: var(--onity-space-s);
   }
-  
+
   .previewCard {
     padding: var(--onity-space-l);
   }
-  
+
   .previewHeader h2 {
     font-size: 24px;
   }
-  
+
   .previewPlaceholder {
     padding: var(--onity-space-l);
   }
@@ -719,12 +816,12 @@
     min-width: 300px;
     margin: 0 var(--onity-space-xs);
   }
-  
+
   .navButton {
     width: 36px;
     height: 36px;
   }
-  
+
   .navButton svg {
     width: 18px;
     height: 18px;
