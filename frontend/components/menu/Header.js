@@ -53,6 +53,25 @@ export default function Header() {
     router.push('/login')
   }
 
+  const handleChangeCompany = () => {
+    try {
+      const raw = localStorage.getItem('userData')
+      const parsed = raw ? JSON.parse(raw) : {}
+      if (parsed && typeof parsed === 'object') {
+        delete parsed.EmpresaId
+        delete parsed.EmpresaNome
+        if (parsed.empresa) delete parsed.empresa
+        localStorage.setItem('userData', JSON.stringify(parsed))
+        setUser(parsed)
+      }
+      // limpeza de chaves legadas
+      localStorage.removeItem('selectedEmpresaId')
+      localStorage.removeItem('selectedEmpresaName')
+    } catch {}
+    setMenuOpen(false)
+    router.push('/empresa')
+  }
+
   const getInitials = (name) => {
     if (!name) return 'US'
     const parts = String(name).trim().split(/\s+/)
@@ -81,6 +100,9 @@ export default function Header() {
         </div>
         {menuOpen && (
           <div className={styles.dropdown} onMouseLeave={() => setMenuOpen(false)}>
+            {router.pathname === '/modulos' && (
+              <button className={styles.dropdownItem} onClick={handleChangeCompany}>Trocar de empresa</button>
+            )}
             <button className={styles.dropdownItem} onClick={handleEditProfile}>Editar perfil</button>
             <button className={styles.dropdownItem} onClick={handleLogout}>Sair</button>
           </div>
