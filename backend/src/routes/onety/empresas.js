@@ -32,7 +32,14 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query("SELECT * FROM empresas WHERE id = ?", [id]);
+    const [rows] = await pool.query(`
+      SELECT e.*, 
+             COUNT(ue.id) as membros
+      FROM empresas e
+      LEFT JOIN usuarios_empresas ue ON e.id = ue.empresa_id
+      WHERE e.id = ?
+      GROUP BY e.id
+    `, [id]);
     if (rows.length === 0) return res.status(404).json({ error: "Empresa não encontrada." });
     res.json(rows[0]);
   } catch (error) {

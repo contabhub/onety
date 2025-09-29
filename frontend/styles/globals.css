@@ -1,3 +1,28 @@
+/* Toast Custom Styles */
+.toast-custom {
+  font-family: var(--onity-font-family-sans) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+}
+
+.toast-custom .Toastify__toast-body {
+  font-weight: 500 !important;
+}
+
+/* Light theme toast overrides */
+:root[data-theme='light'] .toast-custom {
+  background: var(--onity-light-surface) !important;
+  color: var(--onity-light-text) !important;
+  border: 1px solid var(--onity-light-border) !important;
+}
+
+/* Dark theme toast overrides */
+:root[data-theme='dark'] .toast-custom {
+  background: var(--onity-dark-surface) !important;
+  color: var(--onity-dark-text) !important;
+  border: 1px solid var(--onity-dark-border) !important;
+}
+
 /* Onity Design Tokens */
 :root {
   color-scheme: light dark;

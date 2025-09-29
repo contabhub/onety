@@ -3,6 +3,37 @@ const pool = require("../../config/database");
 
 const router = express.Router();
 
+// Conta membros por empresa
+router.get("/count/:empresa_id", async (req, res) => {
+  try {
+    const { empresa_id } = req.params;
+    
+    // Primeiro verifica se a empresa existe
+    const [empresaExists] = await pool.query(
+      "SELECT id FROM empresas WHERE id = ?",
+      [empresa_id]
+    );
+    
+    if (empresaExists.length === 0) {
+      return res.status(404).json({ error: "Empresa não encontrada." });
+    }
+    
+    // Se a empresa existe, conta os membros
+    const [rows] = await pool.query(
+      "SELECT COUNT(*) as total FROM usuarios_empresas WHERE empresa_id = ?",
+      [empresa_id]
+    );
+    
+    res.json({ 
+      empresa_id: parseInt(empresa_id),
+      membros: rows[0]?.total || 0 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao contar membros da empresa." });
+  }
+});
+
 // Lista com filtros e paginação
 router.get("/", async (req, res) => {
   try {
