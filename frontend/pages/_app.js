@@ -16,7 +16,7 @@ export default function App({ Component, pageProps }) {
   return (
     <div className={inter.className}>
       <Head>
-        <title>Aura8</title>
+        <title>Onety</title>
         <link rel="icon" href="/img/favicon-32x32.png" type="image/png" />
       </Head>
       <Component {...pageProps} auth={auth} />
