@@ -3,7 +3,7 @@ const pool = require("../../config/database");
 
 const router = express.Router();
 
-// Lista empresas com paginação simples simmmmmmmmmmmmmmmmmmmm
+// Lista empresas com paginação simples 
 router.get("/", async (req, res) => {
   try {
     const page = Number(req.query.page || 1);
