@@ -66,11 +66,41 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "E-mail ou senha inválidos." });
     }
 
-    // Gera o token JWT
+    // Carrega permissões e módulos do cargo do usuário (se houver vínculo)
+    let permissoes = {};
+    let permissoes_modulos = [];
+    try {
+      const [permRows] = await pool.query(
+        `SELECT c.permissoes, c.permissoes_modulos
+         FROM usuarios_empresas ue
+         LEFT JOIN cargos c ON c.id = ue.cargo_id AND c.empresa_id = ue.empresa_id
+         WHERE ue.usuario_id = ?
+         ORDER BY ue.id DESC
+         LIMIT 1`,
+        [userData.id]
+      );
+      if (permRows.length) {
+        if (permRows[0].permissoes) {
+        permissoes = typeof permRows[0].permissoes === "string"
+          ? JSON.parse(permRows[0].permissoes)
+          : (permRows[0].permissoes || {});
+        }
+        if (permRows[0].permissoes_modulos) {
+          permissoes_modulos = typeof permRows[0].permissoes_modulos === "string"
+            ? JSON.parse(permRows[0].permissoes_modulos)
+            : (permRows[0].permissoes_modulos || []);
+        }
+      }
+    } catch (e) {
+      permissoes = {};
+      permissoes_modulos = [];
+    }
+
+    // Gera o token JWT incluindo permissões
     const token = jwt.sign(
-      { id: userData.id, email: userData.email },
+      { id: userData.id, email: userData.email, permissoes, permissoes_modulos },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "10h" }
     );
 
     // Retorna tudo que o frontend precisa (sem password_hash)
@@ -81,6 +111,8 @@ router.post("/login", async (req, res) => {
         email: userData.email,
         nome: userData.nome,
         avatar_url: userData.avatar_url,
+        permissoes,
+        permissoes_modulos
       }
     });
   } catch (error) {
