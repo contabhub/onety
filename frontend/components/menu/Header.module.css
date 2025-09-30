@@ -87,6 +87,7 @@
   border-radius: 8px;
   padding: 6px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  width: 159px;
 }
 
 .dropdownItem {
@@ -97,10 +98,11 @@
   background: transparent;
   color: var(--onity-color-foreground);
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .dropdownItem:hover {
-  background: var(--onity-color-muted);
+  transform: translateY(-4px);
 }
 
 
