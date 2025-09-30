@@ -118,6 +118,46 @@ router.put("/:id", async (req, res) => {
   return router.handle(req, res);
 });
 
+// Iniciar módulo (mudar de 'bloqueado' para 'em_andamento')
+router.patch("/:id/iniciar", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Busca vínculo atual
+    const [rows] = await pool.query(
+      "SELECT id, empresa_id, modulo_id, status FROM modulos_empresa WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Vínculo não encontrado." });
+    }
+
+    const current = rows[0];
+    if (current.status !== "bloqueado") {
+      return res.status(409).json({
+        error: "Somente vínculos com status 'bloqueado' podem ser iniciados.",
+      });
+    }
+
+    // Atualiza para 'em_andamento'
+    await pool.query(
+      "UPDATE modulos_empresa SET status = 'em_andamento' WHERE id = ?",
+      [id]
+    );
+
+    const [updated] = await pool.query(
+      "SELECT id, empresa_id, modulo_id, status FROM modulos_empresa WHERE id = ?",
+      [id]
+    );
+
+    return res.json(updated[0]);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Erro ao iniciar módulo." });
+  }
+});
+
 // Remover
 router.delete("/:id", async (req, res) => {
   try {

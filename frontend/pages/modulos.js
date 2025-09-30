@@ -97,7 +97,8 @@ export default function Modulos() {
             return {
               ...modulo,
               status: moduloEmpresa.status,
-              empresa_id: moduloEmpresa.empresa_id
+              empresa_id: moduloEmpresa.empresa_id,
+              vinculo_id: moduloEmpresa.id
             }
           })
         )
@@ -134,8 +135,30 @@ export default function Modulos() {
     'financeiro',
     'gestão de processos',
     'auditoria',
-    'estrategico'
+    'estratégico'
   ]
+
+
+  // Helpers para mapear pré-requisito conforme a ordem de módulos
+  const normalize = (s) => String(s || '').trim().toLowerCase()
+
+  const findOrderKeyForName = (name) => {
+    const n = normalize(name)
+    return moduleOrder.find((order) => n.includes(order)) || null
+  }
+
+  const getPrerequisiteForModule = (modulo) => {
+    if (!modulo) return null
+    const currentKey = findOrderKeyForName(modulo.nome || modulo.name)
+    if (!currentKey) return null
+    const currentIdx = moduleOrder.indexOf(currentKey)
+    if (currentIdx <= 0) return null
+    const prevKey = moduleOrder[currentIdx - 1]
+    // Busca o módulo correspondente ao prevKey dentro da lista total (não filtrada pela busca)
+    const prereqModule = modulos.find((x) => normalize(x.nome || x.name).includes(prevKey))
+    // Retorna o módulo encontrado (preferido) ou o rótulo textual da ordem
+    return prereqModule || { nome: prevKey }
+  }
 
 
   const getModuleLogo = (modulo) => {
@@ -218,14 +241,49 @@ export default function Modulos() {
   }
 
   const handleAccessModulo = (modulo) => {
-    // Aqui você pode adicionar a lógica para acessar o módulo
-    // Por exemplo: router.push(`/modulo/${modulo.id}`)
-    console.log('Acessando módulo:', modulo.nome || modulo.name)
+    if (!modulo) return
+    // Acessa sempre a página de onboarding do módulo
+    router.push(`/onboarding/${modulo.id}`)
   }
 
   const goToOnboarding = (moduloId) => {
     if (!moduloId) return
     router.push(`/onboarding/${moduloId}`)
+  }
+
+  // Pode iniciar: status bloqueado e pré-requisito (se existir) já liberado
+  const canStartModulo = (modulo) => {
+    if (!modulo) return false
+    if (modulo.status !== 'bloqueado') return false
+    const prereq = getPrerequisiteForModule(modulo)
+    if (!prereq) return true
+    const prereqName = (prereq.nome || prereq.name || '').toLowerCase()
+    const prereqModule = modulos.find((x) => (x.nome || x.name || '').toLowerCase().includes(prereqName)) || null
+    if (!prereqModule) return true
+    return prereqModule.status === 'liberado'
+  }
+
+  const startModulo = async (modulo) => {
+    try {
+      if (!modulo?.vinculo_id) return
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const res = await fetch(`${API_URL}/modulos-empresa/${modulo.vinculo_id}/iniciar`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) {
+        throw new Error('Não foi possível iniciar este módulo')
+      }
+      // Redireciona para onboarding após iniciar
+      router.push(`/onboarding/${modulo.id}`)
+    } catch (err) {
+      console.error(err)
+      toast.error(err.message || 'Erro ao iniciar módulo', { toastId: 'start-modulo-error' })
+    }
   }
 
   // Itens estendidos para efeito infinito: [cloneLast, ...filtered, cloneFirst]
@@ -314,6 +372,7 @@ export default function Modulos() {
     switch (status) {
       case 'liberado': return 'Liberado'
       case 'bloqueado': return 'Bloqueado'
+      case 'em_andamento': return 'Em andamento'
       case 'pendente': return 'Pendente'
       default: return 'Desconhecido'
     }
@@ -434,8 +493,6 @@ export default function Modulos() {
                             <p>{m.descricao || 'Sem descrição disponível'}</p>
                             <div 
                               className={styles.previewPlaceholder}
-                              onClick={m.status === 'bloqueado' ? () => goToOnboarding(m.id) : undefined}
-                              style={m.status === 'bloqueado' ? { cursor: 'pointer' } : undefined}
                             >
                               <div className={styles.placeholderIcon}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -443,24 +500,42 @@ export default function Modulos() {
                                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                 </svg>
                               </div>
-                              <h3>Preview do Módulo</h3>
                               {m.status === 'bloqueado' ? (
-                                <>
-                                  <p>Assista seus conteudos para desbloquear</p>
-                                  <p style={{ fontSize: '12px', opacity: 0.8 }}>(Clique para ir para o onboarding)</p>
-                                </>
+                                (() => {
+                                  const prereq = getPrerequisiteForModule(m)
+                                  const prereqName = prereq ? (prereq.nome || prereq.name || '') : ''
+                                  return (
+                                    <>
+                                      <h3>Termine o módulo <strong>{prereqName}</strong> primeiro</h3>
+                                      <p>Assista seus conteúdos para desbloquear</p>
+                                    </>
+                                  )
+                                })()
                               ) : (
-                                <p>Em breve você poderá visualizar o conteúdo do módulo aqui</p>
+                                <>
+                                  <h3>Preview do Módulo</h3>
+                                  <p>Em breve você poderá visualizar o conteúdo do módulo aqui</p>
+                                </>
                               )}
                             </div>
                             <div className={styles.previewActions}>
-                              <button 
-                                className={styles.accessBtn}
-                                onClick={() => handleAccessModulo(m)}
-                                disabled={m.status === 'bloqueado'}
-                              >
-                                {m.status === 'bloqueado' ? 'Módulo Bloqueado' : 'Acessar Módulo'}
-                              </button>
+                              {m.status === 'bloqueado' ? (
+                                <button 
+                                  className={styles.accessBtn}
+                                  onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                                  disabled={!canStartModulo(m)}
+                                  title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
+                                >
+                                  Iniciar
+                                </button>
+                              ) : (
+                                <button 
+                                  className={styles.accessBtn}
+                                  onClick={() => handleAccessModulo(m)}
+                                >
+                                  Acessar
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -485,6 +560,25 @@ export default function Modulos() {
                                 {getStatusText(m.status)}
                               </div>
                             </div>
+                          </div>
+                          <div className={styles.cardFooter}>
+                            {m.status === 'bloqueado' ? (
+                              <button 
+                                className={styles.accessBtn}
+                                onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                                disabled={!canStartModulo(m)}
+                                title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
+                              >
+                                Iniciar
+                              </button>
+                            ) : (
+                              <button 
+                                className={styles.accessBtn}
+                                onClick={() => handleAccessModulo(m)}
+                              >
+                                {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
+                              </button>
+                            )}
                           </div>
                         </div>
                       )}
@@ -539,13 +633,23 @@ export default function Modulos() {
                     </div>
                   </div>
                   <div className={styles.cardFooter}>
-                    <button 
-                      className={styles.accessBtn}
-                      onClick={() => handleAccessModulo(m)}
-                      disabled={m.status === 'bloqueado'}
-                    >
-                      {m.status === 'bloqueado' ? 'Módulo Bloqueado' : 'Acessar'}
-                    </button>
+                    {m.status === 'bloqueado' ? (
+                      <button 
+                        className={styles.accessBtn}
+                        onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                        disabled={!canStartModulo(m)}
+                        title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
+                      >
+                        Iniciar
+                      </button>
+                    ) : (
+                      <button 
+                        className={styles.accessBtn}
+                        onClick={() => handleAccessModulo(m)}
+                      >
+                        {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -568,13 +672,23 @@ export default function Modulos() {
                     >
                       {getStatusText(m.status)}
                     </div>
-                    <button 
-                      className={styles.accessBtn}
-                      onClick={() => handleAccessModulo(m)}
-                      disabled={m.status === 'bloqueado'}
-                    >
-                      {m.status === 'bloqueado' ? 'Bloqueado' : 'Acessar'}
-                    </button>
+                    {m.status === 'bloqueado' ? (
+                      <button 
+                        className={styles.accessBtn}
+                        onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                        disabled={!canStartModulo(m)}
+                        title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
+                      >
+                        Iniciar
+                      </button>
+                    ) : (
+                      <button 
+                        className={styles.accessBtn}
+                        onClick={() => handleAccessModulo(m)}
+                      >
+                        {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

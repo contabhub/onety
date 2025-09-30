@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import styles from './ConteudoList.module.css'
 
 export default function ConteudoList({ moduloId }) {
   const [items, setItems] = useState([])
@@ -30,23 +31,26 @@ export default function ConteudoList({ moduloId }) {
     return () => { ignore = true }
   }, [moduloId])
 
-  if (loading) return <div style={{ padding: 16 }}>Carregando conteúdos...</div>
-  if (error) return <div style={{ padding: 16, color: 'var(--onity-color-error)' }}>{error}</div>
-  if (!items.length) return <div style={{ padding: 16 }}>Nenhum conteúdo cadastrado.</div>
+  if (loading) return <div className={styles.placeholder}>Carregando conteúdos...</div>
+  if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
+  if (!items.length) return <div className={styles.placeholder}>Nenhum conteúdo cadastrado.</div>
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16, padding: 16 }}>
+    <div className={styles.grid}>
       {items.map((c) => (
-        <article key={c.id} style={{ border: '1px solid var(--onity-color-border)', borderRadius: 12, overflow: 'hidden', background: 'var(--onity-color-bgElevated)' }}>
-          {c.link ? (
-            <div style={{ height: 160, background: '#0b0b0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {/* placeholder simples para mídia/imagem do link */}
-              <span style={{ color: '#fff', opacity: 0.8 }}>Prévia</span>
+        <article key={c.id} className={styles.card}>
+          {(c.logo_url || c.link) ? (
+            <div className={styles.media}>
+              {c.logo_url ? (
+                <img src={c.logo_url} alt={`Logo de ${c.nome}`} className={styles.mediaImg} />
+              ) : (
+                <span className={styles.mediaFallback}>Prévia</span>
+              )}
             </div>
           ) : null}
-          <div style={{ padding: 16 }}>
-            <h3 style={{ margin: '0 0 8px' }}>{c.nome}</h3>
-            <p style={{ margin: 0, opacity: 0.85 }}>{c.descricao || 'Sem descrição'}</p>
+          <div className={styles.body}>
+            <h3 className={styles.title}>{c.nome}</h3>
+            <p className={styles.desc}>{c.descricao || 'Sem descrição'}</p>
           </div>
         </article>
       ))}
