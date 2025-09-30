@@ -1,0 +1,211 @@
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { Pin, LayoutDashboard, User, Building2, UserCog, BarChart2, FileText, Bot, Settings, Edit3, Sun, Moon, RefreshCw, ChevronDown } from 'lucide-react'
+import styles from './Sidebar.module.css'
+import ThemeToggle from '../menu/ThemeToggle'
+
+export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) {
+  const router = useRouter()
+  const [hovered, setHovered] = useState(false)
+  const [cadastroOpen, setCadastroOpen] = useState(true)
+  const [relatoriosOpen, setRelatoriosOpen] = useState(true)
+  const [userData, setUserData] = useState(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [isLightTheme, setIsLightTheme] = useState(false)
+
+  const handleMouseEnter = () => {
+    setHovered(true)
+    if (!pinned) setCollapsed(false)
+  }
+  const handleMouseLeave = () => {
+    setHovered(false)
+    if (!pinned) setCollapsed(true)
+  }
+  const handlePin = () => {
+    const n = !pinned
+    setPinned(n)
+    setCollapsed(!n)
+  }
+
+  // Carregar dados do usuário
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('userData')
+      const parsed = raw ? JSON.parse(raw) : null
+      setUserData(parsed)
+    } catch {
+      setUserData(null)
+    }
+  }, [])
+
+  // Detectar tema
+  useEffect(() => {
+    const resolveTheme = () => {
+      try {
+        const saved = localStorage.getItem('theme')
+        const attr = document.documentElement.getAttribute('data-theme')
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        const theme = saved || attr || (prefersDark ? 'dark' : 'light')
+        setIsLightTheme(theme === 'light')
+      } catch {
+        setIsLightTheme(false)
+      }
+    }
+    resolveTheme()
+    const observer = new MutationObserver(() => resolveTheme())
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    const onStorage = (e) => { if (e.key === 'theme') resolveTheme() }
+    window.addEventListener('storage', onStorage)
+    return () => { observer.disconnect(); window.removeEventListener('storage', onStorage) }
+  }, [])
+
+  const getInitials = (name) => {
+    if (!name) return 'U'
+    const parts = String(name).trim().split(/\s+/)
+    const first = parts[0]?.[0] || ''
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+    return (first + last).toUpperCase()
+  }
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('token')
+      localStorage.removeItem('userData')
+    } catch {}
+    router.push('/login')
+  }
+
+  const items = [
+    { name: 'Visão Geral', icon: <LayoutDashboard size={18} />, path: '/superadmin' },
+    { name: 'Usuários', icon: <User size={18} />, path: '/superadmin/usuarios' },
+    { name: 'Empresas', icon: <Building2 size={18} />, path: '/superadmin/empresas' },
+    { name: 'Cargos', icon: <UserCog size={18} />, path: '/superadmin/cargos' },
+    { name: 'Relatórios', isSection: true },
+    { name: 'Relatórios', icon: <BarChart2 size={18} />, path: '/superadmin/relatorios' },
+    { name: 'Logs', icon: <FileText size={18} />, path: '/superadmin/logs' },
+    { name: 'IA', isSection: true },
+    { name: 'Oráculo', icon: <Bot size={18} />, path: '/superadmin/oraculo' },
+  ]
+
+  let inCadastro = false
+  let inRel = false
+
+  return (
+    <aside
+      className={`${styles.sidebar} ${collapsed ? styles.collapsed : styles.expanded}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className={styles.topBar}>
+        <div className={styles.logo}>
+          <img
+            src={collapsed ? '/img/Logo-Onety-Colapsada.png' : '/img/Logo-Onety-Sidebar.png'}
+            alt="Onety"
+            className={styles.logoImg}
+            style={{
+              width: collapsed ? 48 : 160,
+              height: collapsed ? 48 : 64,
+              marginLeft: collapsed ? -3 : 15
+            }}
+          />
+        </div>
+        {!collapsed && (
+          <button className={`${styles.pinButton} ${pinned ? styles.pinned : ''}`} onClick={handlePin} title={pinned ? 'Desafixar' : 'Fixar'}>
+            <Pin size={16} />
+          </button>
+        )}
+      </div>
+
+      <nav className={styles.menu}>
+        {items.map((it, idx) => {
+          if (it.isSection && it.name === 'Relatórios') {
+            inCadastro = false
+            inRel = true
+            return !collapsed && (
+              <div key={`sec-${idx}`} className={`${styles.sectionTitle} ${styles.collapsible}`} onClick={() => setRelatoriosOpen(v => !v)}>
+                {it.name}
+                <span className={`${styles.sectionCollapseIcon} ${!relatoriosOpen ? styles.collapsed : ''}`}></span>
+              </div>
+            )
+          }
+          if (it.isSection) {
+            inCadastro = false
+            inRel = false
+            return !collapsed && (
+              <div key={`sec-${idx}`} className={styles.sectionTitle}>{it.name}</div>
+            )
+          }
+          if (inRel && !relatoriosOpen) return null
+          return (
+            <Link key={it.name + idx} href={it.path} className={styles.menuItem}>
+              {it.icon}
+              {!collapsed && <span>{it.name}</span>}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Seção do usuário na parte inferior */}
+      <div className={styles.userSection}>
+        <div 
+          className={styles.userProfile}
+          onClick={() => setUserMenuOpen(!userMenuOpen)}
+        >
+          <div className={styles.userAvatar}>
+            {userData?.avatar_url ? (
+              <img src={userData.avatar_url} alt={userData?.nome || userData?.name || 'Usuário'} />
+            ) : (
+              <div className={styles.avatarFallback}>
+                {getInitials(userData?.nome || userData?.name)}
+              </div>
+            )}
+          </div>
+          {!collapsed && (
+            <div className={styles.userInfo}>
+              <div className={styles.userName}>
+                {userData?.nome || userData?.name || 'Usuário'}
+              </div>
+              <div className={styles.userRole}>
+                Superadmin
+              </div>
+            </div>
+          )}
+          {!collapsed && (
+            <ChevronDown size={16} className={`${styles.chevron} ${userMenuOpen ? styles.rotated : ''}`} />
+          )}
+        </div>
+
+        {/* Dropdown do usuário */}
+        {userMenuOpen && !collapsed && (
+          <div className={styles.userDropdown}>
+            <button className={styles.dropdownItem}>
+              <Edit3 size={16} />
+              <span>Editar Perfil</span>
+            </button>
+            <div className={styles.dropdownItem}>
+              <Sun size={16} />
+              <span>Mudar tema</span>
+              <ThemeToggle />
+            </div>
+            <button className={styles.dropdownItem}>
+              <Settings size={16} />
+              <span>Configurações</span>
+            </button>
+            <button className={styles.dropdownItem}>
+              <RefreshCw size={16} />
+              <span>Trocar de Equipe</span>
+            </button>
+            <div className={styles.dropdownDivider} />
+            <button className={styles.dropdownItem} onClick={handleLogout}>
+              <User size={16} />
+              <span>Sair</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </aside>
+  )
+}
+
+
