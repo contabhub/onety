@@ -1,7 +1,10 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
 const pool = require("../../config/database");
+const { sendEmail } = require("../../config/email");
 
 const router = express.Router();
 const saltRounds = 10;
@@ -108,7 +111,7 @@ router.post("/requisitar-redefinicao-senha", async (req, res) => {
 
   // 📧 Envia o e-mail de recuperação
   // Carrega a logo como base64
-  const logoPath = path.join(__dirname, "../img/Logo-Onety.png");
+  const logoPath = path.join(__dirname, "../../assets/img/Logo-Onety.png");
   const logoBuffer = fs.readFileSync(logoPath);
   const logoBase64 = logoBuffer.toString("base64");
   

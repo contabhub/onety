@@ -16,6 +16,9 @@ export default function Modulos() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedModulo, setSelectedModulo] = useState(null)
   const [carouselRef, setCarouselRef] = useState(null)
+  const transitionMs = 380 // transição normal
+  const edgeTransitionMs = 750 // transição nas extremidades (último/primeiro)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -203,35 +206,77 @@ export default function Modulos() {
     console.log('Acessando módulo:', modulo.nome || modulo.name)
   }
 
-  const scrollToIndex = (index) => {
-    if (carouselRef) {
-      const itemWidth = 380 + 40 // largura do item + margin (20px de cada lado)
-      const containerWidth = carouselRef.offsetWidth
-      const scrollPosition = (index * itemWidth) - (containerWidth / 2) + (itemWidth / 2)
-      
-      carouselRef.scrollTo({
-        left: Math.max(0, scrollPosition),
-        behavior: 'smooth'
-      })
+  // Itens estendidos para efeito infinito: [cloneLast, ...filtered, cloneFirst]
+  const extended = useMemo(() => {
+    if (filtered.length <= 1) return filtered
+    const first = filtered[0]
+    const last = filtered[filtered.length - 1]
+    return [last, ...filtered, first]
+  }, [filtered])
+
+  const getItemWidth = () => 380 + 40 // largura do item + margin
+
+  const scrollToExtendedIndex = (extIndex, smooth = true) => {
+    if (!carouselRef) return
+    const itemWidth = getItemWidth()
+    const containerWidth = carouselRef.offsetWidth
+    const computedStyles = typeof window !== 'undefined' ? window.getComputedStyle(carouselRef) : null
+    const paddingLeft = computedStyles ? parseInt(computedStyles.paddingLeft || '0', 10) : 0
+    const position = (extIndex * itemWidth + paddingLeft) - (containerWidth / 2) + (itemWidth / 2)
+    carouselRef.scrollTo({ left: Math.max(0, position), behavior: smooth ? 'smooth' : 'auto' })
+  }
+
+  // Inicializa o scroll no primeiro item real (índice +1 no array estendido)
+  useEffect(() => {
+    if (extended.length > 0 && carouselRef) {
+      const startIndex = filtered.length > 1 ? currentIndex + 1 : currentIndex
+      scrollToExtendedIndex(startIndex, false)
+    }
+  }, [carouselRef, extended])
+
+  const nextModulo = () => {
+    if (filtered.length === 0 || isTransitioning) return
+    const nextIndex = (currentIndex + 1) % filtered.length
+    const goingOver = filtered.length > 1 && currentIndex === filtered.length - 1
+    setIsTransitioning(true)
+    setCurrentIndex(nextIndex)
+    // No array estendido, o próximo real é nextIndex+1; se estourou, passa pelo clone e depois salta
+    scrollToExtendedIndex((nextIndex + 1), true)
+    if (goingOver) {
+      setTimeout(() => {
+        // reposiciona silenciosamente no primeiro real
+        scrollToExtendedIndex(1, false)
+        setIsTransitioning(false)
+      }, edgeTransitionMs)
+    } else {
+      setTimeout(() => setIsTransitioning(false), transitionMs)
     }
   }
 
-  const nextModulo = () => {
-    const nextIndex = (currentIndex + 1) % filtered.length
-    setCurrentIndex(nextIndex)
-    scrollToIndex(nextIndex)
-  }
-
   const prevModulo = () => {
+    if (filtered.length === 0 || isTransitioning) return
     const prevIndex = (currentIndex - 1 + filtered.length) % filtered.length
+    const goingUnder = filtered.length > 1 && currentIndex === 0
+    setIsTransitioning(true)
     setCurrentIndex(prevIndex)
-    scrollToIndex(prevIndex)
+    scrollToExtendedIndex((prevIndex + 1), true)
+    if (goingUnder) {
+      setTimeout(() => {
+        // reposiciona silenciosamente no último real
+        scrollToExtendedIndex(filtered.length, false)
+        setIsTransitioning(false)
+      }, edgeTransitionMs)
+    } else {
+      setTimeout(() => setIsTransitioning(false), transitionMs)
+    }
   }
 
-  const selectModulo = (modulo, index) => {
+  const selectModulo = (modulo, index, isExtendedIndex = false) => {
+    // Se veio de um índice no array estendido, converte para índice real
+    const realIndex = isExtendedIndex ? ((index - 1 + filtered.length) % filtered.length) : index
     setSelectedModulo(modulo)
-    setCurrentIndex(index)
-    scrollToIndex(index)
+    setCurrentIndex(realIndex)
+    scrollToExtendedIndex((realIndex + 1), true)
   }
 
   const getStatusColor = (status) => {
@@ -296,13 +341,13 @@ export default function Modulos() {
                  className={styles.carouselTrack}
                  ref={setCarouselRef}
                >
-                {filtered.map((m, index) => (
+            {extended.map((m, extIndex) => (
                   <div 
-                    key={m.id} 
-                    className={`${styles.carouselItem} ${index === currentIndex ? styles.active : ''}`}
-                    onClick={() => selectModulo(m, index)}
+                key={`${m.id}-ext-${extIndex}`}
+                className={`${styles.carouselItem} ${((extIndex - 1 + filtered.length) % filtered.length) === currentIndex ? styles.active : ''}`}
+                onClick={() => selectModulo(m, extIndex, true)}
                   >
-                      {index === currentIndex ? (
+                      {((extIndex - 1 + filtered.length) % filtered.length) === currentIndex ? (
                         // Preview expandido quando selecionado
                         <div className={styles.previewCardInline}>
                           <div className={styles.previewHeader}>
@@ -389,7 +434,7 @@ export default function Modulos() {
                   className={`${styles.indicator} ${index === currentIndex ? styles.active : ''}`}
                   onClick={() => {
                     setCurrentIndex(index)
-                    scrollToIndex(index)
+                    scrollToExtendedIndex((index + 1), true)
                   }}
                 />
               ))}
