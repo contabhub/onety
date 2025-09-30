@@ -60,7 +60,23 @@ export default function Modulos() {
         }
         
         const data = await res.json()
-        const modulosEmpresa = Array.isArray(data?.data) ? data.data : []
+        let modulosEmpresa = Array.isArray(data?.data) ? data.data : []
+
+        // Filtra por permissoes_modulos, exceto admin/superadmin
+        const isAdmin = Array.isArray(user?.permissoes?.adm) && (
+          user.permissoes.adm.includes('admin') || user.permissoes.adm.includes('superadmin')
+        )
+        const allowedIds = Array.isArray(user?.permissoes_modulos)
+          ? user.permissoes_modulos.map((x) => Number(x))
+          : []
+        if (!isAdmin) {
+          if (allowedIds.length === 0) {
+            setModulos([])
+            toast.info('Você não possui módulos liberados', { toastId: 'no-permission-modulos' })
+            return
+          }
+          modulosEmpresa = modulosEmpresa.filter((m) => allowedIds.includes(Number(m.modulo_id)))
+        }
         
         if (modulosEmpresa.length === 0) { 
           toast.info('Nenhum módulo encontrado para esta empresa', { toastId: 'no-modulos' })

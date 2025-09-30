@@ -14,6 +14,7 @@ const provaRoutes = require('./onety/prova');
 const questaoRoutes = require('./onety/questao');
 const alternativaRoutes = require('./onety/alternativa');
 const provaEmpresaRoutes = require('./onety/prova_empresa');
+const cargosRoutes = require('./onety/cargos');
 
 
 
@@ -31,6 +32,7 @@ router.use('/prova', provaRoutes);
 router.use('/questao', questaoRoutes);
 router.use('/alternativa', alternativaRoutes);
 router.use('/prova-empresa', provaEmpresaRoutes);
+router.use('/cargos', cargosRoutes);
 
 
 

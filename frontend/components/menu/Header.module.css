@@ -26,7 +26,8 @@
 
 /* No tema claro, empurra a logo um pouco para a direita */
 :root[data-theme='light'] .logo {
-  margin-left: 15px;
+  margin-left: 18px;
+  height: 52px;
 }
 
 /* removed alternate logo */
