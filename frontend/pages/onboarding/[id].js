@@ -10,6 +10,7 @@ export default function OnboardingPage() {
   const router = useRouter()
   const { id } = router.query
   const [tab, setTab] = useState('conteudo')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   useEffect(() => {
     // validar id
@@ -21,10 +22,14 @@ export default function OnboardingPage() {
       <Head>
         <title>Onboarding - Módulo {id}</title>
       </Head>
-      <Topbar />
+      <Topbar sidebarCollapsed={sidebarCollapsed} />
       <div className={styles.layout}>
-        <div className={styles.contentWrapper}>
-          <OnboardingSidebar currentTab={tab} onChangeTab={setTab} />
+        <div className={`${styles.contentWrapper} ${sidebarCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded}`}>
+          <OnboardingSidebar 
+            currentTab={tab} 
+            onChangeTab={setTab} 
+            onCollapseChange={setSidebarCollapsed}
+          />
           <main className={styles.main}>
             {tab === 'conteudo' && <ConteudoList moduloId={id} />}
           </main>

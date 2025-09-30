@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import ThemeToggle from '../menu/ThemeToggle'
 import styles from './Topbar.module.css'
 
-export default function Header() {
+export default function Header({ sidebarCollapsed }) {
   const [isLightTheme, setIsLightTheme] = useState(false)
   const [user, setUser] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -104,7 +104,7 @@ export default function Header() {
   }
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${sidebarCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded}`}>
       <div className={styles.left}>
         <span className={styles.title}>{moduleName ? `Módulo: ${moduleName}` : 'Onboarding'}</span>
       </div>

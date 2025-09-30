@@ -12,7 +12,15 @@
 .contentWrapper {
   display: flex;
   width: 100%;
-  margin-left: 260px; /* desloca o conteúdo para não ficar sob a sidebar fixa */
+  transition: margin-left 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarCollapsed {
+  margin-left: 72px; /* sidebar colapsada */
+}
+
+.sidebarExpanded {
+  margin-left: 242px; /* sidebar expandida */
 }
 
 .main {
