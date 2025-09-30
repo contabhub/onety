@@ -6,7 +6,7 @@ function verificarPermissao(permissao) {
       if (
         permissoes.adm &&
         Array.isArray(permissoes.adm) &&
-        (permissoes.adm.includes("admin") || permissoes.adm.includes("superadmin"))
+        permissoes.adm.includes("superadmin")
       ) {
         return next();
       }
