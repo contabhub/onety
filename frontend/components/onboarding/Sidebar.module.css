@@ -1,0 +1,45 @@
+.aside {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 260px; /* manter em sincronia com Topbar left */
+  padding: 16px;
+  background: var(--onity-color-bg);
+  border-right: 1px solid var(--onity-color-border);
+  z-index: 40;
+}
+
+.logoBox {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding: 8px 0 16px;
+}
+
+.logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.tabButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  background: transparent;
+  cursor: pointer;
+  color: var(--onity-color-foreground);
+  display: flex;
+  align-items: center;
+}
+
+.tabButton.active {
+  background: var(--onity-color-bgElevated);
+}
+
+

@@ -1,0 +1,23 @@
+.page {
+  min-height: 100vh;
+  background: var(--onity-color-bg);
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 64px; /* altura da Topbar */
+}
+
+.contentWrapper {
+  display: flex;
+  width: 100%;
+  margin-left: 260px; /* desloca o conteúdo para não ficar sob a sidebar fixa */
+}
+
+.main {
+  flex: 1;
+  padding: 24px;
+}
+
+

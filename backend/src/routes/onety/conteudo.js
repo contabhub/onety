@@ -1,5 +1,6 @@
 const express = require("express");
 const pool = require("../../config/database");
+const cloudinary = require("../../config/cloudinary");
 
 const router = express.Router();
 
@@ -9,6 +10,16 @@ router.get("/", async (req, res) => {
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const offset = (page - 1) * limit;
+    const moduloId = req.query.modulo_id ? Number(req.query.modulo_id) : null;
+
+    if (moduloId) {
+      const [rows] = await pool.query(
+        "SELECT SQL_CALC_FOUND_ROWS * FROM conteudo WHERE modulo_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+        [moduloId, limit, offset]
+      );
+      const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");
+      return res.json({ data: rows, page, limit, total: countRows[0]?.total || 0 });
+    }
 
     const [rows] = await pool.query(
       "SELECT SQL_CALC_FOUND_ROWS * FROM conteudo ORDER BY id DESC LIMIT ? OFFSET ?",
@@ -16,12 +27,7 @@ router.get("/", async (req, res) => {
     );
     const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");
 
-    res.json({
-      data: rows,
-      page,
-      limit,
-      total: countRows[0]?.total || 0,
-    });
+    res.json({ data: rows, page, limit, total: countRows[0]?.total || 0 });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erro ao listar conteúdos." });
@@ -60,13 +66,32 @@ router.post("/", async (req, res) => {
     // Campos opcionais
     const { link, descricao } = payload;
 
+    // Upload opcional de logo para Cloudinary
+    let logoUrl = null;
+    if (payload.logo_base64 && typeof payload.logo_base64 === "string") {
+      try {
+        const uploadRes = await cloudinary.uploader.upload(payload.logo_base64, {
+          folder: "onety/onboarding/logos",
+          resource_type: "image",
+          overwrite: true,
+        });
+        logoUrl = uploadRes?.secure_url || uploadRes?.url || null;
+      } catch (err) {
+        console.error("Erro ao enviar logo para Cloudinary:", err?.message || err);
+        // não falha a criação por causa do upload; segue sem logo
+        logoUrl = null;
+      }
+    } else if (payload.logo_url && typeof payload.logo_url === "string") {
+      logoUrl = payload.logo_url;
+    }
+
     // Inicia transação
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
     const [result] = await conn.query(
-      `INSERT INTO conteudo (nome, link, descricao, modulo_id) VALUES (?, ?, ?, ?)`,
-      [nome, link || null, descricao || null, modulo_id]
+      `INSERT INTO conteudo (nome, link, descricao, modulo_id, logo_url) VALUES (?, ?, ?, ?, ?)`,
+      [nome, link || null, descricao || null, modulo_id, logoUrl]
     );
 
     await conn.commit();
@@ -90,7 +115,8 @@ const buildUpdateQuery = (body) => {
     "nome",
     "link", 
     "descricao",
-    "modulo_id"
+    "modulo_id",
+    "logo_url"
   ];
 
   const fields = [];
@@ -107,7 +133,24 @@ const buildUpdateQuery = (body) => {
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { fields, values } = buildUpdateQuery(req.body || {});
+    const body = req.body || {};
+
+    // Se vier logo_base64, envia para Cloudinary e injeta em logo_url
+    if (body.logo_base64 && typeof body.logo_base64 === "string") {
+      try {
+        const uploadRes = await cloudinary.uploader.upload(body.logo_base64, {
+          folder: "onety/conteudos",
+          resource_type: "image",
+          overwrite: true,
+        });
+        body.logo_url = uploadRes?.secure_url || uploadRes?.url || null;
+      } catch (err) {
+        console.error("Erro ao enviar logo para Cloudinary (PATCH):", err?.message || err);
+      }
+      delete body.logo_base64;
+    }
+
+    const { fields, values } = buildUpdateQuery(body);
     if (fields.length === 0) return res.status(400).json({ error: "Nenhum campo para atualizar." });
 
     const sql = `UPDATE conteudo SET ${fields.join(", ")} WHERE id = ?`;
