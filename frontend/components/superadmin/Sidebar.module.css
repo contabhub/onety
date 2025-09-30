@@ -8,7 +8,8 @@
   z-index: 1001;
   display: flex;
   flex-direction: column;
-  transition: width .15s ease-out;
+  transition: width .24s cubic-bezier(.4,0,.2,1), background .24s ease, border-color .24s ease;
+  will-change: width;
 }
 .collapsed { width: 72px !important; }
 .expanded { width: 242px; }
@@ -27,7 +28,7 @@
 .pinButton { background: none; border: none; color: var(--onity-color-text); cursor: pointer; }
 .pinButton.pinned { color: var(--onity-color-primary-hover); }
 
-.menu { margin-top: 20px; flex: 1; padding: 0 8px; }
+.menu { margin-top: 20px; flex: 1; padding: 0 8px; transition: padding .24s ease; }
 .menuItem {
   padding: 11px 12px;
   cursor: pointer;
@@ -38,8 +39,18 @@
   border-radius: 10px;
   color: var(--onity-color-text);
   text-decoration: none;
+  transition: background .15s ease;
 }
 .menuItem:hover { background: rgba(0,0,0,0.08); }
+/* Animação de rótulos no colapso */
+.menuItem span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  transition: opacity .20s cubic-bezier(.4,0,.2,1), transform .20s cubic-bezier(.4,0,.2,1), width .20s cubic-bezier(.4,0,.2,1), margin .20s cubic-bezier(.4,0,.2,1);
+}
+.collapsed .menuItem span { opacity: 0; transform: translateX(-8px); width: 0; margin: 0; }
+.expanded .menuItem span { opacity: 1; transform: translateX(0); }
 .sectionTitle { color: var(--onity-color-text); opacity: .6; font-size: 12px; margin: 16px 8px 8px; letter-spacing: 1px; }
 .collapsible { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
 .sectionCollapseIcon { transition: transform .15s ease-out; }
@@ -149,6 +160,21 @@
   cursor: pointer;
   transition: background .15s ease;
   font-size: 14px;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dropdownItem svg { flex-shrink: 0; }
+.dropdownItem span { flex: 0 0 auto; }
+
+/* Toggle menor específico da sidebar */
+.themeToggleSmall { 
+  transform: scale(0.7);
+  transform-origin: right center;
+  display: inline-flex;
+  margin-left: -45px;
 }
 
 .dropdownItem:hover {
@@ -159,6 +185,80 @@
   height: 1px;
   background: var(--onity-color-border);
   margin: 4px 0;
+}
+
+/* Modal de confirmação */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+  margin: 0 0 16px 0;
+  color: var(--onity-color-text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal p {
+  margin: 0 0 24px 0;
+  color: var(--onity-color-text);
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modalCancel,
+.modalConfirm {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.modalCancel {
+  background: transparent;
+  color: var(--onity-color-text);
+}
+
+.modalCancel:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.modalConfirm {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.modalConfirm:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
 }
 
 

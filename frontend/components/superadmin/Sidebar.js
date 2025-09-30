@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { Pin, LayoutDashboard, User, Building2, UserCog, BarChart2, FileText, Bot, Settings, Edit3, Sun, Moon, RefreshCw, ChevronDown } from 'lucide-react'
 import styles from './Sidebar.module.css'
 import ThemeToggle from '../menu/ThemeToggle'
+import EditarPerfil from '../menu/EditarPerfil'
 
 export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) {
   const router = useRouter()
@@ -13,6 +14,9 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
   const [userData, setUserData] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isLightTheme, setIsLightTheme] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false)
 
   const handleMouseEnter = () => {
     setHovered(true)
@@ -60,6 +64,21 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
     return () => { observer.disconnect(); window.removeEventListener('storage', onStorage) }
   }, [])
 
+  const handleToggleTheme = () => {
+    const input = document.getElementById('onety-theme-switch')
+    if (input) {
+      input.click()
+      return
+    }
+    try {
+      const current = document.documentElement.getAttribute('data-theme') || (isLightTheme ? 'light' : 'dark')
+      const next = current === 'light' ? 'dark' : 'light'
+      document.documentElement.setAttribute('data-theme', next)
+      localStorage.setItem('theme', next)
+      setIsLightTheme(next === 'light')
+    } catch {}
+  }
+
   const getInitials = (name) => {
     if (!name) return 'U'
     const parts = String(name).trim().split(/\s+/)
@@ -68,12 +87,47 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
     return (first + last).toUpperCase()
   }
 
+  const handleEditProfile = () => {
+    setModalOpen(true)
+    setUserMenuOpen(false)
+  }
+
   const handleLogout = () => {
+    setLogoutModalOpen(true)
+    setUserMenuOpen(false)
+  }
+
+  const confirmLogout = () => {
     try {
       localStorage.removeItem('token')
       localStorage.removeItem('userData')
     } catch {}
+    setLogoutModalOpen(false)
     router.push('/login')
+  }
+
+
+  const handleChangeCompany = () => {
+    setConfirmModalOpen(true)
+    setUserMenuOpen(false)
+  }
+
+  const confirmChangeCompany = () => {
+    try {
+      const raw = localStorage.getItem('userData')
+      const parsed = raw ? JSON.parse(raw) : {}
+      if (parsed && typeof parsed === 'object') {
+        delete parsed.EmpresaId
+        delete parsed.EmpresaNome
+        if (parsed.empresa) delete parsed.empresa
+        localStorage.setItem('userData', JSON.stringify(parsed))
+        setUserData(parsed)
+      }
+      localStorage.removeItem('selectedEmpresaId')
+      localStorage.removeItem('selectedEmpresaName')
+    } catch {}
+    setConfirmModalOpen(false)
+    router.push('/empresa')
   }
 
   const items = [
@@ -100,7 +154,9 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
       <div className={styles.topBar}>
         <div className={styles.logo}>
           <img
-            src={collapsed ? '/img/Logo-Onety-Colapsada.png' : '/img/Logo-Onety-Sidebar.png'}
+            src={collapsed
+              ? '/img/Logo-Onety-Colapsada.png'
+              : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
             alt="Onety"
             className={styles.logoImg}
             style={{
@@ -179,22 +235,20 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
         {/* Dropdown do usuário */}
         {userMenuOpen && !collapsed && (
           <div className={styles.userDropdown}>
-            <button className={styles.dropdownItem}>
+            <button className={styles.dropdownItem} onClick={handleEditProfile}>
               <Edit3 size={16} />
               <span>Editar Perfil</span>
             </button>
-            <div className={styles.dropdownItem}>
+            <div className={styles.dropdownItem} onClick={handleToggleTheme} role="button" tabIndex={0}>
               <Sun size={16} />
               <span>Mudar tema</span>
-              <ThemeToggle />
+              <div className={styles.themeToggleSmall}>
+                <ThemeToggle />
+              </div>
             </div>
-            <button className={styles.dropdownItem}>
-              <Settings size={16} />
-              <span>Configurações</span>
-            </button>
-            <button className={styles.dropdownItem}>
+            <button className={styles.dropdownItem} onClick={handleChangeCompany}>
               <RefreshCw size={16} />
-              <span>Trocar de Equipe</span>
+              <span>Voltar as Empresas</span>
             </button>
             <div className={styles.dropdownDivider} />
             <button className={styles.dropdownItem} onClick={handleLogout}>
@@ -204,6 +258,60 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
           </div>
         )}
       </div>
+
+      <EditarPerfil
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onUpdated={(u) => setUserData(u)}
+      />
+
+      {/* Modal de confirmação para trocar de empresa */}
+      {confirmModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Trocar de Empresa</h3>
+            <p>Tem certeza que deseja trocar de empresa? Você será redirecionado para a seleção de empresas.</p>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalCancel}
+                onClick={() => setConfirmModalOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.modalConfirm}
+                onClick={confirmChangeCompany}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmação para logout */}
+      {logoutModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Sair da Conta</h3>
+            <p>Tem certeza que deseja sair da sua conta? Você será redirecionado para a tela de login.</p>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalCancel}
+                onClick={() => setLogoutModalOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.modalConfirm}
+                onClick={confirmLogout}
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   )
 }
