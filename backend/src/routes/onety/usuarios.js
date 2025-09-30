@@ -84,7 +84,7 @@ router.post("/", async (req, res) => {
 
     // Verifica e-mail único
     const [exists] = await pool.query("SELECT id FROM usuarios WHERE email = ?", [email]);
-    if (exists.length > 0) return res.status(409).json({ error: "E-mail já cadastrado." });
+    if (exists.length > 0) return res.status(409).json({ error: "Usuário já cadastrado." });
 
     const senhaHash = await bcrypt.hash(String(senha), SALT_ROUNDS);
 

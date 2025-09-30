@@ -48,8 +48,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Cria nova empresa
-router.post("/", async (req, res) => {
+  // Cria nova empresa (apenas superadmin)
+const verifyToken = require("../../middlewares/auth");
+const { verificarPermissao } = require("../../middlewares/permissao");
+router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, res) => {
   let conn;
   try {
     const payload = req.body || {};
@@ -86,6 +88,14 @@ router.post("/", async (req, res) => {
       onvioCodigoAutenticacao,
       onvioMfaSecret,
     } = payload;
+
+    // Valida CNPJ único antes da transação
+    if (cnpj) {
+      const [exists] = await pool.query("SELECT id FROM empresas WHERE cnpj = ? LIMIT 1", [cnpj]);
+      if (Array.isArray(exists) && exists.length > 0) {
+        return res.status(409).json({ error: "CNPJ já cadastrado." });
+      }
+    }
 
     // Inicia transação para criar empresa e vínculos de módulos
     conn = await pool.getConnection();
@@ -157,6 +167,38 @@ router.post("/", async (req, res) => {
         [values]
       );
     }
+
+    // Cria cargos padrão: Admin e Superadmin
+    const [adminCargo] = await conn.query(
+      `INSERT INTO cargos (nome, descricao, empresa_id, permissoes, permissoes_modulos)
+       VALUES (?,?,?,?,?)`,
+      [
+        "Admin",
+        "Administrador da empresa",
+        result.insertId,
+        JSON.stringify({ adm: ["admin"] }),
+        JSON.stringify([]),
+      ]
+    );
+
+    const [superAdminCargo] = await conn.query(
+      `INSERT INTO cargos (nome, descricao, empresa_id, permissoes, permissoes_modulos)
+       VALUES (?,?,?,?,?)`,
+      [
+        "Superadmin",
+        "Acesso total ao sistema",
+        result.insertId,
+        JSON.stringify({ adm: ["superadmin"] }),
+        JSON.stringify([]),
+      ]
+    );
+
+    // Vincula usuário 3 como Superadmin na empresa criada
+    await conn.query(
+      `INSERT INTO usuarios_empresas (usuario_id, empresa_id, cargo_id, departamento_id)
+       VALUES (?,?,?,?)`,
+      [3, result.insertId, superAdminCargo.insertId, null]
+    );
 
     await conn.commit();
 
