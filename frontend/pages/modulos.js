@@ -207,6 +207,11 @@ export default function Modulos() {
     console.log('Acessando módulo:', modulo.nome || modulo.name)
   }
 
+  const goToOnboarding = (moduloId) => {
+    if (!moduloId) return
+    router.push(`/onboarding/${moduloId}`)
+  }
+
   // Itens estendidos para efeito infinito: [cloneLast, ...filtered, cloneFirst]
   const extended = useMemo(() => {
     if (filtered.length <= 1) return filtered
@@ -411,7 +416,11 @@ export default function Modulos() {
                           </div>
                           <div className={styles.previewContent}>
                             <p>{m.descricao || 'Sem descrição disponível'}</p>
-                            <div className={styles.previewPlaceholder}>
+                            <div 
+                              className={styles.previewPlaceholder}
+                              onClick={m.status === 'bloqueado' ? () => goToOnboarding(m.id) : undefined}
+                              style={m.status === 'bloqueado' ? { cursor: 'pointer' } : undefined}
+                            >
                               <div className={styles.placeholderIcon}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                   <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
@@ -419,7 +428,14 @@ export default function Modulos() {
                                 </svg>
                               </div>
                               <h3>Preview do Módulo</h3>
-                              <p>Em breve você poderá visualizar o conteúdo do módulo aqui</p>
+                              {m.status === 'bloqueado' ? (
+                                <>
+                                  <p>Assista seus conteudos para desbloquear</p>
+                                  <p style={{ fontSize: '12px', opacity: 0.8 }}>(Clique para ir para o onboarding)</p>
+                                </>
+                              ) : (
+                                <p>Em breve você poderá visualizar o conteúdo do módulo aqui</p>
+                              )}
                             </div>
                             <div className={styles.previewActions}>
                               <button 
