@@ -19,9 +19,8 @@
 }
 
 .logo {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
+  margin-left: 18px;
+  height: 52px;
 }
 
 /* No tema claro, empurra a logo um pouco para a direita */
