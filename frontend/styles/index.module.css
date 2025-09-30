@@ -21,7 +21,7 @@
 
 /* Header Styles */
 .header {
-  position: fixed;
+  position: sticky;
   top: 0;
   z-index: 50;
   align-items: center;
@@ -31,8 +31,6 @@
   box-shadow: var(--onity-elev-high);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
-  left: 0;
-  right: 0;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -54,18 +52,21 @@
 }
 
 .logoImage {
-  width: 80px;
-  transition: width 0.3s ease;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  transition: height 0.3s ease;
 }
 
 /* Logo específica para tema light */
 [data-theme="light"] .logoImage {
-  width: 80px;
+  margin-left: 4px; /* mais à esquerda no modo claro */
+  height: 52px;
 }
 
 /* Logo específica para tema dark */
 [data-theme="dark"] .logoImage {
-  width: 150px;
+  height: 40px;
 }
 
 .navLinks {
@@ -114,6 +115,20 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
+/* Dark: destacar mais o botão de Login em cima do header escuro */
+[data-theme="dark"] .ctaButton {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-low);
+}
+
+[data-theme="dark"] .ctaButton:hover {
+  transform: translateY(-4px);
+  background: var(--onity-color-primary); /* evita azul claro no hover */
+  box-shadow: var(--onity-elev-med);
+}
+
 /* Hero Section */
 .hero {
   padding: 8rem 0 4rem;
@@ -133,9 +148,7 @@
   min-height: 40vh;
 }
 
-.heroText {
-  /* Estilos para a coluna esquerda */
-}
+
 
 .heroDescription {
   display: flex;
@@ -232,10 +245,7 @@
   transform: translateY(-4px);
 }
 
-[data-theme="dark"] .secondaryButton {
-  /* background: #1e293b; */
-  /* border-color: var(--onity-color-primary); */
-}
+
 
 [data-theme="dark"] .secondaryButton:hover {
   background: var(--onity-color-primary);

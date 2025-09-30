@@ -29,11 +29,35 @@
   padding: 16px 18px; /* aumenta a altura */
   border: 1px solid var(--onity-color-border);
   border-radius: 12px;
-  max-width: 460px; /* ligeiramente mais estreita */
-  margin: 0 auto 24px auto;
+  width: 520px; /* mais larga para melhor usabilidade */
+  max-width: 520px;
+  margin: 0; /* não centralizar quando lado a lado */
   background: rgba(0,0,0,0.4);
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* mantém lado a lado, próximos e centralizados */
+  gap: 12px;
+  margin: 0 auto 24px auto;
+  max-width: 1200px; /* alinha com o grid */
+  width: 100%;
+  padding: 0 16px; /* respiro lateral */
+}
+
+@media (max-width: 768px) {
+  .searchRow {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .searchBox {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 .searchBox input {
@@ -149,6 +173,40 @@
   border-radius: 10px;
   cursor: pointer;
   font-weight: 700;
+}
+
+.controlBtn {
+  padding: 16px 18px; /* mesma altura visual da searchBox */
+  border-radius: 12px; /* igual à searchBox */
+  border: 1px solid var(--onity-color-border);
+  background: rgba(0,0,0,0.4);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  display: inline-flex;
+  align-items: center;
+  height: 50px; /* garante altura consistente em diferentes navegadores */
+  line-height: 1;
+}
+
+.controlBtn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--onity-elev-high), 0 0 20px rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+/* Tema claro: botão com mesmo visual da searchBox */
+:root[data-theme='light'] .controlBtn {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+:root[data-theme='light'] .controlBtn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
 }
 
 .loading {
