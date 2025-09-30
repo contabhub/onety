@@ -48,12 +48,12 @@ router.post("/", async (req, res) => {
     const payload = req.body || {};
 
     // Campos obrigatórios
-    const { conteudo_id, empresa_id, viewer_id } = payload;
+    const { grupo_conteudo_id, empresa_id, viewer_id } = payload;
     
     // Validação básica
-    if (!conteudo_id || !empresa_id || !viewer_id) {
+    if (!grupo_conteudo_id || !empresa_id || !viewer_id) {
       return res.status(400).json({ 
-        error: "Campos obrigatórios: conteudo_id, empresa_id e viewer_id" 
+        error: "Campos obrigatórios: grupo_conteudo_id, empresa_id e viewer_id" 
       });
     }
 
@@ -65,9 +65,9 @@ router.post("/", async (req, res) => {
     await conn.beginTransaction();
 
     const [result] = await conn.query(
-      `INSERT INTO empresa_conteudo (conteudo_id, empresa_id, viewer_id, prova_id, concluido, prova) VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO empresa_conteudo (grupo_conteudo_id, empresa_id, viewer_id, prova_id, concluido, prova) VALUES (?, ?, ?, ?, ?, ?)`,
       [
-        conteudo_id, 
+        grupo_conteudo_id, 
         empresa_id, 
         viewer_id, 
         prova_id || null, 
@@ -94,7 +94,7 @@ router.post("/", async (req, res) => {
 // Atualiza empresa_conteudo por ID (parcial - PATCH e também aceita PUT)
 const buildUpdateQuery = (body) => {
   const allowed = [
-    "conteudo_id",
+    "grupo_conteudo_id",
     "empresa_id", 
     "viewer_id",
     "prova_id",
@@ -178,17 +178,17 @@ router.get("/empresa/:empresa_id", async (req, res) => {
   }
 });
 
-// Rota especial: Buscar por conteudo_id
-router.get("/conteudo/:conteudo_id", async (req, res) => {
+// Rota especial: Buscar por grupo_conteudo_id
+router.get("/grupo-conteudo/:grupo_conteudo_id", async (req, res) => {
   try {
-    const { conteudo_id } = req.params;
+    const { grupo_conteudo_id } = req.params;
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const offset = (page - 1) * limit;
 
     const [rows] = await pool.query(
-      "SELECT SQL_CALC_FOUND_ROWS * FROM empresa_conteudo WHERE conteudo_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
-      [conteudo_id, limit, offset]
+      "SELECT SQL_CALC_FOUND_ROWS * FROM empresa_conteudo WHERE grupo_conteudo_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+      [grupo_conteudo_id, limit, offset]
     );
     const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");
 
@@ -200,7 +200,7 @@ router.get("/conteudo/:conteudo_id", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Erro ao buscar empresa_conteudo por conteúdo." });
+    res.status(500).json({ error: "Erro ao buscar empresa_conteudo por grupo de conteúdo." });
   }
 });
 
