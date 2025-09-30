@@ -24,14 +24,8 @@ export default function Home() {
         console.log('Theme detected:', theme); // Debug
         setIsLightTheme(theme === 'light');
 
-        // Define a logo baseada no tema
-        if (theme === 'dark') {
-          console.log('Setting dark logo'); // Debug
-          setLogoSrc('/img/Logo-Onety.png');
-        } else {
-          console.log('Setting light logo'); // Debug
-          setLogoSrc('/img/Logo-Onety-Preta.png');
-        }
+        // Mesma lógica do Header: dark usa '/img/onety.png', light usa '/img/Logo-Onety-Preta.png'
+        setLogoSrc(theme === 'dark' ? '/img/onety.png' : '/img/Logo-Onety-Preta.png');
       } catch (error) {
         console.error('Error resolving theme:', error);
         setIsLightTheme(false);
@@ -96,13 +90,7 @@ export default function Home() {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       console.log('Current theme for logo update:', currentTheme);
 
-      if (currentTheme === 'dark') {
-        console.log('Setting dark logo (white)');
-        setLogoSrc('/img/Logo-Onety.png');
-      } else {
-        console.log('Setting light logo (dark)');
-        setLogoSrc('/img/Logo-Onety-Preta.png');
-      }
+      setLogoSrc(currentTheme === 'dark' ? '/img/onety.png' : '/img/Logo-Onety-Preta.png');
     };
 
     // Verificar tema atual imediatamente
@@ -549,7 +537,7 @@ export default function Home() {
           <div className={styles.footerContent}>
             <div className={styles.footerLogo}>
               <img
-                src="/img/Logo-Onety.png"
+                src="/img/onety.png"
                 alt="Onety Logo"
                 className={styles.footerLogoImage}
               />

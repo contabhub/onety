@@ -80,7 +80,7 @@ export default function Header() {
     return (first + last).toUpperCase()
   }
 
-  const logoSrc = isLightTheme ? '/img/Logo-Onety-Preta.png' : '/img/Logo-Onety.png'
+  const logoSrc = isLightTheme ? '/img/Logo-Onety-Preta.png' : '/img/onety.png'
 
   return (
     <header className={styles.header}>

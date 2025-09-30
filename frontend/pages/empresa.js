@@ -15,6 +15,7 @@ export default function Empresa() {
   const [error, setError] = useState('')
   const [companies, setCompanies] = useState([])
   const [hasLoaded, setHasLoaded] = useState(false)
+  const [isSuperadmin, setIsSuperadmin] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -37,6 +38,22 @@ export default function Empresa() {
     const onStorage = (e) => { if (e.key === 'theme') resolveTheme() }
     window.addEventListener('storage', onStorage)
     return () => { observer.disconnect(); window.removeEventListener('storage', onStorage) }
+  }, [])
+
+  // Detecta se é superadmin a partir do token (payload JWT)
+  useEffect(() => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      if (!token) return
+      const payloadBase64 = token.split('.')[1] || ''
+      const payloadJson = payloadBase64 ? atob(payloadBase64) : '{}'
+      const payload = JSON.parse(payloadJson)
+      const permissoes = payload?.permissoes || {}
+      const isSA = Array.isArray(permissoes?.adm) && permissoes.adm.includes('superadmin')
+      setIsSuperadmin(!!isSA)
+    } catch {
+      setIsSuperadmin(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -168,16 +185,27 @@ export default function Empresa() {
             <h1>Escolha sua Empresa</h1>
           </div>
 
-          <div className={styles.searchBox}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
-            </svg>
-            <input
-              placeholder="Buscar empresas..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className={styles.searchRow}>
+            <div className={styles.searchBox}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.3-4.3"/>
+              </svg>
+              <input
+                placeholder="Buscar empresas..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            {isSuperadmin && (
+              <button
+                className={styles.controlBtn}
+                onClick={() => router.push('/superadmin')}
+                type="button"
+              >
+                Painel de Controle
+              </button>
+            )}
           </div>
 
 
