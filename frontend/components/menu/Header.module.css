@@ -19,9 +19,14 @@
 }
 
 .logo {
-  height: 28px;
+  height: 40px;
   width: auto;
   object-fit: contain;
+}
+
+/* No tema claro, empurra a logo um pouco para a direita */
+:root[data-theme='light'] .logo {
+  margin-left: 15px;
 }
 
 /* removed alternate logo */

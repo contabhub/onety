@@ -19,6 +19,7 @@ export default function Modulos() {
   const transitionMs = 380 // transição normal
   const edgeTransitionMs = 750 // transição nas extremidades (último/primeiro)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [viewMode, setViewMode] = useState('carousel') // carousel | grid | list
   const router = useRouter()
 
   useEffect(() => {
@@ -319,11 +320,55 @@ export default function Modulos() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <div className={styles.viewToggle} aria-label="Alternar visualização">
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'carousel' ? styles.active : ''}`}
+              title="Carrossel"
+              onClick={() => setViewMode('carousel')}
+            >
+              {/* ícone grid compacto para carrossel */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </button>
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
+              title="Lista"
+              onClick={() => setViewMode('list')}
+            >
+              {/* ícone lista */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <circle cx="4" cy="6" r="1"/>
+                <circle cx="4" cy="12" r="1"/>
+                <circle cx="4" cy="18" r="1"/>
+              </svg>
+            </button>
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'grid' ? styles.active : ''}`}
+              title="Cards"
+              onClick={() => setViewMode('grid')}
+            >
+              {/* ícone de cards/quadrados */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="8" height="7" rx="2"/>
+                <rect x="13" y="4" width="8" height="7" rx="2"/>
+                <rect x="3" y="13" width="8" height="7" rx="2"/>
+                <rect x="13" y="13" width="8" height="7" rx="2"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         {loading ? (
           <div className={styles.loading}>Carregando...</div>
         ) : filtered.length > 0 ? (
+          viewMode === 'carousel' ? (
           <div className={styles.carouselContainer}>
             {/* Carrossel de módulos */}
             <div className={styles.carousel}>
@@ -425,8 +470,7 @@ export default function Modulos() {
                 </svg>
               </button>
             </div>
-
-            {/* Indicadores */}
+            {/* Indicadores - apenas no carrossel */}
             <div className={styles.indicators}>
               {filtered.map((_, index) => (
                 <button
@@ -441,6 +485,69 @@ export default function Modulos() {
             </div>
 
           </div>
+          ) : viewMode === 'grid' ? (
+            <div className={`${styles.grid}`}>
+              {filtered.map((m) => (
+                <div key={m.id} className={styles.card}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.moduleIcon}>{getModuleLogo(m)}</div>
+                    <div className={styles.title}>{m.nome || m.name}</div>
+                  </div>
+                  <div className={styles.meta}>
+                    <div className={styles.metaItem}>
+                      <span>{m.descricao || 'Sem descrição'}</span>
+                    </div>
+                    <div className={styles.metaItem}>
+                      <div 
+                        className={styles.statusBadge}
+                        style={{ backgroundColor: getStatusColor(m.status) }}
+                      >
+                        {getStatusText(m.status)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.cardFooter}>
+                    <button 
+                      className={styles.accessBtn}
+                      onClick={() => handleAccessModulo(m)}
+                      disabled={m.status === 'bloqueado'}
+                    >
+                      {m.status === 'bloqueado' ? 'Módulo Bloqueado' : 'Acessar'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.list}>
+              {filtered.map((m) => (
+                <div key={m.id} className={styles.listItem}>
+                  <div className={styles.listMain} onClick={() => handleAccessModulo(m)}>
+                    <div className={styles.moduleIcon}>{getModuleLogo(m)}</div>
+                    <div className={styles.listTexts}>
+                      <div className={styles.title}>{m.nome || m.name}</div>
+                      <div className={styles.listDescription}>{m.descricao || 'Sem descrição'}</div>
+                    </div>
+                  </div>
+                  <div className={styles.listMeta}>
+                    <div 
+                      className={styles.statusBadge}
+                      style={{ backgroundColor: getStatusColor(m.status) }}
+                    >
+                      {getStatusText(m.status)}
+                    </div>
+                    <button 
+                      className={styles.accessBtn}
+                      onClick={() => handleAccessModulo(m)}
+                      disabled={m.status === 'bloqueado'}
+                    >
+                      {m.status === 'bloqueado' ? 'Bloqueado' : 'Acessar'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : (
           <div className={styles.noResults}>
             <p>Nenhum módulo encontrado</p>

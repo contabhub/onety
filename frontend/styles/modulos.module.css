@@ -159,30 +159,33 @@
   }
 }
 
-/* Tema claro - sparkles mais escuros */
+/* Tema claro - estrelas em azul bebê um pouco mais fortes */
 :root[data-theme='light'] .page::before {
-  background: radial-gradient(
-      2px 2px at 20px 30px,
-      rgba(3, 8, 66, 0.7),
-      transparent
-    ),
-    radial-gradient(2px 2px at 40px 70px, rgba(3, 8, 66, 0.6), transparent),
-    radial-gradient(1px 1px at 90px 40px, rgba(3, 8, 66, 0.8), transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(3, 8, 66, 0.65), transparent),
-    radial-gradient(2px 2px at 160px 30px, rgba(3, 8, 66, 0.6), transparent);
+  background: 
+    radial-gradient(2px 2px at 20px 30px, rgba(216, 228, 254, 0.78), transparent),
+    radial-gradient(2px 2px at 20px 30px, rgba(216, 228, 254, 0.78), transparent),
+    radial-gradient(2px 2px at 20px 30px, rgba(216, 228, 254, 0.78), transparent),
+    radial-gradient(2px 2px at 20px 30px, rgba(216, 228, 254, 0.78), transparent),
+    radial-gradient(2px 2px at 20px 30px, rgba(136, 176, 255, 0.78), transparent),
+    radial-gradient(2px 2px at 110px 20px, rgba(169, 200, 255, 0.58), transparent),
+    radial-gradient(1px 1px at 150px 60px, rgba(169, 200, 255, 0.78), transparent),
+    radial-gradient(2px 2px at 20px 30px, rgba(136, 176, 255, 0.78), transparent),
+    radial-gradient(2px 2px at 30px 90px, rgba(169, 200, 255, 0.74), transparent);
+    
+  background-size: 180px 90px;
 }
 
 :root[data-theme='light'] .page::after {
   background: linear-gradient(
       45deg,
       transparent 49%,
-      rgba(46, 74, 255, 0.05) 50%,
+      rgba(46, 74, 255, 0.08) 50%,
       transparent 51%
     ),
     linear-gradient(
       -45deg,
       transparent 49%,
-      rgba(3, 8, 66, 0.04) 50%,
+      rgba(3, 8, 66, 0.06) 50%,
       transparent 51%
     );
   background-size: 80px 80px;
@@ -239,8 +242,40 @@
   opacity: 0.8;
 }
 
+/* Toggle de visualização */
+.viewToggle {
+  display: inline-flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.toggleBtn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleBtn:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.toggleBtn.active {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
 /* Tema claro: busca mais clara como em empresa */
-::root[data-theme='light'] .searchBox {
+:root[data-theme='light'] .searchBox {
   background: rgba(255, 255, 255, 0.65);
   border-color: var(--onity-color-border);
 }
@@ -408,6 +443,57 @@
   grid-column: 1 / -1;
   font-size: 18px;
   padding: var(--onity-space-xl);
+}
+
+/* Lista */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 1000px;
+  margin: 0 auto var(--onity-space-xl) auto;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-m);
+  padding: 14px 16px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  background: var(--onity-color-surface);
+}
+
+.listMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+/* Ícone um pouco maior somente na visualização em lista */
+.list .moduleIcon {
+  width: 100px;
+  height: 30px;
+}
+
+.listTexts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.listDescription {
+  color: var(--onity-color-text);
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+.listMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Carrossel */
