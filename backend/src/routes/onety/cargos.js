@@ -115,8 +115,37 @@ router.get(
   }
 );
 
-// Atualizar cargo
-router.put(
+// Função para construir query de atualização
+const buildUpdateQuery = (body) => {
+  const allowed = [
+    "nome",
+    "descricao",
+    "permissoes",
+    "permissoes_modulos"
+  ];
+
+  const fields = [];
+  const values = [];
+  
+  for (const key of allowed) {
+    if (Object.prototype.hasOwnProperty.call(body, key)) {
+      fields.push(`${key} = ?`);
+      if (key === "permissoes" || key === "permissoes_modulos") {
+        values.push(JSON.stringify(body[key] || (key === "permissoes" ? {} : [])));
+      } else {
+        values.push(body[key]);
+      }
+    }
+  }
+  
+  // Sempre adiciona atualizado_em
+  fields.push("atualizado_em = NOW()");
+  
+  return { fields, values };
+};
+
+// Atualizar cargo (parcial - PATCH)
+router.patch(
   "/:id",
   verifyToken,
   verificarPermissao("cargos.editar"),
@@ -124,27 +153,44 @@ router.put(
     try {
       const { id } = req.params;
       const empresa_id = Number(getEmpresaId(req));
-      const { nome, descricao = null, permissoes = {}, permissoes_modulos = [] } = req.body || {};
+      
       if (!empresa_id) return res.status(400).json({ error: "Informe empresa_id (no body)." });
 
-      await pool.query(
-        `UPDATE cargos SET nome = ?, descricao = ?, permissoes = ?, permissoes_modulos = ?, atualizado_em = NOW()
-         WHERE id = ? AND empresa_id = ?`,
-        [
-          nome,
-          descricao,
-          JSON.stringify(permissoes || {}),
-          JSON.stringify(permissoes_modulos || []),
-          id,
-          empresa_id,
-        ]
-      );
+      const { fields, values } = buildUpdateQuery(req.body || {});
+      
+      if (fields.length === 1) { // Apenas atualizado_em foi adicionado
+        return res.status(400).json({ error: "Nenhum campo para atualizar." });
+      }
 
-      res.json({ message: "Cargo atualizado com sucesso!" });
+      const sql = `UPDATE cargos SET ${fields.join(", ")} WHERE id = ? AND empresa_id = ?`;
+      await pool.query(sql, [...values, id, empresa_id]);
+
+      const [updated] = await pool.query("SELECT * FROM cargos WHERE id = ? AND empresa_id = ?", [id, empresa_id]);
+      if (updated.length === 0) return res.status(404).json({ error: "Cargo não encontrado." });
+
+      const c = updated[0];
+      c.permissoes = typeof c.permissoes === "string" ? JSON.parse(c.permissoes || "{}") : c.permissoes || {};
+      c.permissoes_modulos = typeof c.permissoes_modulos === "string" 
+        ? JSON.parse(c.permissoes_modulos || "[]") 
+        : c.permissoes_modulos || [];
+
+      res.json(c);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Erro interno ao atualizar cargo." });
     }
+  }
+);
+
+// Atualizar cargo (completo - PUT)
+router.put(
+  "/:id",
+  verifyToken,
+  verificarPermissao("cargos.editar"),
+  async (req, res) => {
+    // Redireciona para a mesma lógica do PATCH
+    req.method = "PATCH";
+    return router.handle(req, res);
   }
 );
 
