@@ -31,7 +31,7 @@
   --onity-font-family-sans: Inter, "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
 
   /* Light palette (reference) */
-  --onity-light-primary-deep: #030842;
+  --onity-light-primary-deep: #0308423c;
   --onity-light-primary-light: #2E4AFF;
   --onity-light-bg: #F5F7FA;
   --onity-light-surface: #FFFFFF;
@@ -41,8 +41,8 @@
   /* Dark palette (reference) */
   --onity-dark-primary-deep: #030842;
   --onity-dark-primary-light: #3B6EFF;
-  --onity-dark-bg: #030842;
-  --onity-dark-surface: #1A1F3D;
+  --onity-dark-bg: #0308425d;
+  --onity-dark-surface: #1a1f3da8;
   --onity-dark-text: #E1E4F2;
   --onity-dark-border: #303651;
 
@@ -241,7 +241,9 @@ small, .caption {
 .modal__overlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 8, 66, 0.6);
+  background: rgba(3, 8, 66, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 .modal__container {
   background: var(--onity-color-surface);
