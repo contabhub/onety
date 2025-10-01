@@ -110,24 +110,6 @@ export default function Header({ sidebarCollapsed }) {
       </div>
       <div className={styles.right}>
         <ThemeToggle />
-        <div className={styles.user} onClick={() => setMenuOpen((v) => !v)}>
-          {user?.avatar_url ? (
-            <img src={user.avatar_url} alt={user?.nome || user?.name || 'Usuário'} className={styles.avatar} />
-          ) : (
-            <div className={styles.avatarFallback}>{getInitials(user?.nome || user?.name)}</div>
-          )}
-          <span className={styles.userName}>{user?.nome || user?.name || user?.email || 'Usuário'}</span>
-          <svg className={styles.caret} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </div>
-        {menuOpen && (
-          <div className={styles.dropdown} onMouseLeave={() => setMenuOpen(false)}>
-            {router.pathname === '/modulos' && (
-              <button className={styles.dropdownItem} onClick={handleChangeCompany}>Trocar de empresa</button>
-            )}
-            <button className={styles.dropdownItem} onClick={handleEditProfile}>Editar perfil</button>
-            <button className={styles.dropdownItem} onClick={handleLogout}>Sair</button>
-          </div>
-        )}
       </div>
     </header>
   )
