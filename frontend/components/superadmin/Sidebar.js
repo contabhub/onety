@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Pin, LayoutDashboard, User, Building2, UserCog, BarChart2, FileText, Bot, Settings, Edit3, Sun, Moon, RefreshCw, ChevronDown } from 'lucide-react'
+import { Pin, LayoutDashboard, User, Building2, Edit3, Sun, RefreshCw, ChevronDown } from 'lucide-react'
 import styles from './Sidebar.module.css'
 import ThemeToggle from '../menu/ThemeToggle'
 import EditarPerfil from '../menu/EditarPerfil'
@@ -9,8 +9,6 @@ import EditarPerfil from '../menu/EditarPerfil'
 export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) {
   const router = useRouter()
   const [hovered, setHovered] = useState(false)
-  const [cadastroOpen, setCadastroOpen] = useState(true)
-  const [relatoriosOpen, setRelatoriosOpen] = useState(true)
   const [userData, setUserData] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isLightTheme, setIsLightTheme] = useState(false)
@@ -131,19 +129,10 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
   }
 
   const items = [
-    { name: 'Visão Geral', icon: <LayoutDashboard size={18} />, path: '/superadmin' },
-    { name: 'Usuários', icon: <User size={18} />, path: '/superadmin/usuarios' },
-    { name: 'Empresas', icon: <Building2 size={18} />, path: '/superadmin/empresas' },
-    { name: 'Cargos', icon: <UserCog size={18} />, path: '/superadmin/cargos' },
-    { name: 'Relatórios', isSection: true },
-    { name: 'Relatórios', icon: <BarChart2 size={18} />, path: '/superadmin/relatorios' },
-    { name: 'Logs', icon: <FileText size={18} />, path: '/superadmin/logs' },
-    { name: 'IA', isSection: true },
-    { name: 'Oráculo', icon: <Bot size={18} />, path: '/superadmin/oraculo' },
+    { name: 'Dashboard', icon: <LayoutDashboard size={22} />, path: '/superadmin' },
+    { name: 'Empresas', icon: <Building2 size={22} />, path: '/superadmin/empresas' },
+    { name: 'Usuários', icon: <User size={22} />, path: '/superadmin/usuarios' },
   ]
-
-  let inCadastro = false
-  let inRel = false
 
   return (
     <aside
@@ -168,38 +157,18 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
         </div>
         {!collapsed && (
           <button className={`${styles.pinButton} ${pinned ? styles.pinned : ''}`} onClick={handlePin} title={pinned ? 'Desafixar' : 'Fixar'}>
-            <Pin size={16} />
+            <Pin size={20} />
           </button>
         )}
       </div>
 
       <nav className={styles.menu}>
-        {items.map((it, idx) => {
-          if (it.isSection && it.name === 'Relatórios') {
-            inCadastro = false
-            inRel = true
-            return !collapsed && (
-              <div key={`sec-${idx}`} className={`${styles.sectionTitle} ${styles.collapsible}`} onClick={() => setRelatoriosOpen(v => !v)}>
-                {it.name}
-                <span className={`${styles.sectionCollapseIcon} ${!relatoriosOpen ? styles.collapsed : ''}`}></span>
-              </div>
-            )
-          }
-          if (it.isSection) {
-            inCadastro = false
-            inRel = false
-            return !collapsed && (
-              <div key={`sec-${idx}`} className={styles.sectionTitle}>{it.name}</div>
-            )
-          }
-          if (inRel && !relatoriosOpen) return null
-          return (
-            <Link key={it.name + idx} href={it.path} className={styles.menuItem}>
-              {it.icon}
-              {!collapsed && <span>{it.name}</span>}
-            </Link>
-          )
-        })}
+        {items.map((item, idx) => (
+          <Link key={item.name + idx} href={item.path} className={styles.menuItem}>
+            {item.icon}
+            {!collapsed && <span>{item.name}</span>}
+          </Link>
+        ))}
       </nav>
 
       {/* Seção do usuário na parte inferior */}
@@ -228,7 +197,7 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
             </div>
           )}
           {!collapsed && (
-            <ChevronDown size={16} className={`${styles.chevron} ${userMenuOpen ? styles.rotated : ''}`} />
+            <ChevronDown size={20} className={`${styles.chevron} ${userMenuOpen ? styles.rotated : ''}`} />
           )}
         </div>
 
@@ -236,23 +205,23 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
         {userMenuOpen && !collapsed && (
           <div className={styles.userDropdown}>
             <button className={styles.dropdownItem} onClick={handleEditProfile}>
-              <Edit3 size={16} />
+              <Edit3 size={20} />
               <span>Editar Perfil</span>
             </button>
             <div className={styles.dropdownItem} onClick={handleToggleTheme} role="button" tabIndex={0}>
-              <Sun size={16} />
+              <Sun size={20} />
               <span>Mudar tema</span>
               <div className={styles.themeToggleSmall}>
                 <ThemeToggle />
               </div>
             </div>
             <button className={styles.dropdownItem} onClick={handleChangeCompany}>
-              <RefreshCw size={16} />
+              <RefreshCw size={20} />
               <span>Voltar as Empresas</span>
             </button>
             <div className={styles.dropdownDivider} />
             <button className={styles.dropdownItem} onClick={handleLogout}>
-              <User size={16} />
+              <User size={20} />
               <span>Sair</span>
             </button>
           </div>

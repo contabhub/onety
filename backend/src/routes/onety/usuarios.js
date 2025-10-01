@@ -29,6 +29,57 @@ const ALLOWED_UPDATE_FIELDS = [
   // senha é tratada separadamente para aplicar hash
 ];
 
+// Estatísticas de usuários para dashboard
+router.get("/estatisticas", async (req, res) => {
+  try {
+    // Total de usuários
+    const [totalUsers] = await pool.query("SELECT COUNT(*) as total FROM usuarios");
+    
+    // Usuários ativos (status = 'ativo')
+    const [activeUsers] = await pool.query("SELECT COUNT(*) as ativos FROM usuarios WHERE status = 'ativo'");
+    
+    // Usuários criados recentemente (usando ID como proxy para data)
+    const [recentUsers] = await pool.query(
+      "SELECT COUNT(*) as recentes FROM usuarios WHERE id > (SELECT MAX(id) - 10 FROM usuarios)"
+    );
+
+    res.json({
+      total: totalUsers[0]?.total || 0,
+      ativos: activeUsers[0]?.ativos || 0,
+      recentes: recentUsers[0]?.recentes || 0
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar estatísticas de usuários." });
+  }
+});
+
+// Usuários recentes para dashboard
+router.get("/recentes", async (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 5);
+    
+    const [rows] = await pool.query(`
+      SELECT 
+        u.id,
+        u.nome,
+        u.email,
+        u.criado_em,
+        COUNT(ue.empresa_id) as empresas
+      FROM usuarios u
+      LEFT JOIN usuarios_empresas ue ON u.id = ue.usuario_id
+      GROUP BY u.id, u.nome, u.email, u.criado_em
+      ORDER BY u.id DESC
+      LIMIT ?
+    `, [limit]);
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar usuários recentes." });
+  }
+});
+
 // Lista usuários com paginação
 router.get("/", async (req, res) => {
   try {

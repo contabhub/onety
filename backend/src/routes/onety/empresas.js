@@ -3,6 +3,62 @@ const pool = require("../../config/database");
 
 const router = express.Router();
 
+// Estatísticas de empresas para dashboard
+router.get("/estatisticas", async (req, res) => {
+  try {
+    // Total de empresas
+    const [totalEmpresas] = await pool.query("SELECT COUNT(*) as total FROM empresas");
+    
+    // Empresas ativas (status = 'ativo' ou similar)
+    const [activeEmpresas] = await pool.query("SELECT COUNT(*) as ativas FROM empresas WHERE status = 'ativo'");
+    
+    // Empresas criadas recentemente (usando ID como proxy para data)
+    const [recentEmpresas] = await pool.query(
+      "SELECT COUNT(*) as recentes FROM empresas WHERE id > (SELECT MAX(id) - 10 FROM empresas)"
+    );
+
+    // Total de membros em todas as empresas
+    const [totalMembros] = await pool.query(
+      "SELECT COUNT(*) as membros FROM usuarios_empresas"
+    );
+
+    res.json({
+      total: totalEmpresas[0]?.total || 0,
+      ativas: activeEmpresas[0]?.ativas || 0,
+      recentes: recentEmpresas[0]?.recentes || 0,
+      membros: totalMembros[0]?.membros || 0
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar estatísticas de empresas." });
+  }
+});
+
+// Empresas recentes para dashboard
+router.get("/recentes", async (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 5);
+    
+    const [rows] = await pool.query(`
+      SELECT 
+        e.id,
+        e.nome,
+        e.criado_em,
+        COUNT(ue.id) as funcionarios
+      FROM empresas e
+      LEFT JOIN usuarios_empresas ue ON e.id = ue.empresa_id
+      GROUP BY e.id, e.nome, e.criado_em
+      ORDER BY e.id DESC
+      LIMIT ?
+    `, [limit]);
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar empresas recentes." });
+  }
+});
+
 // Lista empresas com paginação simples 
 router.get("/", async (req, res) => {
   try {
