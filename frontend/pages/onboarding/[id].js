@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import OnboardingSidebar from '../../components/onety/onboarding/Sidebar'
 import ConteudoList from '../../components/onety/onboarding/ConteudoList'
+import ProvaList from '../../components/onety/onboarding/ProvaList'
 import ConclusoesList from '../../components/onety/onboarding/ConclusoesList'
 import styles from '../../styles/onety/onboarding/onboarding.module.css'
 import Topbar from '../../components/onety/onboarding/Topbar'
@@ -33,6 +34,7 @@ export default function OnboardingPage() {
           />
           <main className={styles.main}>
             {tab === 'conteudo' && <ConteudoList moduloId={id} />}
+            {tab === 'provas' && <ProvaList moduloId={id} />}
             {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
           </main>
         </div>
