@@ -414,7 +414,7 @@ export default function SuperadminHome() {
                       transition: 'background 0.2s ease',
                       cursor: 'pointer',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--onity-color-bg)'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--onity-color-surface)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <div style={{
@@ -546,7 +546,7 @@ export default function SuperadminHome() {
                       transition: 'background 0.2s ease',
                       cursor: 'pointer',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--onity-color-bg)'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--onity-color-surface)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <div style={{

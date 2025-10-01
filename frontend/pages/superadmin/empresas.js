@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Building2, Search, Filter, Eye, Edit, Trash2, Calendar, Users } from 'lucide-react'
 import Sidebar from '../../components/onety/superadmin/Sidebar'
+import EditarEmpresa from '../../components/onety/superadmin/EditarEmpresa'
 import styles from '../../styles/onety/superadmin/empresas.module.css'
 
 export default function EmpresasPage() {
@@ -13,6 +14,8 @@ export default function EmpresasPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [totalEmpresas, setTotalEmpresas] = useState(0)
+  const [editingEmpresa, setEditingEmpresa] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   // Persistência simples do estado da sidebar
   useEffect(() => {
@@ -117,6 +120,26 @@ export default function EmpresasPage() {
     )
   })
 
+  // Handlers
+  const handleEditEmpresa = (empresa) => {
+    setEditingEmpresa(empresa)
+    setShowEditModal(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false)
+    setEditingEmpresa(null)
+  }
+
+  const handleEmpresaUpdated = (updatedEmpresa) => {
+    // Atualiza a empresa na lista local
+    setEmpresas(prev => 
+      prev.map(empresa => 
+        empresa.id === updatedEmpresa.id ? { ...empresa, ...updatedEmpresa } : empresa
+      )
+    )
+  }
+
   if (!isAllowed) return null
 
   return (
@@ -200,12 +223,18 @@ export default function EmpresasPage() {
                             src={empresa.logo_url} 
                             alt={empresa.nome}
                             className={styles.logoImage}
+                            onError={(e) => {
+                              e.target.style.display = 'none'
+                              e.target.nextSibling.style.display = 'flex'
+                            }}
                           />
-                        ) : (
-                          <div className={styles.logoPlaceholder}>
-                            <Building2 size={24} color="white" />
-                          </div>
-                        )}
+                        ) : null}
+                        <div 
+                          className={styles.logoPlaceholder}
+                          style={{ display: empresa.logo_url ? 'none' : 'flex' }}
+                        >
+                          <Building2 size={32} color="white" />
+                        </div>
                       </div>
                       <div className={styles.empresaInfo}>
                         <div className={styles.empresaNome}>
@@ -221,7 +250,7 @@ export default function EmpresasPage() {
 
                     {/* ID */}
                     <div className={styles.colId}>
-                      #{empresa.id}
+                      {empresa.id}
                     </div>
 
                     {/* Tributação */}
@@ -258,6 +287,7 @@ export default function EmpresasPage() {
                       <button
                         className={`${styles.actionButton} ${styles.actionButtonEdit}`}
                         title="Editar"
+                        onClick={() => handleEditEmpresa(empresa)}
                       >
                         <Edit size={18} />
                       </button>
@@ -275,6 +305,14 @@ export default function EmpresasPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal de Edição */}
+      <EditarEmpresa
+        open={showEditModal}
+        onClose={handleCloseEditModal}
+        empresa={editingEmpresa}
+        onUpdated={handleEmpresaUpdated}
+      />
     </div>
   )
 }
