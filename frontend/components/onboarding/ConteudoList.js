@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from './ConteudoList.module.css'
-import GrupoConteudoViewer from './GrupoConteudoViewer'
 
 export default function ConteudoList({ moduloId }) {
   const router = useRouter()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedGrupo, setSelectedGrupo] = useState(null)
   const [gruposComProgresso, setGruposComProgresso] = useState([])
 
   useEffect(() => {
@@ -103,44 +101,14 @@ export default function ConteudoList({ moduloId }) {
     }
   }
 
-  // Verificar se há um grupo na URL ao carregar
-  useEffect(() => {
-    const { grupo } = router.query
-    if (grupo && gruposComProgresso.length > 0) {
-      const grupoEncontrado = gruposComProgresso.find(item => item.id.toString() === grupo.toString())
-      if (grupoEncontrado) {
-        setSelectedGrupo(grupoEncontrado)
-      }
-    }
-  }, [router.query, gruposComProgresso])
-
-  // Função para clicar em um grupo
+  // Função para clicar em um grupo - navega para a página dedicada
   const handleGrupoClick = (grupo) => {
-    setSelectedGrupo(grupo)
-    // Atualizar URL com o ID do grupo
-    router.push(`/onboarding/${moduloId}?grupo=${grupo.id}`, undefined, { shallow: true })
-  }
-
-  // Função para voltar à lista de grupos
-  const handleBack = () => {
-    setSelectedGrupo(null)
-    // Limpar query parameter da URL
-    router.push(`/onboarding/${moduloId}`, undefined, { shallow: true })
+    router.push(`/onboarding/${moduloId}/grupo/${grupo.id}`)
   }
 
   if (loading) return <div className={styles.placeholder}>Carregando conteúdos...</div>
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
   if (!gruposComProgresso.length) return <div className={styles.placeholder}>Nenhum conteúdo cadastrado.</div>
-
-  // Se um grupo foi selecionado, mostra o visualizador de conteúdos
-  if (selectedGrupo) {
-    return (
-      <GrupoConteudoViewer 
-        grupo={selectedGrupo} 
-        onBack={handleBack} 
-      />
-    )
-  }
 
   // Lista de grupos de conteúdo
   return (

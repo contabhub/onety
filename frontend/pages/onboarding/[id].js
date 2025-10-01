@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import OnboardingSidebar from '../../components/onboarding/Sidebar'
 import ConteudoList from '../../components/onboarding/ConteudoList'
+import ConclusoesList from '../../components/onboarding/ConclusoesList'
 import styles from '../../styles/onboarding.module.css'
 import Topbar from '../../components/onboarding/Topbar'
 
@@ -32,6 +33,7 @@ export default function OnboardingPage() {
           />
           <main className={styles.main}>
             {tab === 'conteudo' && <ConteudoList moduloId={id} />}
+            {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
           </main>
         </div>
       </div>
