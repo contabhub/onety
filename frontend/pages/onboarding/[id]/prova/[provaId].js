@@ -31,7 +31,7 @@ export default function QuestaoListPage() {
   }, [provaId])
 
   const loadProvaAndQuestoes = async () => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     setLoading(true)
@@ -79,7 +79,7 @@ export default function QuestaoListPage() {
       return
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {
@@ -108,7 +108,7 @@ export default function QuestaoListPage() {
   }
 
   const loadAlternativasQuestao = async (questaoId) => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {
@@ -159,7 +159,7 @@ export default function QuestaoListPage() {
       return
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {
@@ -186,7 +186,7 @@ export default function QuestaoListPage() {
   }
 
   const handleToggleCorreta = async (alternativa) => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {
@@ -487,7 +487,7 @@ function QuestaoModal({ questao, provaId, onClose, onSaved }) {
     setLoading(true)
     setError('')
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {

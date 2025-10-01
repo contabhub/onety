@@ -53,6 +53,130 @@
   color: var(--onity-color-error);
 }
 
+/* Estilos para Provas */
+.provasContainer {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--onity-color-bg-secondary, #f8fafc);
+  border: 1px solid var(--onity-color-border, #e2e8f0);
+  border-radius: 8px;
+}
+
+.provasTitle {
+  margin: 0 0 12px 0;
+  color: var(--onity-color-text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.provasList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.provaCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--onity-color-border, #e2e8f0);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.provaCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provaInfo {
+  flex: 1;
+}
+
+.provaNome {
+  margin: 0 0 4px 0;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.provaConteudo {
+  margin: 0 0 4px 0;
+  color: var(--onity-color-text-secondary);
+  font-size: 12px;
+}
+
+.provaStatus {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.provaFeita {
+  color: var(--onity-color-success, #16a34a);
+}
+
+.provaDisponivel {
+  color: var(--onity-color-primary);
+}
+
+.provaActions {
+  display: flex;
+  gap: 6px;
+}
+
+.fazerProvaButton {
+  background: var(--onity-color-primary);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fazerProvaButton:hover {
+  background: var(--onity-color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.verProvaButton {
+  background: var(--onity-color-bg-secondary, #f8fafc);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border, #e2e8f0);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.verProvaButton:hover {
+  background: var(--onity-color-bg, #ffffff);
+  border-color: var(--onity-color-primary);
+}
+
+/* Dark theme support */
+[data-theme="dark"] .provasContainer {
+  background: var(--onity-color-bg-secondary);
+  border-color: var(--onity-color-border);
+}
+
+[data-theme="dark"] .provaCard {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+}
+
+[data-theme="dark"] .verProvaButton {
+  background: var(--onity-color-bg-secondary);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
 /* Estilos para navegação hierárquica */
 .clickable {
   cursor: pointer;
