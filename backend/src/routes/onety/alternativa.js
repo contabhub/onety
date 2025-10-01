@@ -64,6 +64,21 @@ router.post("/", async (req, res) => {
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
+    // Se está marcando como correta, verificar se já existe uma alternativa correta
+    if (correto === 1) {
+      const [existingCorrect] = await conn.query(
+        "SELECT id FROM alternativa WHERE questao_id = ? AND correto = 1",
+        [questao_id]
+      );
+      
+      if (existingCorrect.length > 0) {
+        await conn.rollback();
+        return res.status(400).json({ 
+          error: "Já existe uma alternativa correta para esta questão. Desmarque a atual antes de marcar uma nova como correta." 
+        });
+      }
+    }
+
     const [result] = await conn.query(
       `INSERT INTO alternativa (questao_id, opcao, correto) VALUES (?, ?, ?)`,
       [questao_id, opcao, correto || 0]
@@ -104,20 +119,54 @@ const buildUpdateQuery = (body) => {
 };
 
 router.patch("/:id", async (req, res) => {
+  let conn;
   try {
     const { id } = req.params;
     const { fields, values } = buildUpdateQuery(req.body || {});
     if (fields.length === 0) return res.status(400).json({ error: "Nenhum campo para atualizar." });
 
+    // Verificar se está tentando marcar como correta
+    const corretoIndex = fields.findIndex(field => field.includes('correto'));
+    if (corretoIndex !== -1 && values[corretoIndex] === 1) {
+      // Buscar a questão da alternativa atual
+      const [currentAlt] = await pool.query("SELECT questao_id FROM alternativa WHERE id = ?", [id]);
+      if (currentAlt.length === 0) return res.status(404).json({ error: "Alternativa não encontrada." });
+      
+      const questao_id = currentAlt[0].questao_id;
+      
+      // Verificar se já existe outra alternativa correta para esta questão
+      const [existingCorrect] = await pool.query(
+        "SELECT id FROM alternativa WHERE questao_id = ? AND correto = 1 AND id != ?",
+        [questao_id, id]
+      );
+      
+      if (existingCorrect.length > 0) {
+        return res.status(400).json({ 
+          error: "Já existe uma alternativa correta para esta questão. Desmarque a atual antes de marcar uma nova como correta." 
+        });
+      }
+    }
+
+    // Inicia transação
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
     const sql = `UPDATE alternativa SET ${fields.join(", ")} WHERE id = ?`;
-    await pool.query(sql, [...values, id]);
+    await conn.query(sql, [...values, id]);
+
+    await conn.commit();
 
     const [updated] = await pool.query("SELECT * FROM alternativa WHERE id = ?", [id]);
     if (updated.length === 0) return res.status(404).json({ error: "Alternativa não encontrada." });
     res.json(updated[0]);
   } catch (error) {
     console.error(error);
+    if (conn) {
+      try { await conn.rollback(); } catch (_) {}
+    }
     res.status(500).json({ error: "Erro ao atualizar alternativa." });
+  } finally {
+    if (conn) conn.release();
   }
 });
 
