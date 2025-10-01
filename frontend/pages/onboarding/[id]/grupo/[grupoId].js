@@ -1,10 +1,10 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
-import styles from '../../../../styles/onboarding.module.css'
-import grupoStyles from '../../../../components/onboarding/GrupoConteudoViewer.module.css'
-import Topbar from '../../../../components/onboarding/Topbar'
-import OnboardingSidebar from '../../../../components/onboarding/Sidebar'
+import styles from '../../../../styles/onety/onboarding/onboarding.module.css'
+import grupoStyles from '../../../../components/onety/onboarding/GrupoConteudoViewer.module.css'
+import Topbar from '../../../../components/onety/onboarding/Topbar'
+import OnboardingSidebar from '../../../../components/onety/onboarding/Sidebar'
 
 export default function GrupoConteudoPage() {
   const router = useRouter()

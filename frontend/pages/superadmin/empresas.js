@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Building2, Search, Filter, Eye, Edit, Trash2, Calendar, Users } from 'lucide-react'
-import Sidebar from '../../components/superadmin/Sidebar'
-import styles from '../../styles/superadmin/empresas.module.css'
+import Sidebar from '../../components/onety/superadmin/Sidebar'
+import styles from '../../styles/onety/superadmin/empresas.module.css'
 
 export default function EmpresasPage() {
   const router = useRouter()

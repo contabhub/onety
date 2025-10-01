@@ -1,9 +1,9 @@
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
-import ThemeToggle from '../components/menu/ThemeToggle'
-import Header from '../components/menu/Header'
-import styles from '../styles/modulos.module.css'
+import ThemeToggle from '../components/onety/menu/ThemeToggle'
+import Header from '../components/onety/menu/Header'
+import styles from '../styles/onety/modulos.module.css'
 import { toast } from 'react-toastify'
 
 export default function Modulos() {

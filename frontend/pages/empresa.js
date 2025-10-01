@@ -1,10 +1,10 @@
 import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
-import ThemeToggle from '../components/menu/ThemeToggle'
-import Header from '../components/menu/Header'
-import bgStyles from '../styles/login.module.css'
-import styles from '../styles/empresa.module.css'
+import ThemeToggle from '../components/onety/menu/ThemeToggle'
+import Header from '../components/onety/menu/Header'
+import bgStyles from '../styles/onety/login.module.css'
+import styles from '../styles/onety/empresa.module.css'
 import { toast } from 'react-toastify'
 
 export default function Empresa() {

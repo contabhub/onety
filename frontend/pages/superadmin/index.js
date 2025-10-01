@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Users, Building2, BookOpen, BarChart3, Settings, UserCheck, TrendingUp, Calendar, Mail } from 'lucide-react'
-import Sidebar from '../../components/superadmin/Sidebar'
+import Sidebar from '../../components/onety/superadmin/Sidebar'
 
 export default function SuperadminHome() {
   const router = useRouter()

@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import styles from '../styles/login.module.css';
-import ThemeToggle from '../components/menu/ThemeToggle';
+import styles from '../styles/onety/login.module.css';
+import ThemeToggle from '../components/onety/menu/ThemeToggle';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 
