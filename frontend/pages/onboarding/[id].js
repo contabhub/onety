@@ -1,11 +1,11 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
-import OnboardingSidebar from '../../components/onboarding/Sidebar'
-import ConteudoList from '../../components/onboarding/ConteudoList'
-import ConclusoesList from '../../components/onboarding/ConclusoesList'
-import styles from '../../styles/onboarding.module.css'
-import Topbar from '../../components/onboarding/Topbar'
+import OnboardingSidebar from '../../components/onety/onboarding/Sidebar'
+import ConteudoList from '../../components/onety/onboarding/ConteudoList'
+import ConclusoesList from '../../components/onety/onboarding/ConclusoesList'
+import styles from '../../styles/onety/onboarding/onboarding.module.css'
+import Topbar from '../../components/onety/onboarding/Topbar'
 
 export default function OnboardingPage() {
   const router = useRouter()

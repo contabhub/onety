@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Users, TrendingUp, FileText, DollarSign, Settings, Shield, Target } from 'lucide-react';
 import styles from '../styles/index.module.css';
-import ThemeToggle from '../components/menu/ThemeToggle';
+import ThemeToggle from '../components/onety/menu/ThemeToggle';
 
 export default function Home() {
   const [isLightTheme, setIsLightTheme] = useState(false);
