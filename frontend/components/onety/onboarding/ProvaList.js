@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from './ProvaList.module.css'
+import SpaceLoader from '../menu/SpaceLoader'
 import { Plus, FileText, Edit3, Trash2, Eye } from 'lucide-react'
 
 export default function ProvaList({ moduloId }) {
@@ -89,7 +90,7 @@ export default function ProvaList({ moduloId }) {
     loadProvas()
   }
 
-  if (loading) return <div className={styles.placeholder}>Carregando provas...</div>
+  if (loading) return <SpaceLoader label="Carregando provas..." />
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
 
   return (

@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import ThemeToggle from '../components/onety/menu/ThemeToggle'
+import SpaceLoader from '../components/onety/menu/SpaceLoader'
 import Header from '../components/onety/menu/Header'
 import styles from '../styles/onety/modulos.module.css'
 import { toast } from 'react-toastify'
@@ -446,7 +447,7 @@ export default function Modulos() {
         </div>
 
         {loading ? (
-          <div className={styles.loading}>Carregando...</div>
+          <SpaceLoader label="Carregando módulos..." />
         ) : filtered.length > 0 ? (
           viewMode === 'carousel' ? (
           <div className={styles.carouselContainer}>

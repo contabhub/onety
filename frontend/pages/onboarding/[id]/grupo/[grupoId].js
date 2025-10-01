@@ -4,6 +4,7 @@ import Head from 'next/head'
 import styles from '../../../../styles/onety/onboarding/onboarding.module.css'
 import grupoStyles from '../../../../components/onety/onboarding/GrupoConteudoViewer.module.css'
 import Topbar from '../../../../components/onety/onboarding/Topbar'
+import SpaceLoader from '../../../../components/onety/menu/SpaceLoader'
 import OnboardingSidebar from '../../../../components/onety/onboarding/Sidebar'
 
 export default function GrupoConteudoPage() {
@@ -216,7 +217,7 @@ export default function GrupoConteudoPage() {
               onCollapseChange={setSidebarCollapsed}
             />
             <main className={styles.main}>
-              <div className={grupoStyles.placeholder}>Carregando conteúdos...</div>
+              <SpaceLoader label="Carregando conteúdos..." />
             </main>
           </div>
         </div>

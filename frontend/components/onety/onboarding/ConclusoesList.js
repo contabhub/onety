@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from './ConclusoesList.module.css'
+import SpaceLoader from '../menu/SpaceLoader'
 import { CheckCircle, FolderOpen } from 'lucide-react'
 
 export default function ConclusoesList({ moduloId }) {
@@ -74,7 +75,7 @@ export default function ConclusoesList({ moduloId }) {
     router.push(`/onboarding/${moduloId}?grupo=${grupoId}`, undefined, { shallow: true })
   }
 
-  if (loading) return <div className={styles.placeholder}>Carregando conclusões...</div>
+  if (loading) return <SpaceLoader label="Carregando conclusões..." />
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
   if (!conclusoes.length) {
     return (
