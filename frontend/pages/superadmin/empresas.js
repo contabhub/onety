@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { Building2, Search, Filter, Eye, Edit, Trash2, Calendar, Users } from 'lucide-react'
+import { Building2, Search, Filter, Eye, Edit, Calendar, Users } from 'lucide-react'
 import Sidebar from '../../components/onety/superadmin/Sidebar'
 import EditarEmpresa from '../../components/onety/superadmin/EditarEmpresa'
 import styles from '../../styles/onety/superadmin/empresas.module.css'
@@ -138,6 +138,24 @@ export default function EmpresasPage() {
         empresa.id === updatedEmpresa.id ? { ...empresa, ...updatedEmpresa } : empresa
       )
     )
+  }
+
+  const handleViewEmpresa = (empresa) => {
+    // Atualiza o userData no localStorage com a empresa selecionada
+    try {
+      const userRaw = localStorage.getItem('userData')
+      const user = userRaw ? JSON.parse(userRaw) : {}
+      const updated = {
+        ...user,
+        EmpresaId: empresa.id,
+        EmpresaNome: empresa.nome
+      }
+      localStorage.setItem('userData', JSON.stringify(updated))
+    } catch (error) {
+      console.error('Erro ao atualizar dados da empresa:', error)
+    }
+    // Redireciona para a página de módulos
+    router.push('/modulos')
   }
 
   if (!isAllowed) return null
@@ -280,7 +298,8 @@ export default function EmpresasPage() {
                     <div className={styles.colAcoes}>
                       <button
                         className={`${styles.actionButton} ${styles.actionButtonView}`}
-                        title="Visualizar"
+                        title="Visualizar módulos da empresa"
+                        onClick={() => handleViewEmpresa(empresa)}
                       >
                         <Eye size={18} />
                       </button>
@@ -291,12 +310,6 @@ export default function EmpresasPage() {
                       >
                         <Edit size={18} />
                       </button>
-                      <button
-                        className={`${styles.actionButton} ${styles.actionButtonDelete}`}
-                        title="Excluir"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   </div>
                 )
@@ -305,7 +318,6 @@ export default function EmpresasPage() {
           </div>
         </div>
       </main>
-
       {/* Modal de Edição */}
       <EditarEmpresa
         open={showEditModal}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
+import { createPortal } from 'react-dom'
 import styles from './Sidebar.module.css'
 import { LayoutList, Pin, User, Edit3, Sun, RefreshCw, ChevronDown, CheckCircle, FileText } from 'lucide-react'
 import EditarPerfil from '../menu/EditarPerfil'
@@ -256,58 +257,65 @@ export default function OnboardingSidebar({ currentTab, onChangeTab, tabs, onCol
         )}
       </div>
 
-      <EditarPerfil
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onUpdated={(u) => setUserData(u)}
-      />
+      {/* Modais renderizados via Portal fora da sidebar */}
+      {typeof window !== 'undefined' && (
+        <>
+          <EditarPerfil
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onUpdated={(u) => setUserData(u)}
+          />
 
-      {/* Modal de confirmação para trocar de empresa */}
-      {confirmModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h3>Trocar de Empresa</h3>
-            <p>Tem certeza que deseja trocar de empresa? Você será redirecionado para a seleção de empresas.</p>
-            <div className={styles.modalActions}>
-              <button 
-                className={styles.modalCancel}
-                onClick={() => setConfirmModalOpen(false)}
-              >
-                Cancelar
-              </button>
-              <button 
-                className={styles.modalConfirm}
-                onClick={confirmChangeCompany}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          {/* Modal de confirmação para trocar de empresa */}
+          {confirmModalOpen && createPortal(
+            <div className={styles.modalOverlay}>
+              <div className={styles.modal}>
+                <h3>Trocar de Empresa</h3>
+                <p>Tem certeza que deseja trocar de empresa? Você será redirecionado para a seleção de empresas.</p>
+                <div className={styles.modalActions}>
+                  <button 
+                    className={styles.modalCancel}
+                    onClick={() => setConfirmModalOpen(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className={styles.modalConfirm}
+                    onClick={confirmChangeCompany}
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
 
-      {/* Modal de confirmação para logout */}
-      {logoutModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h3>Sair da Conta</h3>
-            <p>Tem certeza que deseja sair da sua conta? Você será redirecionado para a tela de login.</p>
-            <div className={styles.modalActions}>
-              <button 
-                className={styles.modalCancel}
-                onClick={() => setLogoutModalOpen(false)}
-              >
-                Cancelar
-              </button>
-              <button 
-                className={styles.modalConfirm}
-                onClick={confirmLogout}
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </div>
+          {/* Modal de confirmação para logout */}
+          {logoutModalOpen && createPortal(
+            <div className={styles.modalOverlay}>
+              <div className={styles.modal}>
+                <h3>Sair da Conta</h3>
+                <p>Tem certeza que deseja sair da sua conta? Você será redirecionado para a tela de login.</p>
+                <div className={styles.modalActions}>
+                  <button 
+                    className={styles.modalCancel}
+                    onClick={() => setLogoutModalOpen(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className={styles.modalConfirm}
+                    onClick={confirmLogout}
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+        </>
       )}
     </aside>
   )
