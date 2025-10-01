@@ -369,6 +369,30 @@ export default function SuperadminHome() {
                 Empresas Recentes
               </h3>
             </div>
+            
+            {/* Cabeçalho das Colunas */}
+            {!loading && recentData.empresas.length > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 20px',
+                background: 'var(--onity-color-surface)',
+                borderBottom: '1px solid var(--onity-color-border)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                color: 'var(--onity-color-text)',
+                opacity: 0.6,
+                letterSpacing: '0.5px',
+              }}>
+                <div style={{ width: 32, flexShrink: 0 }}></div>
+                <div style={{ flex: 2, minWidth: 0 }}>Nome</div>
+                <div style={{ flex: 1, minWidth: 0 }}>Data Criação</div>
+                <div style={{ width: 80, flexShrink: 0, textAlign: 'center' }}>Usuários</div>
+              </div>
+            )}
+
             <div style={{ padding: 0 }}>
               {loading ? (
                 <div style={{ padding: '20px', textAlign: 'center', opacity: 0.6 }}>
@@ -379,7 +403,7 @@ export default function SuperadminHome() {
                   Nenhuma empresa encontrada
                 </div>
               ) : (
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <div>
                   {recentData.empresas.map((empresa, index) => (
                     <div key={empresa.id} style={{
                       padding: '16px 20px',
@@ -387,7 +411,12 @@ export default function SuperadminHome() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
-                    }}>
+                      transition: 'background 0.2s ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--onity-color-bg)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
                       <div style={{
                         width: 32,
                         height: 32,
@@ -400,7 +429,7 @@ export default function SuperadminHome() {
                       }}>
                         <Building2 size={16} color="white" />
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ flex: 2, minWidth: 0 }}>
                         <div style={{ 
                           fontWeight: 600, 
                           color: 'var(--onity-color-text)',
@@ -415,25 +444,27 @@ export default function SuperadminHome() {
                         flex: 1, 
                         minWidth: 0,
                         fontSize: '0.85rem', 
+                        color: 'var(--onity-color-text)',
                         opacity: 0.7,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        gap: '6px'
                       }}>
-                        <Calendar size={12} />
+                        <Calendar size={14} />
                         {empresa.criado_em ? new Date(empresa.criado_em).toLocaleDateString('pt-BR') : 'N/A'}
                       </div>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '4px',
-                        fontSize: '0.85rem',
-                        opacity: 0.7,
-                        width: 60,
+                        gap: '6px',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: 'var(--onity-color-text)',
+                        width: 80,
                         flexShrink: 0,
                       }}>
-                        <Users size={14} />
+                        <Users size={16} />
                         {empresa.funcionarios || 0}
                       </div>
                     </div>
@@ -469,6 +500,31 @@ export default function SuperadminHome() {
                 Usuários Recentes
               </h3>
             </div>
+            
+            {/* Cabeçalho das Colunas */}
+            {!loading && recentData.usuarios.length > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 20px',
+                background: 'var(--onity-color-surface)',
+                borderBottom: '1px solid var(--onity-color-border)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                color: 'var(--onity-color-text)',
+                opacity: 0.6,
+                letterSpacing: '0.5px',
+              }}>
+                <div style={{ width: 32, flexShrink: 0 }}></div>
+                <div style={{ flex: 2, minWidth: 0 }}>Nome</div>
+                <div style={{ flex: 2, minWidth: 0 }}>Email</div>
+                <div style={{ width: 80, flexShrink: 0, textAlign: 'center' }}>Empresas</div>
+                <div style={{ flex: 1, minWidth: 0 }}>Data Criação</div>
+              </div>
+            )}
+
             <div style={{ padding: 0 }}>
               {loading ? (
                 <div style={{ padding: '20px', textAlign: 'center', opacity: 0.6 }}>
@@ -479,7 +535,7 @@ export default function SuperadminHome() {
                   Nenhum usuário encontrado
                 </div>
               ) : (
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <div>
                   {recentData.usuarios.map((usuario, index) => (
                     <div key={usuario.id} style={{
                       padding: '16px 20px',
@@ -487,7 +543,12 @@ export default function SuperadminHome() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
-                    }}>
+                      transition: 'background 0.2s ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--onity-color-bg)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
                       <div style={{
                         width: 32,
                         height: 32,
@@ -503,52 +564,59 @@ export default function SuperadminHome() {
                       }}>
                         {(usuario.nome || 'U')[0].toUpperCase()}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ flex: 2, minWidth: 0 }}>
                         <div style={{ 
                           fontWeight: 600, 
                           color: 'var(--onity-color-text)',
-                          marginBottom: '4px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap'
                         }}>
                           {usuario.nome || 'Usuário'}
                         </div>
-                        <div style={{ 
-                          fontSize: '0.8rem', 
-                          opacity: 0.7,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          marginBottom: '2px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          <Mail size={10} />
-                          {usuario.email || 'N/A'}
-                        </div>
-                        <div style={{ 
-                          fontSize: '0.8rem', 
-                          opacity: 0.6,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}>
-                          <Calendar size={10} />
-                          {usuario.criado_em ? new Date(usuario.criado_em).toLocaleDateString('pt-BR') : 'N/A'}
-                        </div>
+                      </div>
+                      <div style={{ 
+                        flex: 2, 
+                        minWidth: 0,
+                        fontSize: '0.85rem', 
+                        color: 'var(--onity-color-text)',
+                        opacity: 0.7,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        <Mail size={14} />
+                        {usuario.email || 'N/A'}
                       </div>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '0.8rem',
-                        opacity: 0.7,
+                        justifyContent: 'center',
+                        gap: '6px',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: 'var(--onity-color-text)',
+                        width: 80,
                         flexShrink: 0,
                       }}>
-                        <Building2 size={12} />
+                        <Building2 size={16} />
                         {usuario.empresas || 0}
+                      </div>
+                      <div style={{ 
+                        flex: 1, 
+                        minWidth: 0,
+                        fontSize: '0.85rem', 
+                        color: 'var(--onity-color-text)',
+                        opacity: 0.7,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <Calendar size={14} />
+                        {usuario.criado_em ? new Date(usuario.criado_em).toLocaleDateString('pt-BR') : 'N/A'}
                       </div>
                     </div>
                   ))}

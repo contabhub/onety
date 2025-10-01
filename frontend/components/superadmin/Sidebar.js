@@ -129,104 +129,105 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
   }
 
   const items = [
-    { name: 'Dashboard', icon: <LayoutDashboard size={22} />, path: '/superadmin' },
     { name: 'Empresas', icon: <Building2 size={22} />, path: '/superadmin/empresas' },
     { name: 'Usuários', icon: <User size={22} />, path: '/superadmin/usuarios' },
   ]
 
   return (
-    <aside
-      className={`${styles.sidebar} ${collapsed ? styles.collapsed : styles.expanded}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className={styles.topBar}>
-        <div className={styles.logo}>
-          <img
-            src={collapsed
-              ? '/img/Logo-Onety-Colapsada.png'
-              : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
-            alt="Onety"
-            className={styles.logoImg}
-            style={{
-              width: collapsed ? 48 : 160,
-              height: collapsed ? 48 : 64,
-              marginLeft: collapsed ? -3 : 15
-            }}
-          />
+    <>
+      <aside
+        className={`${styles.sidebar} ${collapsed ? styles.collapsed : styles.expanded}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className={styles.topBar}>
+          <div className={styles.logo}>
+            <img
+              src={collapsed
+                ? '/img/Logo-Onety-Colapsada.png'
+                : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
+              alt="Onety"
+              className={styles.logoImg}
+              style={{
+                width: collapsed ? 48 : 160,
+                height: collapsed ? 48 : 64,
+                marginLeft: collapsed ? -3 : 15
+              }}
+            />
+          </div>
+          {!collapsed && (
+            <button className={`${styles.pinButton} ${pinned ? styles.pinned : ''}`} onClick={handlePin} title={pinned ? 'Desafixar' : 'Fixar'}>
+              <Pin size={20} />
+            </button>
+          )}
         </div>
-        {!collapsed && (
-          <button className={`${styles.pinButton} ${pinned ? styles.pinned : ''}`} onClick={handlePin} title={pinned ? 'Desafixar' : 'Fixar'}>
-            <Pin size={20} />
-          </button>
-        )}
-      </div>
 
-      <nav className={styles.menu}>
-        {items.map((item, idx) => (
-          <Link key={item.name + idx} href={item.path} className={styles.menuItem}>
-            {item.icon}
-            {!collapsed && <span>{item.name}</span>}
-          </Link>
-        ))}
-      </nav>
+        <nav className={styles.menu}>
+          {items.map((item, idx) => (
+            <Link key={item.name + idx} href={item.path} className={styles.menuItem}>
+              {item.icon}
+              {!collapsed && <span>{item.name}</span>}
+            </Link>
+          ))}
+        </nav>
 
-      {/* Seção do usuário na parte inferior */}
-      <div className={styles.userSection}>
-        <div 
-          className={styles.userProfile}
-          onClick={() => setUserMenuOpen(!userMenuOpen)}
-        >
-          <div className={styles.userAvatar}>
-            {userData?.avatar_url ? (
-              <img src={userData.avatar_url} alt={userData?.nome || userData?.name || 'Usuário'} />
-            ) : (
-              <div className={styles.avatarFallback}>
-                {getInitials(userData?.nome || userData?.name)}
+        {/* Seção do usuário na parte inferior */}
+        <div className={styles.userSection}>
+          <div 
+            className={styles.userProfile}
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+          >
+            <div className={styles.userAvatar}>
+              {userData?.avatar_url ? (
+                <img src={userData.avatar_url} alt={userData?.nome || userData?.name || 'Usuário'} />
+              ) : (
+                <div className={styles.avatarFallback}>
+                  {getInitials(userData?.nome || userData?.name)}
+                </div>
+              )}
+            </div>
+            {!collapsed && (
+              <div className={styles.userInfo}>
+                <div className={styles.userName}>
+                  {userData?.nome || userData?.name || 'Usuário'}
+                </div>
+                <div className={styles.userRole}>
+                  Superadmin
+                </div>
               </div>
             )}
+            {!collapsed && (
+              <ChevronDown size={20} className={`${styles.chevron} ${userMenuOpen ? styles.rotated : ''}`} />
+            )}
           </div>
-          {!collapsed && (
-            <div className={styles.userInfo}>
-              <div className={styles.userName}>
-                {userData?.nome || userData?.name || 'Usuário'}
+
+          {/* Dropdown do usuário */}
+          {userMenuOpen && !collapsed && (
+            <div className={styles.userDropdown}>
+              <button className={styles.dropdownItem} onClick={handleEditProfile}>
+                <Edit3 size={20} />
+                <span>Editar Perfil</span>
+              </button>
+              <div className={styles.dropdownItem} onClick={handleToggleTheme} role="button" tabIndex={0}>
+                <Sun size={20} />
+                <span>Mudar tema</span>
+                <div className={styles.themeToggleSmall}>
+                  <ThemeToggle />
+                </div>
               </div>
-              <div className={styles.userRole}>
-                Superadmin
-              </div>
+              <button className={styles.dropdownItem} onClick={handleChangeCompany}>
+                <RefreshCw size={20} />
+                <span>Voltar as Empresas</span>
+              </button>
+              <div className={styles.dropdownDivider} />
+              <button className={styles.dropdownItem} onClick={handleLogout}>
+                <User size={20} />
+                <span>Sair</span>
+              </button>
             </div>
-          )}
-          {!collapsed && (
-            <ChevronDown size={20} className={`${styles.chevron} ${userMenuOpen ? styles.rotated : ''}`} />
           )}
         </div>
-
-        {/* Dropdown do usuário */}
-        {userMenuOpen && !collapsed && (
-          <div className={styles.userDropdown}>
-            <button className={styles.dropdownItem} onClick={handleEditProfile}>
-              <Edit3 size={20} />
-              <span>Editar Perfil</span>
-            </button>
-            <div className={styles.dropdownItem} onClick={handleToggleTheme} role="button" tabIndex={0}>
-              <Sun size={20} />
-              <span>Mudar tema</span>
-              <div className={styles.themeToggleSmall}>
-                <ThemeToggle />
-              </div>
-            </div>
-            <button className={styles.dropdownItem} onClick={handleChangeCompany}>
-              <RefreshCw size={20} />
-              <span>Voltar as Empresas</span>
-            </button>
-            <div className={styles.dropdownDivider} />
-            <button className={styles.dropdownItem} onClick={handleLogout}>
-              <User size={20} />
-              <span>Sair</span>
-            </button>
-          </div>
-        )}
-      </div>
+      </aside>
 
       <EditarPerfil
         open={modalOpen}
@@ -281,7 +282,7 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
           </div>
         </div>
       )}
-    </aside>
+    </>
   )
 }
 

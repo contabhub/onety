@@ -22,6 +22,11 @@
   overflow-x: hidden;
 }
 
+/* Box-shadow mais sutil no modo light */
+:root[data-theme='light'] .sidebar {
+  box-shadow: 2px 0 8px 0 rgba(0,0,0,0.06);
+}
+
 /* Background com linhas SVG animadas */
 .sidebar::before {
   content: "";
@@ -385,7 +390,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 9999;
 }
 
 .modal {
