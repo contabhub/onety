@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './AlternativaList.module.css'
+import SpaceLoader from '../../menu/SpaceLoader'
 import { Plus, Edit3, Trash2, CheckCircle, Circle } from 'lucide-react'
 
 export default function AlternativaList({ questaoId, onClose }) {
@@ -124,7 +125,7 @@ export default function AlternativaList({ questaoId, onClose }) {
     loadAlternativas()
   }
 
-  if (loading) return <div className={styles.placeholder}>Carregando alternativas...</div>
+  if (loading) return <SpaceLoader label="Carregando alternativas..." />
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
 
   return (

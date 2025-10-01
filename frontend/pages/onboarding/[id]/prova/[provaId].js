@@ -6,6 +6,7 @@ import styles from '../../../../styles/onety/onboarding/onboarding.module.css'
 import questaoStyles from '../../../../components/onety/onboarding/QuestaoList.module.css'
 import Topbar from '../../../../components/onety/onboarding/Topbar'
 import OnboardingSidebar from '../../../../components/onety/onboarding/Sidebar'
+import SpaceLoader from '../../../../components/onety/menu/SpaceLoader'
 import AlternativaModal from '../../../../components/onety/onboarding/AlternativaModal'
 
 export default function QuestaoListPage() {
@@ -250,7 +251,7 @@ export default function QuestaoListPage() {
               onCollapseChange={setSidebarCollapsed}
             />
             <main className={styles.main}>
-              <div className={questaoStyles.placeholder}>Carregando questões...</div>
+              <SpaceLoader label="Carregando questões..." />
             </main>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from './ConteudoList.module.css'
+import SpaceLoader from '../menu/SpaceLoader'
 
 export default function ConteudoList({ moduloId }) {
   const router = useRouter()
@@ -106,7 +107,7 @@ export default function ConteudoList({ moduloId }) {
     router.push(`/onboarding/${moduloId}/grupo/${grupo.id}`)
   }
 
-  if (loading) return <div className={styles.placeholder}>Carregando conteúdos...</div>
+  if (loading) return <SpaceLoader label="Carregando conteúdos..." />
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
   if (!gruposComProgresso.length) return <div className={styles.placeholder}>Nenhum conteúdo cadastrado.</div>
 

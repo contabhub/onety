@@ -7,17 +7,37 @@ import ProvaList from '../../components/onety/onboarding/ProvaList'
 import ConclusoesList from '../../components/onety/onboarding/ConclusoesList'
 import styles from '../../styles/onety/onboarding/onboarding.module.css'
 import Topbar from '../../components/onety/onboarding/Topbar'
+import SpaceLoader from '../../components/onety/menu/SpaceLoader'
 
 export default function OnboardingPage() {
   const router = useRouter()
   const { id } = router.query
   const [tab, setTab] = useState('conteudo')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     // validar id
     if (!id) return
   }, [id])
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Head>
+          <title>Carregando...</title>
+        </Head>
+        <Topbar sidebarCollapsed={sidebarCollapsed} />
+        <div className={styles.layout}>
+          <div className={`${styles.contentWrapper} ${sidebarCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded}`}>
+            <main className={styles.main}>
+              <SpaceLoader label="Carregando módulo..." />
+            </main>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
