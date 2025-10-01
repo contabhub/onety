@@ -19,7 +19,7 @@ export default function ProvaList({ moduloId }) {
   }, [moduloId])
 
   const loadProvas = async () => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     setLoading(true)
@@ -58,7 +58,7 @@ export default function ProvaList({ moduloId }) {
       return
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {
@@ -198,7 +198,7 @@ function ProvaModal({ prova, moduloId, onClose, onSaved }) {
     setLoading(true)
     setError('')
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
     try {
