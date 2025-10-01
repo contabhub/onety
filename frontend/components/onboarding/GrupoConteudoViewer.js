@@ -174,6 +174,11 @@ export default function GrupoConteudoViewer({ grupo, onBack }) {
     }
   }
 
+  const irParaProva = (conteudo) => {
+    const moduloId = router.query.id
+    router.push(`/onboarding/prova/${conteudo.id}?moduloId=${moduloId}`)
+  }
+
   const irParaConteudo = (index) => {
     setCurrentIndex(index)
     // Atualizar URL com o novo índice do conteúdo
@@ -276,9 +281,12 @@ export default function GrupoConteudoViewer({ grupo, onBack }) {
               {marcandoConcluido ? 'Marcando...' : '✓ Marcar como Concluído'}
             </button>
           ) : (
-            <span className={styles.alreadyCompleted}>
-              ✓ Este conteúdo já foi concluído
-            </span>
+            <button 
+              onClick={() => irParaProva(conteudoAtual)}
+              className={styles.provaButton}
+            >
+              📝 Ir para Prova
+            </button>
           )}
           
           <button 

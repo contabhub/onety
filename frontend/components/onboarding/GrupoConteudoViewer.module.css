@@ -221,6 +221,21 @@
   cursor: not-allowed;
 }
 
+.provaButton {
+  background: #3498db;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.provaButton:hover {
+  background: #2980b9;
+}
+
 .alreadyCompleted {
   background: var(--onity-color-bg);
   border: 2px solid #10b981;
@@ -264,6 +279,7 @@
   
   .navButton,
   .completeButton,
+  .provaButton,
   .alreadyCompleted {
     width: 100%;
   }
