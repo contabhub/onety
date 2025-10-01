@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from './Sidebar.module.css'
-import { LayoutList, Pin, User, Edit3, Sun, RefreshCw, ChevronDown } from 'lucide-react'
+import { LayoutList, Pin, User, Edit3, Sun, RefreshCw, ChevronDown, CheckCircle } from 'lucide-react'
 import EditarPerfil from '../menu/EditarPerfil'
 
 
@@ -114,6 +114,7 @@ export default function OnboardingSidebar({ currentTab, onChangeTab, tabs, onCol
 
   const items = useMemo(() => tabs || [
     { key: 'conteudo', label: 'Conteúdo', icon: LayoutList },
+    { key: 'conclusoes', label: 'Conclusões', icon: CheckCircle },
   ], [tabs])
 
 
