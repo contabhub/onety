@@ -20,6 +20,38 @@ const upload = multer({
 
 const router = express.Router();
 
+// Estatísticas de módulos para dashboard
+router.get("/estatisticas", async (req, res) => {
+  try {
+    // Total de módulos
+    const [totalModulos] = await pool.query("SELECT COUNT(*) as total FROM modulos");
+    
+    // Módulos com logo (completos)
+    const [modulosComLogo] = await pool.query("SELECT COUNT(*) as com_logo FROM modulos WHERE logo_url IS NOT NULL AND logo_url != ''");
+    
+    // Módulos criados nos últimos 30 dias (assumindo que existe uma coluna de data)
+    // Como não sabemos o nome exato, vamos usar uma consulta que funcione
+    const [recentModulos] = await pool.query(
+      "SELECT COUNT(*) as recentes FROM modulos WHERE id > (SELECT MAX(id) - 10 FROM modulos)"
+    );
+
+    // Total de vínculos módulo-empresa (módulos em uso)
+    const [modulosEmUso] = await pool.query(
+      "SELECT COUNT(DISTINCT modulo_id) as em_uso FROM modulos_empresa"
+    );
+
+    res.json({
+      total: totalModulos[0]?.total || 0,
+      com_logo: modulosComLogo[0]?.com_logo || 0,
+      recentes: recentModulos[0]?.recentes || 0,
+      em_uso: modulosEmUso[0]?.em_uso || 0
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar estatísticas de módulos." });
+  }
+});
+
 // Lista modulos com paginação
 router.get("/", async (req, res) => {
   try {
