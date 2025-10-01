@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.10);
   box-shadow: var(--onity-elev-high);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
@@ -146,7 +146,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
-  min-height: 40vh;
+  min-height: 15vh;
 }
 
 
@@ -173,18 +173,17 @@
 }
 
 .heroTitleAccent {
-  background: var(--onity-color-primary);
+  background: linear-gradient(90deg, var(--onity-color-primary) 0%, var(--onity-color-primary-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 [data-theme="dark"] .heroTitleAccent {
-  color: #E1E4F2;
-  background: none;
-  -webkit-background-clip: unset;
-  -webkit-text-fill-color: unset;
-  background-clip: unset;
+  background: linear-gradient(90deg, var(--onity-color-primary-hover) 0%, var(--onity-color-primary) 120%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .heroDescription {
@@ -572,7 +571,6 @@
 }
 
 .indicator {
-  width: 12px;
   height: 12px;
   border-radius: 50%;
   border: 2px solid var(--onity-color-border);
@@ -596,13 +594,13 @@
 }
 
 [data-theme="dark"] .indicator:hover {
-  border-color: var(--onity-color-primary);
-  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 [data-theme="dark"] .indicator.active {
-  border-color: var(--onity-color-primary);
-  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 
@@ -857,9 +855,23 @@
 
 .chartBar {
   flex: 1;
-  background: var(--onity-color-primary);
+  background: linear-gradient(180deg, var(--onity-color-primary-hover) 0%, var(--onity-color-primary) 100%);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.25rem;
+  box-shadow: 0 6px 16px rgba(3, 8, 66, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   min-height: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .chartBar {
+  background: linear-gradient(180deg, var(--onity-color-primary-hover) 0%, var(--onity-color-primary) 100%);
+  border-color: var(--onity-color-border);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.chartBar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(3, 8, 66, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* CTA Section */

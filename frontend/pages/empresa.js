@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import ThemeToggle from '../components/onety/menu/ThemeToggle'
+import SpaceLoader from '../components/onety/menu/SpaceLoader'
 import Header from '../components/onety/menu/Header'
 import bgStyles from '../styles/onety/login.module.css'
 import styles from '../styles/onety/empresa.module.css'
@@ -17,6 +18,8 @@ export default function Empresa() {
   const [hasLoaded, setHasLoaded] = useState(false)
   const [isSuperadmin, setIsSuperadmin] = useState(false)
   const router = useRouter()
+
+  const MIN_LOADING_MS = 1000
 
   useEffect(() => {
     const resolveTheme = () => {
@@ -67,6 +70,7 @@ export default function Empresa() {
       setLoading(true)
       setError('')
       setHasLoaded(true)
+      const startAt = Date.now()
       
       try {
         if (!userId) {
@@ -131,7 +135,9 @@ export default function Empresa() {
         toast.error(e.message || 'Erro ao carregar empresas', { toastId: 'load-error' })
         setCompanies([])
       } finally {
-        setLoading(false)
+        const elapsed = Date.now() - startAt
+        const remaining = Math.max(0, MIN_LOADING_MS - elapsed)
+        setTimeout(() => setLoading(false), remaining)
       }
     }
     fetchCompanies()
@@ -211,7 +217,7 @@ export default function Empresa() {
 
           <div className={`${styles.grid} ${filtered.length === 1 ? styles.single : ''}`}>
             {loading ? (
-              <div className={styles.loading}>Carregando...</div>
+              <SpaceLoader label="Carregando empresas..." />
             ) : (
               filtered.map((c) => (
                 <div key={c.id} className={styles.card}>
