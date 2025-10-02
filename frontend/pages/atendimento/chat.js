@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import ChatSidebar from '../components/Chat/ChatSidebar';
-import ChatWindow from '../components/Chat/ChatWindow';
-import Header from '../components/menu/Header';
-import BillingStatusBanner from '../components/banner/banner';
+import ChatSidebar from '../../components/atendimento/Chat/ChatSidebar';
+import ChatWindow from '../../components/atendimento/Chat/ChatWindow';
+import BillingStatusBanner from '../../components/atendimento/banner/banner';
+import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar'
+
 
 export default function Chat({ auth }) {
   const { user, loading } = auth || {};
@@ -103,13 +104,10 @@ export default function Chat({ auth }) {
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
       {/* Banner de status da empresa */}
       {renderStatusBanner()}
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white">
-        <Header auth={auth} />
-      </div>
-
       {/* Conteúdo principal */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
+      <PrincipalSidebar />
+
         <ChatSidebar 
           onSelectConversation={setSelectedConversation}
           selectedConversation={selectedConversation}

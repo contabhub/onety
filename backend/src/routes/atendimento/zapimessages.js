@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
+const pool = require("../../config/database");
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 const axios = require("axios");
-const MessageHandler = require("../websocket/handlers/messageHandler");
-const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../utils/contactHelper");
+const MessageHandler = require("../../websocket/handlers/atendimento/messageHandler");
+const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../../utils/atendimento/contactHelper");
 const { uploadImageToCloudinary, uploadAudioToCloudinary, uploadVideoToCloudinary, uploadDocumentToCloudinary } = require("../utils/imageUpload");
 // Removido imports não utilizados que podem causar erro
 
@@ -26,10 +26,10 @@ router.post("/start", authOrApiKey, async (req, res) => {
 
     // 🔍 1️⃣ Verifica se a conversa ATIVA já existe para esse cliente e time
     const [existingConv] = await pool.query(
-      `SELECT id FROM conversations 
-       WHERE customer_phone = ? AND team_whatsapp_instance_id = ?
+      `SELECT id FROM conversas 
+       WHERE telefone = ? AND times_atendimento_instancia_id = ?
        AND status IN ('aberta', 'em_andamento')
-       ORDER BY created_at DESC LIMIT 1`,
+       ORDER BY criado_em DESC LIMIT 1`,
       [customer_phone, team_whatsapp_instance_id]
     );
 
@@ -59,7 +59,7 @@ router.post("/start", authOrApiKey, async (req, res) => {
       }
       
       const [newConv] = await pool.query(
-        `INSERT INTO conversations (team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id, status, contact_id)
+        `INSERT INTO conversas (times_atendimento_instancia_id, nome, telefone, usuario_responsavel_id, status, lead_id)
          VALUES (?, ?, ?, ?, 'aberta', ?)`,
         [team_whatsapp_instance_id, customer_name || null, customer_phone, sender_id, contactId]
       );
@@ -68,9 +68,9 @@ router.post("/start", authOrApiKey, async (req, res) => {
 
     // 🔍 3️⃣ Busca os dados da instância Z-API
     const [instanceData] = await pool.query(
-      `SELECT wi.instance_name, wi.token 
-       FROM team_whatsapp_instances twi
-       JOIN whatsapp_instances wi ON twi.whatsapp_instance_id = wi.id
+      `SELECT wi.instancia_nome, wi.token 
+       FROM times_atendimento_instancias twi
+       JOIN instancias wi ON twi.instancia_id = wi.id
        WHERE twi.id = ?`,
       [team_whatsapp_instance_id]
     );
@@ -79,10 +79,10 @@ router.post("/start", authOrApiKey, async (req, res) => {
       return res.status(400).json({ error: "Instância do WhatsApp não encontrada." });
     }
 
-    const { instance_name, token } = instanceData[0];
+    const { instancia_nome, token } = instanceData[0];
 
     // 🔥 4️⃣ Envia a mensagem pela Z-API
-    const zapiUrl = `https://api.z-api.io/instances/${instance_name}/token/${token}/send-text`;
+    const zapiUrl = `https://api.z-api.io/instances/${instancia_nome}/token/${token}/send-text`;
     console.log("📤 Enviando mensagem inicial para:", customer_phone);
 
     const zapiResponse = await fetch(zapiUrl, {
@@ -106,7 +106,7 @@ router.post("/start", authOrApiKey, async (req, res) => {
 
     // 📝 5️⃣ Salva a mensagem no banco
     await pool.query(
-      `INSERT INTO messages (conversation_id, sender_type, sender_id, message_type, content, \`read\`)
+      `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, lido)
        VALUES (?, 'user', ?, 'text', ?, 0)`,
       [conversationId, sender_id, message]
     );
@@ -166,9 +166,9 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
     const getTwiByInstanceName = async (name) => {
       const [rows] = await pool.query(
         `SELECT twi.id AS id
-           FROM whatsapp_instances wi
-           JOIN team_whatsapp_instances twi ON twi.whatsapp_instance_id = wi.id
-          WHERE wi.instance_name = ?
+           FROM instancias wi
+           JOIN times_atendimento_instancias twi ON twi.instancia_id = wi.id
+          WHERE wi.instancia_nome = ?
           LIMIT 1`,
         [name]
       );
@@ -179,9 +179,9 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
       if (!companyId) return null;
       const [rows] = await pool.query(
         `SELECT twi.id
-           FROM teams t
-           JOIN team_whatsapp_instances twi ON twi.team_id = t.id
-          WHERE t.company_id = ? AND t.padrao = 1
+           FROM times_atendimento t
+           JOIN times_atendimento_instancias twi ON twi.times_atendimento_id = t.id
+          WHERE t.empresa_id = ? AND t.padrao = 1
           LIMIT 1`,
         [companyId]
       );
@@ -194,14 +194,14 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
 
       // 2) tenta achar conversa ABERTA pelo telefone dentro da empresa (independente do time)
       const [found] = await pool.query(
-        `SELECT c.id, c.team_whatsapp_instance_id
-           FROM conversations c
-           JOIN team_whatsapp_instances twi2 ON c.team_whatsapp_instance_id = twi2.id
-           JOIN teams t ON twi2.team_id = t.id
-          WHERE c.customer_phone = ?
-            AND t.company_id = ?
+        `SELECT c.id, c.times_atendimento_instancia_id
+           FROM conversas c
+           JOIN times_atendimento_instancias twi2 ON c.times_atendimento_instancia_id = twi2.id
+           JOIN times_atendimento t ON twi2.times_atendimento_id = t.id
+          WHERE c.telefone = ?
+            AND t.empresa_id = ?
             AND c.status IN ('aberta', 'em_andamento')
-          ORDER BY c.updated_at DESC
+          ORDER BY c.atualizado_em DESC
           LIMIT 1`,
         [phone, companyId]
       );
@@ -232,8 +232,8 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
       }
       
       const [ins] = await pool.query(
-        `INSERT INTO conversations
-           (team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id, status, contact_id)
+        `INSERT INTO conversas
+           (times_atendimento_instancia_id, nome, telefone, usuario_responsavel_id, status, lead_id)
          VALUES (?, ?, ?, ?, 'aberta', ?)`,
         [twiToUse, custName || null, phone, assignedId || null, contactId]
       );
@@ -244,7 +244,7 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
     // usa sender_type = 'user' e crase em `read`
     const insertAgentMessage = async ({ conversationId, senderId, content }) => {
       const [ins] = await pool.query(
-        `INSERT INTO messages (conversation_id, sender_type, sender_id, message_type, content, \`read\`)
+        `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, lido)
          VALUES (?, 'user', ?, 'text', ?, 0)`,
         [conversationId, senderId || null, content]
       );
@@ -372,9 +372,9 @@ router.post("/evolution/send-audio", authOrApiKey, async (req, res) => {
     const getTwiByInstanceName = async (name) => {
       const [rows] = await pool.query(
         `SELECT twi.id AS id
-           FROM whatsapp_instances wi
-           JOIN team_whatsapp_instances twi ON twi.whatsapp_instance_id = wi.id
-          WHERE wi.instance_name = ?
+           FROM instancias wi
+           JOIN times_atendimento_instancias twi ON twi.instancia_id = wi.id
+          WHERE wi.instancia_nome = ?
           LIMIT 1`,
         [name]
       );
@@ -384,10 +384,10 @@ router.post("/evolution/send-audio", authOrApiKey, async (req, res) => {
     const resolveOrCreateConversation = async ({ twiId, phone, custName, assignedId }) => {
       // 1) tenta achar conversa ABERTA primeiro
       const [found] = await pool.query(
-        `SELECT id FROM conversations 
-         WHERE customer_phone = ? AND team_whatsapp_instance_id = ? 
+        `SELECT id FROM conversas 
+         WHERE telefone = ? AND times_atendimento_instancia_id = ? 
          AND status IN ('aberta', 'em_andamento')
-         ORDER BY created_at DESC LIMIT 1`,
+         ORDER BY criado_em DESC LIMIT 1`,
         [phone, twiId]
       );
       if (found.length) {
@@ -416,8 +416,8 @@ router.post("/evolution/send-audio", authOrApiKey, async (req, res) => {
       }
       
       const [ins] = await pool.query(
-        `INSERT INTO conversations
-           (team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id, status, contact_id)
+        `INSERT INTO conversas
+           (times_atendimento_instancia_id, nome, telefone, usuario_responsavel_id, status, lead_id)
          VALUES (?, ?, ?, ?, 'aberta', ?)`,
         [twiId, custName || null, phone, assignedId || null, contactId]
       );
@@ -427,7 +427,7 @@ router.post("/evolution/send-audio", authOrApiKey, async (req, res) => {
 
     const insertAgentMessage = async ({ conversationId, senderId, content, messageType = 'audio', mediaUrl = null }) => {
       const [ins] = await pool.query(
-        `INSERT INTO messages (conversation_id, sender_type, sender_id, message_type, content, media_url, \`read\`)
+        `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, midia_url, lido)
          VALUES (?, 'user', ?, ?, ?, ?, 0)`,
         [conversationId, senderId || null, content || 'Áudio', messageType, mediaUrl]
       );
@@ -651,9 +651,9 @@ router.post("/evolution/send-media", authOrApiKey, async (req, res) => {
     const getTwiByInstanceName = async (name) => {
       const [rows] = await pool.query(
         `SELECT twi.id AS id
-           FROM whatsapp_instances wi
-           JOIN team_whatsapp_instances twi ON twi.whatsapp_instance_id = wi.id
-          WHERE wi.instance_name = ?
+           FROM instancias wi
+           JOIN times_atendimento_instancias twi ON twi.instancia_id = wi.id
+          WHERE wi.instancia_nome = ?
           LIMIT 1`,
         [name]
       );
@@ -664,10 +664,10 @@ router.post("/evolution/send-media", authOrApiKey, async (req, res) => {
       try {
         // 1) tentar encontrar conversa ATIVA primeiro
         const [existingRows] = await pool.query(
-          `SELECT id FROM conversations 
-           WHERE team_whatsapp_instance_id = ? AND customer_phone = ?
+          `SELECT id FROM conversas 
+           WHERE times_atendimento_instancia_id = ? AND telefone = ?
            AND status IN ('aberta', 'em_andamento')
-           ORDER BY created_at DESC LIMIT 1`,
+           ORDER BY criado_em DESC LIMIT 1`,
           [twiId, phone]
         );
 
@@ -678,8 +678,8 @@ router.post("/evolution/send-media", authOrApiKey, async (req, res) => {
 
         // 2) criar nova conversa
         const [result] = await pool.query(
-          `INSERT INTO conversations 
-           (team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id, status)
+          `INSERT INTO conversas 
+           (times_atendimento_instancia_id, nome, telefone, usuario_responsavel_id, status)
            VALUES (?, ?, ?, ?, 'aberta')`,
           [twiId, custName || null, phone, assignedId || null]
         );
@@ -695,8 +695,8 @@ router.post("/evolution/send-media", authOrApiKey, async (req, res) => {
     const insertAgentMessage = async ({ conversationId, senderId, content, messageType, mediaUrl }) => {
       try {
         const [result] = await pool.query(
-          `INSERT INTO messages 
-           (conversation_id, sender_type, sender_id, message_type, content, media_url)
+          `INSERT INTO mensagens 
+           (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, midia_url)
            VALUES (?, 'user', ?, ?, ?, ?)`,
           [conversationId, senderId, messageType, content, mediaUrl]
         );

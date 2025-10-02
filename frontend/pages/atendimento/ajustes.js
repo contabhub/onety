@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import Head from 'next/head';
-import Header from '../components/menu/Header';
-import AjustesSidebar from '../components/ajustes/AjustesSidebar';
-import Conta from '../components/ajustes/Conta';
-import CanaisAtendimento from '../components/ajustes/CanaisAtendimento';
-import Equipes from '../components/ajustes/Equipes';
-import Usuarios from '../components/ajustes/Usuarios';
-import Contatos from '../components/ajustes/Contatos';
-import Webhooks from '../components/ajustes/Webhooks';
-import Etiquetas from '../components/ajustes/Etiquetas';
-import LinksExternos from '../components/ajustes/LinksExternos';
-import '../styles/ajustes.module.css';
+import AjustesSidebar from '../../components/atendimento/ajustes/AjustesSidebar';
+import Conta from '../../components/atendimento/ajustes/Conta';
+import CanaisAtendimento from '../../components/atendimento/ajustes/CanaisAtendimento';
+import Equipes from '../../components/atendimento/ajustes/Equipes';
+import Usuarios from '../../components/atendimento/ajustes/Usuarios';
+import Contatos from '../../components/atendimento/ajustes/Contatos';
+import Webhooks from '../../components/atendimento/ajustes/Webhooks';
+import Etiquetas from '../../components/atendimento/ajustes/Etiquetas';
+import LinksExternos from '../../components/atendimento/ajustes/LinksExternos';
+import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar'
+
+import '../../styles/atendimento/ajustes.module.css';
 
 export default function Ajustes({ auth }) {
   const [activeSection, setActiveSection] = useState('conta');
@@ -45,11 +46,11 @@ export default function Ajustes({ auth }) {
         <meta name="description" content="Configurações da sua conta e empresa" />
       </Head>
       
-      <div className="flex flex-col h-screen bg-gray-100">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-white">
-          <Header auth={auth} />
+      <div style={{ flexShrink: 0 }}>
+          <PrincipalSidebar />
         </div>
+
+      <div className="flex flex-col h-screen bg-gray-100">
         
         {/* Conteúdo principal */}
         <div className="flex flex-1 min-h-0 overflow-hidden">

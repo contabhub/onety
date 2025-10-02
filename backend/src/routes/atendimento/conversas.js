@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
-const ConversationHandler = require("../websocket/handlers/conversationHandler");
-const MessageHandler = require("../websocket/handlers/messageHandler");
-const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../utils/contactHelper");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
+const ConversationHandler = require("../../websocket/handlers/atendimento/conversationHandler");
+const MessageHandler = require("../../websocket/handlers/atendimento/messageHandler");
+const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../../utils/atendimento/contactHelper");
 
 
 /**
@@ -37,16 +37,16 @@ router.post("/", authOrApiKey, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO conversations (team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id, contact_id) 
+      `INSERT INTO conversas (times_atendimento_instancia_id, nome, telefone, usuario_responsavel_id, lead_id) 
        VALUES (?, ?, ?, ?, ?)`,
       [team_whatsapp_instance_id, customer_name || null, customer_phone, assigned_user_id || null, contactId]
     );
 
     // Busca o company_id para notificar via WebSocket
     const [instanceRows] = await pool.query(`
-      SELECT t.company_id 
-      FROM team_whatsapp_instances twi 
-      JOIN teams t ON twi.team_id = t.id
+      SELECT t.empresa_id 
+      FROM times_atendimento_instancias twi 
+      JOIN times_atendimento t ON twi.times_atendimento_id = t.id
       WHERE twi.id = ?
     `, [team_whatsapp_instance_id]);
 
@@ -57,7 +57,7 @@ router.post("/", authOrApiKey, async (req, res) => {
       customer_phone, 
       assigned_user_id, 
       status: 'aberta',
-      company_id: instanceRows[0]?.company_id
+      company_id: instanceRows[0]?.empresa_id
     };
 
     // Notifica via WebSocket
@@ -77,7 +77,7 @@ router.post("/", authOrApiKey, async (req, res) => {
  */
 router.get("/", authOrApiKey, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM conversations");
+    const [rows] = await pool.query("SELECT * FROM conversas");
     res.json(rows);
   } catch (err) {   
     res.status(500).json({ error: "Erro ao buscar conversas." });
@@ -95,9 +95,9 @@ router.get("/:id", authOrApiKey, async (req, res) => {
         t.nome AS team_name,
         t.padrao AS team_is_default,
         t.id AS team_id
-      FROM conversations c
-      JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-      JOIN teams t ON twi.team_id = t.id
+      FROM conversas c
+      JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+      JOIN times_atendimento t ON twi.times_atendimento_id = t.id
       WHERE c.id = ?
     `, [req.params.id]);
     
@@ -106,15 +106,15 @@ router.get("/:id", authOrApiKey, async (req, res) => {
     const conversation = rows[0];
     res.json({
       id: conversation.id,
-      team_whatsapp_instance_id: conversation.team_whatsapp_instance_id,
-      customer_name: conversation.customer_name,
-      customer_phone: conversation.customer_phone,
-      contact_id: conversation.contact_id,
+      team_whatsapp_instance_id: conversation.times_atendimento_instancia_id,
+      customer_name: conversation.nome,
+      customer_phone: conversation.telefone,
+      contact_id: conversation.lead_id,
       status: conversation.status,
-      assigned_user_id: conversation.assigned_user_id,
+      assigned_user_id: conversation.usuario_responsavel_id,
       avatar_url: conversation.avatar_url,
-      created_at: conversation.created_at,
-      updated_at: conversation.updated_at,
+      created_at: conversation.criado_em,
+      updated_at: conversation.atualizado_em,
       team: {
         id: conversation.team_id,
         nome: conversation.team_name,
@@ -135,7 +135,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     const { status, assigned_user_id } = req.body;
 
     await pool.query(
-      "UPDATE conversations SET status = ?, assigned_user_id = ?, updated_at = NOW() WHERE id = ?",
+      "UPDATE conversas SET status = ?, usuario_responsavel_id = ?, atualizado_em = NOW() WHERE id = ?",
       [status || 'aberta', assigned_user_id || null, req.params.id]
     );
 
@@ -151,7 +151,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
  */
 router.delete("/:id", authOrApiKey, async (req, res) => {
   try {
-    await pool.query("DELETE FROM conversations WHERE id = ?", [req.params.id]);
+    await pool.query("DELETE FROM conversas WHERE id = ?", [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Erro ao deletar conversa." });
@@ -165,30 +165,30 @@ router.get("/company/:companyId", authOrApiKey, async (req, res) => {
   try {
     const { companyId } = req.params;
 
-    // 🔍 Busca todas as conversas ligadas a times da empresa via team_whatsapp_instances
+    // 🔍 Busca todas as conversas ligadas a times da empresa via times_atendimento_instancias
     const [rows] = await pool.query(`
       SELECT 
         c.id,
-        c.customer_name,
-        c.customer_phone,
+        c.nome AS customer_name,
+        c.telefone AS customer_phone,
         c.status,
-        c.assigned_user_id,
-        c.contact_id,
+        c.usuario_responsavel_id AS assigned_user_id,
+        c.lead_id AS contact_id,
         u.nome AS assigned_user_name,
         cont.nome AS contact_name,
         cont.email AS contact_email,
-        c.created_at,
-        c.updated_at,
+        c.criado_em AS created_at,
+        c.atualizado_em AS updated_at,
         t.nome AS team_name,
-        wi.instance_name AS whatsapp_instance_name
-      FROM conversations c
-      JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-      JOIN teams t ON twi.team_id = t.id
-      JOIN whatsapp_instances wi ON twi.whatsapp_instance_id = wi.id
-      LEFT JOIN users u ON c.assigned_user_id = u.id
-      LEFT JOIN contacts cont ON c.contact_id = cont.id
-      WHERE t.company_id = ?
-      ORDER BY c.created_at DESC
+        wi.instancia_nome AS whatsapp_instance_name
+      FROM conversas c
+      JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+      JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+      JOIN instancias wi ON twi.instancia_id = wi.id
+      LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
+      LEFT JOIN leads cont ON c.lead_id = cont.id
+      WHERE t.empresa_id = ?
+      ORDER BY c.criado_em DESC
     `, [companyId]);
 
     if (rows.length === 0) {
@@ -217,7 +217,7 @@ router.get("/company/:companyId/user/:userId", authOrApiKey, async (req, res) =>
 
     // 🔐 Verifica se o usuário pertence à empresa
     const [vinculo] = await pool.query(
-      `SELECT * FROM user_company WHERE user_id = ? AND company_id = ?`,
+      `SELECT * FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?`,
       [userId, companyId]
     );
 
@@ -225,24 +225,24 @@ router.get("/company/:companyId/user/:userId", authOrApiKey, async (req, res) =>
       return res.status(403).json({ error: "Usuário não pertence a esta empresa." });
     }
 
-    // 🔍 Buscar conversas da empresa atribuídas ao usuário OU sem assigned_user_id
+    // 🔍 Buscar conversas da empresa atribuídas ao usuário OU sem usuario_responsavel_id
     const [rows] = await pool.query(`
       SELECT 
         c.id AS conversation_id,
-        c.customer_name,
-        c.customer_phone,
+        c.nome AS customer_name,
+        c.telefone AS customer_phone,
         c.avatar_url,
         c.status,
-        c.assigned_user_id,
-        c.contact_id,
+        c.usuario_responsavel_id AS assigned_user_id,
+        c.lead_id AS contact_id,
         u.nome AS assigned_user_name,
         cont.nome AS contact_name,
         cont.email AS contact_email,
-        c.created_at,
-        c.updated_at,
+        c.criado_em AS created_at,
+        c.atualizado_em AS updated_at,
         t.nome AS team_name,
-        wi.instance_name AS whatsapp_instance_name,
-        wi.instance_id AS zapi_instance_id,
+        wi.instancia_nome AS whatsapp_instance_name,
+        wi.instancia_id AS zapi_instance_id,
         wi.token AS zapi_token,
         
         -- Última mensagem
@@ -251,21 +251,21 @@ router.get("/company/:companyId/user/:userId", authOrApiKey, async (req, res) =>
         m.read AS last_message_read,
         m.sender_type AS last_message_sender
 
-      FROM conversations c
-      JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-      JOIN teams t ON twi.team_id = t.id
-      JOIN whatsapp_instances wi ON twi.whatsapp_instance_id = wi.id
-      LEFT JOIN users u ON c.assigned_user_id = u.id
-      LEFT JOIN contacts cont ON c.contact_id = cont.id
+      FROM conversas c
+      JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+      JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+      JOIN instancias wi ON twi.instancia_id = wi.id
+      LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
+      LEFT JOIN leads cont ON c.lead_id = cont.id
       LEFT JOIN messages m ON m.id = (
         SELECT id FROM messages
         WHERE conversation_id = c.id
         ORDER BY created_at DESC
         LIMIT 1
       )
-      WHERE t.company_id = ?
-        AND (c.assigned_user_id = ? OR c.assigned_user_id IS NULL)
-      ORDER BY c.updated_at DESC
+      WHERE t.empresa_id = ?
+        AND (c.usuario_responsavel_id = ? OR c.usuario_responsavel_id IS NULL)
+      ORDER BY c.atualizado_em DESC
     `, [companyId, userId]);
 
     res.json({
@@ -290,9 +290,9 @@ router.put("/:conversationId/assume/:userId", authOrApiKey, async (req, res) => 
   try {
     const { conversationId, userId } = req.params;
 
-    // Verifica se a conversa existe e ainda não tem assigned_user_id
+    // Verifica se a conversa existe e ainda não tem usuario_responsavel_id
     const [rows] = await pool.query(
-      `SELECT * FROM conversations WHERE id = ? AND assigned_user_id IS NULL`,
+      `SELECT * FROM conversas WHERE id = ? AND usuario_responsavel_id IS NULL`,
       [conversationId]
     );
 
@@ -302,7 +302,7 @@ router.put("/:conversationId/assume/:userId", authOrApiKey, async (req, res) => 
 
     // Atribui a conversa ao usuário
     await pool.query(
-      `UPDATE conversations SET assigned_user_id = ?, updated_at = NOW() WHERE id = ?`,
+      `UPDATE conversas SET usuario_responsavel_id = ?, atualizado_em = NOW() WHERE id = ?`,
       [userId, conversationId]
     );
 
@@ -325,14 +325,14 @@ router.patch("/:id/finalize", authOrApiKey, async (req, res) => {
     const { id } = req.params;
 
     // Verifica se a conversa existe
-    const [rows] = await pool.query(`SELECT * FROM conversations WHERE id = ?`, [id]);
+    const [rows] = await pool.query(`SELECT * FROM conversas WHERE id = ?`, [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: "Conversa não encontrada." });
     }
 
-    // Atualiza o status para "finalizada"
+    // Atualiza o status para "fechada"
     await pool.query(
-      `UPDATE conversations SET status = 'fechada', updated_at = NOW() WHERE id = ?`,
+      `UPDATE conversas SET status = 'fechada', atualizado_em = NOW() WHERE id = ?`,
       [id]
     );
 
@@ -361,7 +361,7 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
 
     // 1) conversa atual
     const [convRows] = await conn.query(
-      "SELECT id, team_whatsapp_instance_id FROM conversations WHERE id = ? FOR UPDATE",
+      "SELECT id, times_atendimento_instancia_id FROM conversas WHERE id = ? FOR UPDATE",
       [id]
     );
     if (convRows.length === 0) {
@@ -370,7 +370,7 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
     }
 
     // 2) time destino
-    const [teamRows] = await conn.query("SELECT id, company_id, nome FROM teams WHERE id = ?", [team_id]);
+    const [teamRows] = await conn.query("SELECT id, empresa_id, nome FROM times_atendimento WHERE id = ?", [team_id]);
     if (teamRows.length === 0) {
       await conn.rollback();
       return res.status(404).json({ error: "Equipe não encontrada." });
@@ -378,7 +378,7 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
 
     // 3) resolver TWI do time destino (se houver mais de um, pode exigir explicitamente no body)
     const [twiRows] = await conn.query(
-      "SELECT id FROM team_whatsapp_instances WHERE team_id = ? LIMIT 1",
+      "SELECT id FROM times_atendimento_instancias WHERE times_atendimento_id = ? LIMIT 1",
       [team_id]
     );
     if (twiRows.length === 0) {
@@ -389,10 +389,10 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
 
     // 4) aplicar transferência: muda o dono (TWI) e reatribui (ou zera) o agente
     await conn.query(
-      `UPDATE conversations
-         SET team_whatsapp_instance_id = ?, 
-             assigned_user_id = ?,
-             updated_at = NOW()
+      `UPDATE conversas
+         SET times_atendimento_instancia_id = ?, 
+             usuario_responsavel_id = ?,
+             atualizado_em = NOW()
        WHERE id = ?`,
       [twiTo, assign_user_id || null, id]
     );
@@ -401,7 +401,7 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
 
     try {
       // Notificar frontend sobre atualização da conversa (muda equipe e possível responsável)
-      const companyId = teamRows[0].company_id;
+      const companyId = teamRows[0].empresa_id;
       const updates = {
         team_whatsapp_instance_id: twiTo,
         assigned_user_id: assign_user_id || null,
@@ -438,20 +438,20 @@ router.patch("/:id/transfer/user", authOrApiKey, async (req, res) => {
     }
 
     // Verifica se a conversa existe
-    const [conversation] = await pool.query(`SELECT * FROM conversations WHERE id = ?`, [id]);
+    const [conversation] = await pool.query(`SELECT * FROM conversas WHERE id = ?`, [id]);
     if (conversation.length === 0) {
       return res.status(404).json({ error: "Conversa não encontrada." });
     }
 
     // Verifica se o usuário existe
-    const [user] = await pool.query(`SELECT id, nome, apelido FROM users WHERE id = ?`, [assigned_user_id]);
+    const [user] = await pool.query(`SELECT id, nome, apelido FROM usuarios WHERE id = ?`, [assigned_user_id]);
     if (user.length === 0) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
 
-    // Atualiza o assigned_user_id
+    // Atualiza o usuario_responsavel_id
     await pool.query(
-      `UPDATE conversations SET assigned_user_id = ?, updated_at = NOW() WHERE id = ?`,
+      `UPDATE conversas SET usuario_responsavel_id = ?, atualizado_em = NOW() WHERE id = ?`,
       [assigned_user_id, id]
     );
 
@@ -478,15 +478,15 @@ router.get("/:id/messages", authOrApiKey, async (req, res) => {
       `
       SELECT 
         m.*,
-        c.assigned_user_id,
+        c.usuario_responsavel_id AS assigned_user_id,
         u.nome AS assigned_user_name,
         c.status AS conversation_status,
         sender_user.nome AS sender_user_name,
         sender_user.apelido AS sender_user_nickname
       FROM messages m
-      JOIN conversations c ON m.conversation_id = c.id
-      LEFT JOIN users u ON c.assigned_user_id = u.id
-      LEFT JOIN users sender_user ON m.sender_id = sender_user.id AND m.sender_type = 'user'
+      JOIN conversas c ON m.conversation_id = c.id
+      LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
+      LEFT JOIN usuarios sender_user ON m.sender_id = sender_user.id AND m.sender_type = 'user'
       WHERE m.conversation_id = ?
       ORDER BY m.created_at ASC
       `,
@@ -514,17 +514,17 @@ router.get("/team/:teamId/conversations", authOrApiKey, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         c.id AS conversation_id,
-        c.customer_name,
-        c.customer_phone,
+        c.nome AS customer_name,
+        c.telefone AS customer_phone,
         c.avatar_url,
         c.status,
-        c.assigned_user_id,
-        c.contact_id,
+        c.usuario_responsavel_id AS assigned_user_id,
+        c.lead_id AS contact_id,
         u.nome AS assigned_user_name,   -- nome do usuário responsável
         cont.nome AS contact_name,
         cont.email AS contact_email,
-        c.created_at,
-        c.updated_at,
+        c.criado_em AS created_at,
+        c.atualizado_em AS updated_at,
 
     -- 🔔 Quantidade de mensagens não lidas (apenas do cliente)
     COALESCE((
@@ -535,11 +535,11 @@ router.get("/team/:teamId/conversations", authOrApiKey, async (req, res) => {
     ), 0) AS unread_count,
         
         -- Informações da instância WhatsApp
-        wi.instance_name AS instance_name,
-        wi.phone_number,
-        wi.instance_id AS instance_id,
+        wi.instancia_nome AS instance_name,
+        wi.telefone AS phone_number,
+        wi.instancia_id AS instance_id,
         wi.token AS token,
-        wi.client_token,
+        wi.cliente_token AS client_token,
         wi.status AS whatsapp_status,
         
     -- Última mensagem
@@ -548,19 +548,19 @@ router.get("/team/:teamId/conversations", authOrApiKey, async (req, res) => {
     m.\`read\` AS last_message_read,
     m.sender_type AS last_message_sender
 
-      FROM conversations c
-      JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-      JOIN whatsapp_instances wi ON twi.whatsapp_instance_id = wi.id
-      LEFT JOIN users u ON c.assigned_user_id = u.id
-      LEFT JOIN contacts cont ON c.contact_id = cont.id
+      FROM conversas c
+      JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+      JOIN instancias wi ON twi.instancia_id = wi.id
+      LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
+      LEFT JOIN leads cont ON c.lead_id = cont.id
       LEFT JOIN messages m ON m.id = (
         SELECT id FROM messages
         WHERE conversation_id = c.id
         ORDER BY created_at DESC
         LIMIT 1
       )
-      WHERE twi.team_id = ?
-      ORDER BY c.updated_at DESC
+      WHERE twi.times_atendimento_id = ?
+      ORDER BY c.atualizado_em DESC
     `, [teamId]);
 
     if (rows.length === 0) {
@@ -595,17 +595,17 @@ router.get("/company/:companyId/all", authOrApiKey, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         c.id AS conversation_id,
-        c.customer_name,
-        c.customer_phone,
+        c.nome AS customer_name,
+        c.telefone AS customer_phone,
         c.avatar_url,
         c.status,
-        c.assigned_user_id,
-        c.contact_id,
+        c.usuario_responsavel_id AS assigned_user_id,
+        c.lead_id AS contact_id,
         u.nome AS assigned_user_name,   -- nome do usuário responsável
         cont.nome AS contact_name,
         cont.email AS contact_email,
-        c.created_at,
-        c.updated_at,
+        c.criado_em AS created_at,
+        c.atualizado_em AS updated_at,
 
     -- 🔔 Quantidade de mensagens não lidas (apenas do cliente)
     COALESCE((
@@ -616,11 +616,11 @@ router.get("/company/:companyId/all", authOrApiKey, async (req, res) => {
     ), 0) AS unread_count,
         
         -- Informações da instância WhatsApp
-        wi.instance_name AS instance_name,
-        wi.phone_number,
-        wi.instance_id AS instance_id,
+        wi.instancia_nome AS instance_name,
+        wi.telefone AS phone_number,
+        wi.instancia_id AS instance_id,
         wi.token AS token,
-        wi.client_token,
+        wi.cliente_token AS client_token,
         wi.status AS whatsapp_status,
         
         -- Informações do time
@@ -633,20 +633,20 @@ router.get("/company/:companyId/all", authOrApiKey, async (req, res) => {
     m.\`read\` AS last_message_read,
     m.sender_type AS last_message_sender
 
-      FROM conversations c
-      JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-      JOIN whatsapp_instances wi ON twi.whatsapp_instance_id = wi.id
-      JOIN teams t ON twi.team_id = t.id
-      LEFT JOIN users u ON c.assigned_user_id = u.id
-      LEFT JOIN contacts cont ON c.contact_id = cont.id
+      FROM conversas c
+      JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+      JOIN instancias wi ON twi.instancia_id = wi.id
+      JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+      LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
+      LEFT JOIN leads cont ON c.lead_id = cont.id
       LEFT JOIN messages m ON m.id = (
         SELECT id FROM messages
         WHERE conversation_id = c.id
         ORDER BY created_at DESC
         LIMIT 1
       )
-      WHERE t.company_id = ?
-      ORDER BY c.updated_at DESC
+      WHERE t.empresa_id = ?
+      ORDER BY c.atualizado_em DESC
     `, [companyId]);
 
     res.json({
@@ -685,9 +685,9 @@ router.patch("/:id/read-all", authOrApiKey, async (req, res) => {
 
     const [upd] = await pool.query(sql, [conversationId]);
 
-    // 2) Atualiza updated_at da conversa
+    // 2) Atualiza atualizado_em da conversa
     await pool.query(
-      `UPDATE conversations SET updated_at = NOW() WHERE id = ?`,
+      `UPDATE conversas SET atualizado_em = NOW() WHERE id = ?`,
       [conversationId]
     );
 
@@ -737,7 +737,7 @@ router.patch("/:id/reopen", authOrApiKey, async (req, res) => {
     const { id } = req.params;
 
     // Verifica se a conversa existe e está fechada
-    const [rows] = await pool.query(`SELECT * FROM conversations WHERE id = ?`, [id]);
+    const [rows] = await pool.query(`SELECT * FROM conversas WHERE id = ?`, [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: "Conversa não encontrada." });
     }
@@ -748,7 +748,7 @@ router.patch("/:id/reopen", authOrApiKey, async (req, res) => {
 
     // Atualiza o status para "aberta"
     await pool.query(
-      `UPDATE conversations SET status = 'aberta', updated_at = NOW() WHERE id = ?`,
+      `UPDATE conversas SET status = 'aberta', atualizado_em = NOW() WHERE id = ?`,
       [id]
     );
 
@@ -773,17 +773,17 @@ router.get("/:id/contact", authOrApiKey, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         c.id AS conversation_id,
-        c.customer_name,
-        c.customer_phone,
+        c.nome AS customer_name,
+        c.telefone AS customer_phone,
         cont.id AS contact_id,
         cont.nome AS contact_name,
         cont.email AS contact_email,
         cont.telefone AS contact_phone,
         cont.notas_internas,
-        cont.created_at AS contact_created_at,
-        cont.updated_at AS contact_updated_at
-      FROM conversations c
-      LEFT JOIN contacts cont ON c.contact_id = cont.id
+        cont.criado_em AS contact_created_at,
+        cont.atualizado_em AS contact_updated_at
+      FROM conversas c
+      LEFT JOIN leads cont ON c.lead_id = cont.id
       WHERE c.id = ?
     `, [id]);
 
@@ -834,23 +834,23 @@ router.get("/contact/:contactId", authOrApiKey, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         c.id,
-        c.customer_name,
-        c.customer_phone,
+        c.nome AS customer_name,
+        c.telefone AS customer_phone,
         c.status,
-        c.assigned_user_id,
-        c.contact_id,
-        c.created_at,
-        c.updated_at,
+        c.usuario_responsavel_id AS assigned_user_id,
+        c.lead_id AS contact_id,
+        c.criado_em AS created_at,
+        c.atualizado_em AS updated_at,
         u.nome AS assigned_user_name,
         t.nome AS team_name,
-        wi.instance_name AS whatsapp_instance_name
-      FROM conversations c
-      LEFT JOIN users u ON c.assigned_user_id = u.id
-      LEFT JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-      LEFT JOIN teams t ON twi.team_id = t.id
-      LEFT JOIN whatsapp_instances wi ON twi.whatsapp_instance_id = wi.id
-      WHERE c.contact_id = ?
-      ORDER BY c.created_at DESC
+        wi.instancia_nome AS whatsapp_instance_name
+      FROM conversas c
+      LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
+      LEFT JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+      LEFT JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+      LEFT JOIN instancias wi ON twi.instancia_id = wi.id
+      WHERE c.lead_id = ?
+      ORDER BY c.criado_em DESC
     `, [contactId]);
 
     res.json(rows);

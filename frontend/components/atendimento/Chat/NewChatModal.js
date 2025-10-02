@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Phone, MessageCircle, Users, Smartphone } from 'lucide-react';
 import axios from 'axios';
-import { useAuth } from '../../utils/auth';
+import { useAuth } from '../../../utils/auth';
 import TeamSelectionModal from './TeamSelectionModal';
 import InstanceSelectionModal from './InstanceSelectionModal';
 import styles from './NewChatModal.module.css';

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 const axios = require('axios');
 
 /**
@@ -10,37 +10,37 @@ const axios = require('axios');
 router.post("/", authOrApiKey, async (req, res) => {
   try {
     const {
-      company_id,
-      instance_name,
-      instance_id,
+      empresa_id,
+      instancia_nome,
+      instancia_id,
       token,
-      client_token,
+      cliente_token,
       status,
-      phone_number,
-      integration_type
+      telefone,
+      integracao_tipo
     } = req.body;
 
-    if (!company_id || !instance_name || !instance_id || !token || !client_token) {
-      return res.status(400).json({ error: "Campos obrigatórios: company_id, instance_name, instance_id, token, client_token." });
+    if (!empresa_id || !instancia_nome || !instancia_id || !token || !cliente_token) {
+      return res.status(400).json({ error: "Campos obrigatórios: empresa_id, instancia_nome, instancia_id, token, cliente_token." });
     }
 
     const [result] = await pool.query(
-      `INSERT INTO whatsapp_instances 
-      (company_id, instance_name, instance_id, token, client_token, status, phone_number, integration_type) 
+      `INSERT INTO instancias 
+      (empresa_id, instancia_nome, instancia_id, token, cliente_token, status, telefone, integracao_tipo) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [company_id, instance_name, instance_id, token, client_token, status || 'desconectado', phone_number || null, integration_type || 'zapi']
+      [empresa_id, instancia_nome, instancia_id, token, cliente_token, status || 'desconectado', telefone || null, integracao_tipo || 'zapi']
     );
 
     res.status(201).json({
       id: result.insertId,
-      company_id,
-      instance_name,
-      instance_id,
+      empresa_id,
+      instancia_nome,
+      instancia_id,
       token,
-      client_token,
+      cliente_token,
       status: status || 'desconectado',
-      phone_number,
-      integration_type
+      telefone,
+      integracao_tipo
     });
   } catch (err) {
     console.error("Erro ao criar instância:", err);
@@ -53,7 +53,7 @@ router.post("/", authOrApiKey, async (req, res) => {
  */
 router.get("/", authOrApiKey, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM whatsapp_instances");
+    const [rows] = await pool.query("SELECT * FROM instancias");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: "Erro ao listar instâncias." });
@@ -65,7 +65,7 @@ router.get("/", authOrApiKey, async (req, res) => {
  */
 router.get("/:id", authOrApiKey, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM whatsapp_instances WHERE id = ?", [req.params.id]);
+    const [rows] = await pool.query("SELECT * FROM instancias WHERE id = ?", [req.params.id]);
 
     if (rows.length === 0) return res.status(404).json({ error: "Instância não encontrada." });
     res.json(rows[0]);
@@ -76,15 +76,15 @@ router.get("/:id", authOrApiKey, async (req, res) => {
 
 /**
  * 🏢 Buscar todas as instâncias de uma empresa
- * GET /company/:companyId
+ * GET /empresa/:empresaId
  */
-router.get("/company/:companyId", authOrApiKey, async (req, res) => {
+router.get("/empresa/:empresaId", authOrApiKey, async (req, res) => {
   try {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
 
     const [rows] = await pool.query(
-      "SELECT * FROM whatsapp_instances WHERE company_id = ?",
-      [companyId]
+      "SELECT * FROM instancias WHERE empresa_id = ?",
+      [empresaId]
     );
 
     res.json(rows);
@@ -100,14 +100,14 @@ router.get("/company/:companyId", authOrApiKey, async (req, res) => {
  */
 router.put("/:id", authOrApiKey, async (req, res) => {
   try {
-    const { instance_name, phone_number, status } = req.body;
+    const { instancia_nome, telefone, status } = req.body;
 
     await pool.query(
-      "UPDATE whatsapp_instances SET instance_name = ?, phone_number = ?, status = ? WHERE id = ?",
-      [instance_name, phone_number || null, status || 'desconectado', req.params.id]
+      "UPDATE instancias SET instancia_nome = ?, telefone = ?, status = ? WHERE id = ?",
+      [instancia_nome, telefone || null, status || 'desconectado', req.params.id]
     );
 
-    res.json({ id: req.params.id, instance_name, phone_number, status });
+    res.json({ id: req.params.id, instancia_nome, telefone, status });
   } catch (err) {
     console.error("Erro ao atualizar instância:", err);
     res.status(500).json({ error: "Erro ao atualizar instância." });
@@ -119,18 +119,18 @@ router.put("/:id", authOrApiKey, async (req, res) => {
  */
 router.put("/:id/qr", authOrApiKey, async (req, res) => {
   try {
-    const { last_qr_code, qr_expires_at } = req.body;
+    const { ultimo_qr_code, qr_expira_em } = req.body;
 
-    if (!last_qr_code || !qr_expires_at) {
-      return res.status(400).json({ error: "last_qr_code e qr_expires_at são obrigatórios." });
+    if (!ultimo_qr_code || !qr_expira_em) {
+      return res.status(400).json({ error: "ultimo_qr_code e qr_expira_em são obrigatórios." });
     }
 
     await pool.query(
-      "UPDATE whatsapp_instances SET last_qr_code = ?, qr_expires_at = ? WHERE id = ?",
-      [last_qr_code, qr_expires_at, req.params.id]
+      "UPDATE instancias SET ultimo_qr_code = ?, qr_expira_em = ? WHERE id = ?",
+      [ultimo_qr_code, qr_expira_em, req.params.id]
     );
 
-    res.json({ id: req.params.id, last_qr_code, qr_expires_at });
+    res.json({ id: req.params.id, ultimo_qr_code, qr_expira_em });
   } catch (err) {
     console.error("Erro ao atualizar QR Code:", err);
     res.status(500).json({ error: "Erro ao atualizar QR Code." });
@@ -158,16 +158,16 @@ router.delete("/:id", authOrApiKey, async (req, res) => {
 router.get('/:id/qr-code', authOrApiKey, async (req, res) => {
     try {
       // 🔍 Buscar dados da instância no banco
-      const [rows] = await pool.query("SELECT * FROM whatsapp_instances WHERE id = ?", [req.params.id]);
+      const [rows] = await pool.query("SELECT * FROM instancias WHERE id = ?", [req.params.id]);
       if (rows.length === 0) return res.status(404).json({ error: "Instância não encontrada." });
   
       const instance = rows[0];
   
       // 🌐 Chamar Z-API para pegar QR code em base64
       const response = await axios.get(
-        `https://api.z-api.io/instances/${instance.instance_id}/token/${instance.token}/qr-code/image`,
+        `https://api.z-api.io/instances/${instance.instancia_id}/token/${instance.token}/qr-code/image`,
         {
-          headers: { 'Client-Token': instance.client_token }
+          headers: { 'Client-Token': instance.cliente_token }
         }
       );
   
@@ -176,7 +176,7 @@ router.get('/:id/qr-code', authOrApiKey, async (req, res) => {
   
       // 📥 Atualiza QR Code no banco
       await pool.query(
-        "UPDATE whatsapp_instances SET last_qr_code = ?, qr_expires_at = DATE_ADD(NOW(), INTERVAL 20 SECOND) WHERE id = ?",
+        "UPDATE instancias SET ultimo_qr_code = ?, qr_expira_em = DATE_ADD(NOW(), INTERVAL 20 SECOND) WHERE id = ?",
         [qrCodeBase64, instance.id]
       );
   
@@ -201,22 +201,22 @@ router.get('/:id/qr-code', authOrApiKey, async (req, res) => {
 router.get('/:id/disconnect', authOrApiKey, async (req, res) => {
     try {
       // 🔍 Buscar dados da instância no banco
-      const [rows] = await pool.query("SELECT * FROM whatsapp_instances WHERE id = ?", [req.params.id]);
+      const [rows] = await pool.query("SELECT * FROM instancias WHERE id = ?", [req.params.id]);
       if (rows.length === 0) return res.status(404).json({ error: "Instância não encontrada." });
   
       const instance = rows[0];
   
       // 🌐 Chamar Z-API para desconectar
       const response = await axios.get(
-        `https://api.z-api.io/instances/${instance.instance_id}/token/${instance.token}/disconnect`,
+        `https://api.z-api.io/instances/${instance.instancia_id}/token/${instance.token}/disconnect`,
         {
-          headers: { 'Client-Token': instance.client_token }
+          headers: { 'Client-Token': instance.cliente_token }
         }
       );
   
       // 🔄 Atualizar status da instância para 'desconectado'
       await pool.query(
-        "UPDATE whatsapp_instances SET status = 'desconectado', last_qr_code = NULL, qr_expires_at = NULL WHERE id = ?",
+        "UPDATE instancias SET status = 'desconectado', ultimo_qr_code = NULL, qr_expira_em = NULL WHERE id = ?",
         [instance.id]
       );
   
@@ -234,7 +234,7 @@ router.get('/:id/disconnect', authOrApiKey, async (req, res) => {
 router.get('/:id/status', authOrApiKey, async (req, res) => {
   try {
     // 🔍 Buscar instância no banco
-    const [rows] = await pool.query("SELECT * FROM whatsapp_instances WHERE id = ?", [req.params.id]);
+    const [rows] = await pool.query("SELECT * FROM instancias WHERE id = ?", [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: "Instância não encontrada." });
 
     const instance = rows[0];
@@ -259,7 +259,7 @@ router.get('/:id/status', authOrApiKey, async (req, res) => {
 
     // 📝 Atualizar status no banco
     await pool.query(
-      "UPDATE whatsapp_instances SET status = ? WHERE id = ?",
+      "UPDATE instancias SET status = ? WHERE id = ?",
       [newStatus, instance.id]
     );
 
@@ -285,21 +285,21 @@ router.get('/:id/status', authOrApiKey, async (req, res) => {
 router.post('/evolution/create', authOrApiKey, async (req, res) => {
   try {
     const {
-      company_id,
+      empresa_id,
       instanceName,
       integration,
       token,
-      integration_type
+      integracao_tipo
     } = req.body;
 
     const generatedToken = token || Math.floor(100000 + Math.random() * 900000).toString();
 
     console.log("📥 Recebido para criação da instância:", {
-      company_id,
+      empresa_id,
       instanceName,
       integration,
       token: generatedToken,
-      integration_type
+      integracao_tipo
     });
 
     // 🔗 Criar instância na Evolution
@@ -309,7 +309,7 @@ router.post('/evolution/create', authOrApiKey, async (req, res) => {
         instanceName,
         integration,
         token: generatedToken,
-        integration_type
+        integracao_tipo
       },
       {
         headers: {
@@ -333,11 +333,11 @@ router.post('/evolution/create', authOrApiKey, async (req, res) => {
 
     // Salvar no banco
     const [result] = await pool.query(
-      `INSERT INTO whatsapp_instances 
-        (company_id, instance_name, instance_id, token, client_token, status, phone_number, integration_type)
+      `INSERT INTO instancias 
+        (empresa_id, instancia_nome, instancia_id, token, cliente_token, status, telefone, integracao_tipo)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        company_id,
+        empresa_id,
         instanceName,
         instanceId,
         generatedToken,
@@ -452,7 +452,7 @@ router.get("/evolution/status/:instanceName", authOrApiKey, async (req, res) => 
 
     // 📝 Atualizar status no banco apenas se for integração Evolution
     await pool.query(
-      "UPDATE whatsapp_instances SET status = ? WHERE instance_name = ? AND integration_type = 'evolution'",
+      "UPDATE instancias SET status = ? WHERE instancia_nome = ? AND integracao_tipo = 'evolution'",
       [mappedStatus, instanceName]
     );
 
@@ -489,9 +489,9 @@ router.delete("/evolution/disconnect/:instanceName", authOrApiKey, async (req, r
 
     // Atualiza status no banco para "desconectado"
     await pool.query(
-      `UPDATE whatsapp_instances 
+      `UPDATE instancias 
        SET status = 'desconectado' 
-       WHERE instance_name = ? AND integration_type = 'evolution'`,
+       WHERE instancia_nome = ? AND integracao_tipo = 'evolution'`,
       [instanceName]
     );
 
@@ -527,8 +527,8 @@ router.delete("/evolution/delete/:instanceName", authOrApiKey, async (req, res) 
 
     // 🗑️ Deleta do banco também (se integração_type for evolution)
     const [result] = await pool.query(
-      `DELETE FROM whatsapp_instances 
-       WHERE instance_name = ? AND integration_type = 'evolution'`,
+      `DELETE FROM instancias 
+       WHERE instancia_nome = ? AND integracao_tipo = 'evolution'`,
       [instanceName]
     );
 

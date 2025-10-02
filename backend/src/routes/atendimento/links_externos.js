@@ -1,17 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 
 /**
  * 📌 POST /links-externos - Criar link externo
  */
 router.post("/", authOrApiKey, async (req, res) => {
   try {
-    const { nome, link, company_id } = req.body;
+    const { nome, link, empresa_id } = req.body;
 
-    if (!nome || !link || !company_id) {
-      return res.status(400).json({ error: "Campos obrigatórios: nome, link, company_id." });
+    if (!nome || !link || !empresa_id) {
+      return res.status(400).json({ error: "Campos obrigatórios: nome, link, empresa_id." });
     }
 
     // Validar formato da URL
@@ -22,15 +22,15 @@ router.post("/", authOrApiKey, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO links_externos (nome, link, company_id) VALUES (?, ?, ?)`,
-      [nome, link, company_id]
+      `INSERT INTO links_externos (nome, link, empresa_id) VALUES (?, ?, ?)`,
+      [nome, link, empresa_id]
     );
 
     res.status(201).json({ 
       id: result.insertId, 
       nome, 
       link, 
-      company_id,
+      empresa_id,
       message: "Link externo criado com sucesso!"
     });
   } catch (err) {
@@ -43,14 +43,14 @@ router.post("/", authOrApiKey, async (req, res) => {
 });
 
 /**
- * 📌 GET /links-externos/company/:companyId - Listar links externos por empresa
+ * 📌 GET /links-externos/company/:empresaId - Listar links externos por empresa
  */
-router.get("/company/:companyId", authOrApiKey, async (req, res) => {
+router.get("/company/:empresaId", authOrApiKey, async (req, res) => {
   try {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
     const [rows] = await pool.query(
-      `SELECT * FROM links_externos WHERE company_id = ? ORDER BY nome ASC`,
-      [companyId]
+      `SELECT * FROM links_externos WHERE empresa_id = ? ORDER BY nome ASC`,
+      [empresaId]
     );
     res.json(rows);
   } catch (err) {
@@ -100,7 +100,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     values.push(req.params.id);
 
     await pool.query(
-      `UPDATE links_externos SET ${fields.join(", ")}, updated_at = NOW() WHERE id = ?`,
+      `UPDATE links_externos SET ${fields.join(", ")}, atualizado_em = NOW() WHERE id = ?`,
       values
     );
 

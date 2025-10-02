@@ -1,4 +1,4 @@
-const webSocketManager = require('../index');
+const webSocketManager = require('../../index');
 
 class UserHandler {
   /**

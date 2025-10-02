@@ -243,8 +243,36 @@ export default function Modulos() {
 
   const handleAccessModulo = (modulo) => {
     if (!modulo) return
-    // Acessa sempre a página de onboarding do módulo
-    router.push(`/onboarding/${modulo.id}`)
+    // Persistir módulo selecionado para a sidebar principal
+    try {
+      const slug = normalize(modulo.nome || modulo.name)
+      if (slug) {
+        localStorage.setItem('activeModuleId', slug)
+      }
+
+      const userRaw = localStorage.getItem('userData')
+      if (userRaw) {
+        const user = JSON.parse(userRaw)
+        user.moduloId = modulo.id
+        user.moduloNome = modulo.nome || modulo.name
+        localStorage.setItem('userData', JSON.stringify(user))
+      }
+    } catch (e) {
+      console.warn('Falha ao persistir módulo ativo:', e)
+    }
+
+    // Redireciona para a página específica do módulo
+    const slug = normalize(modulo.nome || modulo.name)
+    if (slug === 'atendimento') {
+      router.push('/atendimento/chat')
+    } else if (slug === 'comercial') {
+      router.push('/comercial/leads')
+    } else if (slug === 'financeiro') {
+      router.push('/financeiro/contas-pagar')
+    } else {
+      // Fallback para outros módulos
+      router.push(`/${slug}`)
+    }
   }
 
   const goToOnboarding = (moduloId) => {

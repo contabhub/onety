@@ -1,25 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 
 /**
  * 📌 Criar etiqueta
  */
 router.post("/", authOrApiKey, async (req, res) => {
   try {
-    const { company_id, nome, cor } = req.body;
+    const { empresa_id, nome, cor } = req.body;
 
-    if (!company_id || !nome || !cor) {
-      return res.status(400).json({ error: "Campos obrigatórios: company_id, nome, cor." });
+    if (!empresa_id || !nome || !cor) {
+      return res.status(400).json({ error: "Campos obrigatórios: empresa_id, nome, cor." });
     }
 
     const [result] = await pool.query(
-      `INSERT INTO etiquetas (company_id, nome, cor) VALUES (?, ?, ?)`,
-      [company_id, nome, cor]
+      `INSERT INTO etiquetas (empresa_id, nome, cor) VALUES (?, ?, ?)`,
+      [empresa_id, nome, cor]
     );
 
-    res.status(201).json({ id: result.insertId, company_id, nome, cor });
+    res.status(201).json({ id: result.insertId, empresa_id, nome, cor });
   } catch (err) {
     if (err && err.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ error: "Já existe uma etiqueta com esse nome nesta empresa." });
@@ -32,12 +32,12 @@ router.post("/", authOrApiKey, async (req, res) => {
 /**
  * 📌 Listar etiquetas por empresa
  */
-router.get("/company/:companyId", authOrApiKey, async (req, res) => {
+router.get("/empresa/:empresaId", authOrApiKey, async (req, res) => {
   try {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
     const [rows] = await pool.query(
-      `SELECT * FROM etiquetas WHERE company_id = ? ORDER BY nome ASC`,
-      [companyId]
+      `SELECT * FROM etiquetas WHERE empresa_id = ? ORDER BY nome ASC`,
+      [empresaId]
     );
     res.json(rows);
   } catch (err) {
@@ -77,7 +77,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     values.push(req.params.id);
 
     await pool.query(
-      `UPDATE etiquetas SET ${fields.join(", ")}, updated_at = NOW() WHERE id = ?`,
+      `UPDATE etiquetas SET ${fields.join(", ")}, atualizado_em = NOW() WHERE id = ?`,
       values
     );
 

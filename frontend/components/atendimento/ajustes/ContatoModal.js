@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './ContatoModal.module.css';
 import { X, User, Mail, Phone, FileText, Tag, Plus, XCircle } from 'lucide-react';
-import { normalizeNotasInternas } from '../../utils/contactHelper';
+import { normalizeNotasInternas } from '../../../utils/contactHelper';
 
 export default function ContatoModal({ isOpen, onClose, onSuccess, contato = null, isEdit = false }) {
   const [formData, setFormData] = useState({

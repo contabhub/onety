@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './ContatoDetailsModal.module.css';
 import { X, User, Mail, Phone, FileText, MessageSquare, Folder, Archive, Edit2, Trash2, Calendar, Tag, Plus, XCircle } from 'lucide-react';
-import { normalizeNotasInternas, formatDate, formatPhone } from '../../utils/contactHelper';
+import { normalizeNotasInternas, formatDate, formatPhone } from '../../../utils/contactHelper';
 
 export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, onEtiquetasChanged }) {
   const [activeTab, setActiveTab] = useState('detalhes');
