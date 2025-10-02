@@ -20,6 +20,11 @@ export default function OnboardingPage() {
   const [showConteudoModal, setShowConteudoModal] = useState(false)
   const [userRole, setUserRole] = useState(null)
 
+  // Debug: Log do estado do modal
+  useEffect(() => {
+    console.log('🔍 Estado do modal:', showConteudoModal)
+  }, [showConteudoModal])
+
   useEffect(() => {
     // validar id
     if (!id) return
@@ -76,7 +81,10 @@ export default function OnboardingPage() {
                   <div className={styles.adminActions}>
                     <button 
                       className={styles.addButton}
-                      onClick={() => setShowConteudoModal(true)}
+                      onClick={() => {
+                        console.log('🔘 Botão "Novo Conteúdo" clicado')
+                        setShowConteudoModal(true)
+                      }}
                     >
                       + Novo Conteúdo
                     </button>
@@ -94,8 +102,12 @@ export default function OnboardingPage() {
       
       {showConteudoModal && (
         <ConteudoModal 
+          isOpen={showConteudoModal}
           moduloId={id}
-          onClose={() => setShowConteudoModal(false)}
+          onClose={() => {
+            console.log('❌ Fechando modal de conteúdo')
+            setShowConteudoModal(false)
+          }}
         />
       )}
     </div>
