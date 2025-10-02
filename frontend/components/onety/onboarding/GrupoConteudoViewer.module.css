@@ -13,19 +13,30 @@
 }
 
 .backButton {
-  background: var(--onity-color-primary);
-  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
-  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .backButton:hover {
-  background: var(--onity-color-primary-dark);
+  background: rgba(45, 120, 240, 0.503);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.backButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .headerInfo {
@@ -51,10 +62,11 @@
 /* Estilos para Provas */
 .provasSection {
   margin: 24px 0;
-  padding: 20px;
-  background: var(--onity-color-bg-secondary, #f8fafc);
-  border: 1px solid var(--onity-color-border, #e2e8f0);
-  border-radius: 12px;
+  padding: 24px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .provasTitle {
@@ -62,6 +74,8 @@
   color: var(--onity-color-text);
   font-size: 18px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
 }
 
 .provasList {
@@ -74,11 +88,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: white;
-  border: 1px solid var(--onity-color-border, #e2e8f0);
-  border-radius: 8px;
+  padding: 20px;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .provaCard:hover {
@@ -107,7 +122,7 @@
 }
 
 .provaDisponivel {
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
 }
 
 .provaBloqueada {
@@ -120,8 +135,8 @@
 }
 
 .fazerProvaButton {
-  background: var(--onity-color-primary);
-  color: white;
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -132,7 +147,7 @@
 }
 
 .fazerProvaButton:hover {
-  background: var(--onity-color-primary-dark);
+  background: var(--onity-color-primary);
   transform: translateY(-1px);
 }
 
@@ -169,6 +184,36 @@
   color: var(--onity-color-text);
   border-color: var(--onity-color-border);
 }
+
+/* Dark theme para botões de transição */
+[data-theme="dark"] .tab {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-border);
+  color: var(--onity-color-text);
+  box-shadow: var(--onity-elev-low);
+}
+
+[data-theme="dark"] .tab::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+[data-theme="dark"] .tab:hover {
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-hover);
+}
+
+[data-theme="dark"] .tab.active {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
+[data-theme="dark"] .tab.completed {
+  background: var(--onity-color-success);
+  border-color: var(--onity-color-success);
+  color: white;
+}
+
 
 .percentage {
   font-weight: 600;
@@ -208,58 +253,95 @@
 }
 
 .tab {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 2px solid var(--onity-color-border);
-  border-radius: 8px;
-  background: var(--onity-color-bgElevated);
-  color: var(--onity-color-text-secondary);
+  border-radius: var(--onity-radius-m);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  transition: all 0.2s ease;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: var(--onity-elev-low);
+  position: relative;
+  overflow: hidden;
+}
+
+.tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
 .tab:hover {
-  border-color: var(--onity-color-primary);
-  color: var(--onity-color-primary);
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--onity-elev-med);
+}
+
+.tab:hover::before {
+  left: 100%;
 }
 
 .tab.active {
-  background: var(--onity-color-primary);
-  border-color: var(--onity-color-primary);
-  color: white;
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: var(--onity-elev-high);
+}
+
+.tab.active::before {
+  display: none;
 }
 
 .tab.completed {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--onity-color-success);
+  border-color: var(--onity-color-success);
   color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-med);
 }
 
+.tab.completed::before {
+  display: none;
+}
+
+
+
 .currentContent {
-  background: var(--onity-color-bgElevated);
-  border-radius: 12px;
+  background: var(--onity-color-surface);
+  border-radius: 16px;
   padding: 24px;
   border: 1px solid var(--onity-color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .contentHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 16px;
+  margin-top: -8px;
 }
 
 .contentTitle {
   margin: 0;
   color: var(--onity-color-text);
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 2.5rem;
+  font-weight: 700;
   flex: 1;
   min-width: 0;
 }
@@ -282,9 +364,10 @@
 
 .videoContainer {
   margin-bottom: 32px;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   background: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .videoPlayer {
@@ -303,24 +386,35 @@
 }
 
 .navButton {
-  background: var(--onity-color-bgElevated);
-  border: 2px solid var(--onity-color-border);
-  color: var(--onity-color-text);
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .navButton:hover:not(:disabled) {
-  border-color: var(--onity-color-primary);
-  color: var(--onity-color-primary);
+  background: rgba(45, 120, 240, 0.503);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .navButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.navButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .completeButton {

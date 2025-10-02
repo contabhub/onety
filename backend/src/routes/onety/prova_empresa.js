@@ -173,14 +173,51 @@ router.get("/prova/:prova_id", async (req, res) => {
 router.get("/empresa/:empresa_id", async (req, res) => {
   try {
     const { empresa_id } = req.params;
+    const { conteudo_id, grupo_id, prova_id } = req.query;
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const offset = (page - 1) * limit;
 
-    const [rows] = await pool.query(
-      "SELECT SQL_CALC_FOUND_ROWS * FROM prova_empresa WHERE empresa_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
-      [empresa_id, limit, offset]
-    );
+    let whereClause = "WHERE pe.empresa_id = ?";
+    let queryParams = [empresa_id];
+
+    // Adicionar filtros opcionais
+    if (conteudo_id) {
+      whereClause += " AND p.conteudo_id = ?";
+      queryParams.push(conteudo_id);
+    }
+    
+    if (grupo_id) {
+      whereClause += " AND p.grupo_id = ?";
+      queryParams.push(grupo_id);
+    }
+    
+    if (prova_id) {
+      whereClause += " AND pe.prova_id = ?";
+      queryParams.push(prova_id);
+    }
+
+    // Query com JOIN para incluir informações da prova
+    const query = `
+      SELECT SQL_CALC_FOUND_ROWS 
+        pe.id,
+        pe.prova_id,
+        pe.empresa_id,
+        pe.viewer_id,
+        pe.nota,
+        p.nome as prova_nome,
+        p.conteudo_id,
+        p.grupo_id
+      FROM prova_empresa pe
+      JOIN prova p ON pe.prova_id = p.id
+      ${whereClause}
+      ORDER BY pe.id DESC 
+      LIMIT ? OFFSET ?
+    `;
+
+    queryParams.push(limit, offset);
+
+    const [rows] = await pool.query(query, queryParams);
     const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");
 
     res.json({
@@ -299,24 +336,13 @@ router.post("/:id/calcular-media", async (req, res) => {
       let acertos = 0;
       const detalhes = [];
 
-      console.log('=== DEBUG CORREÇÃO DA PROVA ===');
-      console.log('Respostas enviadas:', respostas);
-      console.log('Alternativas corretas:', alternativasCorretas);
-
       for (const questao of questoes) {
         const respostaUsuario = respostas.find(r => r.questao_id === questao.id);
         const alternativaCorreta = alternativasCorretas.find(a => a.questao_id === questao.id);
         
-        console.log(`\n--- Questão ${questao.id} ---`);
-        console.log('Resposta do usuário:', respostaUsuario);
-        console.log('Alternativa correta:', alternativaCorreta);
-        
         const acertou = respostaUsuario && 
                        alternativaCorreta && 
                        respostaUsuario.alternativa_id === alternativaCorreta.alternativa_id;
-
-        console.log('Acertou?', acertou);
-        console.log('Comparação:', respostaUsuario?.alternativa_id, '===', alternativaCorreta?.alternativa_id);
 
         if (acertou) acertos++;
 
@@ -328,9 +354,6 @@ router.post("/:id/calcular-media", async (req, res) => {
           acertou: acertou
         });
       }
-
-      console.log('Total de acertos:', acertos);
-      console.log('=== FIM DEBUG ===');
 
       // 5. Calcular nota (0 a 10)
       const totalQuestoes = questoes.length;

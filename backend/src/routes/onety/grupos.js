@@ -277,28 +277,8 @@ router.get("/:id/verificar-acesso", async (req, res) => {
       [grupoAnteriorId, empresa_id]
     );
 
-    // Debug: Verificar registros na tabela empresas_conteudos
-    const [debugEmpresasConteudos] = await pool.query(
-      `SELECT ec.*, c.titulo as conteudo_nome, c.grupo_id 
-       FROM empresas_conteudos ec
-       JOIN conteudos c ON ec.conteudo_id = c.id
-       WHERE c.grupo_id = ? AND ec.empresa_id = ?`,
-      [grupoAnteriorId, empresa_id]
-    );
-    
-    console.log(`🔍 Debug empresas_conteudos para grupo ${grupoAnteriorId}:`);
-    console.log(`   - Buscando com: empresa_id=${empresa_id} (SEM filtro de usuário)`);
-    console.log(`   - Registros encontrados:`, debugEmpresasConteudos);
-
     const totalConteudos = conteudosAnterior[0].total_conteudos;
     const conteudosConcluidosCount = conteudosConcluidos[0].concluidos;
-
-    // Debug: Log dos valores
-    console.log(`🔍 Debug verificação acesso grupo ${grupoId}:`);
-    console.log(`   - Grupo anterior: ${grupoAnterior[0].nome} (ID: ${grupoAnteriorId})`);
-    console.log(`   - Total conteúdos: ${totalConteudos}`);
-    console.log(`   - Conteúdos concluídos: ${conteudosConcluidosCount}`);
-    console.log(`   - Pode acessar: ${conteudosConcluidosCount >= totalConteudos}`);
 
     // 5. Se nem todos os conteúdos foram concluídos, negar acesso
     if (conteudosConcluidosCount < totalConteudos) {
@@ -317,21 +297,21 @@ router.get("/:id/verificar-acesso", async (req, res) => {
       });
     }
 
-    // 6. Verificar se existe prova para o grupo anterior
+    // 6. Verificar se existe prova para o grupo anterior (conteúdos OU grupo diretamente) 
+    // QUE TENHA VÍNCULO NA TABELA prova_empresa
     const [provasAnterior] = await pool.query(
-      `SELECT p.id, p.nome FROM prova p
-       JOIN conteudos c ON p.conteudo_id = c.id
-       WHERE c.grupo_id = ?
-       LIMIT 1`,
-      [grupoAnteriorId]
+      `SELECT DISTINCT p.id, p.nome, p.conteudo_id, p.grupo_id 
+       FROM prova p
+       INNER JOIN prova_empresa pe ON p.id = pe.prova_id
+       WHERE pe.empresa_id = ? AND (p.grupo_id = ? OR p.conteudo_id IN (
+         SELECT c.id FROM conteudos c WHERE c.grupo_id = ?
+       ))`,
+      [empresa_id, grupoAnteriorId, grupoAnteriorId]
     );
 
-    console.log(`🔍 Debug provas para grupo ${grupoAnteriorId}:`);
-    console.log(`   - Provas encontradas:`, provasAnterior);
 
     // Se não há prova, permitir acesso
     if (provasAnterior.length === 0) {
-      console.log(`✅ Sem prova obrigatória - permitindo acesso`);
       return res.json({
         pode_acessar: true,
         motivo: "Grupo anterior concluído e sem prova obrigatória",
@@ -343,53 +323,53 @@ router.get("/:id/verificar-acesso", async (req, res) => {
       });
     }
 
-    // 7. Verificar se a prova foi feita com nota alta (>= 7)
-    const [provaRealizada] = await pool.query(
-      `SELECT pe.nota FROM prova_empresa pe
-       WHERE pe.prova_id = ? AND pe.empresa_id = ? AND pe.nota IS NOT NULL
-       ORDER BY pe.id DESC LIMIT 1`,
-      [provasAnterior[0].id, empresa_id]
-    );
+    // 7. Verificar se TODAS as provas foram feitas com nota alta (>= 7)
+    const provasStatus = [];
+    
+    for (const prova of provasAnterior) {
+      const [provaRealizada] = await pool.query(
+        `SELECT pe.nota, pe.prova_id FROM prova_empresa pe
+         WHERE pe.prova_id = ? AND pe.empresa_id = ? AND pe.nota IS NOT NULL
+         ORDER BY pe.id DESC LIMIT 1`,
+        [prova.id, empresa_id]
+      );
 
-    console.log(`🔍 Debug prova realizada para prova ${provasAnterior[0].id}:`);
-    console.log(`   - Buscando com: empresa_id=${empresa_id} (SEM filtro de usuário)`);
-    console.log(`   - Prova realizada:`, provaRealizada);
+      const status = {
+        id: prova.id,
+        nome: prova.nome,
+        tipo: prova.grupo_id ? 'grupo' : 'conteudo',
+        realizada: provaRealizada.length > 0,
+        nota: provaRealizada.length > 0 ? parseFloat(provaRealizada[0].nota) : null,
+        aprovado: provaRealizada.length > 0 && parseFloat(provaRealizada[0].nota) >= 7
+      };
+      
+      provasStatus.push(status);
+    }
 
-    if (provaRealizada.length === 0) {
-      console.log(`❌ Prova não foi realizada - bloqueando acesso`);
+    // Verificar se alguma prova não foi realizada ou não foi aprovada
+    const provasNaoRealizadas = provasStatus.filter(p => !p.realizada);
+    const provasNaoAprovadas = provasStatus.filter(p => p.realizada && !p.aprovado);
+
+    if (provasNaoRealizadas.length > 0) {
       return res.json({
         pode_acessar: false,
-        motivo: "Prova do grupo anterior não foi realizada",
+        motivo: "Algumas provas do grupo anterior não foram realizadas",
         grupo_anterior: {
           id: grupoAnteriorId,
           nome: grupoAnterior[0].nome,
-          prova: {
-            id: provasAnterior[0].id,
-            nome: provasAnterior[0].nome,
-            realizada: false
-          }
+          provas: provasStatus
         }
       });
     }
 
-    const { nota } = provaRealizada[0];
-    const aprovado = nota >= 7;
-
-    if (!aprovado) {
+    if (provasNaoAprovadas.length > 0) {
       return res.json({
         pode_acessar: false,
-        motivo: "Prova do grupo anterior não foi aprovada com nota alta (>= 7)",
+        motivo: "Algumas provas do grupo anterior não foram aprovadas com nota alta (>= 7)",
         grupo_anterior: {
           id: grupoAnteriorId,
           nome: grupoAnterior[0].nome,
-          prova: {
-            id: provasAnterior[0].id,
-            nome: provasAnterior[0].nome,
-            realizada: true,
-            nota: nota,
-            aprovado: aprovado,
-            nota_minima: 7
-          }
+          provas: provasStatus
         }
       });
     }
@@ -397,17 +377,11 @@ router.get("/:id/verificar-acesso", async (req, res) => {
     // 8. Se chegou até aqui, pode acessar
     return res.json({
       pode_acessar: true,
-      motivo: "Grupo anterior concluído e prova aprovada",
+      motivo: "Grupo anterior concluído e todas as provas aprovadas",
       grupo_anterior: {
         id: grupoAnteriorId,
         nome: grupoAnterior[0].nome,
-        prova: {
-          id: provasAnterior[0].id,
-          nome: provasAnterior[0].nome,
-          realizada: true,
-          nota: nota,
-          aprovado: aprovado
-        }
+        provas: provasStatus
       }
     });
 

@@ -54,7 +54,6 @@ router.get("/", verifyToken, async (req, res) => {
       total: rows.length
     });
   } catch (error) {
-    console.error('Erro ao buscar grupos da empresa:', error);
     res.status(500).json({ error: "Erro interno do servidor." });
   }
 });
@@ -81,7 +80,6 @@ router.patch("/:empresa_id/:grupo_id", verifyToken, verificarPermissao("adm.supe
       message: `Status do grupo atualizado para ${status}`
     });
   } catch (error) {
-    console.error('Erro ao atualizar status do grupo:', error);
     res.status(500).json({ error: "Erro interno do servidor." });
   }
 });
