@@ -25,6 +25,9 @@ export default function UsuariosPage() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [gerenciandoVinculos, setGerenciandoVinculos] = useState(null)
   const [showGerenciarModal, setShowGerenciarModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [createForm, setCreateForm] = useState({ nome: '', email: '', senha: '', telefone: '' })
 
   // Persistência simples do estado da sidebar
   useEffect(() => {
@@ -216,8 +219,16 @@ export default function UsuariosPage() {
               Gerenciar todos os usuários do sistema
             </p>
           </div>
-          <div className={styles.totalCard}>
-            Total: {totalUsuarios} usuários
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className={styles.totalCard}
+            >
+              Criar Usuário
+            </button>
+            <div className={styles.totalCard}>
+              Total: {totalUsuarios} usuários
+            </div>
           </div>
         </div>
 
@@ -386,6 +397,149 @@ export default function UsuariosPage() {
           window.location.reload()
         }}
       />
+
+      {/* Modal de Criação de Usuário */}
+      {showCreateModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.45)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 4000
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: 520,
+            background: 'var(--onity-color-surface)',
+            border: '1px solid var(--onity-color-border)',
+            borderRadius: 16,
+            padding: 24,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ margin: 0, color: 'var(--onity-color-text)' }}>Criar Usuário</h3>
+            <p style={{ marginTop: 8, opacity: 0.7, color: 'var(--onity-color-text)' }}>
+              Preencha os dados abaixo para cadastrar um novo usuário.
+            </p>
+
+            <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Nome</label>
+                <input
+                  type="text"
+                  value={createForm.nome}
+                  onChange={(e) => setCreateForm({ ...createForm, nome: e.target.value })}
+                  placeholder="Nome completo"
+                  style={{
+                    width: '90%', padding: '10px 12px', borderRadius: 10,
+                    border: '1px solid var(--onity-color-border)', background: 'var(--onity-color-bg)',
+                    color: 'var(--onity-color-text)'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Email</label>
+                <input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                  style={{
+                    width: '90%', padding: '10px 12px', borderRadius: 10,
+                    border: '1px solid var(--onity-color-border)', background: 'var(--onity-color-bg)',
+                    color: 'var(--onity-color-text)'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Senha</label>
+                <input
+                  type="password"
+                  value={createForm.senha}
+                  onChange={(e) => setCreateForm({ ...createForm, senha: e.target.value })}
+                  placeholder="Senha temporária"
+                  style={{
+                    width: '90%', padding: '10px 12px', borderRadius: 10,
+                    border: '1px solid var(--onity-color-border)', background: 'var(--onity-color-bg)',
+                    color: 'var(--onity-color-text)'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Telefone (opcional)</label>
+                <input
+                  type="tel"
+                  value={createForm.telefone}
+                  onChange={(e) => setCreateForm({ ...createForm, telefone: e.target.value })}
+                  placeholder="(00) 00000-0000"
+                  style={{
+                    width: '90%', padding: '10px 12px', borderRadius: 10,
+                    border: '1px solid var(--onity-color-border)', background: 'var(--onity-color-bg)',
+                    color: 'var(--onity-color-text)'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 20 }}>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                disabled={creating}
+                style={{
+                  padding: '10px 14px', borderRadius: 10, border: '1px solid var(--onity-color-border)',
+                  background: 'transparent', color: 'var(--onity-color-text)', cursor: 'pointer', opacity: creating ? 0.7 : 1
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    if (!createForm.nome || !createForm.email || !createForm.senha) return
+                    setCreating(true)
+                    const token = localStorage.getItem('token')
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+                    const res = await fetch(`${apiUrl}/usuarios`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: JSON.stringify({
+                        nome: createForm.nome,
+                        email: createForm.email,
+                        senha: createForm.senha,
+                        telefone: createForm.telefone || undefined
+                      })
+                    })
+                    if (!res.ok) throw new Error('Falha ao criar usuário')
+                    setShowCreateModal(false)
+                    // Recarregar a lista (mantendo padrão usado em vínculos)
+                    window.location.reload()
+                  } catch (e) {
+                    console.error(e)
+                    alert('Não foi possível criar o usuário.')
+                  } finally {
+                    setCreating(false)
+                    setCreateForm({ nome: '', email: '', senha: '', telefone: '' })
+                  }
+                }}
+                disabled={creating || !createForm.nome || !createForm.email || !createForm.senha}
+                style={{
+                  padding: '10px 14px', borderRadius: 10, border: '1px solid var(--onity-color-primary)',
+                  background: 'var(--onity-color-primary)', color: 'white', fontWeight: 600, cursor: 'pointer',
+                  opacity: creating ? 0.7 : 1
+                }}
+              >
+                {creating ? 'Criando...' : 'Criar Usuário'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

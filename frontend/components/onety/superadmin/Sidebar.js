@@ -129,6 +129,7 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
   }
 
   const items = [
+    { name: 'Dashboard', icon: <LayoutDashboard size={22} />, path: '/superadmin' },
     { name: 'Empresas', icon: <Building2 size={22} />, path: '/superadmin/empresas' },
     { name: 'Usuários', icon: <User size={22} />, path: '/superadmin/usuarios' },
   ]

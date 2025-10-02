@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { Building2, Search, Filter, Eye, Edit, Calendar, Users, Plus } from 'lucide-react'
+import { Building2, Search, Filter, Eye, Edit, Calendar, Users, Plus, Trash } from 'lucide-react'
 import Sidebar from '../../components/onety/superadmin/Sidebar'
 import EditarEmpresa from '../../components/onety/superadmin/EditarEmpresa'
 import CriarEmpresa from '../../components/onety/superadmin/CriarEmpresa'
@@ -19,6 +19,9 @@ export default function EmpresasPage() {
   const [editingEmpresa, setEditingEmpresa] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletingEmpresa, setDeletingEmpresa] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Persistência simples do estado da sidebar
   useEffect(() => {
@@ -147,6 +150,34 @@ export default function EmpresasPage() {
     // Adiciona a nova empresa na lista local
     setEmpresas(prev => [newEmpresa, ...prev])
     setTotalEmpresas(prev => prev + 1)
+  }
+
+  const handleDeleteEmpresa = async (empresa) => {
+    try {
+      setDeleting(true)
+      const token = localStorage.getItem('token')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      const res = await fetch(`${apiUrl}/empresas/${empresa.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error('Falha ao excluir empresa')
+      setEmpresas(prev => prev.filter(e => e.id !== empresa.id))
+      setTotalEmpresas(prev => Math.max(0, prev - 1))
+      setShowDeleteModal(false)
+      setDeletingEmpresa(null)
+    } catch (e) {
+      console.error('Erro ao excluir empresa:', e)
+      setShowDeleteModal(false)
+      setDeletingEmpresa(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleRequestDeleteEmpresa = (empresa) => {
+    setDeletingEmpresa(empresa)
+    setShowDeleteModal(true)
   }
 
   const handleCloseCreateModal = () => {
@@ -330,6 +361,13 @@ export default function EmpresasPage() {
                       >
                         <Edit size={18} />
                       </button>
+                      <button
+                        className={`${styles.actionButton} ${styles.actionButtonDelete}`}
+                        title="Excluir"
+                        onClick={() => handleRequestDeleteEmpresa(empresa)}
+                      >
+                        <Trash size={18} />
+                      </button>
                     </div>
                   </div>
                 )
@@ -352,6 +390,59 @@ export default function EmpresasPage() {
         onClose={handleCloseCreateModal}
         onCreated={handleEmpresaCreated}
       />
+
+      {/* Modal de Confirmação de Exclusão */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.45)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 4000
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: 520,
+            background: 'var(--onity-color-surface)',
+            border: '1px solid var(--onity-color-border)',
+            borderRadius: 16,
+            padding: 24,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ margin: 0, color: 'var(--onity-color-text)' }}>Excluir Empresa</h3>
+            <p style={{ marginTop: 8, opacity: 0.7, color: 'var(--onity-color-text)' }}>
+              Tem certeza que deseja excluir a empresa {deletingEmpresa?.nome ? `"${deletingEmpresa.nome}"` : ''}? Esta ação não poderá ser desfeita.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 20 }}>
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeletingEmpresa(null) }}
+                disabled={deleting}
+                style={{
+                  padding: '10px 14px', borderRadius: 10, border: '1px solid var(--onity-color-border)',
+                  background: 'transparent', color: 'var(--onity-color-text)', cursor: 'pointer', opacity: deleting ? 0.7 : 1
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => deletingEmpresa && handleDeleteEmpresa(deletingEmpresa)}
+                disabled={deleting}
+                style={{
+                  padding: '10px 14px', borderRadius: 10, border: '1px solid var(--onity-color-danger)',
+                  background: 'var(--onity-color-danger)', color: 'white', fontWeight: 600, cursor: 'pointer',
+                  opacity: deleting ? 0.7 : 1
+                }}
+              >
+                {deleting ? 'Excluindo...' : 'Excluir' }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
