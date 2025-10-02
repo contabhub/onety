@@ -6,6 +6,7 @@ import ConteudoList from '../../components/onety/onboarding/ConteudoList'
 import ProvaList from '../../components/onety/onboarding/ProvaList'
 import ProvaLiberacao from '../../components/onety/onboarding/ProvaLiberacao'
 import ConclusoesList from '../../components/onety/onboarding/ConclusoesList'
+import ConteudoModal from '../../components/onety/onboarding/ConteudoModal'
 import styles from '../../styles/onety/onboarding/onboarding.module.css'
 import Topbar from '../../components/onety/onboarding/Topbar'
 import SpaceLoader from '../../components/onety/menu/SpaceLoader'
@@ -16,10 +17,25 @@ export default function OnboardingPage() {
   const [tab, setTab] = useState('conteudo')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [showConteudoModal, setShowConteudoModal] = useState(false)
+  const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
     // validar id
     if (!id) return
+    
+    // Verificar role do usuário
+    const userData = localStorage.getItem('userData')
+    
+    if (userData) {
+      try {
+        const user = JSON.parse(userData)
+        const role = user.permissoes?.adm?.[0] || null
+        setUserRole(role)
+      } catch (err) {
+        console.error('Erro ao decodificar userData:', err)
+      }
+    }
   }, [id])
 
   if (loading) {
@@ -55,16 +71,24 @@ export default function OnboardingPage() {
           />
           <main className={styles.main}>
             {tab === 'conteudo' && (
+              <div>
+                {userRole === 'superadmin' && (
+                  <div className={styles.adminActions}>
+                    <button 
+                      className={styles.addButton}
+                      onClick={() => setShowConteudoModal(true)}
+                    >
+                      + Novo Conteúdo
+                    </button>
+                  </div>
+                )}
+                <ConteudoList moduloId={id} />
+              </div>
+
               <>
                 <ConteudoList moduloId={id} />
                 <ProvaLiberacao moduloId={id} />
               </>
-            )}
-            {tab === 'provas' && <ProvaList moduloId={id} />}
-            {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
-          </main>
-        </div>
-      </div>
     </div>
   )
 }

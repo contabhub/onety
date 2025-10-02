@@ -56,34 +56,36 @@ export default function GrupoConteudoPage() {
     setError('')
     
     try {
-      // 1. Buscar informações do grupo
-      const grupoRes = await fetch(`${API_URL}/grupo-conteudo/${grupoId}`, {
+      // 1. Buscar informações do grupo através da tabela empresas_grupos
+      const grupoRes = await fetch(`${API_URL}/empresas-grupos?empresa_id=${empresaId}&grupo_id=${grupoId}`, {
         headers: { 'Authorization': token ? `Bearer ${token}` : '' }
       })
       
       if (!grupoRes.ok) throw new Error('Falha ao carregar grupo')
       const grupoData = await grupoRes.json()
-      setGrupo(grupoData)
-
-      // 2. Verificar se a empresa tem acesso ao grupo
-      const vinculosRes = await fetch(`${API_URL}/empresa-conteudo/grupo-conteudo/${grupoId}`, {
-        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-      })
+      const grupoInfo = Array.isArray(grupoData?.data) ? grupoData.data[0] : null
       
-      if (!vinculosRes.ok) throw new Error('Falha ao verificar acesso ao grupo')
-      const vinculosData = await vinculosRes.json()
-      const vinculos = Array.isArray(vinculosData?.data) ? vinculosData.data : []
-
-      const empresaTemAcesso = vinculos.some(v => v.empresa_id === empresaId)
-      
-      if (!empresaTemAcesso) {
-        setError('Sua empresa não tem acesso a este grupo de conteúdo')
+      if (!grupoInfo) {
+        setError('Grupo não encontrado ou sem acesso')
         setLoading(false)
         return
       }
+      
+      // Mapear dados do grupo para o formato esperado
+      setGrupo({
+        id: grupoInfo.grupo_id,
+        nome: grupoInfo.grupo_nome,
+        descricao: grupoInfo.grupo_descricao,
+        ordem: grupoInfo.grupo_ordem,
+        ativo: grupoInfo.grupo_ativo,
+        modulo_id: grupoInfo.modulo_id,
+        modulo_nome: grupoInfo.modulo_nome,
+        status: grupoInfo.grupo_status,
+        concluido_em: grupoInfo.grupo_concluido_em
+      })
 
-      // 3. Buscar conteúdos do grupo
-      const conteudosRes = await fetch(`${API_URL}/conteudo?grupo_conteudo_id=${grupoId}&limit=100`, {
+      // 2. Buscar conteúdos do grupo vinculados à empresa
+      const conteudosRes = await fetch(`${API_URL}/empresas-conteudos?empresa_id=${empresaId}&grupo_id=${grupoId}&limit=100`, {
         headers: { 'Authorization': token ? `Bearer ${token}` : '' }
       })
       
@@ -97,10 +99,24 @@ export default function GrupoConteudoPage() {
         return
       }
 
-      // 4. Os conteúdos já vêm com o campo 'concluido' da tabela conteudo
+      // 3. Mapear conteúdos para o formato esperado
       const conteudosComStatus = todosConteudos.map(conteudo => ({
-        ...conteudo,
-        concluido: conteudo.concluido === 1
+        id: conteudo.conteudo_id,
+        titulo: conteudo.titulo,
+        descricao: conteudo.descricao,
+        url: conteudo.url,
+        link: conteudo.url, // Para compatibilidade com o player de vídeo
+        tipo: conteudo.tipo,
+        obrigatorio: conteudo.obrigatorio,
+        ordem: conteudo.ordem,
+        ativo: conteudo.ativo,
+        grupo_id: conteudo.grupo_id,
+        grupo_nome: conteudo.grupo_nome,
+        usuario_id: conteudo.usuario_id,
+        usuario_nome: conteudo.usuario_nome,
+        status: conteudo.status,
+        concluido_em: conteudo.concluido_em,
+        concluido: conteudo.status === 'concluido'
       }))
 
       setConteudos(conteudosComStatus)
@@ -191,16 +207,15 @@ export default function GrupoConteudoPage() {
     setMarcandoConcluido(true)
     
     try {
-      // Usar a nova rota que marca conteúdo como concluído e verifica conclusão do grupo
-      const concluirRes = await fetch(`${API_URL}/conteudo/${conteudo.id}/concluir`, {
+      // Marcar conteúdo como concluído na tabela empresas_conteudos
+      const concluirRes = await fetch(`${API_URL}/empresas-conteudos/${empresaId}/${conteudo.id}/concluir`, {
         method: 'PATCH',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          viewer_id: viewerId,
-          empresa_id: empresaId
+          usuario_id: viewerId
         })
       })
       
@@ -210,7 +225,7 @@ export default function GrupoConteudoPage() {
 
       // Atualizar estado local com o conteúdo marcado como concluído
       const conteudosAtualizados = conteudos.map(c => 
-        c.id === conteudo.id ? { ...c, concluido: 1 } : c
+        c.id === conteudo.id ? { ...c, concluido: true, status: 'concluido' } : c
       )
       setConteudos(conteudosAtualizados)
       updateProgresso(conteudosAtualizados)

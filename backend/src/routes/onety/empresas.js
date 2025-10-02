@@ -153,6 +153,18 @@ router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, 
       }
     }
 
+    // Verificar se foi enviado admin_usuario_id (obrigatório)
+    const { admin_usuario_id } = payload;
+    if (!admin_usuario_id) {
+      return res.status(400).json({ error: "Campo obrigatório: admin_usuario_id" });
+    }
+
+    // Verificar se o usuário existe
+    const [usuarioExiste] = await pool.query("SELECT id FROM usuarios WHERE id = ?", [admin_usuario_id]);
+    if (usuarioExiste.length === 0) {
+      return res.status(400).json({ error: "Usuário não encontrado" });
+    }
+
     // Inicia transação para criar empresa e vínculos de módulos
     conn = await pool.getConnection();
     await conn.beginTransaction();
@@ -162,8 +174,8 @@ router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, 
         cnpj, nome, razaoSocial, cep, rua, bairro, estado, numero, complemento, cidade, status,
         cnae_primario, cnae_descricao, cnae_classe, data_fundacao, regime_tributario, optante_mei,
         inscricao_municipal, inscricao_estadual, tipo_empresa, pfx, senhaPfx, apiKey_ePlugin, logo_url,
-        pesquisaSatisfacaoAtiva, onvioLogin, onvioSenha, onvioCodigoAutenticacao, onvioMfaSecret
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        pesquisaSatisfacaoAtiva, onvioLogin, onvioSenha, onvioCodigoAutenticacao, onvioMfaSecret, admin_usuario_id
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         cnpj,
         nome,
@@ -194,33 +206,54 @@ router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, 
         onvioSenha,
         onvioCodigoAutenticacao,
         onvioMfaSecret,
+        admin_usuario_id,
       ]
     );
 
     // Vincular módulos, se enviados no body
     // Aceita: modulos: [1,2,3] ou modulos: [{modulo_id:1,status:'liberado'}]
     const { modulos } = payload;
-    let values = [];
+    let moduloValues = [];
     if (!Array.isArray(modulos) || modulos.length === 0) {
       // Sem lista explícita: vincula todos os módulos existentes como 'bloqueado'
       const [allModules] = await conn.query("SELECT id FROM modulos");
-      values = (allModules || []).map((m) => [result.insertId, m.id, "bloqueado"]);
+      moduloValues = (allModules || []).map((m) => [result.insertId, m.id, "bloqueado"]);
     } else {
       // Lista explícita informada: usa somente a lista enviada
       for (const item of modulos) {
         if (item == null) continue;
         if (typeof item === "number") {
-          values.push([result.insertId, item, "bloqueado"]);
+          moduloValues.push([result.insertId, item, "bloqueado"]);
         } else if (typeof item === "object" && item.modulo_id) {
-          values.push([result.insertId, item.modulo_id, item.status || "bloqueado"]);
+          moduloValues.push([result.insertId, item.modulo_id, item.status || "bloqueado"]);
         }
       }
     }
 
-    if (values.length > 0) {
+    if (moduloValues.length > 0) {
       await conn.query(
         "INSERT INTO modulos_empresa (empresa_id, modulo_id, status) VALUES ?",
-        [values]
+        [moduloValues]
+      );
+    }
+
+    // Vincular todos os grupos existentes como 'bloqueado'
+    const [allGrupos] = await conn.query("SELECT id FROM grupos");
+    if (allGrupos && allGrupos.length > 0) {
+      const grupoValues = allGrupos.map((g) => [result.insertId, g.id, "bloqueado"]);
+      await conn.query(
+        "INSERT INTO empresas_grupos (empresa_id, grupo_id, status) VALUES ?",
+        [grupoValues]
+      );
+    }
+
+    // Vincular todos os conteúdos existentes como 'pendente'
+    const [allConteudos] = await conn.query("SELECT id FROM conteudos");
+    if (allConteudos && allConteudos.length > 0) {
+      const conteudoValues = allConteudos.map((c) => [result.insertId, c.id, null, "pendente"]);
+      await conn.query(
+        "INSERT INTO empresas_conteudos (empresa_id, conteudo_id, usuario_id, status) VALUES ?",
+        [conteudoValues]
       );
     }
 
@@ -249,12 +282,27 @@ router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, 
       ]
     );
 
-    // Vincula usuário 3 como Superadmin na empresa criada
+    // Vincular o usuário 3 como SUPERADMIN (sempre)
     await conn.query(
       `INSERT INTO usuarios_empresas (usuario_id, empresa_id, cargo_id, departamento_id)
        VALUES (?,?,?,?)`,
       [3, result.insertId, superAdminCargo.insertId, null]
     );
+
+    // Vincular o admin_usuario_id como ADMIN da empresa (cargo admin)
+    await conn.query(
+      `INSERT INTO usuarios_empresas (usuario_id, empresa_id, cargo_id, departamento_id)
+       VALUES (?,?,?,?)`,
+      [admin_usuario_id, result.insertId, adminCargo.insertId, null]
+    );
+
+    // Atualizar empresas_conteudos com o usuario_id do responsável (admin da empresa)
+    if (allConteudos && allConteudos.length > 0) {
+      await conn.query(
+        "UPDATE empresas_conteudos SET usuario_id = ? WHERE empresa_id = ?",
+        [admin_usuario_id, result.insertId]
+      );
+    }
 
     await conn.commit();
 
@@ -353,6 +401,55 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erro ao remover empresa." });
+  }
+});
+
+// Rota para vincular usuário como responsável por assistir uma empresa
+router.post("/:empresa_id/vincular-responsavel", verifyToken, verificarPermissao("adm.superadmin"), async (req, res) => {
+  let conn;
+  try {
+    const { empresa_id } = req.params;
+    const { usuario_id } = req.body;
+
+    if (!usuario_id) {
+      return res.status(400).json({ error: "Campo obrigatório: usuario_id" });
+    }
+
+    // Verificar se a empresa existe
+    const [empresa] = await pool.query("SELECT id FROM empresas WHERE id = ?", [empresa_id]);
+    if (empresa.length === 0) {
+      return res.status(404).json({ error: "Empresa não encontrada" });
+    }
+
+    // Verificar se o usuário existe
+    const [usuario] = await pool.query("SELECT id FROM usuarios WHERE id = ?", [usuario_id]);
+    if (usuario.length === 0) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    // Atualizar todos os registros de empresas_conteudos para este usuário
+    await conn.query(
+      "UPDATE empresas_conteudos SET usuario_id = ? WHERE empresa_id = ?",
+      [usuario_id, empresa_id]
+    );
+
+    await conn.commit();
+
+    res.json({ 
+      success: true, 
+      message: `Usuário ${usuario_id} vinculado como responsável pela empresa ${empresa_id}` 
+    });
+  } catch (error) {
+    console.error(error);
+    if (conn) {
+      try { await conn.rollback(); } catch (_) {}
+    }
+    res.status(500).json({ error: "Erro ao vincular responsável." });
+  } finally {
+    if (conn) conn.release();
   }
 });
 

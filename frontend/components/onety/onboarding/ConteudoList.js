@@ -15,31 +15,59 @@ export default function ConteudoList({ moduloId }) {
   useEffect(() => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+    const user = userRaw ? JSON.parse(userRaw) : null
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null
     let ignore = false
 
     const load = async () => {
       setLoading(true)
       setError('')
       try {
-        const url = `${API_URL}/grupo-conteudo?modulo_id=${encodeURIComponent(moduloId)}&limit=100`
+        if (!empresaId) {
+          setError('Empresa não identificada')
+          setLoading(false)
+          return
+        }
+
+        // Buscar grupos vinculados à empresa através da tabela empresas_grupos
+        const url = `${API_URL}/empresas-grupos?empresa_id=${empresaId}&modulo_id=${moduloId}&limit=100`
         const res = await fetch(url, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } })
-        if (!res.ok) throw new Error('Falha ao carregar conteúdos')
+        if (!res.ok) throw new Error('Falha ao carregar grupos da empresa')
         const data = await res.json()
         const grupos = Array.isArray(data?.data) ? data.data : data || []
         
         if (!ignore) {
+
+          // Mapear os dados da query para o formato esperado
+          const gruposMapeados = grupos.map(grupo => ({
+            id: grupo.grupo_id,
+            nome: grupo.grupo_nome,
+            descricao: grupo.grupo_descricao,
+            ordem: grupo.grupo_ordem,
+            ativo: grupo.grupo_ativo,
+            modulo_id: grupo.modulo_id,
+            modulo_nome: grupo.modulo_nome,
+            status: grupo.grupo_status,
+            concluido_em: grupo.grupo_concluido_em
+          }))
+          
+          setItems(gruposMapeados)
+          await loadProgressoGrupos(gruposMapeados)
+
           setItems(grupos)
           await loadProgressoGrupos(grupos)
           await loadProvasGrupos(grupos)
+
         }
       } catch (e) {
-        if (!ignore) setError(e.message || 'Erro ao carregar conteúdos')
+        if (!ignore) setError(e.message || 'Erro ao carregar grupos')
       } finally {
         if (!ignore) setLoading(false)
       }
     }
 
-    if (moduloId) load()
+    if (moduloId && empresaId) load()
     return () => { ignore = true }
   }, [moduloId])
 
@@ -62,8 +90,8 @@ export default function ConteudoList({ moduloId }) {
       const gruposComProgresso = await Promise.all(
         grupos.map(async (grupo) => {
           try {
-            // Buscar total de conteúdos do grupo
-            const conteudosRes = await fetch(`${API_URL}/conteudo?grupo_conteudo_id=${grupo.id}&limit=100`, {
+            // Buscar conteúdos vinculados à empresa através da tabela empresas_conteudos
+            const conteudosRes = await fetch(`${API_URL}/empresas-conteudos?empresa_id=${empresaId}&grupo_id=${grupo.id}&limit=100`, {
               headers: { 'Authorization': token ? `Bearer ${token}` : '' }
             })
             
@@ -75,7 +103,8 @@ export default function ConteudoList({ moduloId }) {
               const conteudos = Array.isArray(conteudosData?.data) ? conteudosData.data : []
               
               totalConteudos = conteudos.length
-              conteudosConcluidos = conteudos.filter(c => c.concluido === 1).length
+              // Contar quantos estão com status 'concluido'
+              conteudosConcluidos = conteudos.filter(c => c.status === 'concluido').length
             }
 
             const porcentagem = totalConteudos > 0 ? Math.round((conteudosConcluidos / totalConteudos) * 100) : 0
