@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Eye, ArrowRight, CheckCircle2, Phone, User as UserIcon, BadgeCheck, MessageSquare, Edit3 } from 'lucide-react';
 import axios from 'axios';
-import { useAuth } from '../../utils/auth';
-import { useWebSocket } from '../../hooks/useWebSocket';
+import { useAuth } from '../../../utils/auth';
+import { useWebSocket } from '../../../hooks/useWebSocket';
 import MessageList from './MessageList';
 import MessageComposer from './MessageComposer';
 import ForwardModal from './ForwardModal';

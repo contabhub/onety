@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 
 /**
  * 📌 Transferir conversa para outro usuário conversation-transfers/:conversation_id/transfer
@@ -17,22 +17,22 @@ router.put("/:conversation_id/transfer", authOrApiKey, async (req, res) => {
     }
 
     // 🔍 Verificar se a conversa existe
-    const [convRows] = await pool.query("SELECT assigned_user_id FROM conversations WHERE id = ?", [conversationId]);
+    const [convRows] = await pool.query("SELECT usuario_responsavel_id FROM conversas WHERE id = ?", [conversationId]);
     if (convRows.length === 0) {
       return res.status(404).json({ error: "Conversa não encontrada." });
     }
 
-    const oldUserId = convRows[0].assigned_user_id;
+    const oldUserId = convRows[0].usuario_responsavel_id;
 
-    // 🔄 Atualizar assigned_user_id na tabela conversations
+    // 🔄 Atualizar usuario_responsavel_id na tabela conversas
     await pool.query(
-      "UPDATE conversations SET assigned_user_id = ?, updated_at = NOW() WHERE id = ?",
+      "UPDATE conversas SET usuario_responsavel_id = ?, atualizado_em = NOW() WHERE id = ?",
       [new_assigned_user_id, conversationId]
     );
 
     // 📝 Registrar histórico de transferência
     await pool.query(
-      `INSERT INTO conversation_transfers (conversation_id, from_user_id, to_user_id, transferred_by) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO conversas_transferencias (conversas_id, de_usuario_id, para_usuario_id, transferido_por) VALUES (?, ?, ?, ?)`,
       [conversationId, oldUserId, new_assigned_user_id, currentUserId]
     );
 
@@ -58,20 +58,20 @@ router.get("/:conversation_id/history", authOrApiKey, async (req, res) => {
     const [rows] = await pool.query(
         `SELECT 
            ct.id,
-           ct.conversation_id,
-           ct.from_user_id,
+           ct.conversas_id AS conversation_id,
+           ct.de_usuario_id AS from_user_id,
            u1.nome AS from_user_name,
-           ct.to_user_id,
+           ct.para_usuario_id AS to_user_id,
            u2.nome AS to_user_name,
-           ct.transferred_by,
+           ct.transferido_por AS transferred_by,
            u3.nome AS transferred_by_name,
-           ct.transferred_at
-         FROM conversation_transfers ct
-         LEFT JOIN users u1 ON ct.from_user_id = u1.id
-         LEFT JOIN users u2 ON ct.to_user_id = u2.id
-         LEFT JOIN users u3 ON ct.transferred_by = u3.id
-         WHERE ct.conversation_id = ?
-         ORDER BY ct.transferred_at ASC`,
+           ct.criado_em AS transferred_at
+         FROM conversas_transferencias ct
+         LEFT JOIN usuarios u1 ON ct.de_usuario_id = u1.id
+         LEFT JOIN usuarios u2 ON ct.para_usuario_id = u2.id
+         LEFT JOIN usuarios u3 ON ct.transferido_por = u3.id
+         WHERE ct.conversas_id = ?
+         ORDER BY ct.criado_em ASC`,
         [conversationId]
       );
       

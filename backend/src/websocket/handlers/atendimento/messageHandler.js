@@ -1,6 +1,6 @@
-const webSocketManager = require('../index');
-const pool = require('../../config/database');
-const { getCompanyIdFromTeamInstance } = require('../../utils/contactHelper');
+const webSocketManager = require('../../index');
+const pool = require('../../../config/database');
+const { getCompanyIdFromTeamInstance } = require('../../../utils/atendimento/contactHelper');
 
 class MessageHandler {
   /**

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 
 
 /**
@@ -17,10 +17,10 @@ router.get("/", authOrApiKey, async (req, res) => {
     
     // Retorna todos os webhooks da empresa especificada
     const [webhooks] = await pool.query(
-      `SELECT id, nome, url, event_types, status, last_success_at, last_failure_at, failure_count, created_at, updated_at
+      `SELECT id, nome, url, eventos_tipos, status, ultimo_sucesso_em, ultimo_erro_em, erro_quantidade, criado_em, atualizado_em
        FROM webhooks 
-       WHERE company_id = ?
-       ORDER BY created_at DESC`,
+       WHERE empresa_id = ?
+       ORDER BY criado_em DESC`,
       [company_id]
     );
 
@@ -46,10 +46,10 @@ router.get("/company", authOrApiKey, async (req, res) => {
     }
     
     const [webhooks] = await pool.query(
-      `SELECT id, nome, url, event_types, status, last_success_at, last_failure_at, failure_count, created_at, updated_at
+      `SELECT id, nome, url, eventos_tipos, status, ultimo_sucesso_em, ultimo_erro_em, erro_quantidade, criado_em, atualizado_em
        FROM webhooks 
-       WHERE company_id = ? 
-       ORDER BY created_at DESC`,
+       WHERE empresa_id = ? 
+       ORDER BY criado_em DESC`,
       [company_id]
     );
 
@@ -75,10 +75,10 @@ router.post("/company", authOrApiKey, async (req, res) => {
     }
     
     const [webhooks] = await pool.query(
-      `SELECT id, nome, url, event_types, status, last_success_at, last_failure_at, failure_count, created_at, updated_at
+      `SELECT id, nome, url, eventos_tipos, status, ultimo_sucesso_em, ultimo_erro_em, erro_quantidade, criado_em, atualizado_em
        FROM webhooks 
-       WHERE company_id = ? 
-       ORDER BY created_at DESC`,
+       WHERE empresa_id = ? 
+       ORDER BY criado_em DESC`,
       [company_id]
     );
 
@@ -105,9 +105,9 @@ router.get("/:id", authOrApiKey, async (req, res) => {
     }
 
     const [webhooks] = await pool.query(
-      `SELECT id, nome, url, event_types, status, last_success_at, last_failure_at, failure_count, created_at, updated_at
+      `SELECT id, nome, url, eventos_tipos, status, ultimo_sucesso_em, ultimo_erro_em, erro_quantidade, criado_em, atualizado_em
        FROM webhooks 
-       WHERE id = ? AND company_id = ?`,
+       WHERE id = ? AND empresa_id = ?`,
       [id, company_id]
     );
 
@@ -165,7 +165,7 @@ router.post("/", authOrApiKey, async (req, res) => {
 
     // Verificar se já existe webhook com mesmo nome na empresa
     const [existing] = await pool.query(
-      `SELECT id FROM webhooks WHERE company_id = ? AND nome = ?`,
+      `SELECT id FROM webhooks WHERE empresa_id = ? AND nome = ?`,
       [company_id, nome]
     );
 
@@ -177,14 +177,14 @@ router.post("/", authOrApiKey, async (req, res) => {
 
     // Inserir webhook
     const [result] = await pool.query(
-      `INSERT INTO webhooks (company_id, nome, url, event_types, status)
+      `INSERT INTO webhooks (empresa_id, nome, url, eventos_tipos, status)
        VALUES (?, ?, ?, ?, ?)`,
       [company_id, nome, url, JSON.stringify(event_types), status]
     );
 
     // Buscar webhook criado
     const [newWebhook] = await pool.query(
-      `SELECT id, nome, url, event_types, status, last_success_at, last_failure_at, failure_count, created_at, updated_at
+      `SELECT id, nome, url, eventos_tipos, status, ultimo_sucesso_em, ultimo_erro_em, erro_quantidade, criado_em, atualizado_em
        FROM webhooks WHERE id = ?`,
       [result.insertId]
     );
@@ -214,7 +214,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
 
     // Verificar se webhook existe e pertence à empresa
     const [existing] = await pool.query(
-      `SELECT id FROM webhooks WHERE id = ? AND company_id = ?`,
+      `SELECT id FROM webhooks WHERE id = ? AND empresa_id = ?`,
       [id, company_id]
     );
 
@@ -246,7 +246,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     // Verificar nome duplicado (se nome foi alterado)
     if (nome) {
       const [duplicate] = await pool.query(
-        `SELECT id FROM webhooks WHERE company_id = ? AND nome = ? AND id != ?`,
+        `SELECT id FROM webhooks WHERE empresa_id = ? AND nome = ? AND id != ?`,
         [company_id, nome, id]
       );
 
@@ -270,7 +270,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
       values.push(url);
     }
     if (event_types !== undefined) {
-      updates.push("event_types = ?");
+      updates.push("eventos_tipos = ?");
       values.push(JSON.stringify(event_types));
     }
     if (status !== undefined) {
@@ -285,13 +285,13 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     values.push(id, company_id);
 
     await pool.query(
-      `UPDATE webhooks SET ${updates.join(", ")} WHERE id = ? AND company_id = ?`,
+      `UPDATE webhooks SET ${updates.join(", ")} WHERE id = ? AND empresa_id = ?`,
       values
     );
 
     // Buscar webhook atualizado
     const [updatedWebhook] = await pool.query(
-      `SELECT id, nome, url, event_types, status, last_success_at, last_failure_at, failure_count, created_at, updated_at
+      `SELECT id, nome, url, eventos_tipos, status, ultimo_sucesso_em, ultimo_erro_em, erro_quantidade, criado_em, atualizado_em
        FROM webhooks WHERE id = ?`,
       [id]
     );
@@ -321,7 +321,7 @@ router.delete("/:id", authOrApiKey, async (req, res) => {
 
     // Verificar se webhook existe e pertence à empresa
     const [existing] = await pool.query(
-      `SELECT id FROM webhooks WHERE id = ? AND company_id = ?`,
+      `SELECT id FROM webhooks WHERE id = ? AND empresa_id = ?`,
       [id, company_id]
     );
 
@@ -331,7 +331,7 @@ router.delete("/:id", authOrApiKey, async (req, res) => {
 
     // Deletar webhook
     await pool.query(
-      `DELETE FROM webhooks WHERE id = ? AND company_id = ?`,
+      `DELETE FROM webhooks WHERE id = ? AND empresa_id = ?`,
       [id, company_id]
     );
 
@@ -359,7 +359,7 @@ router.patch("/:id/status", authOrApiKey, async (req, res) => {
 
     // Buscar webhook atual
     const [webhooks] = await pool.query(
-      `SELECT id, status FROM webhooks WHERE id = ? AND company_id = ?`,
+      `SELECT id, status FROM webhooks WHERE id = ? AND empresa_id = ?`,
       [id, company_id]
     );
 
@@ -372,7 +372,7 @@ router.patch("/:id/status", authOrApiKey, async (req, res) => {
 
     // Atualizar status
     await pool.query(
-      `UPDATE webhooks SET status = ? WHERE id = ? AND company_id = ?`,
+      `UPDATE webhooks SET status = ? WHERE id = ? AND empresa_id = ?`,
       [newStatus, id, company_id]
     );
 

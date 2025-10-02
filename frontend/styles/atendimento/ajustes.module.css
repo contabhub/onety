@@ -1,0 +1,28 @@
+.ajustes-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+  transition: background-color 0.3s ease;
+}
+
+.ajustes-content {
+  flex: 1;
+  margin-left: 320px;
+  background-color: var(--color-bg-secondary);
+  min-height: 100vh;
+  overflow-y: auto;
+  transition: background-color 0.3s ease;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .ajustes-container {
+    flex-direction: column;
+  }
+  
+  .ajustes-content {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}
+

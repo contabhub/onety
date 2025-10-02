@@ -1,19 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const MessageHandler = require("../websocket/handlers/messageHandler");
-const ConversationHandler = require("../websocket/handlers/conversationHandler");
-const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../utils/contactHelper");
-const { buildMessageReceivedPayload, enqueueWebhookEvent } = require("../services/webhook");
+const pool = require("../../config/database");
+const MessageHandler = require("../../websocket/handlers/atendimento/messageHandler");
+const ConversationHandler = require("../../websocket/handlers/atendimento/conversationHandler");
+const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../../utils/atendimento/contactHelper");
+const { buildMessageReceivedPayload, enqueueWebhookEvent } = require("../../services/atendimento/webhook");
 
 // Helper: retorna o TWI do time padrão da empresa (se existir)
 async function getDefaultTeamTwi(companyId) {
   if (!companyId) return null;
   const [rows] = await pool.query(
     `SELECT twi.id
-       FROM teams t
-       JOIN team_whatsapp_instances twi ON twi.team_id = t.id
-      WHERE t.company_id = ? AND t.padrao = 1
+       FROM times_atendimento t
+       JOIN times_atendimento_instancias twi ON twi.times_atendimento_id = t.id
+      WHERE t.empresa_id = ? AND t.padrao = 1
       LIMIT 1`,
     [companyId]
   );
@@ -136,8 +136,8 @@ async function decryptMediaFromEvolution(instanceName, messageId, remoteJid) {
  */
 async function insertMessage(conversationId, messageType, content, mediaUrl = null) {
   const query = `
-    INSERT INTO messages (conversation_id, sender_type, sender_id, message_type, content, media_url)
-    VALUES (?, 'customer', NULL, ?, ?, ?)
+    INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, midia_url)
+    VALUES (?, 'cliente', NULL, ?, ?, ?)
   `;
   
   const [result] = await pool.query(query, [
@@ -205,10 +205,10 @@ router.post("/zapi", async (req, res) => {
 
     console.log(`🔍 Buscando whatsapp_instance com instance_id = ${instanceId}`);
     const [instanceRows] = await pool.query(
-      `SELECT wi.id as whatsapp_instance_id, twi.id as team_whatsapp_instance_id, twi.team_id
-       FROM whatsapp_instances wi
-       JOIN team_whatsapp_instances twi ON wi.id = twi.whatsapp_instance_id
-       WHERE wi.instance_id = ?`,
+      `SELECT wi.id as whatsapp_instance_id, twi.id as team_whatsapp_instance_id, twi.times_atendimento_id
+       FROM instancias wi
+       JOIN times_atendimento_instancias twi ON wi.id = twi.instancia_id
+       WHERE wi.instancia_id = ?`,
       [instanceId]
     );
 
@@ -225,13 +225,13 @@ router.post("/zapi", async (req, res) => {
     const companyIdForSearch = await getCompanyIdFromTeamInstance(team_whatsapp_instance_id);
     const [convRows] = await pool.query(
       `SELECT c.id
-         FROM conversations c
-         JOIN team_whatsapp_instances twi2 ON c.team_whatsapp_instance_id = twi2.id
-         JOIN teams tt ON twi2.team_id = tt.id
-        WHERE c.customer_phone = ?
-          AND tt.company_id = ?
+         FROM conversas c
+         JOIN times_atendimento_instancias twi2 ON c.times_atendimento_instancia_id = twi2.id
+         JOIN times_atendimento tt ON twi2.times_atendimento_id = tt.id
+        WHERE c.telefone = ?
+          AND tt.empresa_id = ?
           AND c.status != 'fechada'
-        ORDER BY c.updated_at DESC
+        ORDER BY c.atualizado_em DESC
         LIMIT 1`,
       [customerPhone, companyIdForSearch]
     );
@@ -272,7 +272,7 @@ router.post("/zapi", async (req, res) => {
       }
       
       const [insertConv] = await pool.query(
-        `INSERT INTO conversations (team_whatsapp_instance_id, customer_name, customer_phone, avatar_url, status, contact_id)
+        `INSERT INTO conversas (times_atendimento_instancia_id, nome, telefone, avatar_url, status, lead_id)
          VALUES (?, ?, ?, ?, 'aberta', ?)`,
         [team_whatsapp_instance_id, customerName, customerPhone, avatarUrl, contactId]
       );
@@ -304,10 +304,10 @@ router.post("/zapi", async (req, res) => {
     if (isNewConversation) {
       // Busca dados completos da conversa para notificação
       const [convData] = await pool.query(
-        `SELECT c.*, twi.team_id, t.company_id 
-         FROM conversations c
-         JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-         JOIN teams t ON twi.team_id = t.id
+        `SELECT c.*, twi.times_atendimento_id, t.empresa_id 
+         FROM conversas c
+         JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+         JOIN times_atendimento t ON twi.times_atendimento_id = t.id
          WHERE c.id = ?`,
         [conversationId]
       );
@@ -318,7 +318,7 @@ router.post("/zapi", async (req, res) => {
           team_whatsapp_instance_id: team_whatsapp_instance_id,
           customer_name: customerName,
           customer_phone: customerPhone,
-          company_id: convData[0].company_id,
+          company_id: convData[0].empresa_id,
           status: 'aberta',
           created_at: new Date().toISOString()
         };
@@ -849,12 +849,12 @@ router.post("/evolution", async (req, res) => {
       return res.status(400).json({ error: "Conteúdo da mensagem não pôde ser extraído." });
     }
 
-    // 🔍 Busca a instância correta pela coluna `whatsapp_instances.instance_id`
+    // 🔍 Busca a instância correta pela coluna `instancias.instancia_id`
     const [instanceRows] = await pool.query(
       `SELECT wi.id AS whatsapp_instance_id, twi.id AS team_whatsapp_instance_id
-       FROM whatsapp_instances wi
-       JOIN team_whatsapp_instances twi ON wi.id = twi.whatsapp_instance_id
-       WHERE wi.instance_id = ?`,
+       FROM instancias wi
+       JOIN times_atendimento_instancias twi ON wi.id = twi.instancia_id
+       WHERE wi.instancia_id = ?`,
       [instanceId]
     );
 
@@ -870,13 +870,13 @@ router.post("/evolution", async (req, res) => {
     const companyIdForSearch = await getCompanyIdFromTeamInstance(team_whatsapp_instance_id);
     const [convRows] = await pool.query(
       `SELECT c.id
-         FROM conversations c
-         JOIN team_whatsapp_instances twi2 ON c.team_whatsapp_instance_id = twi2.id
-         JOIN teams tt ON twi2.team_id = tt.id
-        WHERE c.customer_phone = ?
-          AND tt.company_id = ?
+         FROM conversas c
+         JOIN times_atendimento_instancias twi2 ON c.times_atendimento_instancia_id = twi2.id
+         JOIN times_atendimento tt ON twi2.times_atendimento_id = tt.id
+        WHERE c.telefone = ?
+          AND tt.empresa_id = ?
           AND c.status != 'fechada'
-        ORDER BY c.updated_at DESC
+        ORDER BY c.atualizado_em DESC
         LIMIT 1`,
       [customerPhone, companyIdForSearch]
     );
@@ -917,7 +917,7 @@ router.post("/evolution", async (req, res) => {
       }
       
       const [insertConv] = await pool.query(
-        `INSERT INTO conversations (team_whatsapp_instance_id, customer_name, customer_phone, avatar_url, status, contact_id)
+        `INSERT INTO conversas (times_atendimento_instancia_id, nome, telefone, avatar_url, status, lead_id)
          VALUES (?, ?, ?, ?, 'aberta', ?)`,
         [team_whatsapp_instance_id, customerName, customerPhone, avatarUrl, contactId]
       );
@@ -938,15 +938,15 @@ router.post("/evolution", async (req, res) => {
       
       // Buscar dados completos da mensagem e conversa para o webhook
       const [messageRows] = await pool.query(
-        `SELECT id, message_type, content, media_url, created_at 
-         FROM messages 
+        `SELECT id, tipo_mensagem, conteudo, midia_url, criado_em 
+         FROM mensagens 
          WHERE id = ?`,
         [messageId]
       );
       
       const [conversationRows] = await pool.query(
-        `SELECT id, team_whatsapp_instance_id, customer_phone, customer_name 
-         FROM conversations 
+        `SELECT id, times_atendimento_instancia_id, telefone, nome 
+         FROM conversas 
          WHERE id = ?`,
         [conversationId]
       );
@@ -1001,10 +1001,10 @@ router.post("/evolution", async (req, res) => {
     if (isNewConversation) {
       // Busca dados completos da conversa para notificação
       const [convData] = await pool.query(
-        `SELECT c.*, twi.team_id, t.company_id 
-         FROM conversations c
-         JOIN team_whatsapp_instances twi ON c.team_whatsapp_instance_id = twi.id
-         JOIN teams t ON twi.team_id = t.id
+        `SELECT c.*, twi.times_atendimento_id, t.empresa_id 
+         FROM conversas c
+         JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+         JOIN times_atendimento t ON twi.times_atendimento_id = t.id
          WHERE c.id = ?`,
         [conversationId]
       );
@@ -1015,7 +1015,7 @@ router.post("/evolution", async (req, res) => {
           team_whatsapp_instance_id: team_whatsapp_instance_id,
           customer_name: customerName,
           customer_phone: customerPhone,
-          company_id: convData[0].company_id,
+          company_id: convData[0].empresa_id,
           status: 'aberta',
           created_at: new Date().toISOString()
         };

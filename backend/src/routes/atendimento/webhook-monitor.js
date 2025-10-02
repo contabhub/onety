@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const webhookWorker = require("../workers/webhookWorker");
-const authMiddleware = require("../middlewares/auth");
+const webhookWorker = require("../../workers/webhookWorker");
+const authMiddleware = require("../../middlewares/auth");
 
 // Aplicar middleware de autenticação em todas as rotas
 router.use(authMiddleware);

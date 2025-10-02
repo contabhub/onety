@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Mic, Image, Video, FileText, Plus, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '../../utils/auth';
-import { useWebSocket } from '../../hooks/useWebSocket';
+import { useAuth } from '../../../utils/auth';
+import { useWebSocket } from '../../../hooks/useWebSocket';
 import NewChatModal from './NewChatModal';
 
 import styles from './ChatSidebar.module.css';

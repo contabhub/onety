@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
 const multer = require("multer");
 const csv = require("csv-parser");
 const XLSX = require("xlsx");
 const fs = require("fs");
 const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
-const { normalizePhone } = require("../utils/contactHelper");
+const { normalizePhone } = require("../../utils/atendimento/contactHelper");
 
 // Configuração do multer para upload em memória
 const upload = multer({ 
@@ -42,16 +42,16 @@ const upload = multer({
  */
 router.post("/", authOrApiKey, async (req, res) => {
   try {
-    const { nome, email, telefone, notas_internas, company_id } = req.body;
+    const { nome, email, telefone, notas_internas, empresa_id } = req.body;
 
-    if (!nome || !company_id) {
-      return res.status(400).json({ error: "Nome e company_id são obrigatórios." });
+    if (!nome || !empresa_id) {
+      return res.status(400).json({ error: "Nome e empresa_id são obrigatórios." });
     }
 
     const [result] = await pool.query(`
-      INSERT INTO contacts (nome, email, telefone, notas_internas, company_id)
+      INSERT INTO leads (nome, email, telefone, notas_internas, empresa_id)
       VALUES (?, ?, ?, ?, ?)`,
-      [nome, email || null, telefone || null, JSON.stringify(notas_internas || []), company_id]
+      [nome, email || null, telefone || null, JSON.stringify(notas_internas || []), empresa_id]
     );
 
     res.status(201).json({ id: result.insertId, nome, email, telefone, notas_internas, company_id });
@@ -64,13 +64,13 @@ router.post("/", authOrApiKey, async (req, res) => {
 /**
  * 📌 Listar todos os contatos de uma empresa
  */
-router.get("/company/:companyId", authOrApiKey, async (req, res) => {
+router.get("/empresa/:empresaId", authOrApiKey, async (req, res) => {
   try {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
 
     const [rows] = await pool.query(`
-      SELECT * FROM contacts WHERE company_id = ?
-      ORDER BY created_at DESC`, [companyId]);
+      SELECT * FROM leads WHERE empresa_id = ?
+      ORDER BY criado_em DESC`, [empresaId]);
 
     res.json(rows);
   } catch (err) {
@@ -84,7 +84,7 @@ router.get("/company/:companyId", authOrApiKey, async (req, res) => {
  */
 router.get("/:id", authOrApiKey, async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM contacts WHERE id = ?`, [req.params.id]);
+    const [rows] = await pool.query(`SELECT * FROM leads WHERE id = ?`, [req.params.id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Contato não encontrado." });
@@ -105,14 +105,14 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     const { nome, email, telefone, notas_internas } = req.body;
 
     await pool.query(`
-      UPDATE contacts
-      SET nome = ?, email = ?, telefone = ?, notas_internas = ?, updated_at = NOW()
+      UPDATE leads
+      SET nome = ?, email = ?, telefone = ?, notas_internas = ?, atualizado_em = NOW()
       WHERE id = ?`,
       [nome, email || null, telefone || null, JSON.stringify(notas_internas || []), req.params.id]
     );
 
     // Buscar o contato atualizado para retornar
-    const [rows] = await pool.query(`SELECT * FROM contacts WHERE id = ?`, [req.params.id]);
+    const [rows] = await pool.query(`SELECT * FROM leads WHERE id = ?`, [req.params.id]);
     
     if (rows.length === 0) {
       return res.status(404).json({ error: "Contato não encontrado." });
@@ -130,7 +130,7 @@ router.put("/:id", authOrApiKey, async (req, res) => {
  */
 router.delete("/:id", authOrApiKey, async (req, res) => {
   try {
-    await pool.query(`DELETE FROM contacts WHERE id = ?`, [req.params.id]);
+    await pool.query(`DELETE FROM leads WHERE id = ?`, [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     console.error("Erro ao deletar contato:", err);
@@ -147,7 +147,7 @@ router.post("/import/preview", authOrApiKey, upload.single('file'), async (req, 
       return res.status(400).json({ error: "Nenhum arquivo enviado." });
     }
 
-    const companyId = req.headers['company-id'] || req.body.company_id;
+    const companyId = req.headers['company-id'] || req.body.empresa_id;
     if (!companyId) {
       return res.status(400).json({ error: "Company ID é obrigatório." });
     }
@@ -181,7 +181,7 @@ router.post("/import", authOrApiKey, upload.single('file'), async (req, res) => 
       return res.status(400).json({ error: "Nenhum arquivo enviado." });
     }
 
-    const companyId = req.headers['company-id'] || req.body.company_id;
+    const companyId = req.headers['company-id'] || req.body.empresa_id;
     if (!companyId) {
       return res.status(400).json({ error: "Company ID é obrigatório." });
     }
@@ -200,7 +200,7 @@ router.post("/import", authOrApiKey, upload.single('file'), async (req, res) => 
       try {
         // Verificar se já existe contato com o mesmo telefone
         const [existing] = await connection.query(
-          `SELECT id FROM contacts WHERE telefone = ? AND company_id = ?`,
+          `SELECT id FROM leads WHERE telefone = ? AND empresa_id = ?`,
           [contact.telefone, companyId]
         );
 
@@ -211,7 +211,7 @@ router.post("/import", authOrApiKey, upload.single('file'), async (req, res) => 
 
         // Inserir novo contato
         await connection.query(`
-          INSERT INTO contacts (nome, email, telefone, notas_internas, company_id)
+          INSERT INTO leads (nome, email, telefone, notas_internas, empresa_id)
           VALUES (?, ?, ?, ?, ?)`,
           [
             contact.nome,
@@ -363,18 +363,18 @@ router.get("/export/:format", authOrApiKey, async (req, res) => {
       return res.status(400).json({ error: "Company ID é obrigatório" });
     }
 
-    // Buscar contatos da empresa - usando a tabela correta 'contacts'
+    // Buscar leads da empresa - usando a tabela 'leads'
     const query = `
       SELECT 
-        c.id,
-        c.nome,
-        c.email,
-        c.telefone,
-        c.created_at,
-        c.updated_at
-      FROM contacts c
-      WHERE c.company_id = ?
-      ORDER BY c.nome
+        l.id,
+        l.nome,
+        l.email,
+        l.telefone,
+        l.criado_em,
+        l.atualizado_em
+      FROM leads l
+      WHERE l.empresa_id = ?
+      ORDER BY l.nome
     `;
 
     const [contatos] = await pool.execute(query, [companyId]);

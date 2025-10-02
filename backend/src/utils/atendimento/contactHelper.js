@@ -1,4 +1,4 @@
-const pool = require("../config/database");
+const pool = require("../../config/database");
 
 /**
  * 🔍 Normaliza o número de telefone para um formato padrão

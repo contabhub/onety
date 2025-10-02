@@ -5,7 +5,7 @@ import ContatoModal from './ContatoModal';
 import ContatoDetailsModal from './ContatoDetailsModal';
 import ImportContatosModal from './ImportContatosModal';
 import ExportContatosModal from './ExportContatosModal';
-import { formatPhone } from '../../utils/contactHelper';
+import { formatPhone } from '../../../utils/contactHelper';
 
 export default function Contatos() {
   const [contatos, setContatos] = useState([]);

@@ -16,7 +16,7 @@ router.post("/", authOrApiKey, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO messages (conversation_id, sender_type, sender_id, message_type, content, media_url) 
+      `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, midia_url) 
        VALUES (?, ?, ?, ?, ?, ?)`,
       [conversation_id, sender_type, sender_id || null, message_type, content || null, media_url || null]
     );
@@ -47,7 +47,7 @@ router.post("/", authOrApiKey, async (req, res) => {
 router.get("/conversation/:conversation_id", authOrApiKey, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT * FROM messages WHERE conversation_id = ? ORDER BY created_at ASC",
+      "SELECT * FROM mensagens WHERE conversas_id = ? ORDER BY criado_em ASC",
       [req.params.conversation_id]
     );
     res.json(rows);
@@ -62,9 +62,9 @@ router.get("/conversation/:conversation_id", authOrApiKey, async (req, res) => {
 router.delete("/:id", authOrApiKey, async (req, res) => {
   try {
     // Busca o conversation_id antes de deletar
-    const [messageRows] = await pool.query(`SELECT conversation_id FROM messages WHERE id = ?`, [req.params.id]);
+    const [messageRows] = await pool.query(`SELECT conversas_id FROM mensagens WHERE id = ?`, [req.params.id]);
     
-    await pool.query("DELETE FROM messages WHERE id = ?", [req.params.id]);
+    await pool.query("DELETE FROM mensagens WHERE id = ?", [req.params.id]);
     
     // Notifica via WebSocket se encontrou a mensagem
     if (messageRows.length > 0) {
@@ -86,18 +86,18 @@ router.patch("/:id/read", authOrApiKey, async (req, res) => {
     const { id } = req.params;
 
     // Verifica se a mensagem existe
-    const [rows] = await pool.query(`SELECT * FROM messages WHERE id = ?`, [id]);
+    const [rows] = await pool.query(`SELECT * FROM mensagens WHERE id = ?`, [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: "Mensagem não encontrada." });
     }
 
-    // Atualiza o campo read para 1
-    await pool.query(`UPDATE messages SET \`read\` = 1 WHERE id = ?`, [id]);
+    // Atualiza o campo lido para 1
+    await pool.query(`UPDATE mensagens SET lido = 1 WHERE id = ?`, [id]);
 
     console.log(`✅ Mensagem ${id} marcada como lida.`);
 
     // Busca o conversation_id para notificar via WebSocket
-    const [messageRows] = await pool.query(`SELECT conversation_id FROM messages WHERE id = ?`, [id]);
+    const [messageRows] = await pool.query(`SELECT conversas_id FROM mensagens WHERE id = ?`, [id]);
     if (messageRows.length > 0) {
       MessageHandler.notifyMessageRead(id, messageRows[0].conversation_id, req.user.id);
     }
