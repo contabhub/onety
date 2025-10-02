@@ -73,7 +73,7 @@
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  padding: 0 14px;
+  padding: 0 10px;
   border-bottom: 2px solid var(--onity-color-surface, #0E1038);
   background: rgba(255,255,255,0.03);
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.09);
@@ -82,10 +82,10 @@
 }
 
 .logo { display: flex; align-items: center; justify-content: center; min-height: 80px; width: 100%; }
-.logoImg { border-radius: 16px; object-fit: contain; background: transparent; transition: transform 0.15s, width 0.15s, height 0.15s; border: none; opacity: 1; width: 130px; height: 130px; max-width: 150px; max-height: 150px; }
-.collapsed .logoImg { width: 40px; height: 40px; max-width: 48px; max-height: 48px; transition: width 0.15s ease-out, height 0.15s ease-out; }
+.logoImg { border-radius: 16px; object-fit: contain; background: transparent; transition: transform 0.15s, width 0.15s, height 0.15s; border: none; opacity: 1; width: 230px; height: 230px; max-width: 200px; max-height: 200px; }
+.collapsed .logoImg { width: 50px; height: 50px; max-width: 56px; max-height: 56px; transition: width 0.15s ease-out,  height 0.15s ease-out; }
 
-.pinButton { background: none; border: none; font-size: 18px; color: var(--onity-color-text, #E1E4F2); opacity: 1; margin-left: 12px; margin-right: 4px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.pinButton { background: none; border: none; font-size: 18px; color: var(--onity-color-text, #E1E4F2); opacity: 1; margin-left: -8px; margin-right: 4px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; }
 .pinButton.pinned { color: var(--onity-color-primary-hover, #3B6EFF); }
 
 /* Header da Sidebar */

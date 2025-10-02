@@ -21,6 +21,10 @@ const MODULE_REGISTRY = {
     id: 'atendimento',
     nome: 'Atendimento',
     icon: <MessageSquare size={16} />,
+    logos: {
+      light: '/img/logo-onety-atendimento-preta.png',
+      dark: '/img/logo-onety-atendimento-branca.png'
+    },
     items: [
       {
         id: 'chat',
@@ -40,6 +44,10 @@ const MODULE_REGISTRY = {
     id: 'comercial',
     nome: 'Comercial',
     icon: <Users size={16} />,
+    logos: {
+      light: '/img/logo-onety-comercial-preta.png',
+      dark: '/img/logo-onety-comercial-branca.png'
+    },
     items: [
       {
         id: 'leads',
@@ -59,6 +67,10 @@ const MODULE_REGISTRY = {
     id: 'contratual',
     nome: 'Contratual',
     icon: <FileText size={16} />,
+    logos: {
+      light: '/img/modulos/contratual-light.png',
+      dark: '/img/modulos/contratual-dark.png'
+    },
     items: [
       {
         id: 'contratos',
@@ -78,6 +90,10 @@ const MODULE_REGISTRY = {
     id: 'financeiro',
     nome: 'Financeiro',
     icon: <DollarSign size={16} />,
+    logos: {
+      light: '/img/modulos/financeiro-light.png',
+      dark: '/img/modulos/financeiro-dark.png'
+    },
     items: [
       {
         id: 'contas-pagar',
@@ -97,6 +113,10 @@ const MODULE_REGISTRY = {
     id: 'gestão de processos',
     nome: 'Gestão de Processos',
     icon: <Settings size={16} />,
+    logos: {
+      light: '/img/modulos/gestao-processos-light.png',
+      dark: '/img/modulos/gestao-processos-dark.png'
+    },
     items: [
       {
         id: 'processos',
@@ -116,6 +136,10 @@ const MODULE_REGISTRY = {
     id: 'auditoria',
     nome: 'Auditoria',
     icon: <Shield size={16} />,
+    logos: {
+      light: '/img/modulos/auditoria-light.png',
+      dark: '/img/modulos/auditoria-dark.png'
+    },
     items: [
       {
         id: 'logs',
@@ -135,6 +159,10 @@ const MODULE_REGISTRY = {
     id: 'estratégico',
     nome: 'Estratégico',
     icon: <Target size={16} />,
+    logos: {
+      light: '/img/modulos/estrategico-light.png',
+      dark: '/img/modulos/estrategico-dark.png'
+    },
     items: [
       {
         id: 'dashboard',
@@ -304,8 +332,10 @@ export default function PrincipalSidebar() {
           <img
             src={collapsed
               ? '/img/Logo-Onety-Colapsada.png'
-              : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
-            alt="Onety"
+              : currentModule?.logos
+                ? (isLightTheme ? currentModule.logos.light : currentModule.logos.dark)
+                : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
+            alt={currentModule?.nome || "Onety"}
             className={styles.logoImg}
           />
         </div>
@@ -320,20 +350,6 @@ export default function PrincipalSidebar() {
         )}
       </div>
 
-      {/* Header da Sidebar */}
-      <div className={styles.sidebarHeader}>
-        <div className={styles.moduleInfo}>
-          <div className={styles.moduleIcon}>
-            {currentModule.icon}
-          </div>
-          {!collapsed && (
-            <div className={styles.moduleDetails}>
-              <h3 className={styles.moduleName}>{currentModule.nome}</h3>
-              <span className={styles.moduleSubtitle}>Módulo Ativo</span>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Itens do Módulo */}
       <div className={styles.sidebarContent}>
