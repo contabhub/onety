@@ -18,6 +18,8 @@ export default function GrupoConteudoPage() {
   const [progresso, setProgresso] = useState({ concluidos: 0, total: 0, porcentagem: 0 })
   const [marcandoConcluido, setMarcandoConcluido] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+  const [provasConteudo, setProvasConteudo] = useState({})
+  const [provasEmpresa, setProvasEmpresa] = useState({})
 
   useEffect(() => {
     if (grupoId) {
@@ -37,7 +39,7 @@ export default function GrupoConteudoPage() {
   }, [router.query, conteudos])
 
   const loadGrupoAndConteudos = async () => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
     const user = userRaw ? JSON.parse(userRaw) : null
@@ -119,6 +121,7 @@ export default function GrupoConteudoPage() {
 
       setConteudos(conteudosComStatus)
       updateProgresso(conteudosComStatus)
+      await loadProvasConteudos(conteudosComStatus)
       
     } catch (e) {
       setError(e.message || 'Erro ao carregar dados')
@@ -138,8 +141,58 @@ export default function GrupoConteudoPage() {
     setProgresso({ concluidos, total, porcentagem })
   }
 
+  // Função para carregar provas de cada conteúdo
+  const loadProvasConteudos = async (conteudos) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+    const user = userRaw ? JSON.parse(userRaw) : null
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null
+    const viewerId = user?.id
+
+    if (!empresaId || !viewerId) return
+
+    try {
+      const provasData = {}
+      const provasEmpresaData = {}
+
+      for (const conteudo of conteudos) {
+        // Buscar provas do conteúdo
+        const provasRes = await fetch(`${API_URL}/prova/conteudo/${conteudo.id}`, {
+          headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+        })
+        
+        if (provasRes.ok) {
+          const provasResponse = await provasRes.json()
+          const provas = provasResponse.data || []
+          provasData[conteudo.id] = provas
+
+          // Para cada prova, verificar se já foi liberada para o usuário
+          for (const prova of provas) {
+            const provaEmpresaRes = await fetch(`${API_URL}/prova-empresa/empresa/${empresaId}?viewer_id=${viewerId}&prova_id=${prova.id}`, {
+              headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+            })
+            
+            if (provaEmpresaRes.ok) {
+              const provaEmpresaResponse = await provaEmpresaRes.json()
+              const provaEmpresa = provaEmpresaResponse.data?.find(pe => pe.prova_id === prova.id)
+              if (provaEmpresa) {
+                provasEmpresaData[prova.id] = provaEmpresa
+              }
+            }
+          }
+        }
+      }
+
+      setProvasConteudo(provasData)
+      setProvasEmpresa(provasEmpresaData)
+    } catch (error) {
+      console.error('Erro ao carregar provas dos conteúdos:', error)
+    }
+  }
+
   const marcarComoConcluido = async (conteudo) => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
     const user = userRaw ? JSON.parse(userRaw) : null
@@ -369,6 +422,61 @@ export default function GrupoConteudoPage() {
                       poster={grupo?.logo_url}
                       controls
                     />
+                  </div>
+                )}
+
+                {/* Seção de Provas */}
+                {provasConteudo[conteudoAtual.id] && provasConteudo[conteudoAtual.id].length > 0 && (
+                  <div className={grupoStyles.provasSection}>
+                    <h4 className={grupoStyles.provasTitle}>📝 Provas Disponíveis</h4>
+                    <div className={grupoStyles.provasList}>
+                      {provasConteudo[conteudoAtual.id].map((prova) => {
+                        const provaEmpresa = provasEmpresa[prova.id]
+                        const podeFazer = conteudoAtual.concluido && (!provaEmpresa || provaEmpresa.nota === null)
+                        const jaFez = provaEmpresa && provaEmpresa.nota !== null
+                        
+                        return (
+                          <div key={prova.id} className={grupoStyles.provaCard}>
+                            <div className={grupoStyles.provaInfo}>
+                              <h5 className={grupoStyles.provaNome}>{prova.nome}</h5>
+                              <div className={grupoStyles.provaStatus}>
+                                {jaFez ? (
+                                  <span className={grupoStyles.provaFeita}>
+                                    ✅ Feita - Nota: {provaEmpresa.nota}
+                                  </span>
+                                ) : podeFazer ? (
+                                  <span className={grupoStyles.provaDisponivel}>
+                                    🎯 Disponível para fazer
+                                  </span>
+                                ) : (
+                                  <span className={grupoStyles.provaBloqueada}>
+                                    🔒 Complete o conteúdo primeiro
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className={grupoStyles.provaActions}>
+                              {podeFazer && (
+                                <button 
+                                  onClick={() => router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)}
+                                  className={grupoStyles.fazerProvaButton}
+                                >
+                                  🎯 Fazer Prova
+                                </button>
+                              )}
+                              {jaFez && (
+                                <button 
+                                  onClick={() => router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)}
+                                  className={grupoStyles.verProvaButton}
+                                >
+                                  👁️ Ver Resultado
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
 

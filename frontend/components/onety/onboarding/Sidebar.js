@@ -260,11 +260,14 @@ export default function OnboardingSidebar({ currentTab, onChangeTab, tabs, onCol
       {/* Modais renderizados via Portal fora da sidebar */}
       {typeof window !== 'undefined' && (
         <>
-          <EditarPerfil
-            open={modalOpen}
-            onClose={() => setModalOpen(false)}
-            onUpdated={(u) => setUserData(u)}
-          />
+          {modalOpen && createPortal(
+            <EditarPerfil
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onUpdated={(u) => setUserData(u)}
+            />,
+            document.body
+          )}
 
           {/* Modal de confirmação para trocar de empresa */}
           {confirmModalOpen && createPortal(

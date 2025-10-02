@@ -4,6 +4,7 @@ import Head from 'next/head'
 import OnboardingSidebar from '../../components/onety/onboarding/Sidebar'
 import ConteudoList from '../../components/onety/onboarding/ConteudoList'
 import ProvaList from '../../components/onety/onboarding/ProvaList'
+import ProvaLiberacao from '../../components/onety/onboarding/ProvaLiberacao'
 import ConclusoesList from '../../components/onety/onboarding/ConclusoesList'
 import ConteudoModal from '../../components/onety/onboarding/ConteudoModal'
 import styles from '../../styles/onety/onboarding/onboarding.module.css'
@@ -83,22 +84,11 @@ export default function OnboardingPage() {
                 )}
                 <ConteudoList moduloId={id} />
               </div>
-            )}
-            {tab === 'provas' && <ProvaList moduloId={id} />}
-            {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
-          </main>
-        </div>
-      </div>
-      
-      <ConteudoModal
-        isOpen={showConteudoModal}
-        onClose={() => setShowConteudoModal(false)}
-        moduloId={id}
-        onSuccess={() => {
-          // Recarregar a lista de conteúdos se necessário
-          window.location.reload()
-        }}
-      />
+
+              <>
+                <ConteudoList moduloId={id} />
+                <ProvaLiberacao moduloId={id} />
+              </>
     </div>
   )
 }
