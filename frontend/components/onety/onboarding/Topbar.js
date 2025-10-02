@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
+import { ArrowLeft } from 'lucide-react'
 import ThemeToggle from '../menu/ThemeToggle'
 import styles from './Topbar.module.css'
 
@@ -95,6 +96,10 @@ export default function Header({ sidebarCollapsed }) {
     router.push('/empresa')
   }
 
+  const handleBackToModulos = () => {
+    router.push('/modulos')
+  }
+
   const getInitials = (name) => {
     if (!name) return 'US'
     const parts = String(name).trim().split(/\s+/)
@@ -106,6 +111,13 @@ export default function Header({ sidebarCollapsed }) {
   return (
     <header className={`${styles.header} ${sidebarCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded}`}>
       <div className={styles.left}>
+        <button 
+          className={styles.backButton}
+          onClick={handleBackToModulos}
+          title="Voltar para Módulos"
+        >
+          <ArrowLeft size={18} />
+        </button>
         <span className={styles.title}>{moduleName ? `Módulo: ${moduleName}` : 'Onboarding'}</span>
       </div>
       <div className={styles.right}>

@@ -35,8 +35,9 @@ export default function OnboardingPage() {
     if (userData) {
       try {
         const user = JSON.parse(userData)
-        const role = user.permissoes?.adm?.[0] || null
-        setUserRole(role)
+        const isSuperadmin = Array.isArray(user?.permissoes?.adm) && 
+                            user.permissoes.adm.includes('superadmin')
+        setUserRole(isSuperadmin ? 'superadmin' : null)
       } catch (err) {
         console.error('Erro ao decodificar userData:', err)
       }
@@ -73,6 +74,7 @@ export default function OnboardingPage() {
             currentTab={tab} 
             onChangeTab={setTab} 
             onCollapseChange={setSidebarCollapsed}
+            userRole={userRole}
           />
           <main className={styles.main}>
             {tab === 'conteudo' && (
@@ -90,11 +92,11 @@ export default function OnboardingPage() {
                     </button>
                   </div>
                 )}
-                <ConteudoList moduloId={id} />
-                <ProvaLiberacao moduloId={id} />
+                <ConteudoList moduloId={id} userRole={userRole} />
+                {userRole === 'superadmin' && <ProvaLiberacao moduloId={id} />}
               </div>
             )}
-            {tab === 'provas' && <ProvaList moduloId={id} />}
+            {tab === 'provas' && userRole === 'superadmin' && <ProvaList moduloId={id} />}
             {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
           </main>
         </div>

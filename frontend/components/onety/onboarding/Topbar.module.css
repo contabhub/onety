@@ -24,15 +24,34 @@
     align-items: center;
     gap: 12px;
   }
+
+  .backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: 1px solid var(--onity-color-border);
+    border-radius: 6px;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-foreground);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .backButton:hover {
+    background: var(--onity-color-muted);
+    border-color: var(--onity-color-primary);
+  }
+
+  .backButton:active {
+    transform: translateY(1px);
+  }
   
   .title {
     font-size: 18px;
     font-weight: 600;
     color: var(--onity-color-foreground);
   }
-  
-  /* No tema claro, empurra a logo um pouco para a direita */
-  :root[data-theme='light'] .title { }
   
   /* removed alternate logo */
   
