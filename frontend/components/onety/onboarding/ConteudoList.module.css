@@ -1,15 +1,16 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  padding: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 
 .card {
   border: 1px solid var(--onity-color-border);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  background: var(--onity-color-bgElevated);
+  background: var(--onity-color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .media {
@@ -243,7 +244,7 @@
 
 .progressPercentage {
   font-size: 12px;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-primary-light);
   font-weight: 600;
 }
 
@@ -338,6 +339,29 @@
   font-size: 12px;
   color: var(--onity-color-textWarning);
   line-height: 1.4;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.provaButton {
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.provaButton:hover {
+  background: var(--onity-color-primary);
+  transform: translateY(-1px);
 }
 
 

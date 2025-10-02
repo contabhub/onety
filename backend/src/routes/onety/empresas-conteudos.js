@@ -143,12 +143,43 @@ router.patch("/:empresa_id/:conteudo_id/concluir", verifyToken, async (req, res)
           console.log(`📊 Módulo ${modulo_id}:`, { total_grupos, grupos_concluidos, moduloCompleto });
           
           if (moduloCompleto) {
-            // Módulo completo - liberar
-            console.log(`🎉 Liberando módulo ${modulo_id} para empresa ${empresa_id}`);
-            await conn.query(
-              "UPDATE modulos_empresa SET status = 'liberado' WHERE empresa_id = ? AND modulo_id = ?",
-              [empresa_id, modulo_id]
-            );
+            // Verificar se todas as provas do módulo foram completadas antes de liberar
+            const [provasPendentes] = await conn.query(`
+              SELECT COUNT(*) as total_pendentes
+              FROM prova_empresa pe
+              INNER JOIN prova p ON pe.prova_id = p.id
+              INNER JOIN conteudos c ON p.conteudo_id = c.id
+              INNER JOIN grupos g ON c.grupo_id = g.id
+              WHERE pe.empresa_id = ? 
+                AND g.modulo_id = ?
+                AND (pe.nota IS NULL OR pe.nota < 7)
+              
+              UNION ALL
+              
+              SELECT COUNT(*) as total_pendentes
+              FROM prova_empresa pe
+              INNER JOIN prova p ON pe.prova_id = p.id
+              INNER JOIN grupos g ON p.grupo_id = g.id
+              WHERE pe.empresa_id = ? 
+                AND g.modulo_id = ?
+                AND (pe.nota IS NULL OR pe.nota < 7)
+            `, [empresa_id, modulo_id, empresa_id, modulo_id]);
+
+            const totalProvasPendentes = provasPendentes.reduce((sum, row) => sum + parseInt(row.total_pendentes), 0);
+            
+            console.log(`📊 Provas pendentes no módulo ${modulo_id}:`, { totalProvasPendentes });
+            
+            if (totalProvasPendentes === 0) {
+              // Todas as provas foram completadas - liberar módulo
+              console.log(`🎉 Liberando módulo ${modulo_id} para empresa ${empresa_id} - todas as provas completadas`);
+              await conn.query(
+                "UPDATE modulos_empresa SET status = 'liberado' WHERE empresa_id = ? AND modulo_id = ?",
+                [empresa_id, modulo_id]
+              );
+            } else {
+              // Ainda há provas pendentes - módulo não pode ser liberado
+              console.log(`⏳ Módulo ${modulo_id} não liberado para empresa ${empresa_id} - ${totalProvasPendentes} provas pendentes`);
+            }
           } else if (parseInt(grupos_concluidos) > 0) {
             // Módulo em andamento - pelo menos um grupo concluído
             console.log(`🔄 Módulo ${modulo_id} em andamento para empresa ${empresa_id}`);

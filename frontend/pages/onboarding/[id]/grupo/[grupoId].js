@@ -6,7 +6,7 @@ import grupoStyles from '../../../../components/onety/onboarding/GrupoConteudoVi
 import Topbar from '../../../../components/onety/onboarding/Topbar'
 import SpaceLoader from '../../../../components/onety/menu/SpaceLoader'
 import OnboardingSidebar from '../../../../components/onety/onboarding/Sidebar'
-import { FileText } from 'lucide-react'
+import { FileText, ClipboardList, Target } from 'lucide-react'
 
 export default function GrupoConteudoPage() {
   const router = useRouter()
@@ -21,6 +21,7 @@ export default function GrupoConteudoPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [provasConteudo, setProvasConteudo] = useState({})
   const [provasEmpresa, setProvasEmpresa] = useState({})
+  const [provasGrupo, setProvasGrupo] = useState([])
 
   useEffect(() => {
     if (grupoId) {
@@ -121,8 +122,8 @@ export default function GrupoConteudoPage() {
       }))
 
       setConteudos(conteudosComStatus)
-      updateProgresso(conteudosComStatus)
       await loadProvasConteudos(conteudosComStatus)
+      await loadProvasGrupo(empresaId, viewerId, grupoId, conteudosComStatus)
       
     } catch (e) {
       setError(e.message || 'Erro ao carregar dados')
@@ -132,17 +133,60 @@ export default function GrupoConteudoPage() {
   }
 
   const updateProgresso = (conteudosList) => {
-    const concluidos = conteudosList.filter(c => c.concluido).length
-    const total = conteudosList.length
-    const porcentagem = total > 0 ? Math.round((concluidos / total) * 100) : 0
+    // Verificar se todos os conteúdos estão concluídos E se todas as provas foram feitas
+    let conteudosCompletos = 0
     
-    console.log('📊 Progresso calculado:', { concluidos, total, porcentagem })
+    for (const conteudo of conteudosList) {
+      const provasDoConteudo = provasConteudo[conteudo.id] || []
+      
+      // Se não há prova para o conteúdo, basta estar concluído
+      if (provasDoConteudo.length === 0) {
+        if (conteudo.concluido) {
+          conteudosCompletos++
+        }
+      } else {
+        // Se há prova, verificar se foi feita com nota >= 7
+        const todasProvasAprovadas = provasDoConteudo.every(prova => {
+          const provaEmpresa = provasEmpresa[prova.id]
+          return provaEmpresa && provaEmpresa.nota !== null && provaEmpresa.nota >= 7
+        })
+        
+        if (conteudo.concluido && todasProvasAprovadas) {
+          conteudosCompletos++
+        }
+      }
+    }
+    
+    // Verificar se há provas de grupo pendentes
+    const provasGrupoPendentes = provasGrupo.filter(prova => 
+      prova.nota === null || prova.nota < 7
+    ).length
+    
+    // Se há provas de grupo pendentes, não pode ser 100%
+    const total = conteudosList.length
+    const conteudosCompletosComProvas = provasGrupoPendentes > 0 ? 
+      Math.max(0, conteudosCompletos - 1) : conteudosCompletos
+    
+    const porcentagem = total > 0 ? Math.round((conteudosCompletosComProvas / total) * 100) : 0
+    
+    console.log('📊 Progresso calculado (considerando provas):', { 
+      conteudosCompletos, 
+      provasGrupoPendentes, 
+      conteudosCompletosComProvas, 
+      total, 
+      porcentagem 
+    })
     console.log('📋 Conteúdos:', conteudosList.map(c => ({ id: c.id, nome: c.nome, concluido: c.concluido })))
     
-    setProgresso({ concluidos, total, porcentagem })
+    setProgresso({ 
+      concluidos: conteudosCompletosComProvas, 
+      total, 
+      porcentagem,
+      provasGrupoPendentes: provasGrupoPendentes > 0
+    })
   }
 
-  // Função para carregar provas de cada conteúdo
+  // Função para carregar provas de cada conteúdo (apenas as que têm vínculo com a empresa)
   const loadProvasConteudos = async (conteudos) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -158,37 +202,77 @@ export default function GrupoConteudoPage() {
       const provasEmpresaData = {}
 
       for (const conteudo of conteudos) {
-        // Buscar provas do conteúdo
-        const provasRes = await fetch(`${API_URL}/prova/conteudo/${conteudo.id}`, {
+        // Buscar provas vinculadas à empresa para este conteúdo
+        const provasRes = await fetch(`${API_URL}/prova-empresa/empresa/${empresaId}?conteudo_id=${conteudo.id}`, {
           headers: { 'Authorization': token ? `Bearer ${token}` : '' }
         })
         
         if (provasRes.ok) {
           const provasResponse = await provasRes.json()
-          const provas = provasResponse.data || []
-          provasData[conteudo.id] = provas
-
-          // Para cada prova, verificar se já foi liberada para o usuário
-          for (const prova of provas) {
-            const provaEmpresaRes = await fetch(`${API_URL}/prova-empresa/empresa/${empresaId}?viewer_id=${viewerId}&prova_id=${prova.id}`, {
-              headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-            })
-            
-            if (provaEmpresaRes.ok) {
-              const provaEmpresaResponse = await provaEmpresaRes.json()
-              const provaEmpresa = provaEmpresaResponse.data?.find(pe => pe.prova_id === prova.id)
-              if (provaEmpresa) {
-                provasEmpresaData[prova.id] = provaEmpresa
+          const provasEmpresa = provasResponse.data || []
+          
+          // Filtrar apenas provas que têm vínculo com este conteúdo
+          const provasDoConteudo = provasEmpresa.filter(pe => pe.conteudo_id === conteudo.id)
+          
+          if (provasDoConteudo.length > 0) {
+            // Buscar detalhes das provas
+            const provasDetalhes = []
+            for (const pe of provasDoConteudo) {
+              const provaDetalhesRes = await fetch(`${API_URL}/prova/${pe.prova_id}`, {
+                headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+              })
+              
+              if (provaDetalhesRes.ok) {
+                const provaDetalhes = await provaDetalhesRes.json()
+                provasDetalhes.push(provaDetalhes)
+                provasEmpresaData[pe.prova_id] = pe
               }
             }
+            
+            provasData[conteudo.id] = provasDetalhes
+          } else {
+            provasData[conteudo.id] = []
           }
         }
       }
 
       setProvasConteudo(provasData)
       setProvasEmpresa(provasEmpresaData)
+      console.log('🔍 Provas carregadas (apenas com vínculo):', provasData)
+      console.log('🔍 Provas empresa:', provasEmpresaData)
+      
+      // Atualizar progresso após carregar provas
+      setTimeout(() => updateProgresso(conteudos), 50)
     } catch (error) {
       console.error('Erro ao carregar provas dos conteúdos:', error)
+    }
+  }
+
+  // Função para carregar provas do grupo
+  const loadProvasGrupo = async (empresaId, viewerId, grupoId, conteudos = []) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+    if (!empresaId || !viewerId || !grupoId) return
+
+    try {
+      // Buscar provas vinculadas ao grupo
+      const provasRes = await fetch(`${API_URL}/prova-empresa/empresa/${empresaId}?grupo_id=${grupoId}`, {
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      })
+      
+      if (provasRes.ok) {
+        const provasResponse = await provasRes.json()
+        const provasDoGrupo = provasResponse.data || []
+        
+        setProvasGrupo(provasDoGrupo)
+        console.log('🔍 Provas do grupo carregadas:', provasDoGrupo)
+        
+        // Atualizar progresso após carregar provas do grupo
+        setTimeout(() => updateProgresso(conteudos), 50)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar provas do grupo:', error)
     }
   }
 
@@ -208,7 +292,32 @@ export default function GrupoConteudoPage() {
     setMarcandoConcluido(true)
     
     try {
-      // Marcar conteúdo como concluído na tabela empresas_conteudos
+      // 1. Verificar se existe prova vinculada a este conteúdo
+      const provasDoConteudo = provasConteudo[conteudo.id] || []
+      
+      if (provasDoConteudo.length > 0) {
+        // 2. Verificar se todas as provas foram concluídas (nota != NULL)
+        for (const prova of provasDoConteudo) {
+          const provaEmpresa = provasEmpresa[prova.id]
+          
+          if (!provaEmpresa || provaEmpresa.nota === null) {
+            setError(`Você precisa fazer a prova "${prova.nome}" antes de marcar o conteúdo como concluído.`)
+            setMarcandoConcluido(false)
+            return
+          }
+          
+          // Verificar se passou na prova (nota >= 7)
+          if (provaEmpresa.nota < 7) {
+            setError(`Você precisa ter nota >= 7 na prova "${prova.nome}" para concluir o conteúdo. Sua nota atual: ${provaEmpresa.nota}`)
+            setMarcandoConcluido(false)
+            return
+          }
+        }
+        
+        console.log('✅ Todas as provas foram concluídas com sucesso!')
+      }
+
+      // 3. Marcar conteúdo como concluído na tabela empresas_conteudos
       const concluirRes = await fetch(`${API_URL}/empresas-conteudos/${empresaId}/${conteudo.id}/concluir`, {
         method: 'PATCH',
         headers: {
@@ -271,10 +380,23 @@ export default function GrupoConteudoPage() {
     router.push(`/onboarding/${moduloId}`)
   }
 
-  // Função para renderizar o botão "Próximo" ou "Fazer Prova"
+  // Função para renderizar o botão "Próximo" ou "Realizar Prova"
   const renderNextButton = () => {
     const isLastContent = currentIndex === conteudos.length - 1
     const isContentCompleted = conteudoAtual.concluido
+    const allContentsCompleted = progresso.concluidos === progresso.total
+    const hasProvaGrupo = provasGrupo.length > 0
+    const hasProvaGrupoPendente = progresso.provasGrupoPendentes
+    
+    console.log('🔍 Debug renderNextButton:', {
+      isLastContent,
+      isContentCompleted,
+      allContentsCompleted,
+      hasProvaGrupo,
+      hasProvaGrupoPendente,
+      progresso,
+      provasGrupo
+    })
 
     // Se não é o último conteúdo, mostrar botão "Próximo" normal
     if (!isLastContent) {
@@ -300,7 +422,31 @@ export default function GrupoConteudoPage() {
       )
     }
 
-    // Se é o último conteúdo e está concluído, mostrar botão para voltar aos grupos
+    // Verificar se há provas de grupo pendentes (verificação direta)
+    const provasGrupoPendentes = provasGrupo.filter(prova => 
+      prova.nota === null || prova.nota < 7
+    )
+    
+    // Se há provas de grupo pendentes, sempre mostrar "Realizar Prova"
+    if (provasGrupoPendentes.length > 0) {
+      const provaGrupo = provasGrupoPendentes[0] // Pegar a primeira prova pendente
+      const jaFezProva = provaGrupo.nota !== null
+      const passouProva = provaGrupo.nota !== null && provaGrupo.nota >= 7
+
+      console.log('🎯 Mostrando botão Realizar Prova:', { provaGrupo, jaFezProva, passouProva })
+
+      return (
+        <button 
+          onClick={() => handleFazerProvaGrupo(provaGrupo)}
+          className={grupoStyles.fazerProvaButton}
+        >
+          <FileText size={16} style={{ marginRight: 8 }} />
+          {!jaFezProva ? 'Realizar Prova' : 'Refazer Prova'}
+        </button>
+      )
+    }
+
+    // Se é o último conteúdo e está concluído e não há provas pendentes, mostrar botão para voltar aos grupos
     return (
       <button 
         onClick={handleVoltar}
@@ -311,6 +457,28 @@ export default function GrupoConteudoPage() {
     )
   }
 
+
+  // Função para lidar com a prova do grupo
+  const handleFazerProvaGrupo = async (provaEmpresa) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+    const user = userRaw ? JSON.parse(userRaw) : null
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null
+    const viewerId = user?.id
+
+    if (!empresaId || !viewerId) {
+      setError('Dados de usuário ou empresa não encontrados')
+      return
+    }
+
+    try {
+      // Navegar diretamente para a prova do grupo
+      router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)
+    } catch (e) {
+      setError(e.message || 'Erro ao preparar prova do grupo')
+    }
+  }
 
   // Função para lidar com o clique em "Fazer Prova" específica (da seção de provas)
   const handleFazerProvaEspecifica = async (prova, provaEmpresa) => {
@@ -443,32 +611,22 @@ export default function GrupoConteudoPage() {
             onCollapseChange={setSidebarCollapsed}
           />
           <main className={styles.main}>
-            <div className={grupoStyles.container}>
-              {/* Botão de voltar acima do título */}
+            {/* Header */}
+            <div className={styles.header}>
               <div>
-                <button onClick={handleVoltar} className={grupoStyles.backButton}>
-                  ← Voltar aos grupos
-                </button>
+                <h1 className={styles.headerTitle}>
+                  {grupo?.nome || 'Grupo de Conteúdo'}
+                </h1>
+                <p className={styles.headerSubtitle}>
+                  {progresso.concluidos} de {progresso.total} conteúdos concluídos ({progresso.porcentagem}%)
+                </p>
               </div>
+              <button onClick={handleVoltar} className={styles.addButton}>
+                ← Voltar aos Grupos
+              </button>
+            </div>
 
-              {/* Header com progresso */}
-              <div className={grupoStyles.header}>
-                <div className={grupoStyles.headerInfo}>
-                  <h2 className={grupoStyles.groupTitle}>{grupo?.nome}</h2>
-                  <div className={grupoStyles.progressInfo}>
-                    <span>{progresso.concluidos} de {progresso.total} concluídos</span>
-                    <span className={grupoStyles.percentage}>({progresso.porcentagem}%)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Barra de progresso */}
-              <div className={grupoStyles.progressBar}>
-                <div 
-                  className={grupoStyles.progressFill} 
-                  style={{ width: `${progresso.porcentagem}%` }}
-                />
-              </div>
+            <div className={grupoStyles.container}>
 
               {/* Navegação de conteúdos */}
               <div className={grupoStyles.contentNavigation}>
@@ -516,12 +674,16 @@ export default function GrupoConteudoPage() {
                 {/* Seção de Provas */}
                 {provasConteudo[conteudoAtual.id] && provasConteudo[conteudoAtual.id].length > 0 && (
                   <div className={grupoStyles.provasSection}>
-                    <h4 className={grupoStyles.provasTitle}>📝 Provas Disponíveis</h4>
+                    <h4 className={grupoStyles.provasTitle}>
+                      <ClipboardList size={20} style={{ marginRight: 8 }} />
+                      Prova Obrigatória
+                    </h4>
                     <div className={grupoStyles.provasList}>
                       {provasConteudo[conteudoAtual.id].map((prova) => {
                         const provaEmpresa = provasEmpresa[prova.id]
-                        const podeFazer = conteudoAtual.concluido && (!provaEmpresa || provaEmpresa.nota === null)
+                        const podeFazer = !provaEmpresa || provaEmpresa.nota === null
                         const jaFez = provaEmpresa && provaEmpresa.nota !== null
+                        const passou = provaEmpresa && provaEmpresa.nota >= 7
                         
                         return (
                           <div key={prova.id} className={grupoStyles.provaCard}>
@@ -529,19 +691,24 @@ export default function GrupoConteudoPage() {
                               <h5 className={grupoStyles.provaNome}>{prova.nome}</h5>
                               <div className={grupoStyles.provaStatus}>
                                 {jaFez ? (
-                                  <span className={grupoStyles.provaFeita}>
-                                    ✅ Feita - Nota: {provaEmpresa.nota}
-                                  </span>
-                                ) : podeFazer ? (
-                                  <span className={grupoStyles.provaDisponivel}>
-                                    🎯 Disponível para fazer
+                                  <span className={passou ? grupoStyles.provaFeita : grupoStyles.provaReprovada}>
+                                    {passou ? '✅ Aprovado' : '❌ Reprovado'} - Nota: {provaEmpresa.nota}
                                   </span>
                                 ) : (
-                                  <span className={grupoStyles.provaBloqueada}>
-                                    🔒 Complete o conteúdo primeiro
+                                  <span className={grupoStyles.provaDisponivel}>
+                                    <Target size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                                    Disponível para fazer
                                   </span>
                                 )}
                               </div>
+                              <p className={grupoStyles.provaDescricao}>
+                                {jaFez 
+                                  ? passou 
+                                    ? 'Parabéns! Você pode marcar o conteúdo como concluído.'
+                                    : 'Você precisa refazer a prova e tirar nota >= 7 para concluir o conteúdo.'
+                                  : 'Faça esta prova para poder marcar o conteúdo como concluído.'
+                                }
+                              </p>
                             </div>
                             <div className={grupoStyles.provaActions}>
                               {podeFazer && (
@@ -549,15 +716,16 @@ export default function GrupoConteudoPage() {
                                   onClick={() => handleFazerProvaEspecifica(prova, provaEmpresa)}
                                   className={grupoStyles.fazerProvaButton}
                                 >
-                                  🎯 Fazer Prova
+                                  <FileText size={16} style={{ marginRight: 8 }} />
+                                  Fazer Prova
                                 </button>
                               )}
-                              {jaFez && provaEmpresa && (
+                              {jaFez && !passou && (
                                 <button 
-                                  onClick={() => router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)}
-                                  className={grupoStyles.verProvaButton}
+                                  onClick={() => handleFazerProvaEspecifica(prova, provaEmpresa)}
+                                  className={grupoStyles.fazerProvaButton}
                                 >
-                                  👁️ Ver Resultado
+                                  🔄 Refazer Prova
                                 </button>
                               )}
                             </div>
@@ -579,13 +747,25 @@ export default function GrupoConteudoPage() {
                   </button>
                   
                   {!conteudoAtual.concluido ? (
-                    <button 
-                      onClick={() => marcarComoConcluido(conteudoAtual)}
-                      disabled={marcandoConcluido}
-                      className={grupoStyles.completeButton}
-                    >
-                      {marcandoConcluido ? 'Marcando...' : '✓ Marcar como Concluído'}
-                    </button>
+                    (() => {
+                      const provasDoConteudo = provasConteudo[conteudoAtual.id] || []
+                      const podeMarcarConcluido = provasDoConteudo.length === 0 || 
+                        provasDoConteudo.every(prova => {
+                          const provaEmpresa = provasEmpresa[prova.id]
+                          return provaEmpresa && provaEmpresa.nota !== null && provaEmpresa.nota >= 7
+                        })
+                      
+                      return (
+                        <button 
+                          onClick={() => marcarComoConcluido(conteudoAtual)}
+                          disabled={marcandoConcluido || !podeMarcarConcluido}
+                          className={grupoStyles.completeButton}
+                          title={!podeMarcarConcluido ? 'Complete a(s) prova(s) obrigatória(s) primeiro' : ''}
+                        >
+                          {marcandoConcluido ? 'Marcando...' : '✓ Marcar como Concluído'}
+                        </button>
+                      )
+                    })()
                   ) : (
                     <span className={grupoStyles.alreadyCompleted}>
                       ✓ Este conteúdo já foi concluído

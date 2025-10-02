@@ -48,13 +48,46 @@ router.post("/", async (req, res) => {
     const payload = req.body || {};
 
     // Campos obrigatórios
-    const { nome, conteudo_id } = payload;
+    const { nome, conteudo_id, grupo_id } = payload;
     
-    // Validação básica
-    if (!nome || !conteudo_id) {
+    // Validação básica - deve ter nome e pelo menos um vínculo
+    if (!nome || (!conteudo_id && !grupo_id)) {
       return res.status(400).json({ 
-        error: "Campos obrigatórios: nome e conteudo_id" 
+        error: "Campos obrigatórios: nome e (conteudo_id OU grupo_id)" 
       });
+    }
+
+    // Não pode ter ambos preenchidos
+    if (conteudo_id && grupo_id) {
+      return res.status(400).json({ 
+        error: "Prova deve ser vinculada a um conteúdo OU um grupo, não ambos" 
+      });
+    }
+
+    // Verificar se já existe prova para este conteúdo
+    if (conteudo_id) {
+      const [existingConteudo] = await pool.query(
+        "SELECT id FROM prova WHERE conteudo_id = ?",
+        [conteudo_id]
+      );
+      if (existingConteudo.length > 0) {
+        return res.status(409).json({ 
+          error: "Já existe uma prova para este conteúdo" 
+        });
+      }
+    }
+
+    // Verificar se já existe prova para este grupo
+    if (grupo_id) {
+      const [existingGrupo] = await pool.query(
+        "SELECT id FROM prova WHERE grupo_id = ?",
+        [grupo_id]
+      );
+      if (existingGrupo.length > 0) {
+        return res.status(409).json({ 
+          error: "Já existe uma prova para este grupo" 
+        });
+      }
     }
 
     // Inicia transação
@@ -62,8 +95,8 @@ router.post("/", async (req, res) => {
     await conn.beginTransaction();
 
     const [result] = await conn.query(
-      `INSERT INTO prova (nome, conteudo_id) VALUES (?, ?)`,
-      [nome, conteudo_id]
+      `INSERT INTO prova (nome, conteudo_id, grupo_id) VALUES (?, ?, ?)`,
+      [nome, conteudo_id || null, grupo_id || null]
     );
 
     await conn.commit();
@@ -85,7 +118,8 @@ router.post("/", async (req, res) => {
 const buildUpdateQuery = (body) => {
   const allowed = [
     "nome",
-    "conteudo_id"
+    "conteudo_id",
+    "grupo_id"
   ];
 
   const fields = [];
@@ -104,6 +138,34 @@ router.patch("/:id", async (req, res) => {
     const { id } = req.params;
     const { fields, values } = buildUpdateQuery(req.body || {});
     if (fields.length === 0) return res.status(400).json({ error: "Nenhum campo para atualizar." });
+
+    const body = req.body || {};
+    const { conteudo_id, grupo_id } = body;
+
+    // Verificar se está tentando alterar para um conteúdo/grupo que já tem prova
+    if (conteudo_id !== undefined) {
+      const [existingConteudo] = await pool.query(
+        "SELECT id FROM prova WHERE conteudo_id = ? AND id != ?",
+        [conteudo_id, id]
+      );
+      if (existingConteudo.length > 0) {
+        return res.status(409).json({ 
+          error: "Já existe uma prova para este conteúdo" 
+        });
+      }
+    }
+
+    if (grupo_id !== undefined) {
+      const [existingGrupo] = await pool.query(
+        "SELECT id FROM prova WHERE grupo_id = ? AND id != ?",
+        [grupo_id, id]
+      );
+      if (existingGrupo.length > 0) {
+        return res.status(409).json({ 
+          error: "Já existe uma prova para este grupo" 
+        });
+      }
+    }
 
     const sql = `UPDATE prova SET ${fields.join(", ")} WHERE id = ?`;
     await pool.query(sql, [...values, id]);
@@ -161,6 +223,32 @@ router.get("/conteudo/:conteudo_id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erro ao buscar provas por conteúdo." });
+  }
+});
+
+// Rota especial: Buscar por grupo_id
+router.get("/grupo/:grupo_id", async (req, res) => {
+  try {
+    const { grupo_id } = req.params;
+    const page = Number(req.query.page || 1);
+    const limit = Number(req.query.limit || 20);
+    const offset = (page - 1) * limit;
+
+    const [rows] = await pool.query(
+      "SELECT SQL_CALC_FOUND_ROWS * FROM prova WHERE grupo_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+      [grupo_id, limit, offset]
+    );
+    const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");
+
+    res.json({
+      data: rows,
+      page,
+      limit,
+      total: countRows[0]?.total || 0,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar provas por grupo." });
   }
 });
 

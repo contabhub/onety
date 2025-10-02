@@ -70,7 +70,7 @@
 .grupoRow {
   display: flex;
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .grupoSelect {

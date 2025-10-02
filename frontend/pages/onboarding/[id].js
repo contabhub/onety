@@ -10,6 +10,7 @@ import ConteudoModal from '../../components/onety/onboarding/ConteudoModal'
 import styles from '../../styles/onety/onboarding/onboarding.module.css'
 import Topbar from '../../components/onety/onboarding/Topbar'
 import SpaceLoader from '../../components/onety/menu/SpaceLoader'
+import { BookOpen, Plus, Users, CheckCircle } from 'lucide-react'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -20,10 +21,6 @@ export default function OnboardingPage() {
   const [showConteudoModal, setShowConteudoModal] = useState(false)
   const [userRole, setUserRole] = useState(null)
 
-  // Debug: Log do estado do modal
-  useEffect(() => {
-    console.log('🔍 Estado do modal:', showConteudoModal)
-  }, [showConteudoModal])
 
   useEffect(() => {
     // validar id
@@ -77,27 +74,52 @@ export default function OnboardingPage() {
             userRole={userRole}
           />
           <main className={styles.main}>
-            {tab === 'conteudo' && (
+            {/* Header */}
+            <div className={styles.header}>
               <div>
-                {userRole === 'superadmin' && (
-                  <div className={styles.adminActions}>
-                    <button 
-                      className={styles.addButton}
-                      onClick={() => {
-                        console.log('🔘 Botão "Novo Conteúdo" clicado')
-                        setShowConteudoModal(true)
-                      }}
-                    >
-                      + Novo Conteúdo
-                    </button>
-                  </div>
-                )}
-                <ConteudoList moduloId={id} userRole={userRole} />
-                {userRole === 'superadmin' && <ProvaLiberacao moduloId={id} />}
+                <h1 className={styles.headerTitle}>
+                  <BookOpen size={32} />
+                  Módulo {id}
+                </h1>
+                <p className={styles.headerSubtitle}>
+                  Gerencie conteúdos, provas e acompanhe o progresso dos usuários
+                </p>
+              </div>
+              {userRole === 'superadmin' && (
+                <button 
+                  className={styles.addButton}
+                  onClick={() => setShowConteudoModal(true)}
+                >
+                  <Plus size={20} />
+                  Novo Conteúdo
+                </button>
+              )}
+            </div>
+
+            {/* Content Sections */}
+            {tab === 'conteudo' && (
+              <ConteudoList moduloId={id} userRole={userRole} />
+            )}
+            
+            {tab === 'provas' && userRole === 'superadmin' && (
+              <div className={styles.contentSection}>
+                <h2 className={styles.contentSectionTitle}>
+                  <Users size={20} />
+                  Gerenciar Provas
+                </h2>
+                <ProvaList moduloId={id} />
               </div>
             )}
-            {tab === 'provas' && userRole === 'superadmin' && <ProvaList moduloId={id} />}
-            {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
+            
+            {tab === 'conclusoes' && (
+              <div className={styles.contentSection}>
+                <h2 className={styles.contentSectionTitle}>
+                  <CheckCircle size={20} />
+                  Conclusões e Relatórios
+                </h2>
+                <ConclusoesList moduloId={id} />
+              </div>
+            )}
           </main>
         </div>
       </div>
@@ -106,10 +128,7 @@ export default function OnboardingPage() {
         <ConteudoModal 
           isOpen={showConteudoModal}
           moduloId={id}
-          onClose={() => {
-            console.log('❌ Fechando modal de conteúdo')
-            setShowConteudoModal(false)
-          }}
+          onClose={() => setShowConteudoModal(false)}
         />
       )}
     </div>

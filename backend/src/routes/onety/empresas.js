@@ -304,6 +304,16 @@ router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, 
       );
     }
 
+    // Vincular todas as provas existentes para a empresa
+    const [allProvas] = await conn.query("SELECT id FROM prova");
+    if (allProvas && allProvas.length > 0) {
+      const provaValues = allProvas.map((p) => [p.id, result.insertId, admin_usuario_id, null]);
+      await conn.query(
+        "INSERT INTO prova_empresa (prova_id, empresa_id, viewer_id, nota) VALUES ?",
+        [provaValues]
+      );
+    }
+
     await conn.commit();
 
     const [created] = await pool.query("SELECT * FROM empresas WHERE id = ?", [result.insertId]);
