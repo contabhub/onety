@@ -32,10 +32,13 @@ export default function ConteudoList({ moduloId }) {
 
         // Buscar grupos vinculados à empresa através da tabela empresas_grupos
         const url = `${API_URL}/empresas-grupos?empresa_id=${empresaId}&modulo_id=${moduloId}&limit=100`
+        console.log('🔍 ConteudoList - Buscando grupos:', url)
         const res = await fetch(url, { headers: { 'Authorization': token ? `Bearer ${token}` : '' } })
         if (!res.ok) throw new Error('Falha ao carregar grupos da empresa')
         const data = await res.json()
+        console.log('📊 ConteudoList - Dados recebidos:', data)
         const grupos = Array.isArray(data?.data) ? data.data : data || []
+        console.log('📋 ConteudoList - Grupos processados:', grupos)
         
         if (!ignore) {
 
@@ -51,13 +54,11 @@ export default function ConteudoList({ moduloId }) {
             status: grupo.grupo_status,
             concluido_em: grupo.grupo_concluido_em
           }))
+          console.log('🗂️ ConteudoList - Grupos mapeados:', gruposMapeados)
           
           setItems(gruposMapeados)
           await loadProgressoGrupos(gruposMapeados)
-
-          setItems(grupos)
-          await loadProgressoGrupos(grupos)
-          await loadProvasGrupos(grupos)
+          await loadProvasGrupos(gruposMapeados)
 
         }
       } catch (e) {
@@ -251,7 +252,7 @@ export default function ConteudoList({ moduloId }) {
               <div className={styles.provasContainer}>
                 <h4 className={styles.provasTitle}>📝 Provas Disponíveis</h4>
                 <div className={styles.provasList}>
-                  {provasGrupos[c.id].map((prova) => {
+                  {provasGrupos[c.id] && provasGrupos[c.id].map((prova) => {
                     const provaEmpresa = provasEmpresa[prova.id]
                     const podeFazer = !provaEmpresa || provaEmpresa.nota === null
                     const jaFez = provaEmpresa && provaEmpresa.nota !== null

@@ -388,7 +388,7 @@ router.post("/liberar-prova", async (req, res) => {
     try {
       // 1. Buscar todos os grupos de conteúdo do módulo
       const [grupos] = await conn.query(
-        "SELECT id FROM grupo_conteudo WHERE modulo_id = ?",
+        "SELECT id FROM grupos WHERE modulo_id = ?",
         [modulo_id]
       );
 
@@ -401,9 +401,10 @@ router.post("/liberar-prova", async (req, res) => {
 
       // 2. Verificar se todos os grupos foram concluídos pela empresa
       const [gruposConcluidos] = await conn.query(
-        `SELECT COUNT(*) as concluidos FROM empresa_conteudo 
-         WHERE grupo_conteudo_id IN (${grupoIds.map(() => '?').join(',')}) 
-         AND empresa_id = ? AND viewer_id = ? AND concluido = 1`,
+        `SELECT COUNT(*) as concluidos FROM empresas_conteudos ec
+         JOIN conteudos c ON ec.conteudo_id = c.id
+         WHERE c.grupo_id IN (${grupoIds.map(() => '?').join(',')}) 
+         AND ec.empresa_id = ? AND ec.usuario_id = ? AND ec.status = 'concluido'`,
         [...grupoIds, empresa_id, viewer_id]
       );
 
@@ -427,8 +428,8 @@ router.post("/liberar-prova", async (req, res) => {
       const [provas] = await conn.query(
         `SELECT p.id, p.nome, p.conteudo_id 
          FROM prova p 
-         JOIN conteudo c ON p.conteudo_id = c.id 
-         WHERE c.grupo_conteudo_id IN (${grupoIds.map(() => '?').join(',')})`,
+         JOIN conteudos c ON p.conteudo_id = c.id 
+         WHERE c.grupo_id IN (${grupoIds.map(() => '?').join(',')})`,
         grupoIds
       );
 
@@ -502,7 +503,7 @@ router.get("/status-modulo/:modulo_id", async (req, res) => {
 
     // Buscar todos os grupos de conteúdo do módulo
     const [grupos] = await pool.query(
-      "SELECT id, nome FROM grupo_conteudo WHERE modulo_id = ?",
+      "SELECT id, nome FROM grupos WHERE modulo_id = ?",
       [modulo_id]
     );
 
@@ -514,18 +515,20 @@ router.get("/status-modulo/:modulo_id", async (req, res) => {
 
     // Verificar progresso de conclusão
     const [gruposConcluidos] = await pool.query(
-      `SELECT COUNT(*) as concluidos FROM empresa_conteudo 
-       WHERE grupo_conteudo_id IN (${grupoIds.map(() => '?').join(',')}) 
-       AND empresa_id = ? AND viewer_id = ? AND concluido = 1`,
+      `SELECT COUNT(*) as concluidos FROM empresas_conteudos ec
+       JOIN conteudos c ON ec.conteudo_id = c.id
+       WHERE c.grupo_id IN (${grupoIds.map(() => '?').join(',')}) 
+       AND ec.empresa_id = ? AND ec.usuario_id = ? AND ec.status = 'concluido'`,
       [...grupoIds, empresa_id, viewer_id]
     );
 
     // DEBUG: Verificar detalhes de cada grupo
     const [detalhesGrupos] = await pool.query(
-      `SELECT gc.id, gc.nome, ec.concluido, ec.id as empresa_conteudo_id
-       FROM grupo_conteudo gc
-       LEFT JOIN empresa_conteudo ec ON gc.id = ec.grupo_conteudo_id 
-         AND ec.empresa_id = ? AND ec.viewer_id = ?
+      `SELECT gc.id, gc.nome, ec.status, CONCAT(ec.empresa_id, '-', ec.conteudo_id) as empresas_conteudos_id
+       FROM grupos gc
+       LEFT JOIN conteudos c ON gc.id = c.grupo_id
+       LEFT JOIN empresas_conteudos ec ON c.id = ec.conteudo_id 
+         AND ec.empresa_id = ? AND ec.usuario_id = ?
        WHERE gc.modulo_id = ?`,
       [empresa_id, viewer_id, modulo_id]
     );
@@ -534,24 +537,26 @@ router.get("/status-modulo/:modulo_id", async (req, res) => {
     const [conteudosPorGrupo] = await pool.query(
       `SELECT gc.id as grupo_id, gc.nome as grupo_nome,
               COUNT(c.id) as total_conteudos,
-              COUNT(CASE WHEN c.concluido = 1 THEN 1 END) as conteudos_concluidos
-       FROM grupo_conteudo gc
-       LEFT JOIN conteudo c ON gc.id = c.grupo_conteudo_id
+              COUNT(CASE WHEN ec.status = 'concluido' THEN 1 END) as conteudos_concluidos
+       FROM grupos gc
+       LEFT JOIN conteudos c ON gc.id = c.grupo_id
+       LEFT JOIN empresas_conteudos ec ON c.id = ec.conteudo_id 
+         AND ec.empresa_id = ? AND ec.usuario_id = ?
        WHERE gc.modulo_id = ?
        GROUP BY gc.id, gc.nome`,
-      [modulo_id]
+      [empresa_id, viewer_id, modulo_id]
     );
 
     const totalGrupos = grupos.length;
-    const gruposConcluidosCount = gruposConcluidos[0].concluidos;
+const gruposConcluidosCount = gruposConcluidos[0].concluidos;
     const moduloCompleto = gruposConcluidosCount === totalGrupos;
 
     // Verificar se já tem provas liberadas
     const [provasLiberadas] = await pool.query(
       `SELECT COUNT(*) as liberadas FROM prova_empresa pe
        JOIN prova p ON pe.prova_id = p.id
-       JOIN conteudo c ON p.conteudo_id = c.id
-       WHERE c.grupo_conteudo_id IN (${grupoIds.map(() => '?').join(',')})
+       JOIN conteudos c ON p.conteudo_id = c.id
+       WHERE c.grupo_id IN (${grupoIds.map(() => '?').join(',')})
        AND pe.empresa_id = ? AND pe.viewer_id = ?`,
       [...grupoIds, empresa_id, viewer_id]
     );
@@ -579,11 +584,11 @@ router.get("/status-modulo/:modulo_id", async (req, res) => {
 router.post("/forcar-conclusao-grupo", async (req, res) => {
   let conn;
   try {
-    const { grupo_conteudo_id, empresa_id, viewer_id } = req.body || {};
-    
-    if (!grupo_conteudo_id || !empresa_id || !viewer_id) {
+    const { grupo_id, empresa_id, viewer_id } = req.body || {};
+
+    if (!grupo_id || !empresa_id || !viewer_id) {
       return res.status(400).json({ 
-        error: "Campos obrigatórios: grupo_conteudo_id, empresa_id e viewer_id" 
+        error: "Campos obrigatórios: grupo_id, empresa_id e viewer_id" 
       });
     }
 
@@ -594,13 +599,13 @@ router.post("/forcar-conclusao-grupo", async (req, res) => {
     try {
       // 1. Verificar se todos os conteúdos do grupo foram concluídos
       const [conteudos] = await conn.query(
-        "SELECT COUNT(*) as total FROM conteudo WHERE grupo_conteudo_id = ?",
-        [grupo_conteudo_id]
+        "SELECT COUNT(*) as total FROM conteudo WHERE grupo_id = ?",
+        [grupo_id]
       );
 
       const [conteudosConcluidos] = await conn.query(
-        "SELECT COUNT(*) as concluidos FROM conteudo WHERE grupo_conteudo_id = ? AND concluido = 1",
-        [grupo_conteudo_id]
+        "SELECT COUNT(*) as concluidos FROM conteudo WHERE grupo_id = ? AND concluido = 1",
+        [grupo_id]
       );
 
       const totalConteudos = conteudos[0].total;
@@ -623,26 +628,35 @@ router.post("/forcar-conclusao-grupo", async (req, res) => {
         });
       }
 
-      // 2. Verificar se já existe registro na empresa_conteudo
+      // 2. Verificar se já existe registro na empresas_conteudos
       const [existeRegistro] = await conn.query(
-        "SELECT id, concluido FROM empresa_conteudo WHERE grupo_conteudo_id = ? AND empresa_id = ? AND viewer_id = ?",
-        [grupo_conteudo_id, empresa_id, viewer_id]
+        `SELECT ec.empresa_id, ec.conteudo_id, ec.status FROM empresas_conteudos ec
+         JOIN conteudos c ON ec.conteudo_id = c.id
+         WHERE c.grupo_id = ? AND ec.empresa_id = ? AND ec.usuario_id = ?`,
+        [grupo_id, empresa_id, viewer_id]
       );
 
       if (existeRegistro.length > 0) {
         // Atualizar registro existente
-        if (existeRegistro[0].concluido === 0) {
+        if (existeRegistro[0].status === 'pendente') {
           await conn.query(
-            "UPDATE empresa_conteudo SET concluido = 1 WHERE id = ?",
-            [existeRegistro[0].id]
+            "UPDATE empresas_conteudos SET status = 'concluido', concluido_em = NOW() WHERE empresa_id = ? AND conteudo_id = ?",
+            [existeRegistro[0].empresa_id, existeRegistro[0].conteudo_id]
           );
         }
       } else {
-        // Criar novo registro
-        await conn.query(
-          "INSERT INTO empresa_conteudo (grupo_conteudo_id, empresa_id, viewer_id, concluido) VALUES (?, ?, ?, 1)",
-          [grupo_conteudo_id, empresa_id, viewer_id]
+        // Criar novo registro - precisamos buscar um conteudo_id do grupo
+        const [conteudo] = await conn.query(
+          "SELECT id FROM conteudos WHERE grupo_id = ? LIMIT 1",
+          [grupo_id]
         );
+        
+        if (conteudo.length > 0) {
+          await conn.query(
+            "INSERT INTO empresas_conteudos (conteudo_id, empresa_id, usuario_id, status, concluido_em) VALUES (?, ?, ?, 'concluido', NOW())",
+            [conteudo[0].id, empresa_id, viewer_id]
+          );
+        }
       }
 
       await conn.commit();
@@ -650,7 +664,7 @@ router.post("/forcar-conclusao-grupo", async (req, res) => {
       res.json({
         sucesso: true,
         mensagem: "Grupo marcado como concluído com sucesso!",
-        grupo_conteudo_id: grupo_conteudo_id,
+        grupo_id: grupo_id,
         progresso: {
           concluidos: totalConcluidos,
           total: totalConteudos,
