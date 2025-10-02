@@ -3,17 +3,18 @@ const multer = require("multer");
 const pool = require("../../config/database");
 const cloudinary = require("../../config/cloudinary");
 
-// Configuração do multer para upload de arquivos (vídeos)
+// Configuração do multer para upload de arquivos (vídeos e PDFs)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 200 * 1024 * 1024, // 200MB
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("video/")) {
+    const allowedTypes = ['video/', 'application/pdf'];
+    if (allowedTypes.some(type => file.mimetype.startsWith(type))) {
       cb(null, true);
     } else {
-      cb(new Error("Apenas arquivos de vídeo são permitidos"), false);
+      cb(new Error("Apenas arquivos de vídeo e PDF são permitidos"), false);
     }
   },
 });
@@ -26,17 +27,33 @@ router.get("/", async (req, res) => {
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const offset = (page - 1) * limit;
-    const grupoConteudoId = req.query.grupo_conteudo_id ? Number(req.query.grupo_conteudo_id) : null;
+    const grupoId = req.query.grupo_id ? Number(req.query.grupo_id) : null;
 
-    let query = "SELECT SQL_CALC_FOUND_ROWS id, nome, link, descricao, grupo_conteudo_id, ordem, concluido FROM conteudo";
+    let query = `
+      SELECT SQL_CALC_FOUND_ROWS 
+        c.id, 
+        c.titulo, 
+        c.descricao, 
+        c.url, 
+        c.tipo,
+        c.obrigatorio,
+        c.ordem, 
+        c.ativo,
+        c.grupo_id,
+        g.nome as grupo_nome,
+        m.nome as modulo_nome
+      FROM conteudos c
+      LEFT JOIN grupos g ON c.grupo_id = g.id
+      LEFT JOIN modulos m ON g.modulo_id = m.id
+    `;
     let params = [];
 
-    if (grupoConteudoId) {
-      query += " WHERE grupo_conteudo_id = ?";
-      params.push(grupoConteudoId);
+    if (grupoId) {
+      query += " WHERE c.grupo_id = ?";
+      params.push(grupoId);
     }
 
-    query += " ORDER BY ordem ASC, id ASC LIMIT ? OFFSET ?";
+    query += " ORDER BY c.ordem ASC, c.id ASC LIMIT ? OFFSET ?";
     params.push(limit, offset);
 
     const [rows] = await pool.query(query, params);
@@ -54,7 +71,22 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      "SELECT id, nome, link, descricao, grupo_conteudo_id, ordem, concluido FROM conteudo WHERE id = ?",
+      `SELECT 
+        c.id, 
+        c.titulo, 
+        c.descricao, 
+        c.url, 
+        c.tipo,
+        c.obrigatorio,
+        c.ordem, 
+        c.ativo,
+        c.grupo_id,
+        g.nome as grupo_nome,
+        m.nome as modulo_nome
+      FROM conteudos c
+      LEFT JOIN grupos g ON c.grupo_id = g.id
+      LEFT JOIN modulos m ON g.modulo_id = m.id
+      WHERE c.id = ?`,
       [id]
     );
     if (rows.length === 0) return res.status(404).json({ error: "Conteúdo não encontrado." });
@@ -65,36 +97,63 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Criar conteúdo com upload de vídeo (campo multipart: file=\"video\")
-router.post("/", upload.single("video"), async (req, res) => {
+// Criar conteúdo com upload de arquivo
+router.post("/", upload.single("arquivo"), async (req, res) => {
   try {
-    const { nome, descricao = null, grupo_conteudo_id = null, link: linkBody = null, ordem = null, concluido = 0 } = req.body || {};
-    if (!nome) return res.status(400).json({ error: "Campo obrigatório: nome." });
+    const { 
+      titulo, 
+      descricao = null, 
+      grupo_id = null, 
+      tipo = 'texto',
+      url: urlBody = null, 
+      obrigatorio = 1,
+      ordem = 1, 
+      ativo = 1 
+    } = req.body || {};
+    
+    if (!titulo) return res.status(400).json({ error: "Campo obrigatório: titulo." });
+    if (!grupo_id) return res.status(400).json({ error: "Campo obrigatório: grupo_id." });
 
-    let finalVideoUrl = linkBody;
+    let finalUrl = urlBody;
 
-    // Se foi enviado um arquivo de vídeo, envia para Cloudinary
+    // Se foi enviado um arquivo, envia para Cloudinary
     if (req.file) {
       try {
         const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+        const resourceType = req.file.mimetype.startsWith('video/') ? 'video' : 'raw';
         const uploaded = await cloudinary.uploader.upload(base64, {
           folder: "onety/onboarding/conteudos",
-          resource_type: "video",
+          resource_type: resourceType,
         });
-        finalVideoUrl = uploaded?.secure_url || finalVideoUrl;
+        finalUrl = uploaded?.secure_url || finalUrl;
       } catch (err) {
-        console.error("Erro ao enviar vídeo para Cloudinary:", err);
-        return res.status(400).json({ error: "Falha no upload do vídeo." });
+        console.error("Erro ao enviar arquivo para Cloudinary:", err);
+        return res.status(400).json({ error: "Falha no upload do arquivo." });
       }
     }
 
     const [result] = await pool.query(
-      `INSERT INTO conteudo (nome, link, descricao, grupo_conteudo_id, ordem, concluido) VALUES (?,?,?,?,?,?)`,
-      [nome, finalVideoUrl, descricao, grupo_conteudo_id, ordem, concluido]
+      `INSERT INTO conteudos (titulo, descricao, url, tipo, grupo_id, obrigatorio, ordem, ativo) VALUES (?,?,?,?,?,?,?,?)`,
+      [titulo, descricao, finalUrl, tipo, grupo_id, obrigatorio, ordem, ativo]
     );
 
     const [created] = await pool.query(
-      "SELECT id, nome, link, descricao, grupo_conteudo_id, ordem, concluido FROM conteudo WHERE id = ?",
+      `SELECT 
+        c.id, 
+        c.titulo, 
+        c.descricao, 
+        c.url, 
+        c.tipo,
+        c.obrigatorio,
+        c.ordem, 
+        c.ativo,
+        c.grupo_id,
+        g.nome as grupo_nome,
+        m.nome as modulo_nome
+      FROM conteudos c
+      LEFT JOIN grupos g ON c.grupo_id = g.id
+      LEFT JOIN modulos m ON g.modulo_id = m.id
+      WHERE c.id = ?`,
       [result.insertId]
     );
     res.status(201).json(created[0]);
@@ -105,42 +164,69 @@ router.post("/", upload.single("video"), async (req, res) => {
 });
 
 // Atualização parcial com possibilidade de novo upload
-router.patch("/:id", upload.single("video"), async (req, res) => {
+router.patch("/:id", upload.single("arquivo"), async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, descricao, grupo_conteudo_id, link: linkBody, ordem, concluido } = req.body || {};
+    const { 
+      titulo, 
+      descricao, 
+      grupo_id, 
+      tipo,
+      url: urlBody, 
+      obrigatorio,
+      ordem, 
+      ativo 
+    } = req.body || {};
 
-    let finalVideoUrl = linkBody;
+    let finalUrl = urlBody;
     if (req.file) {
       try {
         const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+        const resourceType = req.file.mimetype.startsWith('video/') ? 'video' : 'raw';
         const uploaded = await cloudinary.uploader.upload(base64, {
             folder: "onety/onboarding/conteudos",
-            resource_type: "video",
+            resource_type: resourceType,
         });
-        finalVideoUrl = uploaded?.secure_url || finalVideoUrl;
+        finalUrl = uploaded?.secure_url || finalUrl;
       } catch (err) {
-        console.error("Erro ao enviar vídeo para Cloudinary:", err);
-        return res.status(400).json({ error: "Falha no upload do vídeo." });
+        console.error("Erro ao enviar arquivo para Cloudinary:", err);
+        return res.status(400).json({ error: "Falha no upload do arquivo." });
       }
     }
 
     // Monta atualização dinâmica
     const fields = [];
     const values = [];
-    if (nome !== undefined) { fields.push("nome = ?"); values.push(nome); }
-    if (finalVideoUrl !== undefined) { fields.push("link = ?"); values.push(finalVideoUrl); }
+    if (titulo !== undefined) { fields.push("titulo = ?"); values.push(titulo); }
+    if (finalUrl !== undefined) { fields.push("url = ?"); values.push(finalUrl); }
     if (descricao !== undefined) { fields.push("descricao = ?"); values.push(descricao); }
-    if (grupo_conteudo_id !== undefined) { fields.push("grupo_conteudo_id = ?"); values.push(grupo_conteudo_id); }
+    if (tipo !== undefined) { fields.push("tipo = ?"); values.push(tipo); }
+    if (grupo_id !== undefined) { fields.push("grupo_id = ?"); values.push(grupo_id); }
+    if (obrigatorio !== undefined) { fields.push("obrigatorio = ?"); values.push(obrigatorio); }
     if (ordem !== undefined) { fields.push("ordem = ?"); values.push(ordem); }
-    if (concluido !== undefined) { fields.push("concluido = ?"); values.push(concluido); }
+    if (ativo !== undefined) { fields.push("ativo = ?"); values.push(ativo); }
     if (fields.length === 0) return res.status(400).json({ error: "Nenhum campo para atualizar." });
 
     values.push(id);
-    await pool.query(`UPDATE conteudo SET ${fields.join(", ")} WHERE id = ?`, values);
+    await pool.query(`UPDATE conteudos SET ${fields.join(", ")} WHERE id = ?`, values);
 
     const [updated] = await pool.query(
-      "SELECT id, nome, link, descricao, grupo_conteudo_id, ordem, concluido FROM conteudo WHERE id = ?",
+      `SELECT 
+        c.id, 
+        c.titulo, 
+        c.descricao, 
+        c.url, 
+        c.tipo,
+        c.obrigatorio,
+        c.ordem, 
+        c.ativo,
+        c.grupo_id,
+        g.nome as grupo_nome,
+        m.nome as modulo_nome
+      FROM conteudos c
+      LEFT JOIN grupos g ON c.grupo_id = g.id
+      LEFT JOIN modulos m ON g.modulo_id = m.id
+      WHERE c.id = ?`,
       [id]
     );
     if (updated.length === 0) return res.status(404).json({ error: "Conteúdo não encontrado." });
@@ -151,14 +237,14 @@ router.patch("/:id", upload.single("video"), async (req, res) => {
   }
 });
 
-// Rota especial: Marcar conteúdo como concluído e verificar conclusão do grupo
+// Rota especial: Marcar conteúdo como concluído para uma empresa
 router.patch("/:id/concluir", async (req, res) => {
   try {
     const { id } = req.params;
-    const { viewer_id, empresa_id } = req.body || {};
+    const { empresa_id, usuario_id } = req.body || {};
     
-    if (!viewer_id || !empresa_id) {
-      return res.status(400).json({ error: "Campos obrigatórios: viewer_id e empresa_id." });
+    if (!empresa_id) {
+      return res.status(400).json({ error: "Campo obrigatório: empresa_id." });
     }
 
     // Iniciar transação
@@ -166,15 +252,9 @@ router.patch("/:id/concluir", async (req, res) => {
     await conn.beginTransaction();
 
     try {
-      // 1. Marcar conteúdo como concluído
-      await conn.query(
-        "UPDATE conteudo SET concluido = 1 WHERE id = ?",
-        [id]
-      );
-
-      // 2. Buscar grupo_conteudo_id do conteúdo
+      // 1. Buscar grupo_id do conteúdo
       const [conteudoRows] = await conn.query(
-        "SELECT grupo_conteudo_id FROM conteudo WHERE id = ?",
+        "SELECT grupo_id FROM conteudos WHERE id = ?",
         [id]
       );
       
@@ -182,55 +262,71 @@ router.patch("/:id/concluir", async (req, res) => {
         throw new Error("Conteúdo não encontrado");
       }
       
-      const grupoConteudoId = conteudoRows[0].grupo_conteudo_id;
+      const grupoId = conteudoRows[0].grupo_id;
 
-      // 3. Verificar se todos os conteúdos do grupo foram concluídos
+      // 2. Marcar conteúdo como concluído na empresa_conteudo
+      const [existeRegistro] = await conn.query(
+        "SELECT id FROM empresa_conteudo WHERE conteudo_id = ? AND empresa_id = ?",
+        [id, empresa_id]
+      );
+
+      if (existeRegistro.length > 0) {
+        // Atualizar registro existente
+        await conn.query(
+          "UPDATE empresa_conteudo SET status = 'concluido', usuario_id = ?, concluido_em = NOW() WHERE id = ?",
+          [usuario_id, existeRegistro[0].id]
+        );
+      } else {
+        // Criar novo registro
+        await conn.query(
+          "INSERT INTO empresa_conteudo (conteudo_id, empresa_id, usuario_id, status, concluido_em) VALUES (?, ?, ?, 'concluido', NOW())",
+          [id, empresa_id, usuario_id]
+        );
+      }
+
+      // 3. Verificar se todos os conteúdos obrigatórios do grupo foram concluídos
       const [todosConteudos] = await conn.query(
-        "SELECT COUNT(*) as total FROM conteudo WHERE grupo_conteudo_id = ?",
-        [grupoConteudoId]
+        "SELECT COUNT(*) as total FROM conteudos WHERE grupo_id = ? AND obrigatorio = 1 AND ativo = 1",
+        [grupoId]
       );
       
       const [conteudosConcluidos] = await conn.query(
-        "SELECT COUNT(*) as concluidos FROM conteudo WHERE grupo_conteudo_id = ? AND concluido = 1",
-        [grupoConteudoId]
+        `SELECT COUNT(*) as concluidos 
+         FROM conteudos c
+         INNER JOIN empresa_conteudo ec ON c.id = ec.conteudo_id 
+         WHERE c.grupo_id = ? AND c.obrigatorio = 1 AND c.ativo = 1 AND ec.status = 'concluido' AND ec.empresa_id = ?`,
+        [grupoId, empresa_id]
       );
 
       const totalConteudos = todosConteudos[0].total;
       const totalConcluidos = conteudosConcluidos[0].concluidos;
 
-      // 4. Se todos os conteúdos foram concluídos, marcar grupo como concluído na empresa_conteudo
-      if (totalConcluidos === totalConteudos) {
-        // Verificar se já existe registro na empresa_conteudo
-        const [existeRegistro] = await conn.query(
-          "SELECT id FROM empresa_conteudo WHERE grupo_conteudo_id = ? AND empresa_id = ? AND viewer_id = ?",
-          [grupoConteudoId, empresa_id, viewer_id]
+      // 4. Se todos os conteúdos obrigatórios foram concluídos, marcar grupo como concluído
+      if (totalConcluidos === totalConteudos && totalConteudos > 0) {
+        const [existeGrupoRegistro] = await conn.query(
+          "SELECT id FROM empresa_grupo WHERE grupo_id = ? AND empresa_id = ?",
+          [grupoId, empresa_id]
         );
 
-        if (existeRegistro.length > 0) {
+        if (existeGrupoRegistro.length > 0) {
           // Atualizar registro existente
           await conn.query(
-            "UPDATE empresa_conteudo SET concluido = 1 WHERE id = ?",
-            [existeRegistro[0].id]
+            "UPDATE empresa_grupo SET status = 'concluido', concluido_em = NOW() WHERE id = ?",
+            [existeGrupoRegistro[0].id]
           );
         } else {
           // Criar novo registro
           await conn.query(
-            "INSERT INTO empresa_conteudo (grupo_conteudo_id, empresa_id, viewer_id, concluido) VALUES (?, ?, ?, 1)",
-            [grupoConteudoId, empresa_id, viewer_id]
+            "INSERT INTO empresa_grupo (grupo_id, empresa_id, status, concluido_em) VALUES (?, ?, 'concluido', NOW())",
+            [grupoId, empresa_id]
           );
         }
       }
 
       await conn.commit();
 
-      // 5. Buscar conteúdo atualizado
-      const [updated] = await pool.query(
-        "SELECT id, nome, link, descricao, grupo_conteudo_id, ordem, concluido FROM conteudo WHERE id = ?",
-        [id]
-      );
-
       res.json({ 
-        ...updated[0], 
+        success: true,
         grupo_completo: totalConcluidos === totalConteudos,
         progresso: { concluidos: totalConcluidos, total: totalConteudos }
       });
@@ -266,7 +362,7 @@ router.patch("/grupo/:grupo_id/reordenar", async (req, res) => {
         const { id, ordem } = conteudos[i];
         if (id && ordem !== undefined) {
           await conn.query(
-            "UPDATE conteudo SET ordem = ? WHERE id = ? AND grupo_conteudo_id = ?",
+            "UPDATE conteudos SET ordem = ? WHERE id = ? AND grupo_id = ?",
             [ordem, id, grupo_id]
           );
         }
@@ -276,7 +372,23 @@ router.patch("/grupo/:grupo_id/reordenar", async (req, res) => {
 
       // Buscar conteúdos atualizados
       const [updated] = await pool.query(
-        "SELECT id, nome, link, descricao, grupo_conteudo_id, ordem, concluido FROM conteudo WHERE grupo_conteudo_id = ? ORDER BY ordem ASC, id ASC",
+        `SELECT 
+          c.id, 
+          c.titulo, 
+          c.descricao, 
+          c.url, 
+          c.tipo,
+          c.obrigatorio,
+          c.ordem, 
+          c.ativo,
+          c.grupo_id,
+          g.nome as grupo_nome,
+          m.nome as modulo_nome
+        FROM conteudos c
+        LEFT JOIN grupos g ON c.grupo_id = g.id
+        LEFT JOIN modulos m ON g.modulo_id = m.id
+        WHERE c.grupo_id = ? 
+        ORDER BY c.ordem ASC, c.id ASC`,
         [grupo_id]
       );
 
@@ -297,7 +409,7 @@ router.patch("/grupo/:grupo_id/reordenar", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const [result] = await pool.query("DELETE FROM conteudo WHERE id = ?", [id]);
+    const [result] = await pool.query("DELETE FROM conteudos WHERE id = ?", [id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: "Conteúdo não encontrado." });
     res.status(204).send();
   } catch (error) {

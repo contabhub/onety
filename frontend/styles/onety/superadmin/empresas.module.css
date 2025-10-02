@@ -49,6 +49,33 @@
   line-height: 1.6;
 }
 
+.createButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--onity-color-primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.createButton:hover {
+  background: var(--onity-color-primary);
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.createButton:active {
+  transform: translateY(0);
+}
+
 /* Busca e Filtros */
 .searchBar {
   background: var(--onity-color-surface);
@@ -126,6 +153,13 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
 }
 
 .tableHeader {

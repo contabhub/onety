@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { Building2, Search, Filter, Eye, Edit, Calendar, Users } from 'lucide-react'
+import { Building2, Search, Filter, Eye, Edit, Calendar, Users, Plus } from 'lucide-react'
 import Sidebar from '../../components/onety/superadmin/Sidebar'
 import EditarEmpresa from '../../components/onety/superadmin/EditarEmpresa'
+import CriarEmpresa from '../../components/onety/superadmin/CriarEmpresa'
+import SpaceLoader from '../../components/onety/menu/SpaceLoader'
 import styles from '../../styles/onety/superadmin/empresas.module.css'
 
 export default function EmpresasPage() {
@@ -16,6 +18,7 @@ export default function EmpresasPage() {
   const [totalEmpresas, setTotalEmpresas] = useState(0)
   const [editingEmpresa, setEditingEmpresa] = useState(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   // Persistência simples do estado da sidebar
   useEffect(() => {
@@ -140,6 +143,16 @@ export default function EmpresasPage() {
     )
   }
 
+  const handleEmpresaCreated = (newEmpresa) => {
+    // Adiciona a nova empresa na lista local
+    setEmpresas(prev => [newEmpresa, ...prev])
+    setTotalEmpresas(prev => prev + 1)
+  }
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false)
+  }
+
   const handleViewEmpresa = (empresa) => {
     // Atualiza o userData no localStorage com a empresa selecionada
     try {
@@ -181,6 +194,13 @@ export default function EmpresasPage() {
               Total: {totalEmpresas} empresas
             </p>
           </div>
+          <button
+            className={styles.createButton}
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus size={20} />
+            Nova Empresa
+          </button>
         </div>
 
         {/* Busca e Filtros */}
@@ -216,8 +236,8 @@ export default function EmpresasPage() {
           {/* Corpo da Tabela */}
           <div className={styles.tableBody}>
             {loading ? (
-              <div className={styles.emptyState}>
-                Carregando empresas...
+              <div className={styles.loadingContainer}>
+                <SpaceLoader label="Carregando empresas..." />
               </div>
             ) : empresasFiltradas.length === 0 ? (
               <div className={styles.emptyState}>
@@ -324,6 +344,13 @@ export default function EmpresasPage() {
         onClose={handleCloseEditModal}
         empresa={editingEmpresa}
         onUpdated={handleEmpresaUpdated}
+      />
+
+      {/* Modal de Criação */}
+      <CriarEmpresa
+        open={showCreateModal}
+        onClose={handleCloseCreateModal}
+        onCreated={handleEmpresaCreated}
       />
     </div>
   )
