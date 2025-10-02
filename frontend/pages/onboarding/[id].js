@@ -83,12 +83,21 @@ export default function OnboardingPage() {
                   </div>
                 )}
                 <ConteudoList moduloId={id} />
-              </div>
-
-              <>
-                <ConteudoList moduloId={id} />
                 <ProvaLiberacao moduloId={id} />
-              </>
+              </div>
+            )}
+            {tab === 'provas' && <ProvaList moduloId={id} />}
+            {tab === 'conclusoes' && <ConclusoesList moduloId={id} />}
+          </main>
+        </div>
+      </div>
+      
+      {showConteudoModal && (
+        <ConteudoModal 
+          moduloId={id}
+          onClose={() => setShowConteudoModal(false)}
+        />
+      )}
     </div>
   )
 }
