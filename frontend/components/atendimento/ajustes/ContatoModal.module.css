@@ -1,0 +1,462 @@
+/* Overlay do Modal */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+/* Modal */
+.modal {
+  background: var(--color-bg-primary);
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Header do Modal */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--color-form-border);
+  color: var(--color-text-primary);
+}
+
+/* Formulário */
+.form {
+  padding: 1.5rem;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.labelNoMargin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 0;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: var(--color-form-bg);
+  color: var(--color-text-primary);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.inputWithPrefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prefix {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  z-index: 1;
+}
+
+.inputWithPrefixField {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2rem;
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: var(--color-form-bg);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.inputWithPrefixField:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.charCount {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+/* Seção de Notas Internas */
+.notasToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+}
+
+.notasToggle:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-form-border);
+}
+
+.toggleIcon {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+/* Etiquetas */
+.etiquetasHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vincularButton {
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.etiquetaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mutedText { color: var(--color-text-secondary); }
+
+.etiquetaPill {
+  color: #0f172a;
+  padding: 4px 6px 4px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  position: relative;
+}
+
+.etiquetaName {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.etiquetaDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-form-border);
+}
+
+.chipRemoveButton {
+  background: none;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(15, 23, 42, 0.8);
+  background: rgba(255,255,255,0.65);
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.etiquetaPill:hover .chipRemoveButton { opacity: 1; }
+
+.formNoTopPadding { padding-top: 0; }
+
+.vincularLista {
+  max-height: 280px;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.etiquetaOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+  padding: 0.5rem 1rem;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+}
+
+.notasSection {
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--color-bg-secondary);
+}
+
+.notasList {
+  margin-bottom: 1rem;
+}
+
+.notaItem {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.notaContent {
+  flex: 1;
+}
+
+.notaContent p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.notaContent small {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.removeNotaButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.removeNotaButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.addNotaSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.addNotaButton {
+  align-self: flex-end;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addNotaButton:hover:not(:disabled) {
+  background: var(--color-button-hover);
+}
+
+.addNotaButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mensagem de erro */
+.errorMessage {
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 0.5rem;
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* Ações do Modal */
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-form-border);
+  margin-top: 1rem;
+}
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+.saveButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--color-button-hover);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .header {
+    padding: 1rem;
+  }
+  
+  .form {
+    padding: 1rem;
+  }
+  
+  .formRow {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .formRow .formGroup {
+    margin-bottom: 1rem;
+  }
+  
+  .actions {
+    flex-direction: column-reverse;
+  }
+  
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+  }
+}

@@ -1,0 +1,562 @@
+.container {
+  padding: 2rem;
+  background-color: var(--color-bg-secondary);
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  margin-top: 3rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-form-border);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--color-error);
+}
+
+.errorContent {
+  flex: 1;
+}
+
+.errorContent p {
+  margin: 0 0 0.75rem 0;
+  font-weight: 500;
+}
+
+.retryButton {
+  background-color: var(--color-error);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+  background-color: #b91c1c;
+}
+
+.instanciasGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.instanciaCard {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.instanciaCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cardTop {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.whatsappHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.instanceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.instanceName {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.whatsappIcon {
+  color: #25d366;
+  display: flex;
+  align-items: center;
+}
+
+.whatsappText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #25d366;
+}
+
+.providerInfo {
+  margin-bottom: 0.75rem;
+}
+
+.providerLabel {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.providerBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.providerName {
+  background: var(--bg-gradient-primary);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.providerType {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 2px solid;
+}
+
+.providerType.zapi {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.providerType.evolution {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.limitInfo {
+  margin-bottom: 1rem;
+}
+
+.limitText {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.statusButton {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.statusButton:hover {
+  opacity: 0.9;
+}
+
+.statusButton.conectado {
+  background-color: var(--color-success);
+}
+
+.statusButton.desconectado {
+  background-color: var(--color-warning);
+}
+
+.cardActions {
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.actionButton {
+  background: var(--bg-gradient-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.cardBottom {
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--color-bg-secondary);
+}
+
+.phoneNumber {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.addButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  position: relative;
+}
+
+.addButton {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.addButton:hover {
+  background-color: var(--color-button-hover);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.addButton:active {
+  transform: scale(0.95);
+}
+
+/* Dropdown Styles */
+.dropdown {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-form-border);
+  min-width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdownHeader {
+  padding: 1rem;
+  background: var(--bg-gradient-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  background: var(--color-bg-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.dropdownItem:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--color-bg-primary);
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-form-border);
+  background: var(--bg-gradient-primary);
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modalContent {
+  padding: 2rem;
+}
+
+.instanceNameForm {
+  margin-bottom: 2rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--color-form-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  background-color: var(--color-form-bg);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.createButton {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-gradient-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.createButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.createButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.qrLoading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.qrContainer {
+  text-align: center;
+}
+
+.qrContainer h4 {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+}
+
+.qrImageContainer {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.qrImage {
+  width: 250px;
+  height: 250px;
+  object-fit: contain;
+  background: white;
+  display: block;
+}
+
+.qrOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: white;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.qrInstructions {
+  background: var(--color-bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+.refreshQrButton {
+  background: var(--color-text-secondary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  transition: background-color 0.2s ease;
+}
+
+.refreshQrButton:hover {
+  background: var(--color-text-primary);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .container {
+    margin-left: 0;
+    padding: 1rem;
+  }
+  
+  .instanciasGrid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-left: 0;
+    padding: 1rem;
+  }
+  
+  .instanciasGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    max-width: 100%;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+

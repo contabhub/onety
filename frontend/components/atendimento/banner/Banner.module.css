@@ -1,0 +1,40 @@
+.banner {
+  width: 100%;
+}
+
+.inner {
+  position: relative;
+  max-width: 1536px; /* ~max-w-screen-2xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 8px 16px; /* py-2 px-4 */
+  text-align: center;
+}
+
+.text {
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.button {
+  display: inline-block;
+  background: #ffffff;
+  color: #111827;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* Cores por status */
+.bgBlue { background-color: #1e3a8a; }
+.bgBrown { background-color: #8B5E34; }
+.bgBlack { background-color: #000000; }
+.bgRed { background-color: #7F1D1D; }
+
+.hidden { display: none; }
+

@@ -1,0 +1,214 @@
+/* Overlay do modal */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Container principal do modal */
+.modal {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalEnter 0.2s ease-out;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header do modal */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+/* Conteúdo do modal */
+.content {
+  padding: 24px;
+  max-height: calc(90vh - 100px);
+  overflow-y: auto;
+}
+
+/* Mensagem de erro */
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--color-error);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* Formulário de telefone */
+.phoneForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-form-border);
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: var(--color-form-bg);
+  color: var(--color-text-primary);
+  transition: all 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.input:invalid {
+  border-color: var(--color-error);
+}
+
+.phonePreview {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Ações do modal */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.cancelButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: 1px solid var(--color-form-border);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-text-secondary);
+}
+
+.continueButton {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.continueButton:hover:not(:disabled) {
+  background: var(--color-button-hover);
+}
+
+.continueButton:disabled {
+  background: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .overlay {
+    padding: 10px;
+  }
+  
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .header {
+    padding: 20px 20px 16px;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+}
+

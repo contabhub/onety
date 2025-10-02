@@ -1,0 +1,629 @@
+/* Container principal */
+.container {
+  padding: 2rem;
+  background-color: var(--color-bg-secondary);
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.headerStats {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Barra de busca e filtros */
+.searchBar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  z-index: 1;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha);
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.newButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.newButton:hover {
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-text-primary);
+  transform: translateY(-1px);
+}
+
+.importButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.importButton:hover {
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-text-primary);
+  transform: translateY(-1px);
+}
+
+.exportButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exportButton:hover {
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-text-primary);
+  transform: translateY(-1px);
+}
+
+.refreshButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refreshButton:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-tertiary);
+}
+
+/* Mensagens de erro */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-error);
+}
+
+.errorContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.retryButton {
+  padding: 0.5rem 1rem;
+  background: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retryButton:hover {
+  background: var(--color-error-hover);
+}
+
+.successMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-success);
+}
+
+/* Container de contatos */
+.contatosContainer {
+  margin-bottom: 2rem;
+}
+
+/* Tabela de contatos */
+.tableContainer {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  text-align: left;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.tr:nth-child(even) {
+  background: var(--color-bg-tertiary);
+}
+
+.td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-bg-secondary);
+  vertical-align: middle;
+}
+
+.contatoCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nameInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.nameCell {
+  min-width: 220px;
+}
+
+.actionCell {
+  text-align: right;
+  width: 120px;
+}
+
+.contatoActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Removidos estilos da lista/itens antigos em favor da tabela */
+
+.contatoAvatar {
+  flex-shrink: 0;
+}
+
+.avatarInitials {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.contatoInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contatoNome {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.contatoDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contatoDetail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.contatoDetail svg {
+  color: var(--color-text-tertiary);
+}
+
+.contatoActions { /* legado, mantido caso usado em outros lugares */
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.viewButton,
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewButton:hover {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.editButton:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-tertiary);
+}
+
+.deleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteButton:hover {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.contatoMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.contatoDate {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+/* Estado vazio */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.emptyIcon {
+  color: var(--color-text-tertiary);
+  margin-bottom: 1rem;
+}
+
+.emptyState p {
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.createFirstButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.createFirstButton:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Paginação */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-tertiary);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationInfo {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-form-border);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal de confirmação de delete */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.75rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modalHeader {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.modalBody {
+  padding: 1rem 1.5rem;
+}
+
+.modalBody p {
+  margin: 0 0 0.75rem 0;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.warningText {
+  color: var(--color-error) !important;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-tertiary);
+}
+
+.confirmDeleteButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirmDeleteButton:hover {
+  background: var(--color-error-hover);
+  transform: translateY(-1px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    margin-left: 0;
+  }
+  
+  .searchBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchInput {
+    min-width: auto;
+  }
+  
+  .headerActions {
+    justify-content: stretch;
+  }
+  
+  .newButton,
+  .refreshButton {
+    flex: 1;
+  }
+  
+  .contatoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .contatoActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .contatoMeta {
+    align-items: flex-start;
+    width: 100%;
+  }
+}

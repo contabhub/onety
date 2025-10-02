@@ -1,0 +1,366 @@
+/* Overlay do modal */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Container do modal */
+.modal {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Cabeçalho */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Abas */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.tab {
+  flex: 1;
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+}
+
+.activeTab {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+.tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Conteúdo */
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+/* Seções de equipe e instâncias */
+.teamSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.instanceSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-form-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Lista */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emptyMessage {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  padding: 40px 20px;
+}
+
+/* Item da lista */
+.item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--color-form-border);
+}
+
+.item:hover {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-form-border);
+}
+
+.selectedItem {
+  background-color: rgba(139, 92, 246, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* Ícone do item */
+.itemIcon {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.teamInitials,
+.userInitials {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+}
+
+.teamInitials {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-button-hover));
+}
+
+.userInitials {
+  background: linear-gradient(135deg, var(--color-success), #059669);
+}
+
+/* Informações do item */
+.itemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.itemName {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+.itemDetail {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+/* Badges */
+.defaultBadge,
+.adminBadge,
+.statusBadge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.defaultBadge {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.adminBadge {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+}
+
+.statusBadge {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.statusBadge.connected {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.statusBadge.disconnected {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.statusBadge.pending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+/* Rodapé */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-top: 1px solid var(--color-form-border);
+  gap: 12px;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  border: 1px solid var(--color-form-border);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-text-secondary);
+}
+
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transferButton {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transferButton:hover:not(:disabled) {
+  background-color: var(--color-button-hover);
+}
+
+.transferButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .modal {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .header {
+    padding: 16px 20px;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
+  .footer {
+    padding: 16px 20px;
+    flex-direction: column;
+  }
+  
+  .cancelButton,
+  .transferButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,424 @@
+.container {
+    padding: 2rem;
+    background-color: var(--color-bg-secondary);
+    min-height: 100vh;
+}
+
+.header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-form-border);
+  border-top: 3px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.errorContent {
+  flex: 1;
+}
+
+.errorContent p {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--color-error);
+  font-size: 14px;
+}
+
+.retryButton {
+  background: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px var(--spacing-sm);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background: var(--color-button-pressed);
+}
+
+.linksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.emptyIcon {
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.emptyState h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--color-text-primary);
+}
+
+.emptyState p {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: 14px;
+}
+
+.addFirstButton {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: background-color 0.2s;
+}
+
+.addFirstButton:hover {
+  background: var(--color-button-hover);
+}
+
+.linkCard {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.linkCard:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.linkHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.linkIcon {
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  padding: var(--spacing-sm);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.linkInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.linkName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+  word-break: break-word;
+}
+
+.linkUrl {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.linkActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 6px;
+  padding: 6px var(--spacing-sm);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: var(--color-bg-primary);
+  border-color: var(--color-primary);
+}
+
+.actionButton:first-child {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.actionButton:first-child:hover {
+  background: var(--color-button-hover);
+  border-color: var(--color-button-hover);
+}
+
+.addButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+}
+
+.addButton {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: background-color 0.2s;
+}
+
+.addButton:hover {
+  background: var(--color-button-hover);
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-md);
+}
+
+.modal {
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.modalHeader h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: var(--color-text-primary);
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modalContent {
+  padding: var(--spacing-lg);
+}
+
+.formGroup {
+  margin-bottom: var(--spacing-md);
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px var(--spacing-sm);
+  border: 1px solid var(--color-form-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: var(--color-form-bg);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+.cancelButton {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 6px;
+  padding: 10px var(--spacing-md);
+  font-size: 14px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: var(--color-bg-primary);
+  border-color: var(--color-primary);
+}
+
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saveButton {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px var(--spacing-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+  background: var(--color-button-hover);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+  
+  .linksGrid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .linkActions {
+    flex-direction: column;
+  }
+  
+  .actionButton {
+    justify-content: center;
+  }
+  
+  .modal {
+    margin: var(--spacing-md);
+    max-width: none;
+  }
+  
+  .modalActions {
+    flex-direction: column;
+  }
+  
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+  }
+}

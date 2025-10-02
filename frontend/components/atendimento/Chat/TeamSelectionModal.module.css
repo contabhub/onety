@@ -1,0 +1,259 @@
+/* Container principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* Header com botão voltar */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.backButton:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerContent h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Descrição */
+.description {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* Estado de loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-bg-secondary);
+  border-top: 3px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Lista de times */
+.teamsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 200px;
+}
+
+/* Estado vazio */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.emptyIcon {
+  color: var(--color-form-border);
+}
+
+.empty p {
+  margin: 0;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.empty small {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* Item de time */
+.teamItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-form-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+
+.teamItem:hover {
+  border-color: var(--color-primary);
+  background: var(--color-bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+}
+
+.teamIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.teamInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.teamName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.defaultBadge {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.teamDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.roleInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.adminIcon {
+  color: var(--color-warning);
+}
+
+.managerIcon {
+  color: var(--color-primary);
+}
+
+.memberIcon {
+  color: var(--color-text-secondary);
+}
+
+.roleText {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.createdAt {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.arrow {
+  font-size: 18px;
+  color: var(--color-form-border);
+  font-weight: bold;
+}
+
+.teamItem:hover .arrow {
+  color: var(--color-primary);
+  transform: translateX(2px);
+}
+
+/* Footer */
+.footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-form-border);
+  text-align: center;
+}
+
+.footer small {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .teamItem {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .teamIcon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .teamName {
+    font-size: 15px;
+  }
+  
+  .teamDetails {
+    gap: 2px;
+  }
+  
+  .roleInfo {
+    font-size: 13px;
+  }
+}
+
