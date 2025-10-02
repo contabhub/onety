@@ -424,13 +424,18 @@ router.post("/liberar-prova", async (req, res) => {
         });
       }
 
-      // 4. Buscar provas do módulo
+      // 4. Buscar provas do módulo (tanto por conteúdo quanto por grupo)
       const [provas] = await conn.query(
-        `SELECT p.id, p.nome, p.conteudo_id 
+        `SELECT DISTINCT p.id, p.nome, p.conteudo_id, 'conteudo' as tipo_vinculo
          FROM prova p 
          JOIN conteudos c ON p.conteudo_id = c.id 
-         WHERE c.grupo_id IN (${grupoIds.map(() => '?').join(',')})`,
-        grupoIds
+         WHERE c.grupo_id IN (${grupoIds.map(() => '?').join(',')})
+         UNION
+         SELECT DISTINCT p.id, p.nome, p.conteudo_id, 'grupo' as tipo_vinculo
+         FROM prova p 
+         JOIN prova_grupo pg ON p.id = pg.prova_id
+         WHERE pg.grupo_id IN (${grupoIds.map(() => '?').join(',')}) AND pg.ativo = 1`,
+        [...grupoIds, ...grupoIds]
       );
 
       if (provas.length === 0) {

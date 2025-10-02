@@ -18,6 +18,7 @@ const departamentosRoutes = require('./onety/departamentos');
 const gruposRoutes = require('./onety/grupos');
 const empresasGruposRoutes = require('./onety/empresas-grupos');
 const empresasConteudosRoutes = require('./onety/empresas-conteudos');
+const provaGrupoRoutes = require('./onety/prova_grupo');
 
 
 
@@ -39,6 +40,7 @@ router.use('/departamentos', departamentosRoutes);
 router.use('/grupos', gruposRoutes);
 router.use('/empresas-grupos', empresasGruposRoutes);
 router.use('/empresas-conteudos', empresasConteudosRoutes);
+router.use('/prova-grupo', provaGrupoRoutes);
 
 
 
