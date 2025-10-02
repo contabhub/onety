@@ -3,8 +3,9 @@ import { useRouter } from 'next/router'
 import styles from './ConteudoList.module.css'
 import SpaceLoader from '../menu/SpaceLoader'
 import ProvaGrupoModal from './ProvaGrupoModal'
+import { Lock } from 'lucide-react'
 
-export default function ConteudoList({ moduloId }) {
+export default function ConteudoList({ moduloId, userRole }) {
   const router = useRouter()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -14,6 +15,8 @@ export default function ConteudoList({ moduloId }) {
   const [provasEmpresa, setProvasEmpresa] = useState({})
   const [showProvaGrupoModal, setShowProvaGrupoModal] = useState(false)
   const [selectedGrupo, setSelectedGrupo] = useState(null)
+  const [acessoGrupos, setAcessoGrupos] = useState({})
+  const [verificandoAcesso, setVerificandoAcesso] = useState(true)
 
   useEffect(() => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -60,6 +63,13 @@ export default function ConteudoList({ moduloId }) {
           console.log('🗂️ ConteudoList - Grupos mapeados:', gruposMapeados)
           
           setItems(gruposMapeados)
+          
+          // Verificar acesso aos grupos
+          setVerificandoAcesso(true)
+          const acessos = await verificarAcessoGrupos(gruposMapeados)
+          setAcessoGrupos(acessos)
+          setVerificandoAcesso(false)
+          
           await loadProgressoGrupos(gruposMapeados)
           await loadProvasGrupos(gruposMapeados)
 
@@ -74,6 +84,49 @@ export default function ConteudoList({ moduloId }) {
     if (moduloId && empresaId) load()
     return () => { ignore = true }
   }, [moduloId])
+
+  // Função para verificar acesso aos grupos baseado na progressão sequencial
+  const verificarAcessoGrupos = async (grupos) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+    const user = userRaw ? JSON.parse(userRaw) : null
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null
+    const viewerId = user?.id
+
+    if (!empresaId || !viewerId || grupos.length === 0) {
+      return {}
+    }
+
+    try {
+      const acessosGrupos = {}
+      
+      // Verificar acesso para cada grupo
+      for (const grupo of grupos) {
+        try {
+          const res = await fetch(`${API_URL}/grupos/${grupo.id}/verificar-acesso?empresa_id=${empresaId}&usuario_id=${viewerId}`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          })
+          
+          if (res.ok) {
+            const dados = await res.json()
+            acessosGrupos[grupo.id] = dados
+          } else {
+            // Se der erro, assumir que não pode acessar
+            acessosGrupos[grupo.id] = { pode_acessar: false, motivo: 'Erro ao verificar acesso' }
+          }
+        } catch (error) {
+          console.error(`Erro ao verificar acesso do grupo ${grupo.id}:`, error)
+          acessosGrupos[grupo.id] = { pode_acessar: false, motivo: 'Erro ao verificar acesso' }
+        }
+      }
+      
+      return acessosGrupos
+    } catch (error) {
+      console.error('Erro ao verificar acesso dos grupos:', error)
+      return {}
+    }
+  }
 
   // Função para carregar progresso de cada grupo
   const loadProgressoGrupos = async (grupos) => {
@@ -192,6 +245,14 @@ export default function ConteudoList({ moduloId }) {
 
   // Função para clicar em um grupo - navega para a página dedicada
   const handleGrupoClick = (grupo) => {
+    const acessoGrupo = acessoGrupos[grupo.id]
+    
+    // Se não pode acessar, mostrar mensagem e não navegar
+    if (acessoGrupo && !acessoGrupo.pode_acessar) {
+      alert(`Acesso bloqueado: ${acessoGrupo.motivo}`)
+      return
+    }
+    
     router.push(`/onboarding/${moduloId}/grupo/${grupo.id}`)
   }
 
@@ -208,7 +269,7 @@ export default function ConteudoList({ moduloId }) {
     setSelectedGrupo(null)
   }
 
-  if (loading) return <SpaceLoader label="Carregando conteúdos..." />
+  if (loading || verificandoAcesso) return <SpaceLoader label="Carregando conteúdos..." />
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
   if (!gruposComProgresso.length) return <div className={styles.placeholder}>Nenhum conteúdo cadastrado.</div>
 
@@ -216,8 +277,17 @@ export default function ConteudoList({ moduloId }) {
   return (
     <>
     <div className={styles.grid}>
-      {gruposComProgresso.map((c) => (
-        <article key={c.id} className={`${styles.card} ${styles.clickable}`} onClick={() => handleGrupoClick(c)}>
+      {gruposComProgresso.map((c) => {
+        const acessoGrupo = acessoGrupos[c.id]
+        const podeAcessar = !acessoGrupo || acessoGrupo.pode_acessar
+        const estaBloqueado = acessoGrupo && !acessoGrupo.pode_acessar
+        
+        return (
+        <article 
+          key={c.id} 
+          className={`${styles.card} ${podeAcessar ? styles.clickable : styles.blocked}`} 
+          onClick={() => handleGrupoClick(c)}
+        >
           {(c.logo_url) ? (
             <div className={styles.media}>
               {c.logo_url ? (
@@ -228,8 +298,22 @@ export default function ConteudoList({ moduloId }) {
             </div>
           ) : null}
           <div className={styles.body}>
-            <h3 className={styles.title}>{c.nome}</h3>
+            <div className={styles.titleRow}>
+              <h3 className={styles.title}>{c.nome}</h3>
+              {estaBloqueado && (
+                <Lock size={16} className={styles.blockedIcon} title={acessoGrupo.motivo} />
+              )}
+            </div>
             <p className={styles.desc}>{c.descricao || 'Sem descrição'}</p>
+            
+            {/* Indicador de bloqueio */}
+            {estaBloqueado && (
+              <div className={styles.blockedMessage}>
+                <span className={styles.blockedText}>
+                  {acessoGrupo.motivo}
+                </span>
+              </div>
+            )}
             
             {/* Barra de progresso */}
             <div className={styles.progressContainer}>
@@ -249,17 +333,21 @@ export default function ConteudoList({ moduloId }) {
               </div>
             </div>
             
-            <div className={styles.clickHint}>Clique para ver conteúdos</div>
-            
-            <div className={styles.groupActions}>
-              <button 
-                className={styles.manageProvasButton}
-                onClick={(e) => handleGerenciarProvas(e, c)}
-                title="Gerenciar provas do grupo"
-              >
-                📝 Gerenciar Provas
-              </button>
+            <div className={styles.clickHint}>
+              {podeAcessar ? 'Clique para ver conteúdos' : 'Grupo bloqueado'}
             </div>
+            
+            {userRole === 'superadmin' && (
+              <div className={styles.groupActions}>
+                <button 
+                  className={styles.manageProvasButton}
+                  onClick={(e) => handleGerenciarProvas(e, c)}
+                  title="Gerenciar provas do grupo"
+                >
+                  📝 Gerenciar Provas
+                </button>
+              </div>
+            )}
             
             {/* Mostrar provas se o grupo estiver 100% concluído */}
             {c.progresso.porcentagem === 100 && provasGrupos[c.id] && provasGrupos[c.id].length > 0 && (
@@ -365,7 +453,8 @@ export default function ConteudoList({ moduloId }) {
             )}
           </div>
         </article>
-      ))}
+        )
+      })}
     </div>
     
     {/* Modal de gerenciar provas do grupo */}

@@ -303,4 +303,41 @@
   }
 }
 
+/* Estilos para grupos bloqueados */
+.blocked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.blocked:hover {
+  transform: none;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.blockedIcon {
+  color: var(--onity-color-textSecondary);
+  flex-shrink: 0;
+}
+
+.blockedMessage {
+  margin: 8px 0;
+  padding: 8px;
+  background: var(--onity-color-bgWarning);
+  border-radius: 6px;
+  border-left: 3px solid var(--onity-color-warning);
+}
+
+.blockedText {
+  font-size: 12px;
+  color: var(--onity-color-textWarning);
+  line-height: 1.4;
+}
+
 

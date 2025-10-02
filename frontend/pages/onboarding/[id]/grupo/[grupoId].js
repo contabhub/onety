@@ -6,6 +6,7 @@ import grupoStyles from '../../../../components/onety/onboarding/GrupoConteudoVi
 import Topbar from '../../../../components/onety/onboarding/Topbar'
 import SpaceLoader from '../../../../components/onety/menu/SpaceLoader'
 import OnboardingSidebar from '../../../../components/onety/onboarding/Sidebar'
+import { FileText } from 'lucide-react'
 
 export default function GrupoConteudoPage() {
   const router = useRouter()
@@ -270,6 +271,93 @@ export default function GrupoConteudoPage() {
     router.push(`/onboarding/${moduloId}`)
   }
 
+  // Função para renderizar o botão "Próximo" ou "Fazer Prova"
+  const renderNextButton = () => {
+    const isLastContent = currentIndex === conteudos.length - 1
+    const isContentCompleted = conteudoAtual.concluido
+
+    // Se não é o último conteúdo, mostrar botão "Próximo" normal
+    if (!isLastContent) {
+      return (
+        <button 
+          onClick={proximoConteudo} 
+          className={grupoStyles.navButton}
+        >
+          Próximo →
+        </button>
+      )
+    }
+
+    // Se é o último conteúdo mas não está concluído, mostrar botão "Próximo" desabilitado
+    if (!isContentCompleted) {
+      return (
+        <button 
+          disabled
+          className={grupoStyles.navButton}
+        >
+          Próximo →
+        </button>
+      )
+    }
+
+    // Se é o último conteúdo e está concluído, mostrar botão para voltar aos grupos
+    return (
+      <button 
+        onClick={handleVoltar}
+        className={grupoStyles.navButton}
+      >
+        Voltar aos Grupos →
+      </button>
+    )
+  }
+
+
+  // Função para lidar com o clique em "Fazer Prova" específica (da seção de provas)
+  const handleFazerProvaEspecifica = async (prova, provaEmpresa) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+    const user = userRaw ? JSON.parse(userRaw) : null
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null
+    const viewerId = user?.id
+
+    if (!empresaId || !viewerId) {
+      setError('Dados de usuário ou empresa não encontrados')
+      return
+    }
+
+    try {
+      let provaEmpresaId = provaEmpresa?.id
+
+      // Se não existe registro prova_empresa, criar um
+      if (!provaEmpresaId) {
+        const criarRes = await fetch(`${API_URL}/prova-empresa`, {
+          method: 'POST',
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            prova_id: prova.id,
+            empresa_id: empresaId,
+            viewer_id: viewerId
+          })
+        })
+
+        if (!criarRes.ok) throw new Error('Falha ao criar registro de prova')
+
+        const provaEmpresa = await criarRes.json()
+        provaEmpresaId = provaEmpresa.id
+      }
+
+      // Navegar para a página da prova
+      router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresaId}`)
+
+    } catch (e) {
+      setError(e.message || 'Erro ao preparar prova')
+    }
+  }
+
   if (loading) {
     return (
       <div className={styles.page}>
@@ -458,13 +546,13 @@ export default function GrupoConteudoPage() {
                             <div className={grupoStyles.provaActions}>
                               {podeFazer && (
                                 <button 
-                                  onClick={() => router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)}
+                                  onClick={() => handleFazerProvaEspecifica(prova, provaEmpresa)}
                                   className={grupoStyles.fazerProvaButton}
                                 >
                                   🎯 Fazer Prova
                                 </button>
                               )}
-                              {jaFez && (
+                              {jaFez && provaEmpresa && (
                                 <button 
                                   onClick={() => router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)}
                                   className={grupoStyles.verProvaButton}
@@ -504,13 +592,8 @@ export default function GrupoConteudoPage() {
                     </span>
                   )}
                   
-                  <button 
-                    onClick={proximoConteudo} 
-                    disabled={currentIndex === conteudos.length - 1}
-                    className={grupoStyles.navButton}
-                  >
-                    Próximo →
-                  </button>
+                  {/* Botão Próximo / Fazer Prova */}
+                  {renderNextButton()}
                 </div>
               </div>
             </div>
