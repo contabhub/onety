@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import styles from './ConteudoList.module.css'
 import SpaceLoader from '../menu/SpaceLoader'
+import ProvaGrupoModal from './ProvaGrupoModal'
 
 export default function ConteudoList({ moduloId }) {
   const router = useRouter()
@@ -11,6 +12,8 @@ export default function ConteudoList({ moduloId }) {
   const [gruposComProgresso, setGruposComProgresso] = useState([])
   const [provasGrupos, setProvasGrupos] = useState({})
   const [provasEmpresa, setProvasEmpresa] = useState({})
+  const [showProvaGrupoModal, setShowProvaGrupoModal] = useState(false)
+  const [selectedGrupo, setSelectedGrupo] = useState(null)
 
   useEffect(() => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -151,30 +154,17 @@ export default function ConteudoList({ moduloId }) {
       const provasEmpresaData = {}
 
       for (const grupo of grupos) {
-        // Buscar conteúdos do grupo
-        const conteudosRes = await fetch(`${API_URL}/conteudo?grupo_conteudo_id=${grupo.id}&limit=100`, {
+        // Buscar provas do grupo diretamente
+        const provasRes = await fetch(`${API_URL}/prova-grupo/grupo/${grupo.id}`, {
           headers: { 'Authorization': token ? `Bearer ${token}` : '' }
         })
         
-        if (conteudosRes.ok) {
-          const conteudosResponse = await conteudosRes.json()
-          const conteudos = conteudosResponse.data || []
+        if (provasRes.ok) {
+          const provasResponse = await provasRes.json()
+          const provas = provasResponse.data || []
           
-          // Para cada conteúdo, buscar suas provas
-          for (const conteudo of conteudos) {
-            const provasRes = await fetch(`${API_URL}/prova/conteudo/${conteudo.id}`, {
-              headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-            })
-            
-            if (provasRes.ok) {
-              const provasResponse = await provasRes.json()
-              const provas = provasResponse.data || []
-              
-              if (provas.length > 0) {
-                if (!provasData[grupo.id]) provasData[grupo.id] = []
-                provasData[grupo.id].push(...provas.map(prova => ({ ...prova, conteudo_id: conteudo.id, conteudo_nome: conteudo.nome })))
-              }
-            }
+          if (provas.length > 0) {
+            provasData[grupo.id] = provas
           }
         }
       }
@@ -205,12 +195,26 @@ export default function ConteudoList({ moduloId }) {
     router.push(`/onboarding/${moduloId}/grupo/${grupo.id}`)
   }
 
+  // Função para abrir modal de provas do grupo
+  const handleGerenciarProvas = (e, grupo) => {
+    e.stopPropagation()
+    setSelectedGrupo(grupo)
+    setShowProvaGrupoModal(true)
+  }
+
+  // Função para fechar modal
+  const handleCloseProvaGrupoModal = () => {
+    setShowProvaGrupoModal(false)
+    setSelectedGrupo(null)
+  }
+
   if (loading) return <SpaceLoader label="Carregando conteúdos..." />
   if (error) return <div className={`${styles.placeholder} ${styles.error}`}>{error}</div>
   if (!gruposComProgresso.length) return <div className={styles.placeholder}>Nenhum conteúdo cadastrado.</div>
 
   // Lista de grupos de conteúdo
   return (
+    <>
     <div className={styles.grid}>
       {gruposComProgresso.map((c) => (
         <article key={c.id} className={`${styles.card} ${styles.clickable}`} onClick={() => handleGrupoClick(c)}>
@@ -247,6 +251,16 @@ export default function ConteudoList({ moduloId }) {
             
             <div className={styles.clickHint}>Clique para ver conteúdos</div>
             
+            <div className={styles.groupActions}>
+              <button 
+                className={styles.manageProvasButton}
+                onClick={(e) => handleGerenciarProvas(e, c)}
+                title="Gerenciar provas do grupo"
+              >
+                📝 Gerenciar Provas
+              </button>
+            </div>
+            
             {/* Mostrar provas se o grupo estiver 100% concluído */}
             {c.progresso.porcentagem === 100 && provasGrupos[c.id] && provasGrupos[c.id].length > 0 && (
               <div className={styles.provasContainer}>
@@ -277,8 +291,53 @@ export default function ConteudoList({ moduloId }) {
                         <div className={styles.provaActions}>
                           {podeFazer && (
                             <button 
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation()
+                                
+                                // Se não tem provaEmpresa, criar uma nova
+                                if (!provaEmpresa) {
+                                  try {
+                                    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+                                    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+                                    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+                                    const user = userRaw ? JSON.parse(userRaw) : null
+                                    const empresaId = user?.EmpresaId || user?.empresa?.id || null
+                                    const viewerId = user?.id
+
+                                    if (!empresaId || !viewerId) {
+                                      console.error('Dados do usuário não encontrados')
+                                      return
+                                    }
+
+                                    // Criar registro prova_empresa
+                                    const createRes = await fetch(`${API_URL}/prova-empresa`, {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': token ? `Bearer ${token}` : ''
+                                      },
+                                      body: JSON.stringify({
+                                        prova_id: prova.id,
+                                        empresa_id: empresaId,
+                                        viewer_id: viewerId
+                                      })
+                                    })
+
+                                    if (createRes.ok) {
+                                      const newProvaEmpresa = await createRes.json()
+                                      // Recarregar dados para atualizar a interface
+                                      loadProvasGrupos(gruposComProgresso)
+                                      // Redirecionar para a prova
+                                      router.push(`/onboarding/${moduloId}/realizar-prova/${newProvaEmpresa.id}`)
+                                    } else {
+                                      console.error('Erro ao criar prova_empresa:', await createRes.text())
+                                    }
+                                  } catch (error) {
+                                    console.error('Erro ao criar prova_empresa:', error)
+                                  }
+                                  return
+                                }
+                                
                                 router.push(`/onboarding/${moduloId}/realizar-prova/${provaEmpresa.id}`)
                               }}
                               className={styles.fazerProvaButton}
@@ -286,7 +345,7 @@ export default function ConteudoList({ moduloId }) {
                               🎯 Fazer Prova
                             </button>
                           )}
-                          {jaFez && (
+                          {jaFez && provaEmpresa && (
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -308,6 +367,21 @@ export default function ConteudoList({ moduloId }) {
         </article>
       ))}
     </div>
+    
+    {/* Modal de gerenciar provas do grupo */}
+    {showProvaGrupoModal && selectedGrupo && (
+      <ProvaGrupoModal
+        isOpen={showProvaGrupoModal}
+        onClose={handleCloseProvaGrupoModal}
+        grupoId={selectedGrupo.id}
+        grupoNome={selectedGrupo.nome}
+        onSuccess={() => {
+          // Recarregar provas dos grupos após sucesso
+          loadProvasGrupos(gruposComProgresso)
+        }}
+      />
+    )}
+  </>
   )
 }
 

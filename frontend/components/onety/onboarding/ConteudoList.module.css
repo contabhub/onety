@@ -262,4 +262,45 @@
   border-radius: 2px;
 }
 
+/* Ações do grupo */
+.groupActions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.manageProvasButton {
+  background: var(--onity-color-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.manageProvasButton:hover {
+  background: var(--onity-color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .groupActions {
+    flex-direction: column;
+  }
+  
+  .manageProvasButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 

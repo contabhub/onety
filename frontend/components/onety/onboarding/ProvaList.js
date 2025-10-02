@@ -186,12 +186,71 @@ function ProvaModal({ prova, moduloId, onClose, onSaved }) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [conteudos, setConteudos] = useState([])
+  const [loadingConteudos, setLoadingConteudos] = useState(false)
+
+  // Carregar conteúdos do módulo
+  useEffect(() => {
+    if (moduloId) {
+      loadConteudos()
+    }
+  }, [moduloId])
+
+  const loadConteudos = async () => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+    setLoadingConteudos(true)
+    
+    try {
+      // Buscar todos os grupos do módulo
+      const gruposRes = await fetch(`${API_URL}/grupos?modulo_id=${moduloId}&limit=100`, {
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      })
+      
+      if (!gruposRes.ok) throw new Error('Falha ao carregar grupos')
+      const gruposData = await gruposRes.json()
+      const grupos = Array.isArray(gruposData?.data) ? gruposData.data : []
+      
+      // Buscar conteúdos de todos os grupos
+      const conteudosPromises = grupos.map(async (grupo) => {
+        try {
+          const conteudosRes = await fetch(`${API_URL}/conteudo?grupo_id=${grupo.id}&limit=100`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          })
+          
+          if (conteudosRes.ok) {
+            const conteudosData = await conteudosRes.json()
+            const conteudos = Array.isArray(conteudosData?.data) ? conteudosData.data : []
+            return conteudos.map(conteudo => ({
+              ...conteudo,
+              grupo_nome: grupo.nome
+            }))
+          }
+          return []
+        } catch (error) {
+          console.error(`Erro ao carregar conteúdos do grupo ${grupo.id}:`, error)
+          return []
+        }
+      })
+      
+      const conteudosArrays = await Promise.all(conteudosPromises)
+      const todosConteudos = conteudosArrays.flat()
+      
+      setConteudos(todosConteudos)
+    } catch (e) {
+      console.error('Erro ao carregar conteúdos:', e)
+      setConteudos([])
+    } finally {
+      setLoadingConteudos(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.nome.trim() || !formData.conteudo_id) {
-      setError('Nome e ID do conteúdo são obrigatórios')
+      setError('Nome e conteúdo são obrigatórios')
       return
     }
 
@@ -249,15 +308,27 @@ function ProvaModal({ prova, moduloId, onClose, onSaved }) {
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="conteudo_id">ID do Conteúdo</label>
-            <input
-              id="conteudo_id"
-              type="number"
-              value={formData.conteudo_id}
-              onChange={(e) => setFormData({ ...formData, conteudo_id: e.target.value })}
-              placeholder="Digite o ID do conteúdo"
-              required
-            />
+            <label htmlFor="conteudo_id">Conteúdo</label>
+            {loadingConteudos ? (
+              <div className={styles.loadingText}>Carregando conteúdos...</div>
+            ) : (
+              <select
+                id="conteudo_id"
+                value={formData.conteudo_id}
+                onChange={(e) => setFormData({ ...formData, conteudo_id: e.target.value })}
+                required
+              >
+                <option value="">Selecione um conteúdo</option>
+                {conteudos.map(conteudo => (
+                  <option key={conteudo.id} value={conteudo.id}>
+                    {conteudo.titulo} (Grupo: {conteudo.grupo_nome})
+                  </option>
+                ))}
+              </select>
+            )}
+            {conteudos.length === 0 && !loadingConteudos && (
+              <div className={styles.emptyText}>Nenhum conteúdo encontrado para este módulo</div>
+            )}
           </div>
           
           {error && <div className={styles.errorMessage}>{error}</div>}
