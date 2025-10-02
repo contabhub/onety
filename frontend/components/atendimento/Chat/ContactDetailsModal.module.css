@@ -1,0 +1,252 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--color-bg-primary);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 28rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-form-border);
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.modalContent {
+  padding: 1.5rem;
+}
+
+.contactSection {
+  margin-bottom: 1.5rem;
+}
+
+.contactHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--color-form-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.contactName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.detailsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--color-bg-secondary);
+  border-radius: 0.5rem;
+}
+
+.detailIcon {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.detailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detailValue {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statusBadge.open {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.statusBadge.closed {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.statusBadge.pending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.statusBadge.default {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.whatsappStatus {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.whatsappStatus.connected {
+  color: var(--color-success);
+}
+
+.whatsappStatus.disconnected {
+  color: var(--color-error);
+}
+
+.whatsappStatus.connecting {
+  color: var(--color-warning);
+}
+
+.whatsappStatus.error {
+  color: var(--color-error);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.assumeButton {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+  min-width: 0;
+}
+
+.assumeButton:hover {
+  background-color: var(--color-button-hover);
+}
+
+.finalizeButton {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+  min-width: 0;
+}
+
+.finalizeButton:hover {
+  background-color: #b91c1c;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .modal {
+    max-width: 100%;
+    margin: 0 1rem;
+  }
+  
+  .modalHeader,
+  .modalContent {
+    padding: 1rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+}
