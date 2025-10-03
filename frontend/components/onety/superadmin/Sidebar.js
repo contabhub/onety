@@ -164,12 +164,19 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
         </div>
 
         <nav className={styles.menu}>
-          {items.map((item, idx) => (
-            <Link key={item.name + idx} href={item.path} className={styles.menuItem}>
-              {item.icon}
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
-          ))}
+          {items.map((item, idx) => {
+            const isActive = router.pathname === item.path
+            return (
+              <Link 
+                key={item.name + idx} 
+                href={item.path} 
+                className={`${styles.menuItem} ${isActive ? styles.active : ''}`}
+              >
+                {item.icon}
+                {!collapsed && <span>{item.name}</span>}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Seção do usuário na parte inferior */}

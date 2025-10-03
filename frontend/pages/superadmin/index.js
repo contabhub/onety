@@ -359,7 +359,7 @@ export default function SuperadminHome() {
               alignItems: 'center',
               gap: '12px',
             }}>
-              <Building2 size={20} color="var(--onity-color-primary)" />
+              <Building2 size={20} color="var(--onity-color-text)" />
               <h3 style={{ 
                 margin: 0, 
                 fontSize: '1.1rem', 
@@ -490,7 +490,7 @@ export default function SuperadminHome() {
               alignItems: 'center',
               gap: '12px',
             }}>
-              <Users size={20} color="var(--onity-color-primary)" />
+              <Users size={20} color="var(--onity-color-text)" />
               <h3 style={{ 
                 margin: 0, 
                 fontSize: '1.1rem', 
@@ -652,14 +652,29 @@ export default function SuperadminHome() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: 20,
           }}>
-            <div style={{
-              padding: 20,
-              background: 'var(--onity-color-bg)',
-              borderRadius: 12,
-              border: '1px solid var(--onity-color-border)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}>
+            <div 
+              style={{
+                padding: 20,
+                background: 'var(--onity-color-bg)',
+                borderRadius: 12,
+                border: '1px solid var(--onity-color-border)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() => router.push('/superadmin/usuarios')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--onity-color-surface)'
+                e.currentTarget.style.borderColor = 'var(--onity-color-primary-hover)'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = 'var(--onity-elev-med)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--onity-color-bg)'
+                e.currentTarget.style.borderColor = 'var(--onity-color-border)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
               <h3 style={{ 
                 margin: '0 0 8px 0', 
                 fontSize: '1.1rem', 
@@ -677,14 +692,29 @@ export default function SuperadminHome() {
               </p>
             </div>
 
-            <div style={{
-              padding: 20,
-              background: 'var(--onity-color-bg)',
-              borderRadius: 12,
-              border: '1px solid var(--onity-color-border)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}>
+            <div 
+              style={{
+                padding: 20,
+                background: 'var(--onity-color-bg)',
+                borderRadius: 12,
+                border: '1px solid var(--onity-color-border)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() => router.push('/superadmin/empresas')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--onity-color-surface)'
+                e.currentTarget.style.borderColor = 'var(--onity-color-primary-hover)'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = 'var(--onity-elev-med)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--onity-color-bg)'
+                e.currentTarget.style.borderColor = 'var(--onity-color-border)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
               <h3 style={{ 
                 margin: '0 0 8px 0', 
                 fontSize: '1.1rem', 
@@ -727,30 +757,6 @@ export default function SuperadminHome() {
               </p>
             </div>
 
-            <div style={{
-              padding: 20,
-              background: 'var(--onity-color-bg)',
-              borderRadius: 12,
-              border: '1px solid var(--onity-color-border)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}>
-              <h3 style={{ 
-                margin: '0 0 8px 0', 
-                fontSize: '1.1rem', 
-                fontWeight: 600, 
-                color: 'var(--onity-color-text)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
-                <Settings size={20} />
-                Configurações
-              </h3>
-              <p style={{ margin: 0, opacity: 0.7, fontSize: '0.9rem', lineHeight: 1.5 }}>
-                Configurar parâmetros gerais e personalizar a plataforma.
-              </p>
-            </div>
           </div>
         </div>
       </main>
