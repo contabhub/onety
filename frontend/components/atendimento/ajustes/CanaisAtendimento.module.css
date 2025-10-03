@@ -274,25 +274,29 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: var(--onity-color-primary);
-  border: none;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border: 2px solid #60A5FA;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.1);
+  font-size: 24px;
+  font-weight: 300;
 }
 
 .addButton:hover {
-  background-color: var(--onity-color-primary-hover);
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+  border-color: #93C5FD;
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5), 0 0 0 6px rgba(59, 130, 246, 0.15);
 }
 
 .addButton:active {
-  transform: scale(0.95);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 /* Dropdown Styles */

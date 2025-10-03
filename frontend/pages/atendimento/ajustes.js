@@ -45,20 +45,20 @@ export default function Ajustes({ auth }) {
         <meta name="description" content="Configurações da sua conta e empresa" />
       </Head>
       
-      <div className={styles.sidebarContainer}>
+      <div className={styles.pageContainer}>
         <PrincipalSidebar />
-      </div>
-
-      <div className={styles.ajustesContainer}>
-        {/* Conteúdo principal */}
-        <div className={styles.ajustesContent}>
-          <AjustesSidebar 
-            activeSection={activeSection} 
-            onSectionChange={setActiveSection} 
-          />
-          <main className={styles.mainContent}>
-            {renderContent()}
-          </main>
+        
+        <div className={styles.ajustesContainer}>
+          {/* Conteúdo principal */}
+          <div className={styles.ajustesContent}>
+            <AjustesSidebar 
+              activeSection={activeSection} 
+              onSectionChange={setActiveSection} 
+            />
+            <main className={styles.mainContent}>
+              {renderContent()}
+            </main>
+          </div>
         </div>
       </div>
     </>

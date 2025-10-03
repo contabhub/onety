@@ -1,13 +1,18 @@
-.sidebarContainer {
-  flex-shrink: 0;
+.pageContainer {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .ajustesContainer {
   display: flex;
   flex-direction: column;
+  flex: 1;
   height: 100vh;
   background-color: var(--color-bg-secondary);
-  transition: background-color 0.3s ease;
+  transition: all 0.15s ease-out;
+  min-width: 0; /* Permite que o container encolha */
 }
 
 .ajustesContent {
@@ -26,9 +31,14 @@
 
 /* Responsividade */
 @media (max-width: 768px) {
+  .pageContainer {
+    flex-direction: column;
+  }
+  
   .ajustesContainer {
     height: auto;
     min-height: 100vh;
+    margin-left: 0;
   }
   
   .ajustesContent {
