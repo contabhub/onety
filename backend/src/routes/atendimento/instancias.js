@@ -197,17 +197,29 @@ router.get('/:id/qr-code', authOrApiKey, async (req, res) => {
   
 
   /**
- * 📴 Desconectar instância do WhatsApp (Z-API)
- */
-router.get('/:id/disconnect', authOrApiKey, async (req, res) => {
+   * 📴 Desconectar instância do WhatsApp (Z-API)
+   */
+  router.get('/:id/disconnect', authOrApiKey, async (req, res) => {
     try {
+      console.log("🔌 Iniciando desconexão Z-API para ID:", req.params.id);
+      
       // 🔍 Buscar dados da instância no banco
       const [rows] = await pool.query("SELECT * FROM instancias WHERE id = ?", [req.params.id]);
-      if (rows.length === 0) return res.status(404).json({ error: "Instância não encontrada." });
+      if (rows.length === 0) {
+        console.log("❌ Instância não encontrada no banco para ID:", req.params.id);
+        return res.status(404).json({ error: "Instância não encontrada." });
+      }
   
       const instance = rows[0];
+      console.log("📋 Dados da instância encontrada:", {
+        id: instance.id,
+        instancia_id: instance.instancia_id,
+        token: instance.token ? '***' : 'null',
+        cliente_token: instance.cliente_token ? '***' : 'null'
+      });
   
       // 🌐 Chamar Z-API para desconectar
+      console.log("📡 Fazendo chamada para Z-API disconnect...");
       const response = await axios.get(
         `https://api.z-api.io/instances/${instance.instancia_id}/token/${instance.token}/disconnect`,
         {
@@ -215,15 +227,26 @@ router.get('/:id/disconnect', authOrApiKey, async (req, res) => {
         }
       );
   
+      console.log("📡 Resposta Z-API disconnect:", response.status, response.data);
+  
       // 🔄 Atualizar status da instância para 'desconectado'
-      await pool.query(
+      const [updateResult] = await pool.query(
         "UPDATE instancias SET status = 'desconectado', ultimo_qr_code = NULL, qr_expira_em = NULL WHERE id = ?",
         [instance.id]
       );
   
-      res.json({ message: "Instância desconectada com sucesso", zapi_response: response.data });
+      console.log("📝 Resultado da atualização no banco:", updateResult.affectedRows, "linhas afetadas");
+  
+      res.json({ 
+        message: "Instância desconectada com sucesso", 
+        zapi_response: response.data,
+        db_updated: updateResult.affectedRows > 0
+      });
     } catch (error) {
-      console.error("Erro ao desconectar instância:", error.message);
+      console.error("❌ Erro ao desconectar instância Z-API:");
+      console.error("   Status:", error.response?.status);
+      console.error("   Data:", error.response?.data);
+      console.error("   Message:", error.message);
       res.status(500).json({ error: "Erro ao desconectar instância do WhatsApp." });
     }
   });
@@ -486,10 +509,8 @@ router.delete("/evolution/disconnect/:instanceName", authOrApiKey, async (req, r
       }
     );
 
-    console.log("🔌 Resposta do logout:", response.data);
-
     // Atualiza status no banco para "desconectado"
-    await pool.query(
+    const [updateResult] = await pool.query(
       `UPDATE instancias 
        SET status = 'desconectado' 
        WHERE instancia_nome = ? AND integracao_tipo = 'evolution'`,
@@ -498,11 +519,12 @@ router.delete("/evolution/disconnect/:instanceName", authOrApiKey, async (req, r
 
     res.status(200).json({
       message: "Instância desconectada com sucesso",
-      response: response.data
+      response: response.data,
+      db_updated: updateResult.affectedRows > 0
     });
 
   } catch (error) {
-    console.error("❌ Erro ao desconectar instância:", error.response?.data || error.message);
+    console.error("Erro ao desconectar instância Evolution:", error.response?.data || error.message);
     res.status(500).json({
       error: "Erro ao desconectar instância na Evolution API",
       details: error.response?.data || error.message

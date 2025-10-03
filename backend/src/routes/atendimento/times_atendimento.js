@@ -37,12 +37,14 @@ router.post("/", authOrApiKey, async (req, res) => {
 router.get("/", authOrApiKey, async (req, res) => {
   try {
     const { empresa_id } = req.query;
+    console.log("📋 Buscando times com empresa_id:", empresa_id);
+    
     let query = `
       SELECT 
         t.*,
         COUNT(tu.id) as usuarios
       FROM times_atendimento t
-      LEFT JOIN team_users tu ON t.id = tu.team_id
+      LEFT JOIN times_atendimento_usuarios tu ON t.id = tu.times_atendimento_id
     `;
     
     const params = [];
@@ -53,9 +55,15 @@ router.get("/", authOrApiKey, async (req, res) => {
     
     query += ` GROUP BY t.id ORDER BY t.nome`;
     
+    console.log("🔍 Query SQL:", query);
+    console.log("📊 Parâmetros:", params);
+    
     const [rows] = await pool.query(query, params);
+    console.log("✅ Times encontrados:", rows.length);
+    
     res.json(rows);
   } catch (err) {
+    console.error("❌ Erro ao listar times:", err);
     res.status(500).json({ error: "Erro ao listar times." });
   }
 });
