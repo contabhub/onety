@@ -47,13 +47,13 @@ const Webhooks = () => {
     try {
       setLoading(true);
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const companyId = userData.companyId;
+      const companyId = userData.EmpresaId;
       
       if (!companyId) {
         throw new Error('ID da empresa não encontrado');
       }
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/webhooks-integracao/company`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/webhook-integracao/company`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -126,15 +126,15 @@ const Webhooks = () => {
       }
 
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const companyId = userData.companyId;
+      const companyId = userData.EmpresaId;
       
       if (!companyId) {
         throw new Error('ID da empresa não encontrado');
       }
 
       const url = editingWebhook 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/webhooks-integracao/${editingWebhook.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/webhooks-integracao`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/atendimento/webhook-integracao/${editingWebhook.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/atendimento/webhook-integracao`;
       
       const method = editingWebhook ? 'PUT' : 'POST';
 
@@ -172,13 +172,13 @@ const Webhooks = () => {
 
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const companyId = userData.companyId;
+      const companyId = userData.EmpresaId;
       
       if (!companyId) {
         throw new Error('ID da empresa não encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/webhooks-integracao/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/webhook-integracao/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -205,13 +205,13 @@ const Webhooks = () => {
   const toggleStatus = async (id) => {
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const companyId = userData.companyId;
+      const companyId = userData.EmpresaId;
       
       if (!companyId) {
         throw new Error('ID da empresa não encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/webhooks-integracao/${id}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/webhook-integracao/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -316,7 +316,7 @@ const Webhooks = () => {
                 <h3 className={styles.webhookName}>{webhook.nome}</h3>
                 <p className={styles.webhookUrl}>{webhook.url}</p>
                 <div className={styles.webhookEvents}>
-                  {webhook.event_types.map(eventId => {
+                  {webhook.eventos_tipos?.map(eventId => {
                     const event = availableEvents.find(e => e.id === eventId);
                     return event ? (
                       <span key={eventId} className={styles.eventTag}>
@@ -326,7 +326,7 @@ const Webhooks = () => {
                   })}
                 </div>
                 <p className={styles.webhookDate}>
-                  Criado em {formatDate(webhook.created_at)}
+                  Criado em {formatDate(webhook.criado_em)}
                 </p>
               </div>
               <div className={styles.webhookActions}>

@@ -90,7 +90,7 @@ async function decryptMediaFromEvolution(instanceName, messageId, remoteJid) {
     console.log('🔓 Descriptografando mídia via Evolution API...');
     console.log('🔓 Parâmetros:', { instanceName, messageId, remoteJid });
     
-    const evolutionUrl = `https://connection-evolution-api.sf83tr.easypanel.host/chat/getBase64FromMediaMessage/${instanceName}`;
+    const evolutionUrl = `https://evolution-evolution-api.hdolfr.easypanel.host/chat/getBase64FromMediaMessage/${instanceName}`;
     
     const response = await axios.post(
       evolutionUrl,

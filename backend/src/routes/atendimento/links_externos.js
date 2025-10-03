@@ -43,14 +43,14 @@ router.post("/", authOrApiKey, async (req, res) => {
 });
 
 /**
- * 📌 GET /links-externos/company/:empresaId - Listar links externos por empresa
+ * 📌 GET /links-externos/company/:companyId - Listar links externos por empresa
  */
-router.get("/company/:empresaId", authOrApiKey, async (req, res) => {
+router.get("/company/:companyId", authOrApiKey, async (req, res) => {
   try {
-    const { empresaId } = req.params;
+    const { companyId } = req.params;
     const [rows] = await pool.query(
       `SELECT * FROM links_externos WHERE empresa_id = ? ORDER BY nome ASC`,
-      [empresaId]
+      [companyId]
     );
     res.json(rows);
   } catch (err) {

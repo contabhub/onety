@@ -278,7 +278,7 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
     // 3) envia via Evolution
     console.log("📤 Enviando mensagem Evolution para:", phone);
     const response = await axios.post(
-      `https://connection-evolution-api.sf83tr.easypanel.host/message/sendText/${instanceName}`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/message/sendText/${instanceName}`,
       { number: phone, text, options: options || {} },
       { headers: { apikey: process.env.EVOLUTION_API_KEY } }
     );
@@ -504,7 +504,7 @@ router.post("/evolution/send-audio", authOrApiKey, async (req, res) => {
       audioSuffix: '...' + audioData.substring(audioData.length - 20)
     });
     
-    const evolutionUrl = `https://connection-evolution-api.sf83tr.easypanel.host/message/sendWhatsAppAudio/${instanceName}`;
+    const evolutionUrl = `https://evolution-evolution-api.hdolfr.easypanel.host/message/sendWhatsAppAudio/${instanceName}`;
     console.log("🔗 URL Evolution:", evolutionUrl);
     console.log("🔑 API Key presente:", !!process.env.EVOLUTION_API_KEY);
     
@@ -761,7 +761,7 @@ router.post("/evolution/send-media", authOrApiKey, async (req, res) => {
       mediaPrefix: evolutionPayload.media.substring(0, 50) + '...'
     });
     
-    const evolutionUrl = `https://connection-evolution-api.sf83tr.easypanel.host/message/sendMedia/${instanceName}`;
+    const evolutionUrl = `https://evolution-evolution-api.hdolfr.easypanel.host/message/sendMedia/${instanceName}`;
     console.log("🔗 URL Evolution:", evolutionUrl);
     console.log("🔑 API Key presente:", !!process.env.EVOLUTION_API_KEY);
     
