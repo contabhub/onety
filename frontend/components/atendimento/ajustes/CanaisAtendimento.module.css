@@ -84,15 +84,16 @@
 
 .instanciaCard {
   background: var(--onity-color-surface);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .instanciaCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .cardTop {
@@ -132,8 +133,22 @@
   color: #25d366;
 }
 
+.companyName {
+  font-size: 0.9rem;
+  color: var(--onity-color-text);
+  font-weight: 500;
+  opacity: 0.8;
+}
+
 .providerInfo {
   margin-bottom: 0.75rem;
+}
+
+.providerText {
+  font-size: 0.85rem;
+  color: var(--onity-color-text);
+  opacity: 0.7;
+  font-weight: 500;
 }
 
 .providerLabel {
@@ -224,44 +239,38 @@
 }
 
 .cardActions {
-  padding: 10px;
+  padding: var(--onity-space-m);
   display: flex;
   justify-content: center;
+  gap: var(--onity-space-s);
+  background: var(--onity-color-bg);
+  border-top: 1px solid var(--onity-color-border);
 }
 
 .actionButton {
-  background: var(--bg-gradient-primary);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--onity-space-xs);
   transition: all 0.2s ease;
+  box-shadow: var(--onity-elev-low);
 }
 
 .actionButton:hover {
-  opacity: 0.9;
+  background: #60A5FA;
+  color: white;
+  border-color: #60A5FA;
   transform: translateY(-1px);
+  box-shadow: var(--onity-elev-med);
 }
 
-.cardBottom {
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: var(--onity-color-bg);
-}
-
-.phoneNumber {
-  font-size: 0.9rem;
-  color: var(--onity-color-text);
-  font-weight: 500;
-}
 
 .addButtonContainer {
   display: flex;
@@ -274,29 +283,29 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  border: 2px solid #60A5FA;
+  background: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+  border: 2px solid #3B82F6;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 24px;
   font-weight: 300;
 }
 
 .addButton:hover {
-  background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
-  border-color: #93C5FD;
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+  border-color: #60A5FA;
   transform: scale(1.1);
-  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5), 0 0 0 6px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .addButton:active {
   transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Dropdown Styles */

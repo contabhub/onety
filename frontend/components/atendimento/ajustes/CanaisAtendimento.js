@@ -425,7 +425,7 @@ export default function CanaisAtendimento() {
           }
         });
       } else {
-        response = await fetch(`${apiUrl}/instances/${instanceToDelete.id}`, {
+        response = await fetch(`${apiUrl}/atendimento/instancias/${instanceToDelete.id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -539,13 +539,14 @@ export default function CanaisAtendimento() {
           </div>
           <div className={styles.instanceInfo}>
             <span className={styles.whatsappText}>WhatsApp</span>
+            <span className={styles.companyName}>Teste Onety LTDA</span>
             <span className={styles.instanceName}>{instancia.instance_name}</span>
           </div>
         </div>
         
         <div className={styles.providerInfo}>
           <span className={styles.providerText}>
-            Provedor: {getIntegrationType(instancia.integration_type)}
+            Provedor: Evolution
           </span>
         </div>
         
@@ -588,15 +589,6 @@ export default function CanaisAtendimento() {
         </button>
       </div>
 
-      {/* Bottom section */}
-      <div className={styles.cardBottom}>
-        <div className={styles.whatsappIcon}>
-          <MessageCircle size={20} />
-        </div>
-        <span className={styles.phoneNumber}>
-          {instancia.phone_number || '-'}
-        </span>
-      </div>
     </div>
   );
 
