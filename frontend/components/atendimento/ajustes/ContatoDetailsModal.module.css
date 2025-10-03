@@ -15,7 +15,7 @@
 
 /* Modal */
 .modal {
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   border-radius: 0.75rem;
   width: 100%;
   max-width: 900px;
@@ -32,14 +32,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid var(--color-form-border);
+  border-bottom: 1px solid var(--onity-color-border);
   flex-shrink: 0;
 }
 
 .title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0;
 }
 
@@ -55,8 +55,9 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
@@ -64,8 +65,9 @@
 }
 
 .iconButton:hover {
-  background: var(--color-form-border);
-  color: var(--color-text-primary);
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
+  opacity: 1;
 }
 
 .blockIcon {
@@ -78,8 +80,9 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
@@ -87,15 +90,16 @@
 }
 
 .closeButton:hover {
-  background: var(--color-form-border);
-  color: var(--color-text-primary);
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
+  opacity: 1;
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  border-bottom: 1px solid var(--color-form-border);
-  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--onity-color-border);
+  background: var(--onity-color-bg);
   flex-shrink: 0;
 }
 
@@ -105,7 +109,8 @@
   gap: 0.5rem;
   padding: 1rem 1.5rem;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   border: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -115,14 +120,16 @@
 }
 
 .tab:hover {
-  color: var(--color-text-primary);
-  background: var(--color-bg-secondary);
+  color: var(--onity-color-text);
+  background: var(--onity-color-bg);
+  opacity: 1;
 }
 
 .activeTab {
-  color: var(--color-primary) !important;
-  background: var(--color-bg-primary) !important;
-  border-bottom-color: var(--color-primary) !important;
+  color: var(--onity-color-primary) !important;
+  background: var(--onity-color-surface) !important;
+  border-bottom-color: var(--onity-color-primary) !important;
+  opacity: 1 !important;
 }
 
 /* Conteúdo */
@@ -141,8 +148,8 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.75rem;
   margin-bottom: 2rem;
 }
@@ -171,13 +178,14 @@
 .contatoNome {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0 0 0.25rem 0;
 }
 
 .contatoId {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   margin: 0;
 }
 
@@ -186,7 +194,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -197,7 +205,7 @@
 }
 
 .headerActions .editButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 /* Grid de Detalhes */
@@ -220,34 +228,35 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .detailValue {
   font-size: 0.875rem;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .detailValue a {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .detailValue a:hover {
-  color: var(--color-button-hover);
+  color: var(--onity-color-primary-hover);
   text-decoration: underline;
 }
 
 .noValue {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-style: italic;
 }
 
 
 /* Seção de Etiquetas */
 .etiquetasSection {
-  border-top: 1px solid var(--color-form-border);
+  border-top: 1px solid var(--onity-color-border);
   padding-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -265,7 +274,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -276,7 +285,7 @@
 }
 
 .vincularButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 .etiquetaList {
@@ -286,7 +295,8 @@
 }
 
 .mutedText { 
-  color: var(--color-text-secondary); 
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .etiquetaPill {
@@ -309,7 +319,7 @@
   width: 10px;
   height: 10px;
   border-radius: 9999px;
-  border: 1px solid var(--color-form-border);
+  border: 1px solid var(--onity-color-border);
 }
 
 .chipRemoveButton {
@@ -349,17 +359,17 @@
   gap: 10px;
   justify-content: flex-start;
   padding: 0.5rem 1rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .etiquetaOption:hover {
-  background: var(--color-bg-secondary);
-  border-color: var(--color-primary);
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
 }
 
 .etiquetaOption:disabled {
@@ -379,17 +389,17 @@
 .input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--color-form-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   font-size: 0.875rem;
   transition: all 0.2s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
@@ -402,9 +412,9 @@
 
 .cancelButton {
   padding: 0.75rem 1.5rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -413,14 +423,15 @@
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-text);
+  opacity: 1;
 }
 
 /* Seção de Notas */
 .notasSection {
-  border-top: 1px solid var(--color-form-border);
+  border-top: 1px solid var(--onity-color-border);
   padding-top: 1.5rem;
 }
 
@@ -430,7 +441,7 @@
   gap: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0 0 1rem 0;
 }
 
@@ -442,20 +453,21 @@
 
 .notaItem {
   padding: 1rem;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
 }
 
 .notaContent p {
   margin: 0 0 0.5rem 0;
   font-size: 0.875rem;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .notaContent small {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 /* Seção de Conversas */
@@ -468,8 +480,9 @@
 
 .conversasCount {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
+  background: var(--onity-color-bg);
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
 }
@@ -485,14 +498,14 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.75rem;
   transition: all 0.2s ease;
 }
 
 .conversaItem:hover {
-  border-color: var(--color-form-border);
+  border-color: var(--onity-color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -510,7 +523,7 @@
 .conversaId {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .conversaStatus {
@@ -523,14 +536,16 @@
 
 .conversaPhone {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   margin: 0 0 0.25rem 0;
 }
 
 .conversaDate,
 .conversaUser {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   margin: 0;
 }
 
@@ -564,11 +579,13 @@
   justify-content: center;
   padding: 3rem 2rem;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .emptyIcon {
-  color: var(--color-form-border);
+  color: var(--onity-color-border);
+  opacity: 0.5;
   margin-bottom: 1rem;
 }
 
@@ -579,12 +596,14 @@
 
 .emptySubtext {
   font-size: 0.875rem;
-  color: var(--color-text-secondary) !important;
+  color: var(--onity-color-text) !important;
+  opacity: 0.7;
   margin: 0;
 }
 
 .emptyMessage {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-style: italic;
   font-size: 0.875rem;
   text-align: center;
@@ -598,14 +617,15 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 2rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .spinner {
   width: 2rem;
   height: 2rem;
-  border: 2px solid var(--color-form-border);
-  border-top: 2px solid var(--color-primary);
+  border: 2px solid var(--onity-color-border);
+  border-top: 2px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -625,7 +645,7 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 0.5rem;
-  color: var(--color-error);
+  color: var(--onity-color-error);
   margin-bottom: 1rem;
 }
 

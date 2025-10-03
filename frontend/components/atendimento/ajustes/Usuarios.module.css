@@ -1,7 +1,7 @@
 /* Container principal */
 .container {
   padding: 2rem;
-  background-color: var(--color-bg-secondary);
+  background-color: var(--onity-color-bg);
   min-height: 100vh;
 }
 
@@ -12,18 +12,18 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-form-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .title {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0;
 }
 
 .headerStats {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -48,24 +48,24 @@
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   z-index: 1;
 }
 
 .input {
   width: 100%;
   padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 1px solid var(--color-form-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   transition: all 0.2s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
@@ -76,18 +76,18 @@
 .select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--color-form-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .select:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
@@ -101,7 +101,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -112,7 +112,7 @@
 }
 
 .newButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
   transform: translateY(-1px);
 }
 
@@ -121,18 +121,18 @@
   align-items: center;
   justify-content: center;
   padding: 0.75rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .refreshButton:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-text);
 }
 
 /* Mensagens de erro */
@@ -145,7 +145,7 @@
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
-  color: var(--color-error);
+  color: var(--onity-color-error);
 }
 
 .errorContent {
@@ -157,7 +157,7 @@
 
 .retryButton {
   padding: 0.5rem 1rem;
-  background: var(--color-error);
+  background: var(--onity-color-error);
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -179,7 +179,7 @@
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
-  color: var(--color-success);
+  color: var(--onity-color-success);
 }
 
 /* Container de usuários */
@@ -189,8 +189,8 @@
 
 /* Tabela de usuários */
 .tableContainer {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.75rem;
   overflow: hidden;
 }
@@ -202,21 +202,21 @@
 
 .th {
   text-align: left;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
   font-weight: 600;
   font-size: 0.875rem;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-form-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .tr:nth-child(even) {
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
 }
 
 .td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-form-border);
+  border-bottom: 1px solid var(--onity-color-border);
   vertical-align: middle;
 }
 
@@ -233,7 +233,7 @@
 
 .usuarioEmail {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .nameCell {
@@ -267,7 +267,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   display: flex;
   align-items: center;
@@ -286,12 +286,12 @@
 .usuarioNome {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .usuarioApelido {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .usuarioActions {
@@ -306,18 +306,18 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .editButton:hover {
-  background: var(--color-form-border);
-  color: var(--color-text-primary);
-  border-color: var(--color-text-secondary);
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-text);
 }
 
 .usuarioRoles {
@@ -329,8 +329,8 @@
 
 .roleTag {
   padding: 0.25rem 0.75rem;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
   border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 500;
@@ -340,23 +340,23 @@
 /* Cores específicas por perfil */
 .roleAdmin {
   background: rgba(59, 130, 246, 0.1);
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .roleSuperadmin {
   background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
 }
 
 .roleUser {
   background: rgba(14, 165, 233, 0.1);
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .roleTagMain {
   padding: 0.25rem 0.75rem;
   background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
   border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 500;
@@ -371,11 +371,11 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .emptyIcon {
-  color: var(--color-form-border);
+  color: var(--onity-color-border);
   margin-bottom: 1rem;
 }
 
@@ -389,7 +389,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -400,7 +400,7 @@
 }
 
 .createFirstButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
   transform: translateY(-1px);
 }
 
@@ -419,18 +419,18 @@
   justify-content: center;
   width: 3.5rem;
   height: 2.5rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .paginationButton:hover:not(:disabled) {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  border-color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-text);
 }
 
 .paginationButton:disabled {
@@ -440,7 +440,7 @@
 
 .paginationInfo {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-weight: 500;
 }
 
@@ -451,14 +451,14 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .spinner {
   width: 2rem;
   height: 2rem;
-  border: 2px solid var(--color-form-border);
-  border-top: 2px solid var(--color-primary);
+  border: 2px solid var(--onity-color-border);
+  border-top: 2px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;

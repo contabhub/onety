@@ -1,23 +1,23 @@
 .container {
     padding: 2rem;
-    background-color: var(--color-bg-secondary);
+    background-color: var(--onity-color-bg);
     min-height: 100vh;
 }
 
 .header {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--onity-space-xl);
 }
 
 .title {
   font-size: 28px;
   font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--onity-color-text);
+  margin: 0 0 var(--onity-space-s) 0;
 }
 
 .subtitle {
   font-size: 16px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   margin: 0;
 }
 
@@ -26,18 +26,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
-  color: var(--color-text-secondary);
+  padding: calc(var(--onity-space-xl) * 2) var(--onity-space-l);
+  color: var(--onity-color-text);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-form-border);
-  border-top: 3px solid var(--color-primary);
+  border: 3px solid var(--onity-color-border);
+  border-top: 3px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--onity-space-m);
 }
 
 @keyframes spin {
@@ -49,11 +49,11 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
+  padding: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
 }
 
 .errorContent {
@@ -61,31 +61,31 @@
 }
 
 .errorContent p {
-  margin: 0 0 var(--spacing-sm) 0;
-  color: var(--color-error);
+  margin: 0 0 var(--onity-space-s) 0;
+  color: var(--onity-color-error);
   font-size: 14px;
 }
 
 .retryButton {
-  background: var(--color-error);
+  background: var(--onity-color-error);
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 6px var(--spacing-sm);
+  padding: 6px var(--onity-space-s);
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .retryButton:hover {
-  background: var(--color-button-pressed);
+  background: var(--onity-color-primary-hover);
 }
 
 .linksGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-xl);
 }
 
 .emptyState {
@@ -94,73 +94,73 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
+  padding: calc(var(--onity-space-xl) * 2) var(--onity-space-l);
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .emptyIcon {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--onity-space-m);
   opacity: 0.5;
 }
 
 .emptyState h3 {
   font-size: 20px;
   font-weight: 600;
-  margin: 0 0 var(--spacing-sm) 0;
-  color: var(--color-text-primary);
+  margin: 0 0 var(--onity-space-s) 0;
+  color: var(--onity-color-text);
 }
 
 .emptyState p {
-  margin: 0 0 var(--spacing-lg) 0;
+  margin: 0 0 var(--onity-space-l) 0;
   font-size: 14px;
 }
 
 .addFirstButton {
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--onity-space-s) var(--onity-space-l);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   transition: background-color 0.2s;
 }
 
 .addFirstButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 .linkCard {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 12px;
-  padding: var(--spacing-md);
+  padding: var(--onity-space-m);
   transition: all 0.2s;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--onity-elev-low);
 }
 
 .linkCard:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-med);
 }
 
 .linkHeader {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-m);
 }
 
 .linkIcon {
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
   border-radius: 8px;
-  padding: var(--spacing-sm);
-  color: var(--color-text-secondary);
+  padding: var(--onity-space-s);
+  color: var(--onity-color-text);
   flex-shrink: 0;
 }
 
@@ -172,14 +172,14 @@
 .linkName {
   font-size: 16px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--onity-color-text);
+  margin: 0 0 var(--onity-space-xs) 0;
   word-break: break-word;
 }
 
 .linkUrl {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   margin: 0;
   word-break: break-all;
   font-family: monospace;
@@ -187,63 +187,63 @@
 
 .linkActions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   flex-wrap: wrap;
 }
 
 .actionButton {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  padding: 6px var(--spacing-sm);
+  padding: 6px var(--onity-space-s);
   font-size: 12px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--onity-space-xs);
   transition: all 0.2s;
 }
 
 .actionButton:hover {
-  background: var(--color-bg-primary);
-  border-color: var(--color-primary);
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
 }
 
 .actionButton:first-child {
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
-  border-color: var(--color-primary);
+  border-color: var(--onity-color-primary);
 }
 
 .actionButton:first-child:hover {
-  background: var(--color-button-hover);
-  border-color: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
 }
 
 .addButtonContainer {
   display: flex;
   justify-content: center;
-  margin-top: var(--spacing-lg);
+  margin-top: var(--onity-space-l);
 }
 
 .addButton {
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--onity-space-s) var(--onity-space-l);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   transition: background-color 0.2s;
 }
 
 .addButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 /* Modal */
@@ -258,31 +258,31 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: var(--spacing-md);
+  padding: var(--onity-space-m);
 }
 
 .modal {
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   border-radius: 12px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--onity-elev-high);
 }
 
 .modalHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--color-form-border);
+  padding: var(--onity-space-m) var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .modalHeader h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0;
 }
 
@@ -290,15 +290,15 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   cursor: pointer;
-  padding: var(--spacing-xs);
+  padding: var(--onity-space-xs);
   border-radius: 4px;
   transition: color 0.2s;
 }
 
 .closeButton:hover {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .closeButton:disabled {
@@ -307,60 +307,60 @@
 }
 
 .modalContent {
-  padding: var(--spacing-lg);
+  padding: var(--onity-space-l);
 }
 
 .formGroup {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--onity-space-m);
 }
 
 .label {
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin-bottom: 6px;
 }
 
 .input {
   width: 100%;
-  padding: 10px var(--spacing-sm);
-  border: 1px solid var(--color-form-border);
+  padding: 10px var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   font-size: 14px;
-  background-color: var(--color-form-bg);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
 .modalActions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   justify-content: flex-end;
-  margin-top: var(--spacing-lg);
+  margin-top: var(--onity-space-l);
 }
 
 .cancelButton {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-form-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  padding: 10px var(--spacing-md);
+  padding: 10px var(--onity-space-m);
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancelButton:hover {
-  background: var(--color-bg-primary);
-  border-color: var(--color-primary);
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
 }
 
 .cancelButton:disabled {
@@ -369,11 +369,11 @@
 }
 
 .saveButton {
-  background: var(--color-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 10px var(--spacing-md);
+  padding: 10px var(--onity-space-m);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -381,7 +381,7 @@
 }
 
 .saveButton:hover {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 .saveButton:disabled {
@@ -392,12 +392,12 @@
 /* Responsividade */
 @media (max-width: 768px) {
   .container {
-    padding: var(--spacing-md);
+    padding: var(--onity-space-m);
   }
   
   .linksGrid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-md);
+    gap: var(--onity-space-m);
   }
   
   .linkActions {
@@ -409,7 +409,7 @@
   }
   
   .modal {
-    margin: var(--spacing-md);
+    margin: var(--onity-space-m);
     max-width: none;
   }
   

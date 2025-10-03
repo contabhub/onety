@@ -10,8 +10,7 @@ import Webhooks from '../../components/atendimento/ajustes/Webhooks';
 import Etiquetas from '../../components/atendimento/ajustes/Etiquetas';
 import LinksExternos from '../../components/atendimento/ajustes/LinksExternos';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar'
-
-import '../../styles/atendimento/ajustes.module.css';
+import styles from '../../styles/atendimento/ajustes.module.css';
 
 export default function Ajustes({ auth }) {
   const [activeSection, setActiveSection] = useState('conta');
@@ -46,19 +45,18 @@ export default function Ajustes({ auth }) {
         <meta name="description" content="Configurações da sua conta e empresa" />
       </Head>
       
-      <div style={{ flexShrink: 0 }}>
-          <PrincipalSidebar />
-        </div>
+      <div className={styles.sidebarContainer}>
+        <PrincipalSidebar />
+      </div>
 
-      <div className="flex flex-col h-screen bg-gray-100">
-        
+      <div className={styles.ajustesContainer}>
         {/* Conteúdo principal */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className={styles.ajustesContent}>
           <AjustesSidebar 
             activeSection={activeSection} 
             onSectionChange={setActiveSection} 
           />
-          <main className="flex-1 overflow-auto">
+          <main className={styles.mainContent}>
             {renderContent()}
           </main>
         </div>

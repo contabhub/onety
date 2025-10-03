@@ -1,6 +1,5 @@
-
-const pool = require("../config/database");
-const { getCompanyIdFromTeamInstance, findContactByPhone } = require("../utils/contactHelper");
+const pool = require("../../config/database");
+const { getCompanyIdFromTeamInstance, findContactByPhone } = require("../../utils/atendimento/contactHelper");
 
 // Formata uma data no fuso America/Sao_Paulo em ISO com offset (ex: 2025-09-24T11:03:00-03:00)
 function formatDateInSaoPauloISO(dateLike) {

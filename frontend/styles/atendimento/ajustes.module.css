@@ -1,28 +1,42 @@
-.ajustes-container {
+.sidebarContainer {
+  flex-shrink: 0;
+}
+
+.ajustesContainer {
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  height: 100vh;
   background-color: var(--color-bg-secondary);
   transition: background-color 0.3s ease;
 }
 
-.ajustes-content {
+.ajustesContent {
+  display: flex;
   flex: 1;
-  margin-left: 320px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  overflow: auto;
   background-color: var(--color-bg-secondary);
-  min-height: 100vh;
-  overflow-y: auto;
   transition: background-color 0.3s ease;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .ajustes-container {
+  .ajustesContainer {
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .ajustesContent {
     flex-direction: column;
   }
   
-  .ajustes-content {
-    margin-left: 0;
-    margin-top: 0;
+  .mainContent {
+    overflow: visible;
   }
 }
 

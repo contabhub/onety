@@ -38,8 +38,9 @@ export default function Conta() {
       setLoading(true);
       setError(null);
       
-      // Buscar companyId do userData
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      // Buscar EmpresaId do userData
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const companyId = userData.EmpresaId;
       if (!companyId) {
         throw new Error('ID da empresa não encontrado. Faça login novamente.');
       }
@@ -49,7 +50,7 @@ export default function Conta() {
         throw new Error('URL da API não configurada.');
       }
       
-      const response = await fetch(`${apiUrl}/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/empresas/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -66,12 +67,12 @@ export default function Conta() {
       setFormData({
         nome: data.nome || '',
         tipoEmpresa: data.tipo_empresa || '',
-        razaoSocial: data.razao_social || '',
+        razaoSocial: data.razaoSocial || '',
         cnpj: data.cnpj || '',
         administrador: data.admin_user_id || '',
-        situacaoConta: data.situacao_conta || '',
-        email: data.email || '',
-        telefone: data.telefone || '',
+        situacaoConta: data.status || '',
+        email: userData.email || '',
+        telefone: userData.telefone || '',
         cep: data.cep || '',
         logradouro: data.rua || '',
         numero: data.numero || '',
@@ -96,7 +97,7 @@ export default function Conta() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const resp = await fetch(`${apiUrl}/users/company/${companyId}`, {
+      const resp = await fetch(`${apiUrl}/atendimento/usuarios/company/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -129,8 +130,9 @@ export default function Conta() {
       setSaving(true);
       setError(null);
       
-      // Buscar companyId do userData
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      // Buscar EmpresaId do userData
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const companyId = userData.EmpresaId;
       if (!companyId) {
         throw new Error('ID da empresa não encontrado. Faça login novamente.');
       }
@@ -140,7 +142,7 @@ export default function Conta() {
         throw new Error('URL da API não configurada.');
       }
       
-      const response = await fetch(`${apiUrl}/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/empresas/${companyId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -149,10 +151,8 @@ export default function Conta() {
         body: JSON.stringify({
           nome: data.nome,
           tipo_empresa: data.tipoEmpresa,
-          razao_social: data.razaoSocial,
+          razaoSocial: data.razaoSocial,
           cnpj: data.cnpj,
-          email: data.email,
-          telefone: data.telefone,
           cep: data.cep,
           rua: data.logradouro,
           numero: data.numero,
@@ -160,7 +160,8 @@ export default function Conta() {
           bairro: data.bairro,
           cidade: data.cidade,
           estado: data.estado,
-          admin_user_id: data.administrador ? parseInt(data.administrador, 10) : null
+          status: data.situacaoConta,
+          admin_usuario_id: data.administrador ? parseInt(data.administrador, 10) : null
         })
       });
 
@@ -194,7 +195,8 @@ export default function Conta() {
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const companyId = userData.EmpresaId;
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -367,7 +369,7 @@ export default function Conta() {
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
               <label htmlFor="email" className={styles.label}>
-                Email *
+                Email (do usuário logado)
               </label>
               <div className={styles.inputWithIcon}>
                 <Mail size={16} className={styles.inputIcon} />
@@ -378,14 +380,14 @@ export default function Conta() {
                   value={formData.email}
                   onChange={handleInputChange}
                   className={styles.input}
-                  required
+                  disabled
                 />
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="telefone" className={styles.label}>
-                Telefone *
+                Telefone (do usuário logado)
               </label>
               <div className={styles.inputWithIcon}>
                 <Phone size={16} className={styles.inputIcon} />
@@ -396,7 +398,7 @@ export default function Conta() {
                   value={formData.telefone}
                   onChange={handleInputChange}
                   className={styles.input}
-                  required
+                  disabled
                 />
               </div>
             </div>

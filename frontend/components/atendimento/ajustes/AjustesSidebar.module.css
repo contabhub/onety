@@ -2,8 +2,8 @@
   width: 350px ;
   flex: 0 0 350px;
   flex-shrink: 0;
-  background-color: var(--color-bg-primary);
-  border-right: 1px solid var(--color-form-border);
+  background-color: var(--onity-color-surface);
+  border-right: 1px solid var(--onity-color-border);
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -12,10 +12,10 @@
 .title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid var(--color-form-border);
+  border-bottom: 2px solid var(--onity-color-border);
 }
 
 .nav {
@@ -40,28 +40,28 @@
 
 .navItem:hover {
   background-color: rgba(139, 92, 246, 0.1);
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .navItem:hover .itemTitle {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .navItem:hover .itemDescription {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .navItem.active {
   background-color: rgba(139, 92, 246, 0.1);
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .navItem.active .itemTitle {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .navItem.active .itemDescription {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .icon {
@@ -77,13 +77,14 @@
 .itemTitle {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0 0 0.25rem 0;
 }
 
 .itemDescription {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   margin: 0;
   line-height: 1.4;
 }
@@ -94,7 +95,7 @@
     height: auto;
     position: relative;
     border-right: none;
-    border-bottom: 1px solid var(--color-form-border);
+    border-bottom: 1px solid var(--onity-color-border);
     top: 0;
   }
 }
