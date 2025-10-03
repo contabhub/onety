@@ -86,11 +86,17 @@
   flex-shrink: 0;
 }
 
-.logo { display: flex; margin-left: 15px; align-items: center; justify-content: flex-start; min-height: 80px; width: 100%; }
+.logo { 
+  display: flex; 
+  margin-left: 0; 
+  align-items: center; 
+  justify-content: flex-start; 
+  min-height: 80px; 
+  width: 100%; 
+  position: relative;
+}
 
-/* Posicionamento específico por módulo */
-.logo.comercial { margin-left: 5px; }
-.logo.atendimento { margin-left: 15px; }
+/* Todas as logos com o mesmo posicionamento */
 
 /* Animação de transição de módulo - inspirada no slide from top */
 @property --wipe-progress {
@@ -128,8 +134,26 @@
     filter: blur(0px);
   }
 }
-.logoImg { border-radius: 16px; object-fit: contain; background: transparent; transition: transform 0.15s, width 0.15s, height 0.15s; border: none; opacity: 1; width: 250px; height: 250px; max-width: 200px; max-height: 200px; }
-.collapsed .logoImg { width: 50px; height: 50px; max-width: 56px; max-height: 56px; transition: width 0.15s ease-out,  height 0.15s ease-out; }
+.logoImg { 
+  border-radius: 16px; 
+  object-fit: contain; 
+  object-position: center;
+  background: transparent; 
+  transition: transform 0.15s, width 0.15s, height 0.15s; 
+  border: none; 
+  opacity: 1; 
+  width: 180px; 
+  height: 200px; 
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: high-quality;
+  image-rendering: auto;
+}
+.collapsed .logoImg { width: 50px; height: 50px; max-width: 56px; max-height: 56px; transition: width 0.15s ease-out,  height 0.15s ease-out; left: 8px; }
 
 .pinButton { background: none; border: none; font-size: 18px; color: var(--onity-color-text, #E1E4F2); opacity: 1; margin-left: -8px; margin-right: 12px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; }
 .pinButton.pinned { color: var(--onity-color-primary-hover, #3B6EFF); }
