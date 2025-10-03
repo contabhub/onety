@@ -84,9 +84,9 @@ export default function ImportContatosModal({ isOpen, onClose, onImportSuccess }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
-      const response = await fetch(`${apiUrl}/contacts/import/preview`, {
+      const response = await fetch(`${apiUrl}/atendimento/leads/import/preview`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -125,9 +125,9 @@ export default function ImportContatosModal({ isOpen, onClose, onImportSuccess }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
-      const response = await fetch(`${apiUrl}/contacts/import`, {
+      const response = await fetch(`${apiUrl}/atendimento/leads/import`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

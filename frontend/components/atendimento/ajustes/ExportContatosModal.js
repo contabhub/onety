@@ -33,9 +33,9 @@ export default function ExportContatosModal({ isOpen, onClose, onExportSuccess }
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
-      const response = await fetch(`${apiUrl}/contacts/export/${selectedFormat}`, {
+      const response = await fetch(`${apiUrl}/atendimento/leads/export/${selectedFormat}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

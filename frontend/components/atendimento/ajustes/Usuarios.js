@@ -21,7 +21,7 @@ export default function Usuarios() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const companyId = userData.companyId;
+    const companyId = userData.EmpresaId;
     setUserRole(userData.userRole || null);
     
     if (!token) {
@@ -50,8 +50,8 @@ export default function Usuarios() {
         throw new Error('URL da API não configurada.');
       }
       
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
-      const url = `${apiUrl}/users/company/${companyId}`;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+      const url = `${apiUrl}/atendimento/usuarios/company/${companyId}`;
       
       const response = await fetch(url, {
         headers: {
@@ -220,7 +220,6 @@ export default function Usuarios() {
           </select>
         </div>
         <div className={styles.headerActions}>
-          {(userRole === 'Administrador' || userRole === 'Superadmin') && (
             <button 
               className={styles.newButton}
               onClick={handleOpenCreateModal}
@@ -228,7 +227,6 @@ export default function Usuarios() {
               <Plus size={20} />
               Novo
             </button>
-          )}
           <button 
             className={styles.refreshButton}
             onClick={fetchUsuarios}
@@ -270,7 +268,6 @@ export default function Usuarios() {
           <div className={styles.emptyState}>
             <User size={48} className={styles.emptyIcon} />
             <p>Nenhum usuário encontrado</p>
-            {(userRole === 'Administrador' || userRole === 'Superadmin') && (
               <button 
                 className={styles.createFirstButton}
                 onClick={handleOpenCreateModal}
@@ -278,7 +275,6 @@ export default function Usuarios() {
                 <Plus size={20} />
                 Adicionar primeiro usuário
               </button>
-            )}
           </div>
         ) : (
           <div className={styles.tableContainer}>
@@ -325,7 +321,6 @@ export default function Usuarios() {
                         </div>
                       </td>
                       <td className={`${styles.td} ${styles.actionCell}`}>
-                        {(userRole === 'Administrador' || userRole === 'Superadmin') && (
                           <button
                             className={styles.editButton}
                             onClick={() => handleOpenEditModal(usuario)}
@@ -333,7 +328,6 @@ export default function Usuarios() {
                           >
                             <Edit2 size={16} />
                           </button>
-                        )}
                       </td>
                     </tr>
                   );
