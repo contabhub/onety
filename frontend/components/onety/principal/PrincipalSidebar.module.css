@@ -98,42 +98,7 @@
 
 /* Todas as logos com o mesmo posicionamento */
 
-/* Animação de transição de módulo - inspirada no slide from top */
-@property --wipe-progress {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 100%;
-}
-
-.logo.transitioning {
-  mask-image: linear-gradient(to bottom, 
-    transparent calc(var(--wipe-progress) - 5%), 
-    black var(--wipe-progress)
-  );
-  animation: slideFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.sidebarContent.transitioning {
-  mask-image: linear-gradient(to bottom, 
-    transparent calc(var(--wipe-progress) - 5%), 
-    black var(--wipe-progress)
-  );
-  animation: slideFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-@keyframes slideFromTop {
-  0% {
-    --wipe-progress: 100%;
-    filter: blur(2px);
-  }
-  50% {
-    filter: blur(1px);
-  }
-  100% {
-    --wipe-progress: 0%;
-    filter: blur(0px);
-  }
-}
+/* Animações agora são feitas pelo Framer Motion */
 .logoImg { 
   border-radius: 16px; 
   object-fit: contain; 

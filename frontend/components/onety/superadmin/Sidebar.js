@@ -245,7 +245,14 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
 
       {/* Modal de confirmação para trocar de empresa */}
       {confirmModalOpen && (
-        <div className={styles.modalOverlay}>
+        <div 
+          className={styles.modalOverlay}
+          style={{
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)'
+          }}
+        >
           <div className={styles.modal}>
             <h3>Trocar de Empresa</h3>
             <p>Tem certeza que deseja trocar de empresa? Você será redirecionado para a seleção de empresas.</p>
@@ -269,7 +276,14 @@ export default function Sidebar({ collapsed, setCollapsed, pinned, setPinned }) 
 
       {/* Modal de confirmação para logout */}
       {logoutModalOpen && (
-        <div className={styles.modalOverlay}>
+        <div 
+          className={styles.modalOverlay}
+          style={{
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)'
+          }}
+        >
           <div className={styles.modal}>
             <h3>Sair da Conta</h3>
             <p>Tem certeza que deseja sair da sua conta? Você será redirecionado para a tela de login.</p>
