@@ -207,6 +207,7 @@ export default function PrincipalSidebar() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [ajustesExpanded, setAjustesExpanded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const router = useRouter();
 
   const handleMouseEnter = () => {
@@ -321,13 +322,21 @@ export default function PrincipalSidebar() {
 
   const handleModuleChange = (moduleId) => {
     const module = modules.find(m => m.id === moduleId);
-    if (module) {
-      setCurrentModule(module);
-      localStorage.setItem('activeModuleId', moduleId);
+    if (module && module.id !== currentModule?.id) {
+      // Inicia a transição
+      setIsTransitioning(true);
       
-      // Não navega automaticamente - apenas muda o módulo ativo
-      // O usuário deve clicar em um item específico para navegar
-      setActiveItem(null);
+      // Após a animação de saída, muda o módulo
+      setTimeout(() => {
+        setCurrentModule(module);
+        localStorage.setItem('activeModuleId', moduleId);
+        setActiveItem(null);
+        
+        // Finaliza a transição após a animação de entrada
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 400);
+      }, 400);
     }
   };
 
@@ -494,7 +503,7 @@ export default function PrincipalSidebar() {
       onMouseLeave={handleMouseLeave}
     >
       <div className={styles.topBar}>
-        <div className={styles.logo}>
+        <div className={`${styles.logo} ${currentModule?.id === 'comercial' ? styles.comercial : ''} ${currentModule?.id === 'atendimento' ? styles.atendimento : ''} ${isTransitioning ? styles.transitioning : ''}`}>
           <img
             src={collapsed
               ? '/img/Logo-Onety-Colapsada.png'
@@ -518,7 +527,7 @@ export default function PrincipalSidebar() {
 
 
       {/* Itens do Módulo */}
-      <div className={styles.sidebarContent}>
+      <div className={`${styles.sidebarContent} ${isTransitioning ? styles.transitioning : ''}`}>
         <nav className={styles.nav}>
           {currentModule.items.map((item) => {
             // Se for o item "ajustes", adicionar funcionalidade de expandir/colapsar

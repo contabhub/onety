@@ -87,10 +87,51 @@
 }
 
 .logo { display: flex; margin-left: 15px; align-items: center; justify-content: flex-start; min-height: 80px; width: 100%; }
+
+/* Posicionamento específico por módulo */
+.logo.comercial { margin-left: 5px; }
+.logo.atendimento { margin-left: 15px; }
+
+/* Animação de transição de módulo - inspirada no slide from top */
+@property --wipe-progress {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+.logo.transitioning {
+  mask-image: linear-gradient(to bottom, 
+    transparent calc(var(--wipe-progress) - 5%), 
+    black var(--wipe-progress)
+  );
+  animation: slideFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.sidebarContent.transitioning {
+  mask-image: linear-gradient(to bottom, 
+    transparent calc(var(--wipe-progress) - 5%), 
+    black var(--wipe-progress)
+  );
+  animation: slideFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes slideFromTop {
+  0% {
+    --wipe-progress: 100%;
+    filter: blur(2px);
+  }
+  50% {
+    filter: blur(1px);
+  }
+  100% {
+    --wipe-progress: 0%;
+    filter: blur(0px);
+  }
+}
 .logoImg { border-radius: 16px; object-fit: contain; background: transparent; transition: transform 0.15s, width 0.15s, height 0.15s; border: none; opacity: 1; width: 250px; height: 250px; max-width: 200px; max-height: 200px; }
 .collapsed .logoImg { width: 50px; height: 50px; max-width: 56px; max-height: 56px; transition: width 0.15s ease-out,  height 0.15s ease-out; }
 
-.pinButton { background: none; border: none; font-size: 18px; color: var(--onity-color-text, #E1E4F2); opacity: 1; margin-left: -8px; margin-right: 4px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.pinButton { background: none; border: none; font-size: 18px; color: var(--onity-color-text, #E1E4F2); opacity: 1; margin-left: -8px; margin-right: 12px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; }
 .pinButton.pinned { color: var(--onity-color-primary-hover, #3B6EFF); }
 
 /* Header da Sidebar */
