@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Pin, 
   Sun, 
@@ -207,8 +208,72 @@ export default function PrincipalSidebar() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [ajustesExpanded, setAjustesExpanded] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const router = useRouter();
+
+  // Configurações de animação do Framer Motion - SPRING SUAVE
+  const container = {
+    initial: { opacity: 0 },
+    animate: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.06, // Cascata rápida
+        delayChildren: 0.1,
+      },
+    },
+    exit: { opacity: 0 }
+  };
+
+  const item = {
+    initial: { 
+      y: 60, 
+      opacity: 0,
+    },
+    animate: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 640, // Rápido no começo
+        damping: 38,    // Desacelera suave
+        mass: 0.7       // Responde rápido
+      },
+    },
+    exit: {
+      y: -30,
+      opacity: 0,
+      transition: { 
+        duration: 0.2,
+        ease: [0.4, 0, 1, 1]
+      }
+    },
+  };
+
+  const logoAnimation = {
+    initial: { 
+      y: 60, 
+      opacity: 0,
+    },
+    animate: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 640,
+        damping: 38,
+        mass: 0.7,
+        delay: 0.05 // Logo aparece primeiro
+      },
+    },
+    exit: {
+      y: -30,
+      opacity: 0,
+      transition: { 
+        duration: 0.2,
+        ease: [0.4, 0, 1, 1]
+      }
+    },
+  };
 
   const handleMouseEnter = () => {
     setHovered(true);
@@ -323,20 +388,25 @@ export default function PrincipalSidebar() {
   const handleModuleChange = (moduleId) => {
     const module = modules.find(m => m.id === moduleId);
     if (module && module.id !== currentModule?.id) {
-      // Inicia a transição
-      setIsTransitioning(true);
+      console.log('Mudando módulo para:', moduleId);
+      console.log('Iniciando animação...');
       
-      // Após a animação de saída, muda o módulo
+      // Inicia a animação
+      setIsAnimating(true);
+      
+      // Muda o módulo após um pequeno delay para permitir a animação de saída
       setTimeout(() => {
+        console.log('Mudando módulo...');
         setCurrentModule(module);
         localStorage.setItem('activeModuleId', moduleId);
         setActiveItem(null);
         
-        // Finaliza a transição após a animação de entrada
+        // Finaliza a animação após um delay maior
         setTimeout(() => {
-          setIsTransitioning(false);
-        }, 400);
-      }, 400);
+          console.log('Finalizando animação...');
+          setIsAnimating(false);
+        }, 1200);
+      }, 300);
     }
   };
 
@@ -495,6 +565,9 @@ export default function PrincipalSidebar() {
     );
   }
 
+  // Debug log
+  console.log('Estado atual:', { isAnimating, currentModule: currentModule?.id });
+
   return (
     <>
     <aside
@@ -503,17 +576,28 @@ export default function PrincipalSidebar() {
       onMouseLeave={handleMouseLeave}
     >
       <div className={styles.topBar}>
-        <div className={`${styles.logo} ${isTransitioning ? styles.transitioning : ''}`}>
-          <img
-            src={collapsed
-              ? '/img/Logo-Onety-Colapsada.png'
-              : currentModule?.logos
-                ? (isLightTheme ? currentModule.logos.light : currentModule.logos.dark)
-                : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
-            alt={currentModule?.nome || "Onety"}
-            className={styles.logoImg}
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={`logo-${currentModule?.id}-${collapsed ? 'collapsed' : 'expanded'}`}
+            className={styles.logo}
+            variants={logoAnimation}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            onAnimationStart={() => console.log('Logo animation started')}
+            onAnimationComplete={() => console.log('Logo animation completed')}
+          >
+            <img
+              src={collapsed
+                ? '/img/Logo-Onety-Colapsada.png'
+                : currentModule?.logos
+                  ? (isLightTheme ? currentModule.logos.light : currentModule.logos.dark)
+                  : (isLightTheme ? '/img/Logo-Onety-Sidebar-Preta.png' : '/img/Logo-Onety-Sidebar.png')}
+              alt={currentModule?.nome || "Onety"}
+              className={styles.logoImg}
+            />
+          </motion.div>
+        </AnimatePresence>
         {!collapsed && (
           <button
             className={`${styles.pinButton} ${pinned ? styles.pinned : ''}`}
@@ -527,14 +611,25 @@ export default function PrincipalSidebar() {
 
 
       {/* Itens do Módulo */}
-      <div className={`${styles.sidebarContent} ${isTransitioning ? styles.transitioning : ''}`}>
-        <nav className={styles.nav}>
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={currentModule?.id}
+          className={styles.sidebarContent}
+          variants={container}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          onAnimationStart={() => console.log('Animação iniciou')}
+          onAnimationComplete={() => console.log('Animação completou')}
+        >
+          <nav className={styles.nav}>
           {currentModule.items.map((item) => {
             // Se for o item "ajustes", adicionar funcionalidade de expandir/colapsar
             if (item.id === 'ajustes') {
               return (
                 <div key={item.id}>
-                  <button
+                  <motion.button
+                    variants={item}
                     className={`${styles.navItem} ${activeItem?.id === item.id ? styles.active : ''}`}
                     onClick={() => {
                       // Para ajustes, navega diretamente para a página
@@ -557,7 +652,7 @@ export default function PrincipalSidebar() {
                         {ajustesExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </div>
                     )}
-                  </button>
+                  </motion.button>
                   
                   {/* Submenu de ajustes */}
                   {ajustesExpanded && !collapsed && (
@@ -590,8 +685,9 @@ export default function PrincipalSidebar() {
             
             // Para outros itens, renderizar normalmente
             return (
-              <button
+              <motion.button
                 key={item.id}
+                variants={item}
                 className={`${styles.navItem} ${activeItem?.id === item.id ? styles.active : ''}`}
                 onClick={(e) => {
                   console.log('Item clicado:', item.label, e);
@@ -606,33 +702,47 @@ export default function PrincipalSidebar() {
                   {item.icon}
                 </div>
                 {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
-              </button>
+              </motion.button>
             );
           })}
-        </nav>
-      </div>
+          </nav>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Bolinhas de Navegação entre Módulos */}
-      <div className={styles.moduleDots}>
+      <motion.div 
+        className={styles.moduleDots}
+        variants={container}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
         <div className={styles.dotsContainer}>
           {modules.map((module) => (
-            <button
+            <motion.button
               key={module.id}
               className={`${styles.dot} ${currentModule?.id === module.id ? styles.active : ''}`}
               onClick={() => handleModuleChange(module.id)}
               title={module.nome}
               aria-label={`Mudar para módulo ${module.nome}`}
+              variants={item}
             >
               <div className={styles.dotIcon}>
                 {module.icon}
               </div>
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Seção do usuário na parte inferior */}
-      <div className={styles.userSection}>
+      <motion.div 
+        className={styles.userSection}
+        variants={item}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
         <div 
           className={styles.userProfile}
           onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -686,7 +796,7 @@ export default function PrincipalSidebar() {
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
     </aside>
 
     <EditarPerfil

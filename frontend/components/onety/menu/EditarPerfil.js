@@ -88,7 +88,15 @@ export default function EditarPerfil({ open, onClose, onUpdated }) {
   if (!open) return null
 
   return (
-    <div className={styles.backdrop} onClick={onClose}>
+    <div 
+      className={styles.backdrop} 
+      onClick={onClose}
+      style={{
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)'
+      }}
+    >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h2>Editar perfil</h2>
         <div className={styles.form}>
