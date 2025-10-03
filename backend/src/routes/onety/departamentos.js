@@ -24,7 +24,7 @@ router.get("/estatisticas", async (req, res) => {
     
     // Departamentos ativos
     const [activeDepartamentos] = await pool.query("SELECT COUNT(*) as ativos FROM departamentos WHERE status = 'ativo'");
-    
+      
     // Departamentos por empresa
     const [departamentosPorEmpresa] = await pool.query(`
       SELECT 

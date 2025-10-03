@@ -142,9 +142,10 @@ router.put("/:id/qr", authOrApiKey, async (req, res) => {
  */
 router.delete("/:id", authOrApiKey, async (req, res) => {
   try {
-    await pool.query("DELETE FROM whatsapp_instances WHERE id = ?", [req.params.id]);
+    await pool.query("DELETE FROM instancias WHERE id = ?", [req.params.id]);
     res.json({ success: true });
   } catch (err) {
+    console.error("Erro ao deletar instância:", err);
     res.status(500).json({ error: "Erro ao deletar instância." });
   }
 });
