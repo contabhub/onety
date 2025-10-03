@@ -29,7 +29,7 @@ export default function Contatos() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const companyId = userData.companyId;
+    const companyId = userData.EmpresaId;
     setUserRole(userData.userRole || null);
     
     if (!token) {
@@ -58,8 +58,8 @@ export default function Contatos() {
         throw new Error('URL da API não configurada.');
       }
       
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
-      const url = `${apiUrl}/contacts/company/${companyId}`;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+      const url = `${apiUrl}/atendimento/leads/empresa/${companyId}`;
       
       const response = await fetch(url, {
         headers: {
@@ -143,7 +143,7 @@ export default function Contatos() {
         throw new Error('URL da API não configurada.');
       }
       
-      const url = `${apiUrl}/contacts/${contato.id}`;
+      const url = `${apiUrl}/atendimento/leads/${contato.id}`;
       
       const response = await fetch(url, {
         method: 'DELETE',
@@ -289,7 +289,6 @@ export default function Contatos() {
             >
               <Eye size={16} />
             </button>
-            {(userRole === 'Administrador' || userRole === 'Superadmin') && (
               <>
                 <button
                   className={styles.editButton}
@@ -306,7 +305,6 @@ export default function Contatos() {
                   <Trash2 size={16} />
                 </button>
               </>
-            )}
           </div>
         </td>
       </tr>
@@ -346,7 +344,6 @@ export default function Contatos() {
           />
         </div>
         <div className={styles.headerActions}>
-          {(userRole === 'Administrador' || userRole === 'Superadmin') && (
             <>
               <button 
                 className={styles.importButton}
@@ -370,7 +367,6 @@ export default function Contatos() {
                 Novo Contato
               </button>
             </>
-          )}
           <button 
             className={styles.refreshButton}
             onClick={fetchContatos}

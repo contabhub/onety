@@ -132,7 +132,7 @@ export default function ContatoModal({ isOpen, onClose, onSuccess, contato = nul
       setError(null);
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       const token = localStorage.getItem('token');
       
       // Preparar dados para envio
@@ -141,12 +141,12 @@ export default function ContatoModal({ isOpen, onClose, onSuccess, contato = nul
         email: formData.email.trim() || null,
         telefone: formData.telefone || null,
         notas_internas: formData.notas_internas,
-        company_id: parseInt(companyId)
+        empresa_id: parseInt(companyId)
       };
 
       const url = isEdit 
-        ? `${apiUrl}/contacts/${contato.id}`
-        : `${apiUrl}/contacts`;
+        ? `${apiUrl}/atendimento/leads/${contato.id}`
+        : `${apiUrl}/atendimento/leads`;
       
       const method = isEdit ? 'PUT' : 'POST';
       
@@ -186,14 +186,14 @@ export default function ContatoModal({ isOpen, onClose, onSuccess, contato = nul
       setIsLoadingEtiquetas(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
       // Etiquetas do contato
       const [resContato, resTodas] = await Promise.all([
-        fetch(`${apiUrl}/contatos-etiquetas/contato/${contato.id}`, {
+        fetch(`${apiUrl}/atendimento/leads-etiquetas/lead/${contato.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${apiUrl}/etiquetas/company/${companyId}`, {
+        fetch(`${apiUrl}/atendimento/etiquetas/empresa/${companyId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -215,13 +215,13 @@ export default function ContatoModal({ isOpen, onClose, onSuccess, contato = nul
       setIsLinking(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const res = await fetch(`${apiUrl}/contatos-etiquetas`, {
+      const res = await fetch(`${apiUrl}/atendimento/leads-etiquetas`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ contato_id: contato.id, etiqueta_id: etiquetaId })
+        body: JSON.stringify({ lead_id: contato.id, etiqueta_id: etiquetaId })
       });
       if (!res.ok) throw new Error('Erro ao vincular etiqueta');
       await carregarEtiquetas();
@@ -237,13 +237,13 @@ export default function ContatoModal({ isOpen, onClose, onSuccess, contato = nul
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const res = await fetch(`${apiUrl}/contatos-etiquetas`, {
+      const res = await fetch(`${apiUrl}/atendimento/leads-etiquetas`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ contato_id: contato.id, etiqueta_id: etiquetaId })
+        body: JSON.stringify({ lead_id: contato.id, etiqueta_id: etiquetaId })
       });
       if (!res.ok) throw new Error('Erro ao desvincular etiqueta');
       setEtiquetasVinculadas(prev => prev.filter(e => e.id !== etiquetaId));

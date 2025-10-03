@@ -54,7 +54,7 @@ router.post("/", authOrApiKey, async (req, res) => {
       [nome, email || null, telefone || null, JSON.stringify(notas_internas || []), empresa_id]
     );
 
-    res.status(201).json({ id: result.insertId, nome, email, telefone, notas_internas, company_id });
+    res.status(201).json({ id: result.insertId, nome, email, telefone, notas_internas, empresa_id });
   } catch (err) {
     console.error("Erro ao criar contato:", err);
     res.status(500).json({ error: "Erro ao criar contato." });

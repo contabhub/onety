@@ -42,7 +42,7 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
       const token = localStorage.getItem('token');
       
       // Buscar conversas vinculadas ao contato
-      const response = await fetch(`${apiUrl}/conversations/contact/${contato.id}`, {
+      const response = await fetch(`${apiUrl}/atendimento/conversas/contact/${contato.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -69,14 +69,14 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
       setIsLoadingEtiquetas(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
       // Etiquetas do contato
       const [resContato, resTodas] = await Promise.all([
-        fetch(`${apiUrl}/contatos-etiquetas/contato/${contato.id}`, {
+        fetch(`${apiUrl}/atendimento/leads-etiquetas/lead/${contato.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${apiUrl}/etiquetas/company/${companyId}`, {
+        fetch(`${apiUrl}/atendimento/etiquetas/empresa/${companyId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -98,13 +98,13 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
       setIsLinking(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const res = await fetch(`${apiUrl}/contatos-etiquetas`, {
+      const res = await fetch(`${apiUrl}/atendimento/leads-etiquetas`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ contato_id: contato.id, etiqueta_id: etiquetaId })
+        body: JSON.stringify({ lead_id: contato.id, etiqueta_id: etiquetaId })
       });
       if (!res.ok) throw new Error('Erro ao vincular etiqueta');
       await carregarEtiquetas();
@@ -121,13 +121,13 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const token = localStorage.getItem('token');
-      const res = await fetch(`${apiUrl}/contatos-etiquetas`, {
+      const res = await fetch(`${apiUrl}/atendimento/leads-etiquetas`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ contato_id: contato.id, etiqueta_id: etiquetaId })
+        body: JSON.stringify({ lead_id: contato.id, etiqueta_id: etiquetaId })
       });
       if (!res.ok) throw new Error('Erro ao desvincular etiqueta');
       setEtiquetasVinculadas(prev => prev.filter(e => e.id !== etiquetaId));
@@ -228,7 +228,7 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
             Criado em
           </div>
           <div className={styles.detailValue}>
-            {formatDate(contato.created_at)}
+            {formatDate(contato.criado_em)}
           </div>
         </div>
 
@@ -238,7 +238,7 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
             Atualizado em
           </div>
           <div className={styles.detailValue}>
-            {formatDate(contato.updated_at)}
+            {formatDate(contato.atualizado_em)}
           </div>
         </div>
       </div>
@@ -358,7 +358,7 @@ export default function ContatoDetailsModal({ isOpen, onClose, contato, onEdit, 
                 </div>
                 <p className={styles.conversaPhone}>{formatPhone(conversa.customer_phone)}</p>
                 <p className={styles.conversaDate}>
-                  Criada em {formatDate(conversa.created_at)}
+                  Criada em {formatDate(conversa.criado_em)}
                 </p>
                 {conversa.assigned_user_name && (
                   <p className={styles.conversaUser}>

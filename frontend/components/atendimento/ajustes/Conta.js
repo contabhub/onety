@@ -23,7 +23,11 @@ export default function Conta() {
     complemento: '',
     bairro: '',
     cidade: '',
-    estado: ''
+    estado: '',
+    
+    // Dados do administrador
+    adminNome: '',
+    adminEmail: ''
   });
 
   const [loading, setLoading] = useState(true);
@@ -69,7 +73,7 @@ export default function Conta() {
         tipoEmpresa: data.tipo_empresa || '',
         razaoSocial: data.razaoSocial || '',
         cnpj: data.cnpj || '',
-        administrador: data.admin_user_id || '',
+        administrador: data.admin_usuario_id ? data.admin_usuario_id.toString() : '',
         situacaoConta: data.status || '',
         email: userData.email || '',
         telefone: userData.telefone || '',
@@ -79,11 +83,13 @@ export default function Conta() {
         complemento: data.complemento || '',
         bairro: data.bairro || '',
         cidade: data.cidade || '',
-        estado: data.estado || ''
+        estado: data.estado || '',
+        adminNome: data.admin_nome || '',
+        adminEmail: data.admin_email || ''
       });
 
       // Buscar usuários da empresa e filtrar administradores
-      await fetchCompanyAdmins(companyId, data.admin_user_id);
+      await fetchCompanyAdmins(companyId, data.admin_usuario_id);
     } catch (err) {
       console.error('Erro ao buscar dados da empresa:', err);
       setError('Erro ao carregar dados da empresa. Tente novamente.');
@@ -114,9 +120,10 @@ export default function Conta() {
         .filter(u => adminRoles.has(u.role))
         .filter(u => u.role !== 'Superadmin' && u.id !== 8);
       setAdminUsers(admins);
-      // Se não houver admin selecionado ainda, e existir admin_id, garantir no form
-      if (!formData.administrador && payload.admin_id) {
-        setFormData(prev => ({ ...prev, administrador: payload.admin_id }));
+      
+      // Definir o administrador atual baseado no admin_usuario_id
+      if (currentAdminId) {
+        setFormData(prev => ({ ...prev, administrador: currentAdminId.toString() }));
       }
     } catch (err) {
       console.error('Erro ao carregar administradores da empresa:', err);
@@ -328,19 +335,25 @@ export default function Conta() {
               <label htmlFor="administrador" className={styles.label}>
                 Administrador *
               </label>
-              <select
-                id="administrador"
-                name="administrador"
+                <input
+                  type="text"
+                  id="administrador"
+                  name="administrador"
+                  value={formData.adminNome || 'Carregando...'}
+                  className={styles.input}
+                  disabled
+                  placeholder="Nome do administrador"
+                />
+              <input
+                type="hidden"
+                name="administrador_id"
                 value={formData.administrador}
-                onChange={handleInputChange}
-                className={styles.select}
-                required
-              >
-                <option value="">Selecione...</option>
-                {adminUsers.map(user => (
-                  <option key={user.id} value={user.id}>{user.nome} ({user.role})</option>
-                ))}
-              </select>
+              />
+              {formData.adminEmail && (
+                <small className={styles.helpText}>
+                  Email: {formData.adminEmail}
+                </small>
+              )}
             </div>
 
             <div className={styles.formGroup}>

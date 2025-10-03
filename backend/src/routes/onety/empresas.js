@@ -90,9 +90,12 @@ router.get("/:id", async (req, res) => {
     const { id } = req.params;
     const [rows] = await pool.query(`
       SELECT e.*, 
-             COUNT(ue.id) as membros
+             COUNT(ue.id) as membros,
+             u.nome as admin_nome,
+             u.email as admin_email
       FROM empresas e
       LEFT JOIN usuarios_empresas ue ON e.id = ue.empresa_id
+      LEFT JOIN usuarios u ON e.admin_usuario_id = u.id
       WHERE e.id = ?
       GROUP BY e.id
     `, [id]);

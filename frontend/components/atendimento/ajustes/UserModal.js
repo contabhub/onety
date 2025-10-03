@@ -66,17 +66,17 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
         if (!isEdit || !user) return;
         const token = localStorage.getItem('token');
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+        const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
         if (!token || !apiUrl || !companyId) return;
 
-        const resp = await fetch(`${apiUrl}/user-company/user/${user.id}`, {
+        const resp = await fetch(`${apiUrl}/usuarios-empresas?usuario_id=${user.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!resp.ok) return;
         const data = await resp.json();
-        const vinculo = (data.companies || []).find(c => String(c.company_id) === String(companyId));
+        const vinculo = (data.data || []).find(c => String(c.empresa_id) === String(companyId));
         if (vinculo) {
-          setRole(vinculo.role || 'Atendente');
+          setRole(vinculo.cargo_id || 'Atendente');
           setCompanyLinkId(vinculo.vinculo_id);
         } else {
           // mantém escolha default carregada
@@ -139,7 +139,7 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
       const formData = new FormData();
       formData.append('avatar', avatarFile);
       
-      const response = await fetch(`${apiUrl}/users/${userId}/upload-avatar`, {
+      const response = await fetch(`${apiUrl}/atendimento/usuarios/${userId}/upload-avatar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -195,7 +195,7 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
       setError(null);
 
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       
       if (!token || !companyId) {
         throw new Error('Dados de autenticação não encontrados');
@@ -234,7 +234,7 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
         requestData.avatar_url = avatarUrl;
         
         // Editar usuário existente
-        response = await fetch(`${apiUrl}/users/${user.id}`, {
+        response = await fetch(`${apiUrl}/atendimento/usuarios/${user.id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -244,7 +244,7 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
         });
       } else {
         // Criar novo usuário
-        response = await fetch(`${apiUrl}/users`, {
+        response = await fetch(`${apiUrl}/atendimento/usuarios`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -276,16 +276,16 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
       try {
         if (!isEdit) {
           // Criação: criar vínculo com role atual
-          const linkResponse = await fetch(`${apiUrl}/user-company`, {
+          const linkResponse = await fetch(`${apiUrl}/usuarios-empresas`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              user_id: result.id,
-              company_id: parseInt(companyId),
-              role
+              usuario_id: result.id,
+              empresa_id: parseInt(companyId),
+              cargo_id: role
             })
           });
           if (!linkResponse.ok) {
@@ -294,28 +294,28 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
         } else {
           // Edição: atualizar vínculo existente, senão criar
           if (companyLinkId) {
-            const upd = await fetch(`${apiUrl}/user-company/${companyLinkId}`, {
+            const upd = await fetch(`${apiUrl}/usuarios-empresas/${companyLinkId}`, {
               method: 'PUT',
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ role })
+              body: JSON.stringify({ cargo_id: role })
             });
             if (!upd.ok) {
               console.warn('Não foi possível atualizar o role na empresa');
             }
           } else {
-            const crt = await fetch(`${apiUrl}/user-company`, {
+            const crt = await fetch(`${apiUrl}/usuarios-empresas`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                user_id: user.id,
-                company_id: parseInt(companyId),
-                role
+                usuario_id: user.id,
+                empresa_id: parseInt(companyId),
+                cargo_id: role
               })
             });
             if (!crt.ok) {
