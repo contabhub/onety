@@ -25,7 +25,7 @@ export default function Etiquetas() {
   const companyId = useMemo(() => {
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      return userData.companyId;
+      return userData.EmpresaId;
     } catch (_) { return null; }
   }, []);
 
@@ -37,7 +37,7 @@ export default function Etiquetas() {
   const loadLabels = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/etiquetas/company/${companyId}`, { headers });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/etiquetas/empresa/${companyId}`, { headers });
       const data = await res.json();
       setLabels(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -73,10 +73,10 @@ export default function Etiquetas() {
     try {
       if (!form.nome || !form.cor) return alert('Informe o nome e a cor.');
       const url = editing
-        ? `${process.env.NEXT_PUBLIC_API_URL}/etiquetas/${editing.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/etiquetas`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/atendimento/etiquetas/${editing.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/atendimento/etiquetas`;
       const method = editing ? 'PUT' : 'POST';
-      const body = editing ? { nome: form.nome, cor: form.cor } : { company_id: companyId, nome: form.nome, cor: form.cor };
+      const body = editing ? { nome: form.nome, cor: form.cor } : { empresa_id: companyId, nome: form.nome, cor: form.cor };
       const res = await fetch(url, { method, headers, body: JSON.stringify(body) });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -92,7 +92,7 @@ export default function Etiquetas() {
   const remove = async (id) => {
     if (!confirm('Remover esta etiqueta?')) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/etiquetas/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/etiquetas/${id}`, { method: 'DELETE', headers });
       if (!res.ok) throw new Error('Erro ao remover etiqueta');
       await loadLabels();
     } catch (e) {
@@ -134,7 +134,7 @@ export default function Etiquetas() {
                   <span style={{ width:20, height:20, borderRadius:9999, background:label.cor, border:'1px solid var(--color-form-border)' }}></span>
                   <h3 className={styles.webhookName}>{label.nome}</h3>
                 </div>
-                <p className={styles.webhookDate}>Criada em {new Date(label.created_at).toLocaleDateString('pt-BR')}</p>
+                <p className={styles.webhookDate}>Criada em {new Date(label.criado_em).toLocaleDateString('pt-BR')}</p>
               </div>
               <div className={styles.webhookActions}>
                 <div className={styles.actionButtons}>

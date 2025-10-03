@@ -304,7 +304,7 @@ router.post('/evolution/create', authOrApiKey, async (req, res) => {
 
     // 🔗 Criar instância na Evolution
     const response = await axios.post(
-      `https://connection-evolution-api.sf83tr.easypanel.host/instance/create`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/instance/create`,
       {
         instanceName,
         integration,
@@ -382,7 +382,7 @@ router.get("/evolution/qrcode/:instanceName", authOrApiKey, async (req, res) => 
 
     // 🔗 Conectar à instância e gerar QR
     const response = await axios.get(
-      `https://connection-evolution-api.sf83tr.easypanel.host/instance/connect/${instanceName}`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/instance/connect/${instanceName}`,
       {
         headers: {
           apikey: process.env.EVOLUTION_API_KEY
@@ -423,7 +423,7 @@ router.get("/evolution/status/:instanceName", authOrApiKey, async (req, res) => 
     const { instanceName } = req.params;
 
     const response = await axios.get(
-      `https://connection-evolution-api.sf83tr.easypanel.host/instance/connectionState/${instanceName}`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/instance/connectionState/${instanceName}`,
       {
         headers: {
           apikey: process.env.EVOLUTION_API_KEY
@@ -477,7 +477,7 @@ router.delete("/evolution/disconnect/:instanceName", authOrApiKey, async (req, r
   try {
     // 🔐 Chamada para a Evolution API para logout da instância
     const response = await axios.delete(
-      `https://connection-evolution-api.sf83tr.easypanel.host/instance/logout/${instanceName}`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/instance/logout/${instanceName}`,
       {
         headers: {
           apikey: process.env.EVOLUTION_API_KEY
@@ -515,7 +515,7 @@ router.delete("/evolution/delete/:instanceName", authOrApiKey, async (req, res) 
   try {
     // 🔥 Requisição para deletar a instância via Evolution API
     const response = await axios.delete(
-      `https://connection-evolution-api.sf83tr.easypanel.host/instance/delete/${instanceName}`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/instance/delete/${instanceName}`,
       {
         headers: {
           apikey: process.env.EVOLUTION_API_KEY
@@ -556,7 +556,7 @@ router.post("/evolution/webhook/:instanceName", authOrApiKey, async (req, res) =
   const { instanceName } = req.params;
   try {
     await axios.post(
-      `https://connection-evolution-api.sf83tr.easypanel.host/webhook/set/${instanceName}`,
+      `https://evolution-evolution-api.hdolfr.easypanel.host/webhook/set/${instanceName}`,
       {
         webhook: {
           enabled: true,

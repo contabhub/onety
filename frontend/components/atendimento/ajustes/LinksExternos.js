@@ -20,7 +20,7 @@ export default function LinksExternos() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     setUserRole(userData.userRole || null);
     
-    if (!userData.companyId) {
+    if (!userData.EmpresaId) {
       setError('ID da empresa não encontrado. Faça login novamente.');
       setLoading(false);
       return;
@@ -34,7 +34,7 @@ export default function LinksExternos() {
       setLoading(true);
       setError(null);
       
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       if (!companyId) {
         throw new Error('ID da empresa não encontrado. Faça login novamente.');
       }
@@ -44,7 +44,7 @@ export default function LinksExternos() {
         throw new Error('URL da API não configurada.');
       }
       
-      const response = await fetch(`${apiUrl}/links-externos/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/links-externos/company/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -77,12 +77,12 @@ export default function LinksExternos() {
       setSubmitting(true);
       setError(null);
       
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       const url = editingLink 
-        ? `${apiUrl}/links-externos/${editingLink.id}`
-        : `${apiUrl}/links-externos`;
+        ? `${apiUrl}/atendimento/links-externos/${editingLink.id}`
+        : `${apiUrl}/atendimento/links-externos`;
       
       const method = editingLink ? 'PUT' : 'POST';
       
@@ -95,7 +95,7 @@ export default function LinksExternos() {
         body: JSON.stringify({
           nome: formData.nome.trim(),
           link: formData.link.trim(),
-          company_id: companyId
+          empresa_id: companyId
         })
       });
 
@@ -138,7 +138,7 @@ export default function LinksExternos() {
       setError(null);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      const response = await fetch(`${apiUrl}/links-externos/${linkId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/links-externos/${linkId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -255,7 +255,6 @@ export default function LinksExternos() {
                   Abrir
                 </button>
                 
-                {(userRole === 'Administrador' || userRole === 'Superadmin') && (
                   <>
                     <button 
                       className={styles.actionButton}
@@ -274,7 +273,6 @@ export default function LinksExternos() {
                       Excluir
                     </button>
                   </>
-                )}
               </div>
             </div>
           ))
@@ -282,7 +280,6 @@ export default function LinksExternos() {
       </div>
 
       {/* Botão de adicionar */}
-      {(userRole === 'Administrador' || userRole === 'Superadmin') && links.length > 0 && (
         <div className={styles.addButtonContainer}>
           <button 
             onClick={openModal}
@@ -292,7 +289,6 @@ export default function LinksExternos() {
             Adicionar Link
           </button>
         </div>
-      )}
       
       {/* Modal de criação/edição */}
       {showModal && (
