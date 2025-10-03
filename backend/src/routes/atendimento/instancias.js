@@ -583,7 +583,7 @@ router.post("/evolution/webhook/:instanceName", authOrApiKey, async (req, res) =
       {
         webhook: {
           enabled: true,
-          url: "https://ce0bbf99515a.ngrok-free.app/webhook/evolution",
+          url: "https://ce0bbf99515a.ngrok-free.app/atendimento/webhook/evolution",
           byEvents: false,
           base64: true,
           events: [
