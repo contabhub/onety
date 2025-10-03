@@ -9,13 +9,13 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: var(--spacing-md);
+    padding: var(--onity-space-m);
 }
 
 .modal {
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   border-radius: 12px;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--onity-elev-high);
   max-width: 800px;
   width: 100%;
   max-height: 90vh;
@@ -28,48 +28,48 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg) var(--spacing-lg) 0;
-  border-bottom: 1px solid var(--color-form-border);
-  margin-bottom: var(--spacing-lg);
+  padding: var(--onity-space-l) var(--onity-space-l) 0;
+  border-bottom: 1px solid var(--onity-color-border);
+  margin-bottom: var(--onity-space-l);
 }
 
 .title {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .closeButton {
   background: none;
   border: none;
-  padding: var(--spacing-sm);
+  padding: var(--onity-space-s);
   border-radius: 6px;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   transition: all 0.2s;
 }
 
 .closeButton:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
 }
 
 .content {
-  padding: 0 var(--spacing-lg);
+  padding: 0 var(--onity-space-l);
   flex: 1;
 }
 
 .description {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--onity-space-xl);
   text-align: center;
 }
 
 .description p {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-size: 1rem;
   margin: 0;
 }
@@ -77,34 +77,34 @@
 .formatGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-xl);
 }
 
 .formatOption {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  border: 2px solid var(--color-form-border);
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-l);
+  border: 2px solid var(--onity-color-border);
   border-radius: 12px;
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
 }
 
 .formatOption:hover {
-  border-color: var(--format-border);
-  background: var(--format-bg);
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--onity-elev-med);
 }
 
 .formatOption.selected {
-  border-color: var(--format-border);
-  background: var(--format-bg);
-  box-shadow: 0 0 0 3px var(--format-border);
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+  box-shadow: 0 0 0 3px var(--onity-color-primary);
 }
 
 .formatIcon {
@@ -114,9 +114,9 @@
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
   border-radius: 12px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .formatBadge {
@@ -140,105 +140,105 @@
   display: block;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-xs);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
 }
 
 .formatDescription {
   display: block;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-size: 0.9rem;
 }
 
 .selectedIndicator {
   position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  color: var(--color-success);
-  background: var(--color-bg-primary);
+  top: var(--onity-space-m);
+  right: var(--onity-space-m);
+  color: var(--onity-color-success);
+  background: var(--onity-color-surface);
   border-radius: 50%;
   padding: 4px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--onity-elev-low);
 }
 
 .errorMessage {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--padding-sm);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
   background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--color-error);
+  border: 1px solid var(--onity-color-error);
   border-radius: 6px;
-  color: var(--color-error);
-  margin-bottom: var(--spacing-md);
+  color: var(--onity-color-error);
+  margin-bottom: var(--onity-space-m);
   font-size: 0.9rem;
 }
 
 .successMessage {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--padding-sm);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
   background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--color-success);
+  border: 1px solid var(--onity-color-success);
   border-radius: 6px;
-  color: var(--color-success);
-  margin-bottom: var(--spacing-md);
+  color: var(--onity-color-success);
+  margin-bottom: var(--onity-space-m);
   font-size: 0.9rem;
 }
 
 .info {
-  background: var(--color-bg-secondary);
-  padding: var(--spacing-md);
+  background: var(--onity-color-bg);
+  padding: var(--onity-space-m);
   border-radius: 8px;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--onity-space-l);
 }
 
 .info h4 {
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--onity-space-s) 0;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .info ul {
   margin: 0;
-  padding-left: var(--spacing-lg);
-  color: var(--color-text-secondary);
+  padding-left: var(--onity-space-l);
+  color: var(--onity-color-text);
   font-size: 0.9rem;
 }
 
 .info li {
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--onity-space-xs);
 }
 
 .info li strong {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  border-top: 1px solid var(--color-form-border);
-  margin-top: var(--spacing-lg);
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  margin-top: var(--onity-space-l);
 }
 
 .cancelButton {
   padding: 10px 20px;
-  border: 1px solid var(--color-form-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
 }
 
 .cancelButton:disabled {
@@ -249,11 +249,11 @@
 .exportButton {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
-  background: var(--color-button-normal);
+  background: var(--onity-color-primary);
   color: white;
   cursor: pointer;
   transition: all 0.2s;
@@ -261,7 +261,7 @@
 }
 
 .exportButton:hover:not(:disabled) {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 .exportButton:disabled {

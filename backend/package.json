@@ -18,7 +18,10 @@
     "canvas": "^3.1.0",
     "cloudinary": "^2.6.0",
     "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "dotenv": "^16.4.7",
+    "ex": "^0.1.4",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "html-to-pdfmake": "^2.5.26",
     "jsdom": "^26.1.0",
@@ -33,6 +36,8 @@
     "pg": "^8.13.3",
     "puppeteer": "^24.9.0",
     "puppeteer-core": "^24.5.0",
+    "socket.io": "^4.8.1",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {

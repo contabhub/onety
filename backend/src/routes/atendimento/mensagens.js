@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/database");
-const authOrApiKey = require("../middlewares/authOrApiKey");
-const MessageHandler = require("../websocket/handlers/messageHandler");
+const pool = require("../../config/database");
+const authOrApiKey = require("../../middlewares/authOrApiKey");
+const MessageHandler = require("../../websocket/handlers/atendimento/messageHandler");
 
 /**
  * 📌 Criar mensagem em uma conversa

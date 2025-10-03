@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-
+// Rotas do Onety
 const authRoutes = require('./onety/auth');
 const empresasRoutes = require('./onety/empresas');
 const usuariosRoutes = require('./onety/usuarios');
@@ -20,10 +20,28 @@ const empresasGruposRoutes = require('./onety/empresas-grupos');
 const empresasConteudosRoutes = require('./onety/empresas-conteudos');
 const provaGrupoRoutes = require('./onety/prova_grupo');
 
+// Rotas do Atendimento
+const apikeyRoutes = require('./atendimento/apikey');
+const conversasRoutes = require('./atendimento/conversas');
+const conversasTransferenciasRoutes = require('./atendimento/conversas_transferencias');
+const etiquetasRoutes = require('./atendimento/etiquetas');
+const instanciasRoutes = require('./atendimento/instancias');
+const leadsRoutes = require('./atendimento/leads');
+const leadsEtiquetasRoutes = require('./atendimento/leads_etiquetas');
+const linksExternosRoutes = require('./atendimento/links_externos');
+const mensagensRoutes = require('./atendimento/mensagens');
+const timesAtendimentoRoutes = require('./atendimento/times_atendimento');
+const timesAtendimentoInstanciasRoutes = require('./atendimento/times_atendimento_instancias');
+const timesAtendimentoUsuariosRoutes = require('./atendimento/times_atendimento_usuarios');
+const webhookRoutes = require('./atendimento/webhook');
+const webhookIntegracaoRoutes = require('./atendimento/webhook-integracao');
+const webhookMonitorRoutes = require('./atendimento/webhook-monitor');
+const zapimessagesRoutes = require('./atendimento/zapimessages');
+const usuariosAtendimentoRoutes = require('./atendimento/usuarios');
 
 
 
-
+// Rotas do Onety
 router.use('/auth', authRoutes);
 router.use('/empresas', empresasRoutes);
 router.use('/usuarios', usuariosRoutes);
@@ -42,6 +60,24 @@ router.use('/empresas-grupos', empresasGruposRoutes);
 router.use('/empresas-conteudos', empresasConteudosRoutes);
 router.use('/prova-grupo', provaGrupoRoutes);
 
+// Rotas do Atendimento
+router.use('/atendimento/apikey', apikeyRoutes);
+router.use('/atendimento/conversas', conversasRoutes);
+router.use('/atendimento/conversas-transferencias', conversasTransferenciasRoutes);
+router.use('/atendimento/etiquetas', etiquetasRoutes);
+router.use('/atendimento/instancias', instanciasRoutes);
+router.use('/atendimento/leads', leadsRoutes);
+router.use('/atendimento/leads-etiquetas', leadsEtiquetasRoutes);
+router.use('/atendimento/links-externos', linksExternosRoutes);
+router.use('/atendimento/mensagens', mensagensRoutes);
+router.use('/atendimento/times-atendimento', timesAtendimentoRoutes);
+router.use('/atendimento/times-atendimento-instancias', timesAtendimentoInstanciasRoutes);
+router.use('/atendimento/times-atendimento-usuarios', timesAtendimentoUsuariosRoutes);
+router.use('/atendimento/webhook', webhookRoutes);
+router.use('/atendimento/webhook-integracao', webhookIntegracaoRoutes);
+router.use('/atendimento/webhook-monitor', webhookMonitorRoutes);
+router.use('/atendimento/zapimessages', zapimessagesRoutes);
+router.use('/atendimento/usuarios', usuariosAtendimentoRoutes);
 
 
 

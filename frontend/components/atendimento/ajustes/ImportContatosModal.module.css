@@ -9,13 +9,13 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: var(--spacing-md);
+    padding: var(--onity-space-m);
 }
 
 .modal {
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   border-radius: 12px;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--onity-elev-high);
   max-width: 800px;
   width: 100%;
   max-height: 90vh;
@@ -28,83 +28,83 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg) var(--spacing-lg) 0;
-  border-bottom: 1px solid var(--color-form-border);
-  margin-bottom: var(--spacing-lg);
+  padding: var(--onity-space-l) var(--onity-space-l) 0;
+  border-bottom: 1px solid var(--onity-color-border);
+  margin-bottom: var(--onity-space-l);
 }
 
 .title {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .closeButton {
   background: none;
   border: none;
-  padding: var(--spacing-sm);
+  padding: var(--onity-space-s);
   border-radius: 6px;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   transition: all 0.2s;
 }
 
 .closeButton:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
 }
 
 .content {
-  padding: 0 var(--spacing-lg);
+  padding: 0 var(--onity-space-l);
   flex: 1;
 }
 
 .templateSection {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--onity-space-xl);
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  margin: 0 0 var(--spacing-sm) 0;
+  gap: var(--onity-space-s);
+  margin: 0 0 var(--onity-space-s) 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .sectionDescription {
-  margin: 0 0 var(--spacing-md) 0;
-  color: var(--color-text-secondary);
+  margin: 0 0 var(--onity-space-m) 0;
+  color: var(--onity-color-text);
   font-size: 0.9rem;
 }
 
 .templateButtons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: var(--onity-space-m);
 }
 
 .templateButton {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  border: 2px dashed var(--color-form-border);
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  border: 2px dashed var(--onity-color-border);
   border-radius: 8px;
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
 }
 
 .templateButton:hover {
-  border-color: var(--color-primary);
-  background: var(--color-bg-secondary);
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
 }
 
 .templateButton div {
@@ -114,23 +114,23 @@
 .templateButton span {
   display: block;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin-bottom: 2px;
 }
 
 .templateButton small {
   display: block;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-size: 0.8rem;
 }
 
 .uploadSection {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--onity-space-l);
 }
 
 .fileUploadArea {
   position: relative;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--onity-space-m);
 }
 
 .fileInput {
@@ -146,11 +146,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-xl);
-  border: 2px dashed var(--color-form-border);
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-xl);
+  border: 2px dashed var(--onity-color-border);
   border-radius: 8px;
-  background: var(--color-bg-primary);
+  background: var(--onity-color-surface);
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
@@ -158,70 +158,70 @@
 }
 
 .fileUploadLabel:hover {
-  border-color: var(--color-primary);
-  background: var(--color-bg-secondary);
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
 }
 
 .fileUploadLabel span {
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .fileUploadLabel small {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-size: 0.8rem;
 }
 
 .selectedFile {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--padding-sm);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
   background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--color-success);
+  border: 1px solid var(--onity-color-success);
   border-radius: 6px;
-  color: var(--color-success);
+  color: var(--onity-color-success);
   font-weight: 500;
 }
 
 .fileSize {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-weight: 400;
 }
 
 .previewSection {
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background: var(--color-bg-secondary);
+  margin-bottom: var(--onity-space-l);
+  padding: var(--onity-space-m);
+  background: var(--onity-color-bg);
   border-radius: 8px;
 }
 
 .previewTitle {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  margin: 0 0 var(--spacing-md) 0;
+  gap: var(--onity-space-s);
+  margin: 0 0 var(--onity-space-m) 0;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .warningSection {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-  padding: var(--padding-sm);
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-m);
+  padding: var(--onity-space-s);
   background: rgba(245, 158, 11, 0.1);
-  border: 1px solid var(--color-warning);
+  border: 1px solid var(--onity-color-warning);
   border-radius: 6px;
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
   font-size: 0.9rem;
 }
 
 .warningSection ul {
   margin: 0;
-  padding-left: var(--spacing-md);
+  padding-left: var(--onity-space-m);
 }
 
 .previewTable {
@@ -236,64 +236,64 @@
 
 .previewTable th,
 .previewTable td {
-  padding: var(--spacing-sm) var(--padding-sm);
+  padding: var(--onity-space-s) var(--onity-space-s);
   text-align: left;
-  border-bottom: 1px solid var(--color-form-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .previewTable th {
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .previewTable td {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
 }
 
 .validBadge {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--onity-space-xs);
   padding: 2px 6px;
   background: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
+  color: var(--onity-color-success);
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 500;
 }
 
 .moreRows {
-  margin: var(--spacing-sm) 0 0 0;
-  color: var(--color-text-secondary);
+  margin: var(--onity-space-s) 0 0 0;
+  color: var(--onity-color-text);
   font-size: 0.9rem;
   text-align: center;
   font-style: italic;
 }
 
 .resultSection {
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
+  margin-bottom: var(--onity-space-l);
+  padding: var(--onity-space-m);
   background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--color-success);
+  border: 1px solid var(--onity-color-success);
   border-radius: 8px;
 }
 
 .resultTitle {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  margin: 0 0 var(--spacing-md) 0;
+  gap: var(--onity-space-s);
+  margin: 0 0 var(--onity-space-m) 0;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-success);
+  color: var(--onity-color-success);
 }
 
 .resultStats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
 }
 
 .statItem {
@@ -304,14 +304,14 @@
   display: block;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-success);
-  margin-bottom: var(--spacing-xs);
+  color: var(--onity-color-success);
+  margin-bottom: var(--onity-space-xs);
 }
 
 .statLabel {
   display: block;
   font-size: 0.8rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -319,38 +319,38 @@
 .errorDetails {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
   background: rgba(245, 158, 11, 0.1);
-  border: 1px solid var(--color-warning);
+  border: 1px solid var(--onity-color-warning);
   border-radius: 6px;
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
   font-size: 0.9rem;
 }
 
 .errorMessage {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--padding-sm);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
   background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--color-error);
+  border: 1px solid var(--onity-color-error);
   border-radius: 6px;
-  color: var(--color-error);
-  margin-bottom: var(--spacing-md);
+  color: var(--onity-color-error);
+  margin-bottom: var(--onity-space-m);
   font-size: 0.9rem;
 }
 
 .successMessage {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--padding-sm);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
   background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--color-success);
+  border: 1px solid var(--onity-color-success);
   border-radius: 6px;
-  color: var(--color-success);
-  margin-bottom: var(--spacing-md);
+  color: var(--onity-color-success);
+  margin-bottom: var(--onity-space-m);
   font-size: 0.9rem;
 }
 
@@ -358,25 +358,25 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  border-top: 1px solid var(--color-form-border);
-  margin-top: var(--spacing-lg);
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  margin-top: var(--onity-space-l);
 }
 
 .cancelButton {
   padding: 10px 20px;
-  border: 1px solid var(--color-form-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
 }
 
 .cancelButton:disabled {
@@ -387,11 +387,11 @@
 .importButton {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--onity-space-s);
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
-  background: var(--color-button-normal);
+  background: var(--onity-color-primary);
   color: white;
   cursor: pointer;
   transition: all 0.2s;
@@ -399,7 +399,7 @@
 }
 
 .importButton:hover:not(:disabled) {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 .importButton:disabled {

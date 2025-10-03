@@ -6,7 +6,7 @@ const authOrApiKey = require("../../middlewares/authOrApiKey");
 const axios = require("axios");
 const MessageHandler = require("../../websocket/handlers/atendimento/messageHandler");
 const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../../utils/atendimento/contactHelper");
-const { uploadImageToCloudinary, uploadAudioToCloudinary, uploadVideoToCloudinary, uploadDocumentToCloudinary } = require("../utils/imageUpload");
+const { uploadImageToCloudinary, uploadAudioToCloudinary, uploadVideoToCloudinary, uploadDocumentToCloudinary } = require("../../utils/atendimento/imageUpload");
 // Removido imports não utilizados que podem causar erro
 
 

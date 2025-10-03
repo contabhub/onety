@@ -19,7 +19,7 @@ async function getDefaultTeamTwi(companyId) {
   );
   return rows?.[0]?.id || null;
 }
-const { uploadImageToCloudinary, uploadAudioToCloudinary, uploadVideoToCloudinary, uploadDocumentToCloudinary } = require("../utils/imageUpload");
+const { uploadImageToCloudinary, uploadAudioToCloudinary, uploadVideoToCloudinary, uploadDocumentToCloudinary } = require("../../utils/atendimento/imageUpload");
 const axios = require("axios");
 
 // Logger básico para todas as rotas deste router (/webhook/*)
