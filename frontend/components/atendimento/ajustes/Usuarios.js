@@ -224,8 +224,7 @@ export default function Usuarios() {
               className={styles.newButton}
               onClick={handleOpenCreateModal}
             >
-              <Plus size={20} />
-              Novo
+              Novo Usuário
             </button>
           <button 
             className={styles.refreshButton}

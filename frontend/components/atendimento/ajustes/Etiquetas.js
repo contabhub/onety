@@ -108,7 +108,6 @@ export default function Etiquetas() {
           <p className={styles.subtitle}>{labels.length} etiqueta{labels.length !== 1 ? 's' : ''}</p>
         </div>
         <button className={styles.newButton} onClick={() => openModal()}>
-          <Plus size={16} />
           Nova etiqueta
         </button>
       </div>

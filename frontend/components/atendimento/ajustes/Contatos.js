@@ -363,7 +363,6 @@ export default function Contatos() {
                 className={styles.newButton}
                 onClick={handleOpenCreateModal}
               >
-                <Plus size={20} />
                 Novo Contato
               </button>
             </>
