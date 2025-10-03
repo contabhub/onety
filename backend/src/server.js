@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const routes = require("./routes");
+const webSocketManager = require("./websocket");
 
 const app = express();
 
@@ -11,13 +12,16 @@ app.use(express.json({ limit: '50mb' }));
 app.use(routes);
 
 // Definir porta dinâmica para produção ou desenvolvimento
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // Iniciar o servidor apenas se rodando localmente
 if (require.main === module) {
     const server = app.listen(port, () => {
         console.log(`Servidor rodando na porta ${port}`);
     });
+
+    // Inicializar WebSocket
+    webSocketManager.initialize(server);
 
     server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {

@@ -12,10 +12,6 @@ export default function Conta() {
     administrador: '',
     situacaoConta: '',
     
-    // Dados para contato
-    email: '',
-    telefone: '',
-    
     // Endereço
     cep: '',
     logradouro: '',
@@ -167,7 +163,6 @@ export default function Conta() {
           bairro: data.bairro,
           cidade: data.cidade,
           estado: data.estado,
-          status: data.situacaoConta,
           admin_usuario_id: data.administrador ? parseInt(data.administrador, 10) : null
         })
       });
@@ -375,48 +370,6 @@ export default function Conta() {
           </div>
         </section>
 
-        {/* Dados para contato */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Dados para contato</h2>
-          
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>
-                Email (do usuário logado)
-              </label>
-              <div className={styles.inputWithIcon}>
-                <Mail size={16} className={styles.inputIcon} />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  disabled
-                />
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="telefone" className={styles.label}>
-                Telefone (do usuário logado)
-              </label>
-              <div className={styles.inputWithIcon}>
-                <Phone size={16} className={styles.inputIcon} />
-                <input
-                  type="tel"
-                  id="telefone"
-                  name="telefone"
-                  value={formData.telefone}
-                  onChange={handleInputChange}
-                  className={styles.input}
-                  disabled
-                />
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Endereço */}
         <section className={styles.section}>

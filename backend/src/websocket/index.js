@@ -50,7 +50,7 @@ this.io.use(async (socket, next) => {
 
     // ✅ sua tabela tem 'nome' (não 'name') e não tem 'active'
     const [users] = await pool.query(
-      'SELECT id, nome AS name, email FROM users WHERE id = ?',
+      'SELECT id, nome AS name, email FROM usuarios WHERE id = ?',
       [userId]
     );
     if (users.length === 0) {
@@ -61,7 +61,7 @@ this.io.use(async (socket, next) => {
     let companyId = null;
     if (requestedCompanyId && Number.isFinite(requestedCompanyId)) {
       const [ucRequested] = await pool.query(
-        'SELECT company_id FROM user_company WHERE user_id = ? AND company_id = ? LIMIT 1',
+        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1',
         [userId, requestedCompanyId]
       );
       if (ucRequested.length > 0) {
@@ -70,11 +70,11 @@ this.io.use(async (socket, next) => {
     }
     if (!companyId) {
       const [uc] = await pool.query(
-        'SELECT company_id FROM user_company WHERE user_id = ? LIMIT 1',
+        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? LIMIT 1',
         [userId]
       );
       if (uc.length > 0) {
-        companyId = uc[0].company_id;
+        companyId = uc[0].empresa_id;
       }
     }
 
@@ -128,7 +128,7 @@ this.io.use(async (socket, next) => {
 
           // Valida se o usuário pertence à empresa solicitada
           const [rows] = await pool.query(
-            'SELECT 1 FROM user_company WHERE user_id = ? AND company_id = ? LIMIT 1',
+            'SELECT 1 FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1',
             [socket.userId, targetCompanyId]
           );
 

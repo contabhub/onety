@@ -22,7 +22,7 @@ export function useWebSocket() {
 
   const connectSocket = () => {
     const token = localStorage.getItem('token');
-    const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+    const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
     if (!token) return null;
 
@@ -53,7 +53,7 @@ export function useWebSocket() {
     newSocket.on('user:connected', (data) => {
       try {
         const serverCompanyId = data?.user?.company_id;
-        const localCompanyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+        const localCompanyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
 
         console.log('[WS] user:connected recebido:', {
           serverCompanyId,
