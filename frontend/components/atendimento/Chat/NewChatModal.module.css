@@ -11,14 +11,14 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: var(--onity-space-m);
 }
 
 /* Container principal do modal */
 .modal {
-  background: var(--color-bg-primary);
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-sm);
+  box-shadow: var(--onity-elev-high);
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
@@ -42,38 +42,40 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 24px 20px;
-  border-bottom: 1px solid var(--color-form-border);
+  padding: var(--onity-space-xl) var(--onity-space-xl) var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--onity-space-m);
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .closeButton {
   background: none;
   border: none;
-  padding: 8px;
-  border-radius: 8px;
-  color: var(--color-text-secondary);
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .closeButton:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  opacity: 1;
 }
 
 /* Conteúdo do modal */
 .content {
-  padding: 24px;
+  padding: var(--onity-space-xl);
   max-height: calc(90vh - 100px);
   overflow-y: auto;
 }
@@ -82,10 +84,10 @@
 .error {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  color: var(--color-error);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  color: var(--onity-color-error);
+  padding: var(--onity-space-m) var(--onity-space-l);
+  border-radius: var(--onity-radius-xs);
+  margin-bottom: var(--onity-space-m);
   font-size: 14px;
 }
 
@@ -93,65 +95,66 @@
 .phoneForm {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--onity-space-m);
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--onity-space-s);
 }
 
 .label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--onity-space-s);
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .input {
-  padding: 12px 16px;
-  border: 1px solid var(--color-form-border);
-  border-radius: 8px;
+  padding: var(--onity-space-m) var(--onity-space-l);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
   font-size: 16px;
-  background-color: var(--color-form-bg);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
   transition: all 0.2s;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-low);
 }
 
 .input:invalid {
-  border-color: var(--color-error);
+  border-color: var(--onity-color-error);
 }
 
 .phonePreview {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-style: italic;
-  padding: 4px 0;
+  padding: var(--onity-space-xs) 0;
 }
 
 /* Ações do modal */
 .actions {
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
+  gap: var(--onity-space-m);
+  margin-top: var(--onity-space-s);
 }
 
 .cancelButton {
   flex: 1;
-  padding: 12px 20px;
-  border: 1px solid var(--color-form-border);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  border-radius: 8px;
+  padding: var(--onity-space-m) var(--onity-space-xl);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-radius: var(--onity-radius-xs);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -159,17 +162,18 @@
 }
 
 .cancelButton:hover {
-  background: var(--color-bg-secondary);
-  border-color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .continueButton {
   flex: 1;
-  padding: 12px 20px;
-  background: var(--color-primary);
-  color: white;
+  padding: var(--onity-space-m) var(--onity-space-xl);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--onity-radius-xs);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -177,18 +181,19 @@
 }
 
 .continueButton:hover:not(:disabled) {
-  background: var(--color-button-hover);
+  background: var(--onity-color-primary-hover);
 }
 
 .continueButton:disabled {
-  background: var(--color-text-secondary);
+  background: var(--onity-color-text);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Responsividade */
 @media (max-width: 640px) {
   .overlay {
-    padding: 10px;
+    padding: var(--onity-space-s);
   }
   
   .modal {
@@ -196,11 +201,11 @@
   }
   
   .header {
-    padding: 20px 20px 16px;
+    padding: var(--onity-space-m) var(--onity-space-m) var(--onity-space-l);
   }
   
   .content {
-    padding: 20px;
+    padding: var(--onity-space-m);
   }
   
   .title {

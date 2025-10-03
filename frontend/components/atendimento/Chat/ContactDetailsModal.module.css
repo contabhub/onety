@@ -13,8 +13,8 @@
 }
 
 .modal {
-  background: var(--color-bg-primary);
-  border-radius: 0.75rem;
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xs);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   width: 100%;
   max-width: 28rem;
@@ -38,55 +38,59 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 1.5rem 1rem 1.5rem;
-  border-bottom: 1px solid var(--color-form-border);
+  padding: var(--onity-space-l) var(--onity-space-l) var(--onity-space-m) var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  flex-shrink: 0;
 }
 
 .modalTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0;
 }
 
 .closeButton {
   background: transparent;
   border: none;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
   transition: all 0.2s;
+  opacity: 0.8;
 }
 
 .closeButton:hover {
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+  opacity: 1;
 }
 
 .modalContent {
-  padding: 1.5rem;
+  padding: var(--onity-space-l);
 }
 
 .contactSection {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--onity-space-l);
 }
 
 .contactHeader {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--onity-space-m);
 }
 
 .avatar {
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background: var(--color-form-border);
+  background: var(--onity-color-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-weight: 600;
   font-size: 1.125rem;
 }
@@ -94,57 +98,60 @@
 .contactName {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0;
 }
 
 .detailsGrid {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
 }
 
 .detailItem {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background-color: var(--color-bg-secondary);
-  border-radius: 0.5rem;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s);
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
 }
 
 .detailIcon {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   flex-shrink: 0;
   margin-top: 0.125rem;
+  opacity: 0.7;
 }
 
 .detailContent {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--onity-space-xs);
   flex: 1;
 }
 
 .detailLabel {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  opacity: 0.7;
 }
 
 .detailValue {
   font-size: 0.875rem;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-weight: 500;
 }
 
 .statusBadge {
   display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -152,23 +159,28 @@
 }
 
 .statusBadge.open {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-color-border);
 }
 
 .statusBadge.closed {
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
 }
 
 .statusBadge.pending {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-warning);
+  border: 1px solid var(--onity-color-border);
 }
 
 .statusBadge.default {
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  opacity: 0.7;
 }
 
 .whatsappStatus {
@@ -177,33 +189,33 @@
 }
 
 .whatsappStatus.connected {
-  color: var(--color-success);
+  color: var(--onity-color-success);
 }
 
 .whatsappStatus.disconnected {
-  color: var(--color-error);
+  color: var(--onity-color-error);
 }
 
 .whatsappStatus.connecting {
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
 }
 
 .whatsappStatus.error {
-  color: var(--color-error);
+  color: var(--onity-color-error);
 }
 
 .actions {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--onity-space-s);
   flex-wrap: wrap;
 }
 
 .assumeButton {
-  padding: 0.75rem 1rem;
-  background-color: var(--color-primary);
-  color: white;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--onity-radius-xs);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -213,15 +225,15 @@
 }
 
 .assumeButton:hover {
-  background-color: var(--color-button-hover);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .finalizeButton {
-  padding: 0.75rem 1rem;
-  background-color: var(--color-error);
-  color: white;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background-color: var(--onity-color-error);
+  color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--onity-radius-xs);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -231,19 +243,20 @@
 }
 
 .finalizeButton:hover {
-  background-color: #b91c1c;
+  background-color: var(--onity-color-error);
+  opacity: 0.8;
 }
 
 /* Responsividade */
 @media (max-width: 640px) {
   .modal {
     max-width: 100%;
-    margin: 0 1rem;
+    margin: 0 var(--onity-space-m);
   }
   
   .modalHeader,
   .modalContent {
-    padding: 1rem;
+    padding: var(--onity-space-m);
   }
   
   .actions {

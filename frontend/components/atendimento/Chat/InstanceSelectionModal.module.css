@@ -4,63 +4,71 @@
   flex-direction: column;
   height: 100%;
   min-height: 400px;
+  background-color: var(--onity-color-surface);
 }
 
 /* Header com botão voltar */
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  flex-shrink: 0;
 }
 
 .backButton {
   background: none;
   border: none;
-  padding: 8px;
-  border-radius: 8px;
-  color: var(--color-text-secondary);
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
+  opacity: 0.8;
 }
 
 .backButton:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+  opacity: 1;
 }
 
 .headerContent {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--onity-space-s);
 }
 
 .headerContent h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 /* Informação do time selecionado */
 .teamInfo {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  color: var(--color-primary);
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  margin-bottom: var(--onity-space-m);
+  font-size: 0.875rem;
+  color: var(--onity-color-primary);
 }
 
 /* Descrição */
 .description {
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin-bottom: 24px;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  margin-bottom: var(--onity-space-l);
   line-height: 1.5;
+  opacity: 0.7;
 }
 
 /* Estado de loading */
@@ -69,16 +77,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: var(--onity-space-m);
   padding: 40px 20px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-bg-secondary);
-  border-top: 3px solid var(--color-primary);
+  border: 3px solid var(--onity-color-border);
+  border-top: 3px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -92,9 +101,10 @@
 .instancesList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--onity-space-s);
   flex: 1;
   min-height: 200px;
+  padding: var(--onity-space-m);
 }
 
 /* Estado vazio */
@@ -103,36 +113,38 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--onity-space-s);
   padding: 40px 20px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   text-align: center;
+  opacity: 0.7;
 }
 
 .emptyIcon {
-  color: var(--color-form-border);
+  color: var(--onity-color-border);
 }
 
 .empty p {
   margin: 0;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .empty small {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 /* Item de instância */
 .instanceItem {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-form-border);
-  border-radius: 12px;
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
@@ -140,16 +152,16 @@
 }
 
 .instanceItem:hover:not(.disabled) {
-  border-color: var(--color-primary);
-  background: var(--color-bg-secondary);
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 4px 12px rgba(var(--onity-color-primary-rgb), 0.1);
 }
 
 .instanceItem.disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: var(--color-bg-secondary);
+  background: var(--onity-color-bg);
 }
 
 .instanceIcon {
@@ -158,120 +170,128 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: rgba(16, 185, 129, 0.1);
-  border-radius: 12px;
-  color: var(--color-success);
+  background: var(--onity-color-bg);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-success);
   flex-shrink: 0;
+  border: 1px solid var(--onity-color-border);
 }
 
 .instanceItem.disabled .instanceIcon {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .instanceInfo {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--onity-space-xs);
 }
 
 .instanceName {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .instanceDetails {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--onity-space-xs);
 }
 
 .phoneInfo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--color-text-secondary);
+  gap: var(--onity-space-xs);
+  font-size: 0.875rem;
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .statusInfo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: var(--onity-space-xs);
+  font-size: 0.875rem;
 }
 
 .connectedIcon {
-  color: var(--color-success);
+  color: var(--onity-color-success);
 }
 
 .disconnectedIcon {
-  color: var(--color-error);
+  color: var(--onity-color-error);
 }
 
 .connectingIcon {
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
 }
 
 .unknownIcon {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .statusText {
   font-weight: 500;
+  color: var(--onity-color-text);
 }
 
 .instanceId {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-family: monospace;
 }
 
 .unavailableWarning {
-  font-size: 12px;
-  color: var(--color-error);
-  background: rgba(239, 68, 68, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--onity-color-error);
+  background: var(--onity-color-bg);
+  padding: var(--onity-space-xs) var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  margin-top: var(--onity-space-xs);
+  border: 1px solid var(--onity-color-border);
 }
 
 .arrow {
   font-size: 18px;
-  color: var(--color-form-border);
+  color: var(--onity-color-border);
   font-weight: bold;
   transition: all 0.2s;
 }
 
 .instanceItem:hover:not(.disabled) .arrow {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
   transform: translateX(2px);
 }
 
 .disabledArrow {
-  color: var(--color-form-border) !important;
+  color: var(--onity-color-border) !important;
 }
 
 /* Footer */
 .footer {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-form-border);
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
   text-align: center;
 }
 
 .footer small {
-  color: var(--color-text-secondary);
-  font-size: 12px;
+  color: var(--onity-color-text);
+  opacity: 0.7;
+  font-size: 0.75rem;
 }
 
 /* Responsividade */
 @media (max-width: 640px) {
   .instanceItem {
-    padding: 12px;
-    gap: 12px;
+    padding: var(--onity-space-s);
+    gap: var(--onity-space-s);
   }
   
   .instanceIcon {
@@ -280,20 +300,28 @@
   }
   
   .instanceName {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
   
   .instanceDetails {
-    gap: 4px;
+    gap: var(--onity-space-xs);
   }
   
   .phoneInfo,
   .statusInfo {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   
   .teamInfo {
-    padding: 10px 12px;
+    padding: var(--onity-space-s);
+  }
+  
+  .header {
+    padding: var(--onity-space-s);
+  }
+  
+  .instancesList {
+    padding: var(--onity-space-s);
   }
 }
 

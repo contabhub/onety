@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import ChatSidebar from '../../components/atendimento/Chat/ChatSidebar';
 import ChatWindow from '../../components/atendimento/Chat/ChatWindow';
 import BillingStatusBanner from '../../components/atendimento/banner/banner';
-import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar'
+import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
+import styles from '../../styles/atendimento/chat.module.css';
 
 
 export default function Chat({ auth }) {
@@ -89,8 +90,8 @@ export default function Chat({ auth }) {
   if (loading) {
     console.log('⏳ Chat - Carregando...');
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Carregando...</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingText}>Carregando...</div>
       </div>
     );
   }
@@ -101,11 +102,11 @@ export default function Chat({ auth }) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
+    <div className={styles.chatContainer}>
       {/* Banner de status da empresa */}
       {renderStatusBanner()}
       {/* Conteúdo principal */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className={styles.mainContent}>
       <PrincipalSidebar />
 
         <ChatSidebar 
