@@ -103,19 +103,19 @@
 }
 
 .submitButton {
-  background-color: var(--onity-color-primary);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .submitButton:hover {
-  background-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
 }
 
 .submitButton:active {

@@ -283,8 +283,7 @@ const Webhooks = () => {
           className={styles.newButton}
           onClick={() => openModal()}
         >
-          <Plus size={16} />
-          Novo
+          Novo Webhook
         </button>
       </div>
 

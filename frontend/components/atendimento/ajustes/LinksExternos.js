@@ -190,10 +190,20 @@ export default function LinksExternos() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Links Externos</h1>
-        <p className={styles.subtitle}>
-          Gerencie links úteis para sua empresa
-        </p>
+        <div className={styles.headerContent}>
+          <div className={styles.headerText}>
+            <h1 className={styles.title}>Links Externos</h1>
+            <p className={styles.subtitle}>
+              Gerencie links úteis para sua empresa
+            </p>
+          </div>
+            <button 
+              onClick={openModal}
+              className={styles.headerAddButton}
+            >
+              Adicionar Link
+            </button>
+        </div>
       </div>
       
       {/* Mensagens de erro */}
@@ -279,16 +289,6 @@ export default function LinksExternos() {
         )}
       </div>
 
-      {/* Botão de adicionar */}
-        <div className={styles.addButtonContainer}>
-          <button 
-            onClick={openModal}
-            className={styles.addButton}
-          >
-            <Plus size={24} />
-            Adicionar Link
-          </button>
-        </div>
       
       {/* Modal de criação/edição */}
       {showModal && (
