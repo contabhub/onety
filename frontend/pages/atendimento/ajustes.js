@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
-import AjustesSidebar from '../../components/atendimento/ajustes/AjustesSidebar';
 import Conta from '../../components/atendimento/ajustes/Conta';
 import CanaisAtendimento from '../../components/atendimento/ajustes/CanaisAtendimento';
 import Equipes from '../../components/atendimento/ajustes/Equipes';
@@ -13,7 +13,21 @@ import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar'
 import styles from '../../styles/atendimento/ajustes.module.css';
 
 export default function Ajustes({ auth }) {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState('conta');
+
+  // Detectar seção ativa baseada na query string
+  useEffect(() => {
+    if (router.query.section) {
+      setActiveSection(router.query.section);
+    }
+  }, [router.query.section]);
+
+  const handleSectionChange = (section) => {
+    setActiveSection(section);
+    // Atualizar URL sem recarregar a página
+    router.push(`/atendimento/ajustes?section=${section}`, undefined, { shallow: true });
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -50,15 +64,9 @@ export default function Ajustes({ auth }) {
         
         <div className={styles.ajustesContainer}>
           {/* Conteúdo principal */}
-          <div className={styles.ajustesContent}>
-            <AjustesSidebar 
-              activeSection={activeSection} 
-              onSectionChange={setActiveSection} 
-            />
-            <main className={styles.mainContent}>
-              {renderContent()}
-            </main>
-          </div>
+          <main className={styles.mainContent}>
+            {renderContent()}
+          </main>
         </div>
       </div>
     </>

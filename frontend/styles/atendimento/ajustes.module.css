@@ -13,13 +13,7 @@
   background-color: var(--color-bg-secondary);
   transition: all 0.15s ease-out;
   min-width: 0; /* Permite que o container encolha */
-}
-
-.ajustesContent {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  width: 100%;
 }
 
 .mainContent {
@@ -27,6 +21,8 @@
   overflow: auto;
   background-color: var(--color-bg-secondary);
   transition: background-color 0.3s ease;
+  width: 100%;
+  min-height: 100%;
 }
 
 /* Responsividade */
@@ -39,14 +35,13 @@
     height: auto;
     min-height: 100vh;
     margin-left: 0;
-  }
-  
-  .ajustesContent {
-    flex-direction: column;
+    width: 100%;
   }
   
   .mainContent {
     overflow: visible;
+    padding: 1rem;
+    width: 100%;
   }
 }
 
