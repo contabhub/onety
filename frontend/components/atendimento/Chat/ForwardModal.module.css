@@ -11,8 +11,8 @@
 .modal {
   width: 720px;
   max-height: 80vh;
-  background: var(--color-bg-primary);
-  border-radius: 12px;
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xs);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -22,21 +22,32 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md) 20px;
-  border-bottom: 1px solid var(--color-form-border);
+  padding: var(--onity-space-m) var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  flex-shrink: 0;
 }
 
 .closeBtn {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 6px;
-  color: var(--color-text-secondary);
+  padding: var(--onity-space-xs);
+  color: var(--onity-color-text);
+  opacity: 0.8;
+  border-radius: var(--onity-radius-xs);
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+  opacity: 1;
 }
 
 .searchRow {
-  padding: var(--padding-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--color-form-border);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .searchWrapper {
@@ -45,18 +56,21 @@
 
 .searchInput {
   width: 100%;
-  padding: 10px 32px 10px 12px;
-  border: 1px solid var(--color-form-border);
-  border-radius: 8px;
+  padding: var(--onity-space-s) 32px var(--onity-space-s) var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
   outline: none;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
 }
 
 .searchIcon {
   position: absolute;
-  right: 10px;
+  right: var(--onity-space-s);
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .list {
@@ -65,16 +79,22 @@
 }
 
 .loading, .empty {
-  padding: 20px;
-  color: var(--color-text-secondary);
+  padding: var(--onity-space-l);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-form-border);
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+  transition: all 0.2s ease;
+}
+
+.item:hover {
+  background-color: var(--onity-color-bg);
 }
 
 .itemBody {
@@ -84,45 +104,64 @@
 
 .itemTitle {
   font-weight: 600;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
 }
 
 .itemSub {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--padding-sm) var(--spacing-md);
-  border-top: 1px solid var(--color-form-border);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
 }
 
 .actions {
   display: flex;
-  gap: 10px;
+  gap: var(--onity-space-s);
 }
 
 .cancelBtn {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-form-border);
-  border-radius: 8px;
-  padding: 8px 12px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
   cursor: pointer;
+  color: var(--onity-color-primary);
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.cancelBtn:hover {
+  background-color: var(--onity-color-bg);
 }
 
 .confirmBtn {
-  background: var(--color-button-normal);
-  color: #fff;
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
   cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.confirmBtn:hover {
+  background-color: var(--onity-color-primary-hover);
 }
 
 .selectionInfo {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
+  font-size: 0.875rem;
 }
 
 

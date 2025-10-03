@@ -1,0 +1,29 @@
+/* Container principal do chat */
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Conteúdo principal */
+.mainContent {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Loading container */
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading text */
+.loadingText {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}

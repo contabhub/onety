@@ -10,16 +10,17 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--onity-space-l);
+  margin-bottom: var(--onity-space-m);
 }
 
 .backButton {
   background: none;
   border: none;
-  padding: 8px;
-  border-radius: 8px;
-  color: var(--color-text-secondary);
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -27,28 +28,30 @@
 }
 
 .backButton:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  opacity: 1;
 }
 
 .headerContent {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--onity-space-m);
 }
 
 .headerContent h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 /* Descrição */
 .description {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-size: 14px;
-  margin-bottom: 24px;
+  margin-bottom: var(--onity-space-xl);
   line-height: 1.5;
 }
 
@@ -58,16 +61,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 40px 20px;
-  color: var(--color-text-secondary);
+  gap: var(--onity-space-l);
+  padding: var(--onity-space-2xl) var(--onity-space-m);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-bg-secondary);
-  border-top: 3px solid var(--color-primary);
+  border: 3px solid var(--onity-color-bg);
+  border-top: 3px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -81,7 +85,7 @@
 .teamsList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--onity-space-m);
   flex: 1;
   min-height: 200px;
 }
@@ -92,36 +96,38 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
-  color: var(--color-text-secondary);
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-2xl) var(--onity-space-m);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   text-align: center;
 }
 
 .emptyIcon {
-  color: var(--color-form-border);
+  color: var(--onity-color-border);
 }
 
 .empty p {
   margin: 0;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .empty small {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 /* Item de time */
 .teamItem {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-form-border);
-  border-radius: 12px;
+  gap: var(--onity-space-l);
+  padding: var(--onity-space-l);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
@@ -129,10 +135,10 @@
 }
 
 .teamItem:hover {
-  border-color: var(--color-primary);
-  background: var(--color-bg-secondary);
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+  box-shadow: var(--onity-elev-med);
 }
 
 .teamIcon {
@@ -142,8 +148,8 @@
   width: 48px;
   height: 48px;
   background: rgba(139, 92, 246, 0.1);
-  border-radius: 12px;
-  color: var(--color-primary);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-primary);
   flex-shrink: 0;
 }
 
@@ -151,23 +157,23 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--onity-space-s);
 }
 
 .teamName {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--onity-space-s);
   font-size: 16px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .defaultBadge {
   background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
-  padding: 2px 8px;
-  border-radius: 12px;
+  color: var(--onity-color-warning);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
@@ -176,67 +182,71 @@
 .teamDetails {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--onity-space-xs);
 }
 
 .roleInfo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--onity-space-xs);
   font-size: 14px;
 }
 
 .adminIcon {
-  color: var(--color-warning);
+  color: var(--onity-color-warning);
 }
 
 .managerIcon {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
 }
 
 .memberIcon {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .roleText {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-weight: 500;
 }
 
 .createdAt {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }
 
 .arrow {
   font-size: 18px;
-  color: var(--color-form-border);
+  color: var(--onity-color-border);
   font-weight: bold;
 }
 
 .teamItem:hover .arrow {
-  color: var(--color-primary);
+  color: var(--onity-color-primary);
   transform: translateX(2px);
 }
 
 /* Footer */
 .footer {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-form-border);
+  margin-top: var(--onity-space-xl);
+  padding-top: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
   text-align: center;
 }
 
 .footer small {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
+  opacity: 0.7;
   font-size: 12px;
 }
 
 /* Responsividade */
 @media (max-width: 640px) {
   .teamItem {
-    padding: 12px;
-    gap: 12px;
+    padding: var(--onity-space-m);
+    gap: var(--onity-space-m);
   }
   
   .teamIcon {
@@ -249,7 +259,7 @@
   }
   
   .teamDetails {
-    gap: 2px;
+    gap: var(--onity-space-xs);
   }
   
   .roleInfo {
