@@ -6,6 +6,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 /* Background animado com estrelas e linhas neurais */
@@ -196,13 +198,13 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  margin: 40px 0 20px 0;
+  margin: 20px 0 12px 0;
   flex-shrink: 0;
   z-index: 1;
 }
 
 .header h1 {
-  font-size: 42px;
+  font-size: 32px;
   color: var(--onity-color-text);
 }
 
@@ -215,13 +217,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 18px; /* mesma altura da search da empresa */
+  padding: 12px 14px;
   border: 1px solid var(--onity-color-border);
   border-radius: 12px;
   width: 100%;
-  max-width: 460px; /* largura maior para a busca de módulos */
-  margin: 0 auto 24px auto;
-  background: rgba(0,0,0,0.4); /* igual à empresa */
+  max-width: 460px;
+  margin: 0 auto 16px auto;
+  background: rgba(0,0,0,0.4);
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
   position: relative;
@@ -289,7 +291,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--onity-space-l);
+  gap: var(--onity-space-m);
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -304,7 +306,7 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-l);
   padding: var(--onity-space-s);
-  min-height: 140px;
+  min-height: 120px;
   box-shadow: var(--onity-elev-med);
   display: flex;
   flex-direction: column;
@@ -321,8 +323,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--onity-space-m);
-  margin-bottom: var(--onity-space-l);
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-s);
   text-align: center;
 }
 
@@ -344,8 +346,8 @@
 }
 
 .moduleIcon {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--onity-radius-m);
   background: var(--onity-color-surface);
   border: 2px solid var(--onity-color-border);
@@ -376,13 +378,13 @@
 .title {
   color: var(--onity-color-text);
   font-weight: 600;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .meta {
   display: grid;
-  gap: var(--onity-space-s);
-  margin-bottom: var(--onity-space-m);
+  gap: var(--onity-space-xs);
+  margin-bottom: var(--onity-space-s);
 }
 
 .metaItem {
@@ -391,14 +393,14 @@
   gap: var(--onity-space-xs);
   color: var(--onity-color-text);
   opacity: 0.85;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .statusBadge {
-  padding: var(--onity-space-xs) var(--onity-space-s);
+  padding: 4px 8px;
   border-radius: 20px;
   color: var(--onity-color-primary-contrast);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -415,13 +417,14 @@
 }
 
 .accessBtn {
-  padding: var(--onity-space-s) var(--onity-space-m);
+  padding: 8px 12px;
   background: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
   border: none;
   border-radius: var(--onity-radius-m);
   cursor: pointer;
   font-weight: 700;
+  font-size: 12px;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
@@ -449,9 +452,9 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   max-width: 1000px;
-  margin: 0 auto var(--onity-space-xl) auto;
+  margin: 0 auto var(--onity-space-m) auto;
 }
 
 .listItem {
@@ -459,7 +462,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--onity-space-m);
-  padding: 14px 16px;
+  padding: 10px 12px;
   border: 1px solid var(--onity-color-border);
   border-radius: 12px;
   background: var(--onity-color-surface);
@@ -487,7 +490,7 @@
 .listDescription {
   color: var(--onity-color-text);
   opacity: 0.75;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .listMeta {
@@ -500,7 +503,7 @@
 .carouselContainer {
   max-width: 1200px;
   margin: 0 auto;
-  overflow: visible;
+  overflow: hidden;
   padding: 0 var(--onity-space-l);
   position: relative;
   z-index: 1;
@@ -510,7 +513,7 @@
   display: flex;
   align-items: center;
   gap: var(--onity-space-m);
-  margin-bottom: var(--onity-space-l);
+  margin-bottom: var(--onity-space-s);
   position: relative;
 }
 
@@ -544,13 +547,15 @@
   flex: 1;
   display: flex;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   /* Aumenta o padding lateral para permitir centralizar o primeiro e o último cards */
   padding: var(--onity-space-m) 320px var(--onity-space-l) 320px;
   scroll-behavior: smooth;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
   align-items: stretch;
+  /* Previne scroll vertical indesejado */
+  touch-action: pan-x;
 }
 
 .carouselTrack::-webkit-scrollbar {
@@ -591,8 +596,8 @@
   background: var(--onity-color-surface);
   border: 3px solid var(--onity-color-primary);
   border-radius: var(--onity-radius-l);
-  padding: var(--onity-space-l);
-  min-height: 240px;
+  padding: var(--onity-space-m);
+  min-height: 180px;
   max-height: none;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   transform: translateY(-6px);
@@ -600,7 +605,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--onity-space-s);
+  gap: var(--onity-space-xs);
 }
 
 .previewCardInline::before {
@@ -624,14 +629,14 @@
 .previewHeader {
   display: flex;
   align-items: center;
-  gap: var(--onity-space-m);
+  gap: var(--onity-space-s);
   margin-bottom: var(--onity-space-xs);
   flex-shrink: 0;
 }
 
 .moduleIconLarge {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--onity-radius-l);
   background: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
@@ -652,8 +657,8 @@
 }
 
 .moduleIconLarge svg {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
 }
 
 .previewTitle {
@@ -666,7 +671,7 @@
 .previewTitle h2 {
   color: var(--onity-color-text);
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -681,16 +686,16 @@
 .previewContent p {
   color: var(--onity-color-text);
   opacity: 0.8;
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .previewPlaceholder {
   background: var(--onity-color-bg);
   border: 2px dashed var(--onity-color-border);
   border-radius: var(--onity-radius-m);
-  padding: var(--onity-space-s);
+  padding: var(--onity-space-xs);
   text-align: center;
   margin: var(--onity-space-xs) 0;
   flex-shrink: 0;
@@ -699,18 +704,18 @@
 .placeholderIcon {
   color: var(--onity-color-text);
   opacity: 0.4;
-  margin-bottom: var(--onity-space-s);
+  margin-bottom: var(--onity-space-xs);
 }
 
 .placeholderIcon svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 .previewPlaceholder h3 {
   color: var(--onity-color-text);
   margin: 0 0 var(--onity-space-xs) 0;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -718,7 +723,7 @@
   color: var(--onity-color-text);
   opacity: 0.6;
   margin: 0;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .previewActions {
@@ -729,8 +734,8 @@
 }
 
 .previewActions .accessBtn {
-  padding: var(--onity-space-xs) var(--onity-space-m);
-  font-size: 13px;
+  padding: 6px 12px;
+  font-size: 11px;
 }
 
 /* Indicadores */
@@ -738,7 +743,7 @@
   display: flex;
   justify-content: center;
   gap: var(--onity-space-xs);
-  margin-bottom: var(--onity-space-xl);
+  margin-bottom: var(--onity-space-m);
 }
 
 .indicator {
@@ -856,6 +861,166 @@
   opacity: 0.6;
 }
 
+/* Modal de descrição */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--onity-space-m);
+}
+
+.modalContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  padding: var(--onity-space-xl);
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-l);
+  padding-bottom: var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalTitle {
+  color: var(--onity-color-text);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-s);
+  transition: background 0.2s ease;
+}
+
+.modalClose:hover {
+  background: var(--onity-color-border);
+}
+
+.modalDescription {
+  color: var(--onity-color-text);
+  line-height: 1.6;
+  font-size: 14px;
+  margin: 0;
+}
+
+.seeMoreLink {
+  color: var(--onity-color-primary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: underline;
+  margin-left: 4px;
+  transition: color 0.2s ease;
+}
+
+.seeMoreLink:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+/* Tema escuro - link "ver mais" mais visível */
+:root[data-theme='dark'] .seeMoreLink {
+  color: #60a5fa; /* azul mais claro para melhor contraste */
+  text-decoration: underline;
+}
+
+:root[data-theme='dark'] .seeMoreLink:hover {
+  color: #93c5fd; /* azul ainda mais claro no hover */
+}
+
+/* Notebooks pequenos - Samsung Book4 Pro e similares */
+@media (max-width: 1366px) and (max-height: 768px) {
+  .page {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    height: 100vh;
+  }
+  
+  .carouselTrack {
+    padding-left: 180px;
+    padding-right: 180px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  .carouselItem {
+    flex: 0 0 350px;
+    min-width: 350px;
+  }
+  
+  .previewCardInline {
+    min-height: 140px;
+  }
+  
+  .carouselContainer {
+    overflow: hidden !important;
+  }
+  
+  .carousel {
+    overflow: hidden;
+  }
+  
+  /* Lista para notebooks pequenos */
+  .list {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .listItem {
+    padding: 8px 10px;
+    margin-bottom: 4px;
+  }
+  
+  .list .moduleIcon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .listTexts .title {
+    font-size: 14px;
+  }
+  
+  .listDescription {
+    font-size: 10px;
+  }
+  
+  .listMeta .accessBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+}
+
+/* Resolução específica do Samsung Book4 Pro */
+@media (max-width: 1920px) and (max-height: 1080px) and (min-width: 1367px) {
+  .carouselTrack {
+    padding-left: 250px;
+    padding-right: 250px;
+  }
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .page {
@@ -933,17 +1098,23 @@
 
 /* Telas de notebook/altura reduzida: evitar corte inferior sem scroll */
 @media (max-height: 800px) {
+  .page {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    height: 100vh;
+  }
   .header {
-    margin: 24px 0 12px 0;
+    margin: 16px 0 8px 0;
   }
   .header h1 {
-    font-size: 34px;
+    font-size: 28px;
   }
   .searchBox {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   .carousel {
-    margin-bottom: var(--onity-space-m);
+    margin-bottom: var(--onity-space-s);
+    overflow: hidden;
   }
   .carouselItem {
     transform: scale(0.9);
@@ -952,58 +1123,272 @@
     transform: scale(0.96);
   }
   .previewCardInline {
-    padding: var(--onity-space-m);
-    min-height: 200px;
+    padding: var(--onity-space-s);
+    min-height: 160px;
   }
   .previewPlaceholder {
     padding: var(--onity-space-xs);
   }
   .indicators {
-    margin-bottom: var(--onity-space-l);
+    margin-bottom: var(--onity-space-s);
+  }
+  .carouselTrack {
+    padding-left: 150px;
+    padding-right: 150px;
+  }
+  .carouselContainer {
+    overflow: hidden !important;
+  }
+  
+  /* Lista para telas de notebook */
+  .list {
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .listItem {
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+  
+  .list .moduleIcon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .listTexts .title {
+    font-size: 15px;
+  }
+  
+  .listDescription {
+    font-size: 11px;
+  }
+  
+  .listMeta .accessBtn {
+    padding: 7px 12px;
+    font-size: 11px;
   }
 }
 
 /* Notebooks ainda menores em altura */
 @media (max-height: 720px) {
+  .page {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    height: 100vh;
+  }
   .header {
-    margin: 16px 0 8px 0;
+    margin: 12px 0 6px 0;
   }
   .header h1 {
-    font-size: 28px;
+    font-size: 24px;
   }
   .searchBox {
-    padding: 12px 14px;
+    padding: 10px 12px;
     max-width: 600px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .moduleIconLarge {
-    width: 52px;
-    height: 52px;
+    width: 40px;
+    height: 40px;
   }
   .previewTitle h2 {
-    font-size: 18px;
+    font-size: 14px;
   }
   .previewContent p {
-    font-size: 12px;
+    font-size: 10px;
   }
   .previewCardInline {
-    padding: var(--onity-space-s);
-    min-height: 180px;
+    padding: var(--onity-space-xs);
+    min-height: 140px;
   }
   .previewActions .accessBtn {
-    padding: 8px 14px;
-    font-size: 12px;
+    padding: 6px 10px;
+    font-size: 10px;
   }
   .indicators {
-    margin-bottom: var(--onity-space-m);
+    margin-bottom: var(--onity-space-s);
+  }
+  .carouselContainer {
+    overflow: hidden !important;
+  }
+  .carousel {
+    overflow: hidden;
   }
 }
 
 @media (max-height: 660px) {
+  .page {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    height: 100vh;
+  }
   .previewPlaceholder {
     display: none; /* esconde placeholder para ganhar altura sem perder conteúdo essencial */
   }
   .previewCardInline {
-    min-height: 150px;
+    min-height: 120px;
+  }
+  .header {
+    margin: 8px 0 4px 0;
+  }
+  .header h1 {
+    font-size: 20px;
+  }
+  .searchBox {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .carousel {
+    margin-bottom: var(--onity-space-xs);
+    overflow: hidden;
+  }
+  .indicators {
+    margin-bottom: var(--onity-space-xs);
+  }
+  .carouselContainer {
+    overflow: hidden !important;
+  }
+}
+
+/* Telas muito pequenas em altura - layout ultra compacto */
+@media (max-height: 600px) {
+  .page {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    height: 100vh;
+  }
+  .header {
+    margin: 4px 0 2px 0;
+  }
+  .header h1 {
+    font-size: 18px;
+  }
+  .searchBox {
+    padding: 6px 8px;
+    margin-bottom: 6px;
+  }
+  .previewCardInline {
+    min-height: 100px;
+    padding: var(--onity-space-xs);
+  }
+  .moduleIconLarge {
+    width: 32px;
+    height: 32px;
+  }
+  .previewTitle h2 {
+    font-size: 12px;
+  }
+  .previewContent p {
+    font-size: 9px;
+  }
+  .previewActions .accessBtn {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+  .carousel {
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+  .indicators {
+    margin-bottom: 4px;
+  }
+  .carouselContainer {
+    overflow: hidden !important;
+  }
+}
+
+/* Telas extremamente pequenas - eliminar scroll completamente */
+@media (max-height: 550px) {
+  .page {
+    height: 100vh;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+  .header {
+    margin: 2px 0 1px 0;
+  }
+  .header h1 {
+    font-size: 16px;
+  }
+  .searchBox {
+    padding: 4px 6px;
+    margin-bottom: 4px;
+  }
+  .previewCardInline {
+    min-height: 80px;
+    padding: 4px;
+  }
+  .moduleIconLarge {
+    width: 28px;
+    height: 28px;
+  }
+  .previewTitle h2 {
+    font-size: 11px;
+  }
+  .previewContent p {
+    font-size: 8px;
+  }
+  .previewActions .accessBtn {
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+  .carousel {
+    margin-bottom: 2px;
+  }
+  .indicators {
+    margin-bottom: 2px;
+  }
+  .previewPlaceholder {
+    display: none;
+  }
+}
+
+/* Telas ultra pequenas - layout mínimo */
+@media (max-height: 500px) {
+  .page {
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    height: 100vh;
+  }
+  .header {
+    margin: 1px 0;
+  }
+  .header h1 {
+    font-size: 14px;
+  }
+  .searchBox {
+    padding: 3px 5px;
+    margin-bottom: 3px;
+  }
+  .previewCardInline {
+    min-height: 60px;
+    padding: 3px;
+  }
+  .moduleIconLarge {
+    width: 24px;
+    height: 24px;
+  }
+  .previewTitle h2 {
+    font-size: 10px;
+  }
+  .previewContent p {
+    font-size: 7px;
+  }
+  .previewActions .accessBtn {
+    padding: 2px 4px;
+    font-size: 7px;
+  }
+  .carousel {
+    margin-bottom: 1px;
+    overflow: hidden;
+  }
+  .indicators {
+    margin-bottom: 1px;
+  }
+  .carouselContainer {
+    overflow: hidden !important;
   }
 }

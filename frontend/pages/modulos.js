@@ -21,6 +21,8 @@ export default function Modulos() {
   const edgeTransitionMs = 750 // transição nas extremidades (último/primeiro)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [viewMode, setViewMode] = useState('carousel') // carousel | grid | list
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false)
+  const [selectedModuloDescription, setSelectedModuloDescription] = useState(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -327,62 +329,125 @@ export default function Modulos() {
 
   const scrollToExtendedIndex = (extIndex, smooth = true) => {
     if (!carouselRef) return
+    
+    // Previne scroll durante transições
+    if (isTransitioning) return
+    
     const itemWidth = getItemWidth()
     const containerWidth = carouselRef.offsetWidth
     const computedStyles = typeof window !== 'undefined' ? window.getComputedStyle(carouselRef) : null
     const paddingLeft = computedStyles ? parseInt(computedStyles.paddingLeft || '0', 10) : 0
     const position = (extIndex * itemWidth + paddingLeft) - (containerWidth / 2) + (itemWidth / 2)
-    carouselRef.scrollTo({ left: Math.max(0, position), behavior: smooth ? 'smooth' : 'auto' })
+    
+    // Limita a posição para evitar scrolls extremos
+    const maxScroll = carouselRef.scrollWidth - containerWidth
+    const clampedPosition = Math.max(0, Math.min(position, maxScroll))
+    
+    carouselRef.scrollTo({ 
+      left: clampedPosition, 
+      behavior: smooth ? 'smooth' : 'auto' 
+    })
   }
 
   // Inicializa o scroll no primeiro item real (índice +1 no array estendido)
   useEffect(() => {
-    if (extended.length > 0 && carouselRef) {
+    if (extended.length > 0 && carouselRef && !isTransitioning) {
       const startIndex = filtered.length > 1 ? currentIndex + 1 : currentIndex
-      scrollToExtendedIndex(startIndex, false)
+      // Pequeno delay para garantir que o DOM está pronto
+      setTimeout(() => {
+        scrollToExtendedIndex(startIndex, false)
+      }, 100)
     }
-  }, [carouselRef, extended])
+  }, [carouselRef, extended, currentIndex])
+
+  // Previne scroll da página quando o carrossel está ativo
+  useEffect(() => {
+    const preventScroll = (e) => {
+      // Previne scroll vertical em toda a página
+      if (e.deltaY !== 0) {
+        e.preventDefault()
+      }
+    }
+
+    const preventBodyScroll = () => {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    }
+
+    const restoreBodyScroll = () => {
+      document.body.style.overflow = 'unset'
+      document.documentElement.style.overflow = 'unset'
+    }
+
+    // Aplica as regras de prevenção de scroll
+    preventBodyScroll()
+    document.addEventListener('wheel', preventScroll, { passive: false })
+    document.addEventListener('touchmove', preventScroll, { passive: false })
+
+    return () => {
+      restoreBodyScroll()
+      document.removeEventListener('wheel', preventScroll)
+      document.removeEventListener('touchmove', preventScroll)
+    }
+  }, [])
 
   const nextModulo = () => {
     if (filtered.length === 0 || isTransitioning) return
+    
     const nextIndex = (currentIndex + 1) % filtered.length
     const goingOver = filtered.length > 1 && currentIndex === filtered.length - 1
+    
     setIsTransitioning(true)
     setCurrentIndex(nextIndex)
-    // No array estendido, o próximo real é nextIndex+1; se estourou, passa pelo clone e depois salta
-    scrollToExtendedIndex((nextIndex + 1), true)
+    
+    // Previne múltiplas execuções simultâneas
     if (goingOver) {
+      // No array estendido, o próximo real é nextIndex+1; se estourou, passa pelo clone e depois salta
+      scrollToExtendedIndex((nextIndex + 1), true)
       setTimeout(() => {
         // reposiciona silenciosamente no primeiro real
         scrollToExtendedIndex(1, false)
         setIsTransitioning(false)
       }, edgeTransitionMs)
     } else {
+      scrollToExtendedIndex((nextIndex + 1), true)
       setTimeout(() => setIsTransitioning(false), transitionMs)
     }
   }
 
   const prevModulo = () => {
     if (filtered.length === 0 || isTransitioning) return
+    
     const prevIndex = (currentIndex - 1 + filtered.length) % filtered.length
     const goingUnder = filtered.length > 1 && currentIndex === 0
+    
     setIsTransitioning(true)
     setCurrentIndex(prevIndex)
-    scrollToExtendedIndex((prevIndex + 1), true)
+    
+    // Previne múltiplas execuções simultâneas
     if (goingUnder) {
+      scrollToExtendedIndex((prevIndex + 1), true)
       setTimeout(() => {
         // reposiciona silenciosamente no último real
         scrollToExtendedIndex(filtered.length, false)
         setIsTransitioning(false)
       }, edgeTransitionMs)
     } else {
+      scrollToExtendedIndex((prevIndex + 1), true)
       setTimeout(() => setIsTransitioning(false), transitionMs)
     }
   }
 
   const selectModulo = (modulo, index, isExtendedIndex = false) => {
+    // Previne seleção durante transições
+    if (isTransitioning) return
+    
     // Se veio de um índice no array estendido, converte para índice real
     const realIndex = isExtendedIndex ? ((index - 1 + filtered.length) % filtered.length) : index
+    
+    // Evita seleção do mesmo módulo
+    if (realIndex === currentIndex) return
+    
     setSelectedModulo(modulo)
     setCurrentIndex(realIndex)
     scrollToExtendedIndex((realIndex + 1), true)
@@ -405,6 +470,41 @@ export default function Modulos() {
       case 'pendente': return 'Pendente'
       default: return 'Desconhecido'
     }
+  }
+
+  const openDescriptionModal = (modulo) => {
+    setSelectedModuloDescription(modulo)
+    setShowDescriptionModal(true)
+  }
+
+  const closeDescriptionModal = () => {
+    setShowDescriptionModal(false)
+    setSelectedModuloDescription(null)
+  }
+
+  // Fechar modal com ESC
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && showDescriptionModal) {
+        closeDescriptionModal()
+      }
+    }
+
+    if (showDescriptionModal) {
+      document.addEventListener('keydown', handleEscKey)
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey)
+      document.body.style.overflow = 'unset'
+    }
+  }, [showDescriptionModal])
+
+  const truncateDescription = (description, maxLength = 60) => {
+    if (!description) return 'Sem descrição'
+    if (description.length <= maxLength) return description
+    return description.substring(0, maxLength) + '...'
   }
 
   return (
@@ -519,7 +619,21 @@ export default function Modulos() {
                             </div>
                           </div>
                           <div className={styles.previewContent}>
-                            <p>{m.descricao || 'Sem descrição disponível'}</p>
+                            <p>
+                              {truncateDescription(m.descricao, 80)}
+                              {m.descricao && m.descricao.length > 80 && (
+                                <span 
+                                  className={styles.seeMoreLink}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    openDescriptionModal(m)
+                                  }}
+                                >
+                                  ver mais
+                                </span>
+                              )}
+                            </p>
                             <div 
                               className={styles.previewPlaceholder}
                             >
@@ -551,19 +665,29 @@ export default function Modulos() {
                               {m.status === 'bloqueado' ? (
                                 <button 
                                   className={styles.accessBtn}
-                                  onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                                  onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  if (canStartModulo(m)) {
+                                    startModulo(m)
+                                  }
+                                }}
                                   disabled={!canStartModulo(m)}
                                   title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
                                 >
                                   Iniciar
                                 </button>
                               ) : (
-                                <button 
-                                  className={styles.accessBtn}
-                                  onClick={() => handleAccessModulo(m)}
-                                >
-                                  Acessar
-                                </button>
+                              <button 
+                                className={styles.accessBtn}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  handleAccessModulo(m)
+                                }}
+                              >
+                                Acessar
+                              </button>
                               )}
                             </div>
                           </div>
@@ -579,7 +703,21 @@ export default function Modulos() {
                           </div>
                           <div className={styles.meta}>
                             <div className={styles.metaItem}>
-                              <span>{m.descricao || 'Sem descrição'}</span>
+                              <span>
+                                {truncateDescription(m.descricao, 60)}
+                                {m.descricao && m.descricao.length > 60 && (
+                                  <span 
+                                    className={styles.seeMoreLink}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      openDescriptionModal(m)
+                                    }}
+                                  >
+                                    ver mais
+                                  </span>
+                                )}
+                              </span>
                             </div>
                             <div className={styles.metaItem}>
                               <div 
@@ -594,7 +732,13 @@ export default function Modulos() {
                             {m.status === 'bloqueado' ? (
                               <button 
                                 className={styles.accessBtn}
-                                onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  if (canStartModulo(m)) {
+                                    startModulo(m)
+                                  }
+                                }}
                                 disabled={!canStartModulo(m)}
                                 title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
                               >
@@ -603,7 +747,11 @@ export default function Modulos() {
                             ) : (
                               <button 
                                 className={styles.accessBtn}
-                                onClick={() => handleAccessModulo(m)}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  handleAccessModulo(m)
+                                }}
                               >
                                 {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
                               </button>
@@ -650,7 +798,21 @@ export default function Modulos() {
                   </div>
                   <div className={styles.meta}>
                     <div className={styles.metaItem}>
-                      <span>{m.descricao || 'Sem descrição'}</span>
+                      <span>
+                        {truncateDescription(m.descricao, 60)}
+                        {m.descricao && m.descricao.length > 60 && (
+                          <span 
+                            className={styles.seeMoreLink}
+                            onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    openDescriptionModal(m)
+                                  }}
+                          >
+                            ver mais
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <div className={styles.metaItem}>
                       <div 
@@ -665,7 +827,13 @@ export default function Modulos() {
                     {m.status === 'bloqueado' ? (
                       <button 
                         className={styles.accessBtn}
-                        onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                        onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  if (canStartModulo(m)) {
+                                    startModulo(m)
+                                  }
+                                }}
                         disabled={!canStartModulo(m)}
                         title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
                       >
@@ -674,7 +842,11 @@ export default function Modulos() {
                     ) : (
                       <button 
                         className={styles.accessBtn}
-                        onClick={() => handleAccessModulo(m)}
+                        onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  handleAccessModulo(m)
+                                }}
                       >
                         {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
                       </button>
@@ -687,11 +859,29 @@ export default function Modulos() {
             <div className={styles.list}>
               {filtered.map((m) => (
                 <div key={m.id} className={styles.listItem}>
-                  <div className={styles.listMain} onClick={() => handleAccessModulo(m)}>
+                  <div className={styles.listMain} onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  handleAccessModulo(m)
+                                }}>
                     <div className={styles.moduleIcon}>{getModuleLogo(m)}</div>
                     <div className={styles.listTexts}>
                       <div className={styles.title}>{m.nome || m.name}</div>
-                      <div className={styles.listDescription}>{m.descricao || 'Sem descrição'}</div>
+                      <div className={styles.listDescription}>
+                        {truncateDescription(m.descricao, 80)}
+                        {m.descricao && m.descricao.length > 80 && (
+                          <span 
+                            className={styles.seeMoreLink}
+                            onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    openDescriptionModal(m)
+                                  }}
+                          >
+                            ver mais
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className={styles.listMeta}>
@@ -704,7 +894,13 @@ export default function Modulos() {
                     {m.status === 'bloqueado' ? (
                       <button 
                         className={styles.accessBtn}
-                        onClick={() => canStartModulo(m) ? startModulo(m) : null}
+                        onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  if (canStartModulo(m)) {
+                                    startModulo(m)
+                                  }
+                                }}
                         disabled={!canStartModulo(m)}
                         title={canStartModulo(m) ? 'Iniciar' : 'Conclua o pré-requisito para iniciar'}
                       >
@@ -713,7 +909,11 @@ export default function Modulos() {
                     ) : (
                       <button 
                         className={styles.accessBtn}
-                        onClick={() => handleAccessModulo(m)}
+                        onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  handleAccessModulo(m)
+                                }}
                       >
                         {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
                       </button>
@@ -729,6 +929,32 @@ export default function Modulos() {
           </div>
         )}
       </div>
+
+      {/* Modal de descrição */}
+      {showDescriptionModal && selectedModuloDescription && (
+        <div className={styles.modalOverlay} onClick={closeDescriptionModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+                {selectedModuloDescription.nome || selectedModuloDescription.name}
+              </h2>
+              <button 
+                className={styles.modalClose}
+                onClick={closeDescriptionModal}
+                aria-label="Fechar modal"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <p className={styles.modalDescription}>
+              {selectedModuloDescription.descricao || 'Sem descrição disponível'}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
