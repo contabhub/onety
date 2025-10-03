@@ -41,7 +41,7 @@ router.get("/", authOrApiKey, async (req, res) => {
         tu.role
       FROM times_atendimento_usuarios tu
       JOIN times_atendimento t ON tu.times_atendimento_id = t.id
-      JOIN users u ON tu.usuario_id = u.id
+      JOIN usuarios u ON tu.usuario_id = u.id
     `);
     res.json(rows);
   } catch (err) {
@@ -65,7 +65,7 @@ router.get("/time/:times_atendimento_id", authOrApiKey, async (req, res) => {
         tu.role
       FROM times_atendimento_usuarios tu
       JOIN times_atendimento t ON tu.times_atendimento_id = t.id
-      JOIN users u ON tu.usuario_id = u.id
+      JOIN usuarios u ON tu.usuario_id = u.id
       WHERE tu.times_atendimento_id = ?`, 
       [req.params.times_atendimento_id]
     );

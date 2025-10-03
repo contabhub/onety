@@ -85,10 +85,10 @@ export default function CanaisAtendimento() {
         // Atualiza status no backend conforme provedor
         await Promise.all(
           (instancias || []).map((inst) => {
-            if (inst.integration_type === 'evolution' && inst.instance_name) {
-              return fetch(`${apiUrl}/atendimento/instancias/evolution/status/${inst.instance_name}`, { headers }).catch(() => {});
+            if (inst.integracao_tipo === 'evolution' && inst.instancia_nome) {
+              return fetch(`${apiUrl}/atendimento/instancias/evolution/status/${inst.instancia_nome}`, { headers }).catch(() => {});
             }
-            if (inst.integration_type === 'zapi' && inst.id) {
+            if (inst.integracao_tipo === 'zapi' && inst.id) {
               return fetch(`${apiUrl}/atendimento/instancias/${inst.id}/status`, { headers }).catch(() => {});
             }
             return Promise.resolve();
@@ -344,8 +344,8 @@ export default function CanaisAtendimento() {
       setError(null);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      if (instancia.integration_type === 'evolution') {
-        const response = await fetch(`${apiUrl}/atendimento/instancias/evolution/disconnect/${instancia.instance_name}`, {
+      if (instancia.integracao_tipo === 'evolution') {
+        const response = await fetch(`${apiUrl}/atendimento/instancias/evolution/disconnect/${instancia.instancia_nome}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -355,7 +355,7 @@ export default function CanaisAtendimento() {
         if (!response.ok) {
           throw new Error('Erro ao desconectar instância');
         }
-      } else if (instancia.integration_type === 'zapi') {
+      } else if (instancia.integracao_tipo === 'zapi') {
         const response = await fetch(`${apiUrl}/atendimento/instancias/${instancia.id}/disconnect`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -379,16 +379,16 @@ export default function CanaisAtendimento() {
   const handleReconnect = async (instancia) => {
     try {
       setError(null);
-      setInstanceName(instancia.instance_name);
-      setSelectedProvider(instancia.integration_type);
+      setInstanceName(instancia.instancia_nome);
+      setSelectedProvider(instancia.integracao_tipo);
       
-      if (instancia.integration_type === 'evolution') {
+      if (instancia.integracao_tipo === 'evolution') {
         setShowQrModal(true);
         // Aguardar um pouco e buscar QR code
         setTimeout(() => {
-          fetchQrCode(instancia.instance_name);
+          fetchQrCode(instancia.instancia_nome);
         }, 1000);
-      } else if (instancia.integration_type === 'zapi') {
+      } else if (instancia.integracao_tipo === 'zapi') {
         setShowQrModal(true);
         // Para Z-API, usar a rota específica
         setTimeout(() => {
@@ -417,8 +417,8 @@ export default function CanaisAtendimento() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
       let response;
-      if (instanceToDelete.integration_type === 'evolution') {
-        response = await fetch(`${apiUrl}/atendimento/instancias/evolution/delete/${instanceToDelete.instance_name}`, {
+      if (instanceToDelete.integracao_tipo === 'evolution') {
+        response = await fetch(`${apiUrl}/atendimento/instancias/evolution/delete/${instanceToDelete.instancia_nome}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -539,14 +539,13 @@ export default function CanaisAtendimento() {
           </div>
           <div className={styles.instanceInfo}>
             <span className={styles.whatsappText}>WhatsApp</span>
-            <span className={styles.companyName}>Teste Onety LTDA</span>
-            <span className={styles.instanceName}>{instancia.instance_name}</span>
+            <span className={styles.instanceName}>{instancia.instancia_nome}</span>
           </div>
         </div>
         
         <div className={styles.providerInfo}>
           <span className={styles.providerText}>
-            Provedor: Evolution
+            Provedor: {getIntegrationType(instancia.integracao_tipo)}
           </span>
         </div>
         
@@ -757,7 +756,7 @@ export default function CanaisAtendimento() {
               <p>
                 Tem certeza que deseja excluir a instância <strong>{instanceToDelete?.instance_name}</strong>? Esta ação não pode ser desfeita.
               </p>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'space-between' }}>
                 <button 
                   onClick={closeDeleteModal}
                   className={styles.retryButton}
@@ -768,7 +767,7 @@ export default function CanaisAtendimento() {
                 <button 
                   onClick={confirmDeleteInstance}
                   disabled={deletingInstance}
-                  className={styles.createButton}
+                  className={styles.deleteButton}
                 >
                   {deletingInstance ? (
                     <>

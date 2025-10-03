@@ -17,14 +17,12 @@ export default function Equipes() {
   const [availableInstances, setAvailableInstances] = useState([]);
   const [teamInstances, setTeamInstances] = useState({});
   const [teamUserCounts, setTeamUserCounts] = useState({});
-  const [userRole, setUserRole] = useState(null);
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const companyId = userData.companyId;
-    setUserRole(userData.userRole || null);
+    const companyId = userData.EmpresaId;
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -53,8 +51,8 @@ export default function Equipes() {
         throw new Error('URL da API não configurada.');
       }
       
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
-      const url = companyId ? `${apiUrl}/teams?company_id=${companyId}` : `${apiUrl}/teams`;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+      const url = companyId ? `${apiUrl}/atendimento/times-atendimento?empresa_id=${companyId}` : `${apiUrl}/atendimento/times-atendimento`;
       
       const response = await fetch(url, {
         headers: {
@@ -86,12 +84,12 @@ export default function Equipes() {
   const fetchAvailableInstances = async () => {
     try {
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       if (!token || !companyId || !apiUrl) return;
 
-      const response = await fetch(`${apiUrl}/instances/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/instancias/empresa/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -118,7 +116,7 @@ export default function Equipes() {
       // Buscar vínculos para cada equipe
       for (const team of teams) {
         try {
-          const response = await fetch(`${apiUrl}/team-instances/team/${team.id}`, {
+          const response = await fetch(`${apiUrl}/atendimento/times-atendimento-instancias/time/${team.id}`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -154,7 +152,7 @@ export default function Equipes() {
       // Buscar contagem de usuários para cada equipe
       for (const team of teams) {
         try {
-          const response = await fetch(`${apiUrl}/team-users/team/${team.id}`, {
+          const response = await fetch(`${apiUrl}/atendimento/times-atendimento-usuarios/time/${team.id}`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -256,7 +254,7 @@ export default function Equipes() {
     // Filtrar por instância específica
     const equipeInstances = teamInstances[equipe.id] || [];
     const hasInstance = equipeInstances.some(instance => 
-      instance.whatsapp_instance_id.toString() === filterChannel
+      instance.instancia_id.toString() === filterChannel
     );
     
     return matchesSearch && hasInstance;
@@ -290,15 +288,13 @@ export default function Equipes() {
         {equipe.padrao === 1 && (
           <div className={styles.padraoTag}>Padrão</div>
         )}
-        {(userRole === 'Administrador' || userRole === 'Superadmin') && (
-          <button 
-            className={styles.editButton}
-            onClick={() => handleOpenEditModal(equipe)}
-            title="Editar equipe"
-          >
-            <Edit size={16} />
-          </button>
-        )}
+        <button 
+          className={styles.editButton}
+          onClick={() => handleOpenEditModal(equipe)}
+          title="Editar equipe"
+        >
+          <Edit size={16} />
+        </button>
       </div>
     </div>
   );
@@ -344,33 +340,24 @@ export default function Equipes() {
             className={styles.input}
           />
         </div>
-        <div className={styles.filterSelect}>
-          <select
-            value={filterChannel}
-            onChange={(e) => setFilterChannel(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">Todos os canais</option>
-            {availableInstances.map((instance) => (
-              <option key={instance.id} value={instance.id}>
-                {instance.phone_number ? 
-                  `(${instance.phone_number}) - ${instance.instance_name}` : 
-                  `- Instância ${instance.instance_name || instance.instance_id}`
-                }
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.headerActions}>
-          {(userRole === 'Administrador' || userRole === 'Superadmin') && (
-            <button 
-              className={styles.newButton}
-              onClick={handleOpenCreateModal}
+        <div className={styles.rightSection}>
+          <div className={styles.filterSelect}>
+            <select
+              value={filterChannel}
+              onChange={(e) => setFilterChannel(e.target.value)}
+              className={styles.select}
             >
-              <Plus size={20} />
-              Novo
-            </button>
-          )}
+              <option value="">Todos os canais</option>
+              {availableInstances.map((instance) => (
+                <option key={instance.id} value={instance.id}>
+                  {instance.telefone ? 
+                    `(${instance.telefone}) - ${instance.instancia_nome || instance.instancia_id || instance.id}` : 
+                    `- Instância ${instance.instancia_nome || instance.instancia_id || instance.id}`
+                  }
+                </option>
+              ))}
+            </select>
+          </div>
           <button 
             className={styles.refreshButton}
             onClick={() => {
@@ -379,6 +366,13 @@ export default function Equipes() {
             }}
           >
             <RefreshCw size={20} />
+          </button>
+          <button 
+            className={styles.newButton}
+            onClick={handleOpenCreateModal}
+          >
+            <Plus size={20} />
+            Novo
           </button>
         </div>
       </div>
@@ -415,15 +409,13 @@ export default function Equipes() {
           <div className={styles.emptyState}>
             <Users size={48} className={styles.emptyIcon} />
             <p>Nenhuma equipe encontrada</p>
-            {(userRole === 'Administrador' || userRole === 'Superadmin') && (
-              <button 
-                className={styles.createFirstButton}
-                onClick={handleOpenCreateModal}
-              >
-                <Plus size={20} />
-                Criar primeira equipe
-              </button>
-            )}
+            <button 
+              className={styles.createFirstButton}
+              onClick={handleOpenCreateModal}
+            >
+              <Plus size={20} />
+              Criar primeira equipe
+            </button>
           </div>
         ) : (
           Object.entries(currentGroupedEquipes)

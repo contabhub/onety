@@ -6,6 +6,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
   const [formData, setFormData] = useState({
     nome: '',
     padrao: false,
+    departamento_id: '',
     whatsappInstances: [],
     teamUsers: []
   });
@@ -17,12 +18,15 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
   const [availableUsers, setAvailableUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
+  const [availableDepartments, setAvailableDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
   
   // Buscar dados disponíveis quando o modal abrir
   useEffect(() => {
     if (isOpen) {
       fetchAvailableInstances();
       fetchAvailableUsers();
+      fetchAvailableDepartments();
     }
   }, [isOpen]);
 
@@ -32,6 +36,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       setFormData({
         nome: editTeam.nome || '',
         padrao: editTeam.padrao === 1,
+        departamento_id: editTeam.departamento_id ? editTeam.departamento_id.toString() : 'null',
         whatsappInstances: [],
         teamUsers: []
       });
@@ -42,6 +47,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       setFormData({
         nome: '',
         padrao: false,
+        departamento_id: '',
         whatsappInstances: [],
         teamUsers: []
       });
@@ -52,14 +58,14 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
     try {
       setLoadingInstances(true);
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       
       if (!token || !companyId) {
         throw new Error('Dados de autenticação não encontrados');
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/instances/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/instancias/empresa/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -84,7 +90,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      const response = await fetch(`${apiUrl}/team-instances/team/${teamId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/times-atendimento-instancias/time/${teamId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -107,14 +113,14 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
     try {
       setLoadingUsers(true);
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       
       if (!token || !companyId) {
         throw new Error('Dados de autenticação não encontrados');
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/users/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/usuarios/company/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -136,12 +142,43 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
     }
   };
 
+  const fetchAvailableDepartments = async () => {
+    try {
+      setLoadingDepartments(true);
+      const token = localStorage.getItem('token');
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+      
+      if (!token || !companyId) {
+        throw new Error('Dados de autenticação não encontrados');
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${apiUrl}/departamentos/empresa/${companyId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar departamentos');
+      }
+
+      const departments = await response.json();
+      setAvailableDepartments(departments);
+    } catch (err) {
+      console.error('Erro ao buscar departamentos:', err);
+      setError('Erro ao carregar departamentos disponíveis');
+    } finally {
+      setLoadingDepartments(false);
+    }
+  };
+
   const fetchTeamUsers = async (teamId) => {
     try {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      const response = await fetch(`${apiUrl}/team-users/team/${teamId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/times-atendimento-usuarios/time/${teamId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -149,11 +186,9 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
 
       if (response.ok) {
         const teamUsers = await response.json();
-        console.log('Usuários da equipe carregados:', teamUsers);
         
-        // Extrair apenas os user_id dos usuários vinculados
-        const userIds = teamUsers.map(tu => tu.user_id);
-        console.log('IDs dos usuários vinculados:', userIds);
+        // Extrair apenas os usuario_id dos usuários vinculados
+        const userIds = teamUsers.map(tu => tu.usuario_id);
         
         setFormData(prev => ({
           ...prev,
@@ -204,8 +239,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
 
   const handleToggleAllUsers = () => {
     const allUserIds = availableUsers.map(user => user.id);
-    const isAllSelected = allUserIds.length === formData.teamUsers.length &&
-                         allUserIds.every(id => formData.teamUsers.includes(id));
+    const isAllSelected = formData.teamUsers.length === allUserIds.length;
     
     setFormData(prev => ({
       ...prev,
@@ -226,8 +260,8 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       const instance = availableInstances.find(inst => inst.id === formData.whatsappInstances[0]);
       if (instance) {
         return instance.phone_number ? 
-          `(${instance.phone_number}) - ${instance.instance_name}` : 
-          `- Instância ${instance.instance_name || instance.instance_id}`;
+          `(${instance.phone_number}) - ${instance.instancia_nome || instance.instance_name}` : 
+          `- Instância ${instance.instancia_nome || instance.instance_name || instance.instancia_id || instance.instance_id}`;
       }
     }
     
@@ -235,13 +269,6 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
   };
 
   const getUsersDropdownText = () => {
-    console.log('Debug getUsersDropdownText:', {
-      teamUsersLength: formData.teamUsers.length,
-      availableUsersLength: availableUsers.length,
-      teamUsers: formData.teamUsers,
-      availableUserIds: availableUsers.map(u => u.id)
-    });
-    
     if (formData.teamUsers.length === 0) {
       return 'Nenhum usuário';
     }
@@ -268,12 +295,17 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       return;
     }
 
+    if (!formData.departamento_id || formData.departamento_id === '') {
+      setError('Departamento é obrigatório');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       if (!token || !companyId) {
         throw new Error('Dados de autenticação não encontrados');
       }
@@ -284,13 +316,14 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       }
 
       const isEditing = !!editTeam;
-      const url = isEditing ? `${apiUrl}/teams/${editTeam.id}` : `${apiUrl}/teams`;
+      const url = isEditing ? `${apiUrl}/atendimento/times-atendimento/${editTeam.id}` : `${apiUrl}/atendimento/times-atendimento`;
       const method = isEditing ? 'PUT' : 'POST';
       
       const body = {
         nome: formData.nome.trim(),
         padrao: formData.padrao ? 1 : 0,
-        company_id: parseInt(companyId)
+        empresa_id: parseInt(companyId),
+        departamento_id: formData.departamento_id === 'null' ? null : (formData.departamento_id ? parseInt(formData.departamento_id) : null)
       };
 
       const response = await fetch(url, {
@@ -348,16 +381,16 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
 
     for (const instanceId of formData.whatsappInstances) {
       try {
-        const response = await fetch(`${apiUrl}/team-instances`, {
+        const response = await fetch(`${apiUrl}/atendimento/times-atendimento-instancias`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            team_id: teamId,
-            whatsapp_instance_id: instanceId,
-            access_level: 'total'
+            times_atendimento_id: teamId,
+            instancia_id: instanceId,
+            nivel_acesso: 'total'
           })
         });
 
@@ -376,7 +409,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
 
     try {
       // Buscar vínculos existentes
-      const existingResponse = await fetch(`${apiUrl}/team-instances/team/${teamId}`, {
+      const existingResponse = await fetch(`${apiUrl}/atendimento/times-atendimento-instancias/time/${teamId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -405,7 +438,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       // REMOVER vínculos desmarcados
       for (const link of instancesToRemove) {
         try {
-          const deleteResponse = await fetch(`${apiUrl}/team-instances/${link.id}`, {
+          const deleteResponse = await fetch(`${apiUrl}/atendimento/times-atendimento-instancias/${link.id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -425,16 +458,16 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       // ADICIONAR novos vínculos
       for (const instanceId of instancesToAdd) {
         try {
-          const addResponse = await fetch(`${apiUrl}/team-instances`, {
+          const addResponse = await fetch(`${apiUrl}/atendimento/times-atendimento-instancias`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              team_id: teamId,
-              whatsapp_instance_id: instanceId,
-              access_level: 'total'
+              times_atendimento_id: teamId,
+              instancia_id: instanceId,
+              nivel_acesso: 'total'
             })
           });
 
@@ -459,15 +492,15 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
 
     for (const userId of formData.teamUsers) {
       try {
-        const response = await fetch(`${apiUrl}/team-users`, {
+        const response = await fetch(`${apiUrl}/atendimento/times-atendimento-usuarios`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            team_id: teamId,
-            user_id: userId,
+            times_atendimento_id: teamId,
+            usuario_id: userId,
             role: 'Usuário'
           })
         });
@@ -487,7 +520,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
 
     try {
       // Buscar vínculos existentes
-      const existingResponse = await fetch(`${apiUrl}/team-users/team/${teamId}`, {
+      const existingResponse = await fetch(`${apiUrl}/atendimento/times-atendimento-usuarios/time/${teamId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -517,7 +550,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       // REMOVER vínculos desmarcados
       for (const link of usersToRemove) {
         try {
-          const deleteResponse = await fetch(`${apiUrl}/team-users/${link.id}`, {
+          const deleteResponse = await fetch(`${apiUrl}/atendimento/times-atendimento-usuarios/${link.id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -537,15 +570,15 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
       // ADICIONAR novos vínculos
       for (const userId of usersToAdd) {
         try {
-          const addResponse = await fetch(`${apiUrl}/team-users`, {
+          const addResponse = await fetch(`${apiUrl}/atendimento/times-atendimento-usuarios`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              team_id: teamId,
-              user_id: userId,
+              times_atendimento_id: teamId,
+              usuario_id: userId,
               role: 'Usuário'
             })
           });
@@ -635,6 +668,32 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
               disabled={loading}
               maxLength={100}
             />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="departamento_id" className={styles.label}>
+              Departamento *
+            </label>
+            <select
+              id="departamento_id"
+              name="departamento_id"
+              value={formData.departamento_id}
+              onChange={handleInputChange}
+              className={styles.input}
+              disabled={loading || loadingDepartments}
+              required
+            >
+              <option value="">Selecione um departamento</option>
+              <option value="null">Sem Departamento Definido</option>
+              {availableDepartments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.nome}
+                </option>
+              ))}
+            </select>
+            {loadingDepartments && (
+              <div className={styles.loadingText}>Carregando departamentos...</div>
+            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -730,8 +789,8 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
                             />
                             <span className={styles.checkboxText}>
                               {instance.phone_number ? 
-                                `(${instance.phone_number}) - ${instance.instance_name}` : 
-                                `- Instância ${instance.instance_name || instance.instance_id}`
+                                `(${instance.phone_number}) - ${instance.instancia_nome || instance.instance_name}` : 
+                                `- Instância ${instance.instancia_nome || instance.instance_name || instance.instancia_id || instance.instance_id}`
                               }
                             </span>
                           </label>
@@ -775,9 +834,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess, editTeam =
                     <label className={styles.checkboxLabel}>
                       <input
                         type="checkbox"
-                        checked={availableUsers.length > 0 && 
-                                 formData.teamUsers.length === availableUsers.length &&
-                                 availableUsers.every(user => formData.teamUsers.includes(user.id))}
+                        checked={availableUsers.length > 0 && formData.teamUsers.length === availableUsers.length}
                         onChange={handleToggleAllUsers}
                         className={styles.checkbox}
                         disabled={loading || availableUsers.length === 0}
