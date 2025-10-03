@@ -34,8 +34,8 @@ const MODULE_REGISTRY = {
     nome: 'Atendimento',
     icon: <MessageSquare size={16} />,
     logos: {
-      light: '/img/logo-onety-atendimento-preta.png',
-      dark: '/img/logo-onety-atendimento-branca.png'
+      light: '/img/atendimento preto.png',
+      dark: '/img/atendimento branco.png'
     },
     items: [
       {
@@ -57,8 +57,8 @@ const MODULE_REGISTRY = {
     nome: 'Comercial',
     icon: <Users size={16} />,
     logos: {
-      light: '/img/logo-onety-comercial-preta.png',
-      dark: '/img/logo-onety-comercial-branca.png'
+      light: '/img/Comercial preto.png',
+      dark: '/img/Comercial branco.png'
     },
     items: [
       {
@@ -80,8 +80,8 @@ const MODULE_REGISTRY = {
     nome: 'Contratual',
     icon: <FileText size={16} />,
     logos: {
-      light: '/img/modulos/contratual-light.png',
-      dark: '/img/modulos/contratual-dark.png'
+      light: '/img/Contratual preto.png',
+      dark: '/img/Contratual Branco.png'
     },
     items: [
       {
@@ -103,8 +103,8 @@ const MODULE_REGISTRY = {
     nome: 'Financeiro',
     icon: <DollarSign size={16} />,
     logos: {
-      light: '/img/modulos/financeiro-light.png',
-      dark: '/img/modulos/financeiro-dark.png'
+      light: '/img/Financeiro Preto.png',
+      dark: '/img/Financeiro branco.png'
     },
     items: [
       {
@@ -126,8 +126,8 @@ const MODULE_REGISTRY = {
     nome: 'Gestão de Processos',
     icon: <Settings size={16} />,
     logos: {
-      light: '/img/modulos/gestao-processos-light.png',
-      dark: '/img/modulos/gestao-processos-dark.png'
+      light: '/img/Gestão preto.png',
+      dark: '/img/Gestão branco.png'
     },
     items: [
       {
@@ -149,8 +149,8 @@ const MODULE_REGISTRY = {
     nome: 'Auditoria',
     icon: <Shield size={16} />,
     logos: {
-      light: '/img/modulos/auditoria-light.png',
-      dark: '/img/modulos/auditoria-dark.png'
+      light: '/img/Auditoria Preto.png',
+      dark: '/img/Auditoria Branco.png'
     },
     items: [
       {
@@ -172,8 +172,8 @@ const MODULE_REGISTRY = {
     nome: 'Estratégico',
     icon: <Target size={16} />,
     logos: {
-      light: '/img/modulos/estrategico-light.png',
-      dark: '/img/modulos/estrategico-dark.png'
+      light: '/img/Estratégico Preto.png',
+      dark: '/img/Estratégico Branco.png'
     },
     items: [
       {
@@ -503,7 +503,7 @@ export default function PrincipalSidebar() {
       onMouseLeave={handleMouseLeave}
     >
       <div className={styles.topBar}>
-        <div className={`${styles.logo} ${currentModule?.id === 'comercial' ? styles.comercial : ''} ${currentModule?.id === 'atendimento' ? styles.atendimento : ''} ${isTransitioning ? styles.transitioning : ''}`}>
+        <div className={`${styles.logo} ${isTransitioning ? styles.transitioning : ''}`}>
           <img
             src={collapsed
               ? '/img/Logo-Onety-Colapsada.png'
