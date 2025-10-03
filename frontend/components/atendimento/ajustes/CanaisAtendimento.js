@@ -13,7 +13,6 @@ export default function CanaisAtendimento() {
   const [qrLoading, setQrLoading] = useState(false);
   const [instanceName, setInstanceName] = useState('');
   const [creatingInstance, setCreatingInstance] = useState(false);
-  const [userRole, setUserRole] = useState(null);
   const dropdownRef = useRef(null);
   const qrIntervalRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -25,8 +24,7 @@ export default function CanaisAtendimento() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const companyId = userData.companyId;
-    setUserRole(userData.userRole || null);
+    const companyId = userData.EmpresaId;
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -88,10 +86,10 @@ export default function CanaisAtendimento() {
         await Promise.all(
           (instancias || []).map((inst) => {
             if (inst.integration_type === 'evolution' && inst.instance_name) {
-              return fetch(`${apiUrl}/instances/evolution/status/${inst.instance_name}`, { headers }).catch(() => {});
+              return fetch(`${apiUrl}/atendimento/instancias/evolution/status/${inst.instance_name}`, { headers }).catch(() => {});
             }
             if (inst.integration_type === 'zapi' && inst.id) {
-              return fetch(`${apiUrl}/instances/${inst.id}/status`, { headers }).catch(() => {});
+              return fetch(`${apiUrl}/atendimento/instancias/${inst.id}/status`, { headers }).catch(() => {});
             }
             return Promise.resolve();
           })
@@ -116,7 +114,7 @@ export default function CanaisAtendimento() {
       setError(null);
       
       // Buscar companyId do localStorage
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       if (!companyId) {
         throw new Error('ID da empresa não encontrado. Faça login novamente.');
       }
@@ -126,7 +124,7 @@ export default function CanaisAtendimento() {
         throw new Error('URL da API não configurada.');
       }
       
-      const response = await fetch(`${apiUrl}/instances/company/${companyId}`, {
+      const response = await fetch(`${apiUrl}/atendimento/instancias/empresa/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -191,20 +189,20 @@ export default function CanaisAtendimento() {
       setCreatingInstance(true);
       setError(null);
       
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      const response = await fetch(`${apiUrl}/instances/evolution/create`, {
+      const response = await fetch(`${apiUrl}/atendimento/instancias/evolution/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          company_id: companyId,
+          empresa_id: companyId,
           instanceName: instanceName.trim(),
           integration: 'WHATSAPP-BAILEYS',
-          integration_type: 'evolution'
+          integracao_tipo: 'evolution'
         })
       });
 
@@ -217,7 +215,7 @@ export default function CanaisAtendimento() {
       
       // Chamar rota para configurar/reaplicar webhook (não bloqueante para UX)
       try {
-        fetch(`${apiUrl}/instances/evolution/webhook/${instanceName.trim()}`, {
+        fetch(`${apiUrl}/atendimento/instancias/evolution/webhook/${instanceName.trim()}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -245,7 +243,7 @@ export default function CanaisAtendimento() {
       setQrLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      const response = await fetch(`${apiUrl}/instances/evolution/qrcode/${name}`, {
+      const response = await fetch(`${apiUrl}/atendimento/instancias/evolution/qrcode/${name}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -296,7 +294,7 @@ export default function CanaisAtendimento() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
-      const response = await fetch(`${apiUrl}/instances/evolution/status/${name}`, {
+      const response = await fetch(`${apiUrl}/atendimento/instancias/evolution/status/${name}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -347,7 +345,7 @@ export default function CanaisAtendimento() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       if (instancia.integration_type === 'evolution') {
-        const response = await fetch(`${apiUrl}/instances/evolution/disconnect/${instancia.instance_name}`, {
+        const response = await fetch(`${apiUrl}/atendimento/instancias/evolution/disconnect/${instancia.instance_name}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -358,7 +356,7 @@ export default function CanaisAtendimento() {
           throw new Error('Erro ao desconectar instância');
         }
       } else if (instancia.integration_type === 'zapi') {
-        const response = await fetch(`${apiUrl}/instances/${instancia.id}/disconnect`, {
+        const response = await fetch(`${apiUrl}/atendimento/instancias/${instancia.id}/disconnect`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -420,7 +418,7 @@ export default function CanaisAtendimento() {
 
       let response;
       if (instanceToDelete.integration_type === 'evolution') {
-        response = await fetch(`${apiUrl}/instances/evolution/delete/${instanceToDelete.instance_name}`, {
+        response = await fetch(`${apiUrl}/atendimento/instancias/evolution/delete/${instanceToDelete.instance_name}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -561,37 +559,33 @@ export default function CanaisAtendimento() {
 
       {/* Middle section - Actions */}
       <div className={styles.cardActions}>
-        {(userRole === 'Administrador' || userRole === 'Superadmin') && (
-          <>
-            {instancia.status === 'conectado' ? (
-              <button 
-                className={styles.actionButton}
-                onClick={() => handleDisconnect(instancia)}
-                title="Desconectar WhatsApp"
-              >
-                <X size={16} />
-                Desconectar
-              </button>
-            ) : (
-              <button 
-                className={styles.actionButton}
-                onClick={() => handleReconnect(instancia)}
-                title="Reconectar WhatsApp"
-              >
-                <RefreshCw size={16} />
-                Reconectar
-              </button>
-            )}
-            <button 
-              className={styles.actionButton}
-              onClick={() => handleDelete(instancia)}
-              title="Deletar instância"
-            >
-              <Trash size={16} />
-              Deletar
-            </button>
-          </>
+        {instancia.status === 'conectado' ? (
+          <button 
+            className={styles.actionButton}
+            onClick={() => handleDisconnect(instancia)}
+            title="Desconectar WhatsApp"
+          >
+            <X size={16} />
+            Desconectar
+          </button>
+        ) : (
+          <button 
+            className={styles.actionButton}
+            onClick={() => handleReconnect(instancia)}
+            title="Reconectar WhatsApp"
+          >
+            <RefreshCw size={16} />
+            Reconectar
+          </button>
         )}
+        <button 
+          className={styles.actionButton}
+          onClick={() => handleDelete(instancia)}
+          title="Deletar instância"
+        >
+          <Trash size={16} />
+          Deletar
+        </button>
       </div>
 
       {/* Bottom section */}
@@ -644,32 +638,30 @@ export default function CanaisAtendimento() {
         {instancias.map(renderInstanciaCard)}
       </div>
 
-      {(userRole === 'Administrador' || userRole === 'Superadmin') && (
-        <div className={styles.addButtonContainer} ref={dropdownRef}>
-          <button 
-            className={styles.addButton}
-            onClick={() => setShowDropdown(!showDropdown)}
-          >
-            <Plus size={24} />
-          </button>
-          
-          {showDropdown && (
-            <div className={styles.dropdown}>
-              <div className={styles.dropdownHeader}>
-                <span>Escolha seu provedor</span>
-              </div>
-              <button 
-                className={styles.dropdownItem}
-                onClick={() => selectProvider('evolution')}
-              >
-                <MessageCircle size={16} />
-                <span>Evolution API</span>
-                <ChevronDown size={14} />
-              </button>
+      <div className={styles.addButtonContainer} ref={dropdownRef}>
+        <button 
+          className={styles.addButton}
+          onClick={() => setShowDropdown(!showDropdown)}
+        >
+          <Plus size={24} />
+        </button>
+        
+        {showDropdown && (
+          <div className={styles.dropdown}>
+            <div className={styles.dropdownHeader}>
+              <span>Escolha seu provedor</span>
             </div>
-          )}
-        </div>
-      )}
+            <button 
+              className={styles.dropdownItem}
+              onClick={() => selectProvider('evolution')}
+            >
+              <MessageCircle size={16} />
+              <span>Evolution API</span>
+              <ChevronDown size={14} />
+            </button>
+          </div>
+        )}
+      </div>
       
       {/* Modal QR Code */}
       {showQrModal && (

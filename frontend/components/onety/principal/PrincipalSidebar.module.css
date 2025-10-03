@@ -9,9 +9,8 @@
   animation: sidebarGradientMove 8s ease-in-out infinite;
   transition: width 0.15s ease-out;
   height: 100vh;
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 1001;
+  position: relative;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   max-height: 100vh;
@@ -25,6 +24,11 @@
 /* Box-shadow light */
 :root[data-theme='light'] .sidebar {
   box-shadow: 2px 0 8px 0 rgba(0,0,0,0.06);
+}
+
+/* Remove box-shadow no modo dark */
+:root[data-theme='dark'] .sidebar {
+  box-shadow: none;
 }
 
 /* Background linhas SVG animadas */
@@ -279,7 +283,9 @@
   .sidebar {
     width: 100%;
     height: auto;
-    min-height: 100vh;
+    min-height: auto;
+    position: relative;
+    flex-shrink: 0;
   }
   
   .dotsContainer {
