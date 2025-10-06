@@ -1,38 +1,38 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/database");
-const verifyToken = require("../middlewares/auth");
+const db = require("../../config/database");
+const verifyToken = require("../../middlewares/auth");
 
 // Criação de um novo cliente
 router.post("/", verifyToken, async (req, res) => {
   try {
     const {
-      type, name, cpf_cnpj, email, telefone, endereco, equipe_id, lead_id,
+      tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id,
       rg, estado_civil, profissao, sexo, nacionalidade,
       cep, numero, complemento, bairro, cidade, estado,
       representante, funcao
     } = req.body;
 
-    if (!type || !name || !cpf_cnpj || !email || !equipe_id) {
-      return res.status(400).json({ error: "Preencha todos os campos obrigatórios (incluindo equipe_id)." });
+    if (!tipo || !nome || !cpf_cnpj || !email || !empresa_id) {
+      return res.status(400).json({ error: "Preencha todos os campos obrigatórios (incluindo empresa_id)." });
     }
 
-    const [existingClient] = await db.query("SELECT id FROM clients WHERE cpf_cnpj = ?", [cpf_cnpj]);
+    const [existingClient] = await db.query("SELECT id FROM pre_clientes WHERE cpf_cnpj = ?", [cpf_cnpj]);
     if (existingClient.length > 0) {
       return res.status(400).json({ error: "Cliente já cadastrado com este CPF/CNPJ." });
     }
 
     const [result] = await db.query(
-      `INSERT INTO clients 
+      `INSERT INTO pre_clientes 
        (
-         type, name, cpf_cnpj, email, telefone, endereco, equipe_id, lead_id,
+         tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id,
          rg, estado_civil, profissao, sexo, nacionalidade,
          cep, numero, complemento, bairro, cidade, estado,
          representante, funcao
        ) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        type, name, cpf_cnpj, email, telefone, endereco, equipe_id, lead_id || null,
+        tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id || null,
         rg || null, estado_civil || null, profissao || null, sexo || null, nacionalidade || null,
         cep || null, numero || null, complemento || null, bairro || null, cidade || null, estado || null,
         representante || null, funcao || null
@@ -53,28 +53,28 @@ router.put("/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
 
     const {
-      type, name, cpf_cnpj, email, telefone, endereco, equipe_id, lead_id,
+      tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id,
       rg, estado_civil, profissao, sexo, nacionalidade,
       cep, numero, complemento, bairro, cidade, estado,
       representante, funcao
     } = req.body;
 
     // Verifica se o cliente existe
-    const [clienteExistente] = await db.query("SELECT * FROM clients WHERE id = ?", [id]);
+    const [clienteExistente] = await db.query("SELECT * FROM pre_clientes WHERE id = ?", [id]);
     if (clienteExistente.length === 0) {
       return res.status(404).json({ error: "Cliente não encontrado." });
     }
 
     await db.query(
-      `UPDATE clients SET
-        type = ?, name = ?, cpf_cnpj = ?, email = ?, telefone = ?, endereco = ?, 
-        equipe_id = ?, lead_id = ?, rg = ?, estado_civil = ?, profissao = ?, sexo = ?, 
+      `UPDATE pre_clientes SET
+        tipo = ?, nome = ?, cpf_cnpj = ?, email = ?, telefone = ?, endereco = ?, 
+        empresa_id = ?, lead_id = ?, rg = ?, estado_civil = ?, profissao = ?, sexo = ?, 
         nacionalidade = ?, cep = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, 
         estado = ?, representante = ?, funcao = ?
        WHERE id = ?`,
       [
-        type, name, cpf_cnpj, email, telefone, endereco,
-        equipe_id, lead_id || null, rg, estado_civil, profissao, sexo,
+        tipo, nome, cpf_cnpj, email, telefone, endereco,
+        empresa_id, lead_id || null, rg, estado_civil, profissao, sexo,
         nacionalidade, cep, numero, complemento, bairro, cidade,
         estado, representante, funcao, id
       ]
@@ -91,8 +91,8 @@ router.put("/:id", verifyToken, async (req, res) => {
 // Listar todos os clientes
 router.get("/",verifyToken, async (req, res) => {
   try {
-    const [clients] = await db.query("SELECT * FROM clients ORDER BY created_at DESC");
-    return res.status(200).json(clients);
+    const [pre_clientes] = await db.query("SELECT * FROM pre_clientes ORDER BY criado_em DESC");
+    return res.status(200).json(pre_clientes);
   } catch (error) {
     return res.status(500).json({ error: "Erro ao listar clientes." });
   }
@@ -102,7 +102,7 @@ router.get("/",verifyToken, async (req, res) => {
 router.get("/:id",verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const [client] = await db.query("SELECT * FROM clients WHERE id = ?", [id]);
+    const [client] = await db.query("SELECT * FROM pre_clientes WHERE id = ?", [id]);
 
     if (client.length === 0) {
       return res.status(404).json({ error: "Cliente não encontrado." });
@@ -114,15 +114,15 @@ router.get("/:id",verifyToken, async (req, res) => {
   }
 });
 
-// GET /clients/:equipeId
-router.get("/equipe/:equipeId", verifyToken, async (req, res) => {
+// GET /pre_clientes/:empresaId
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
   try {
-    const { equipeId } = req.params;
+    const { empresaId } = req.params;
 
 
     const [clientes] = await db.query(
-      "SELECT * FROM clients WHERE equipe_id = ?",
-      [equipeId]
+      "SELECT * FROM pre_clientes WHERE empresa_id = ?",
+      [empresaId]
     );
 
     res.json(clientes);
@@ -134,18 +134,18 @@ router.get("/equipe/:equipeId", verifyToken, async (req, res) => {
 
 
 
-// GET /clients/:clientId/contracts
+// GET /pre_clientes/:clientId/contracts
 router.get('/:clientId/contracts', verifyToken, async (req, res) => {
   const clientId = req.params.clientId;
 
   try {
     // Buscar o lead_id do cliente
-    const [clients] = await db.query(`SELECT lead_id FROM clients WHERE id = ?`, [clientId]);
-    if (clients.length === 0) {
+    const [pre_clientes] = await db.query(`SELECT lead_id FROM pre_clientes WHERE id = ?`, [clientId]);
+    if (pre_clientes.length === 0) {
       return res.status(404).json({ error: "Cliente não encontrado." });
     }
 
-    const leadId = clients[0].lead_id;
+    const leadId = pre_clientes[0].lead_id;
 
     if (!leadId) {
       // Cliente não veio de lead, retorna vazio
@@ -155,7 +155,7 @@ router.get('/:clientId/contracts', verifyToken, async (req, res) => {
     // Buscar contratos vinculados a clientes que vieram do mesmo lead
     const [contracts] = await db.query(
       `SELECT c.* FROM contracts c
-       JOIN clients cl ON c.client_id = cl.id
+       JOIN pre_clientes cl ON c.client_id = cl.id
        WHERE cl.lead_id = ?`,
       [leadId]
     );
@@ -172,7 +172,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     // Verifica se o cliente existe
-    const [cliente] = await db.query('SELECT * FROM clients WHERE id = ?', [id]);
+    const [cliente] = await db.query('SELECT * FROM pre_clientes WHERE id = ?', [id]);
     if (cliente.length === 0) {
       return res.status(404).json({ error: 'Cliente não encontrado.' });
     }
@@ -182,7 +182,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
       return res.status(409).json({ error: 'Não é possível excluir: este cliente possui contratos vinculados.' });
     }
     // Exclui o cliente
-    await db.query('DELETE FROM clients WHERE id = ?', [id]);
+    await db.query('DELETE FROM pre_clientes WHERE id = ?', [id]);
     return res.json({ message: 'Cliente excluído com sucesso!' });
   } catch (error) {
     console.error('Erro ao excluir cliente:', error);

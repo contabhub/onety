@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const db = require('../config/database');
-const verifyToken = require("../middlewares/auth");
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 
 // 🔹 Listar funis de uma equipe
-router.get('/:equipeId', verifyToken, async (req, res) => {
+router.get('/:empresaId', verifyToken, async (req, res) => {
   try {
-    const { equipeId } = req.params;
-    const [rows] = await db.query('SELECT * FROM funis WHERE equipe_id = ?', [equipeId]);
+    const { empresaId } = req.params;
+    const [rows] = await db.query('SELECT * FROM funis WHERE empresa_id = ?', [empresaId]);
     res.json(rows);
   } catch (error) {
     console.error('Erro ao listar funis:', error);
@@ -17,15 +17,15 @@ router.get('/:equipeId', verifyToken, async (req, res) => {
 // 🔹 Criar novo funil e fases padrão (Proposta ,Ganhou, Perdeu)
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const { equipe_id, nome, is_default } = req.body;
+    const { empresa_id, nome, padrao } = req.body;
 
-    if (!equipe_id || !nome) {
-      return res.status(400).json({ error: 'equipe_id e nome são obrigatórios.' });
+    if (!empresa_id || !nome) {
+      return res.status(400).json({ error: 'empresa_id e nome são obrigatórios.' });
     }
 
     const [result] = await db.query(
-      'INSERT INTO funis (equipe_id, nome, is_default) VALUES (?, ?, ?)',
-      [equipe_id, nome, is_default || false]
+      'INSERT INTO funis (empresa_id, nome, padrao) VALUES (?, ?, ?)',
+      [empresa_id, nome, padrao || false]
     );
 
     const novoFunilId = result.insertId;
@@ -60,13 +60,13 @@ router.post('/', verifyToken, async (req, res) => {
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, is_default } = req.body;
+    const { nome, padrao } = req.body;
 
     if (!nome) {
       return res.status(400).json({ error: 'O campo nome é obrigatório.' });
     }
 
-    await db.query('UPDATE funis SET nome = ?, is_default = ? WHERE id = ?', [nome, is_default || false, id]);
+    await db.query('UPDATE funis SET nome = ?, padrao = ? WHERE id = ?', [nome, padrao || false, id]);
     res.json({ message: 'Funil atualizado com sucesso.' });
   } catch (error) {
     console.error('Erro ao atualizar funil:', error);

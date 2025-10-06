@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const db = require('../config/database');
-const verifyToken = require('../middlewares/auth');
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 const multer = require('multer');
-const cloudinary = require('../config/cloudinary');
+const cloudinary = require('../../config/cloudinary');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -18,14 +18,14 @@ router.get('/', verifyToken, async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.content, 
-        p.equipe_id,
-        p.created_at,
-        p.updated_at,
-        e.nome AS equipe_nome
+        p.conteudo, 
+        p.empresa_id,
+        p.criado_em,
+        p.atualizado_em,
+        e.nome AS empresa_nome
       FROM playbooks p
-      JOIN equipes e ON e.id = p.equipe_id
-      ORDER BY p.created_at DESC
+      JOIN empresas e ON e.id = p.empresa_id
+      ORDER BY p.criado_em DESC
     `);
     res.json(rows);
   } catch (error) {
@@ -34,29 +34,29 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar playbooks por equipe
-router.get('/equipe/:equipe_id', verifyToken, async (req, res) => {
+// 🔹 Listar playbooks por empresa
+router.get('/empresa/:empresa_id', verifyToken, async (req, res) => {
   try {
-    const { equipe_id } = req.params;
+    const { empresa_id } = req.params;
     const [rows] = await db.query(`
       SELECT 
         p.id, 
         p.nome, 
-        p.content, 
-        p.equipe_id,
-        p.created_at,
-        p.updated_at,
-        e.nome AS equipe_nome
+        p.conteudo, 
+        p.empresa_id,
+        p.criado_em,
+        p.atualizado_em,
+        e.nome AS empresa_nome
       FROM playbooks p
-      JOIN equipes e ON e.id = p.equipe_id
-      WHERE p.equipe_id = ?
-      ORDER BY p.created_at DESC
-    `, [equipe_id]);
+      JOIN empresas e ON e.id = p.empresa_id
+      WHERE p.empresa_id = ?
+      ORDER BY p.criado_em DESC
+    `, [empresa_id]);
     
     res.json(rows);
   } catch (error) {
-    console.error('Erro ao listar playbooks da equipe:', error);
-    res.status(500).json({ error: 'Erro ao listar playbooks da equipe' });
+    console.error('Erro ao listar playbooks da empresa:', error);
+    res.status(500).json({ error: 'Erro ao listar playbooks da empresa' });
   }
 });
 
@@ -68,13 +68,13 @@ router.get('/:id', verifyToken, async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.content, 
-        p.equipe_id,
-        p.created_at,
-        p.updated_at,
-        e.nome AS equipe_nome
+        p.conteudo, 
+        p.empresa_id,
+        p.criado_em,
+        p.atualizado_em,
+        e.nome AS empresa_nome
       FROM playbooks p
-      JOIN equipes e ON e.id = p.equipe_id
+      JOIN empresas e ON e.id = p.empresa_id
       WHERE p.id = ?
     `, [id]);
 
@@ -92,7 +92,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 // 🔹 Criar novo playbook com upload para Cloudinary
 router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
   try {
-    const { nome, equipe_id } = req.body;
+    const { nome, empresa_id } = req.body;
     const arquivo = req.file;
 
     // Validações
@@ -100,8 +100,8 @@ router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
       return res.status(400).json({ error: 'O campo nome é obrigatório.' });
     }
 
-    if (!equipe_id) {
-      return res.status(400).json({ error: 'O campo equipe_id é obrigatório.' });
+    if (!empresa_id) {
+      return res.status(400).json({ error: 'O campo empresa_id é obrigatório.' });
     }
 
     if (!arquivo) {
@@ -113,9 +113,9 @@ router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
       return res.status(400).json({ error: 'Apenas arquivos PDF são permitidos.' });
     }
 
-    // Verificar se a equipe existe
-    const [equipeExists] = await db.query('SELECT id FROM equipes WHERE id = ?', [equipe_id]);
-    if (equipeExists.length === 0) {
+    // Verificar se a empresa existe
+    const [empresaExists] = await db.query('SELECT id FROM empresas WHERE id = ?', [empresa_id]);
+    if (empresaExists.length === 0) {
       return res.status(404).json({ error: 'Equipe não encontrada.' });
     }
 
@@ -124,24 +124,24 @@ router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
 
     // Salvar no banco de dados
     const [result] = await db.query(
-      'INSERT INTO playbooks (nome, content, equipe_id) VALUES (?, ?, ?)',
-      [nome, base64Content, equipe_id]
+      'INSERT INTO playbooks (nome, conteudo, empresa_id) VALUES (?, ?, ?)',
+      [nome, base64Content, empresa_id]
     );
 
     const novoPlaybookId = result.insertId;
 
-    // Buscar o playbook criado com informações da equipe
+    // Buscar o playbook criado com informações da empresa
     const [novoPlaybook] = await db.query(`
       SELECT 
         p.id, 
         p.nome, 
-        p.content, 
-        p.equipe_id,
-        p.created_at,
-        p.updated_at,
-        e.nome AS equipe_nome
+        p.conteudo, 
+        p.empresa_id,
+        p.criado_em,
+        p.atualizado_em,
+        e.nome AS empresa_nome
       FROM playbooks p
-      JOIN equipes e ON e.id = p.equipe_id
+      JOIN empresas e ON e.id = p.empresa_id
       WHERE p.id = ?
     `, [novoPlaybookId]);
 
@@ -159,7 +159,7 @@ router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
 router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, equipe_id } = req.body;
+    const { nome, empresa_id } = req.body;
     const arquivo = req.file;
 
     // Garante existência do playbook
@@ -180,14 +180,14 @@ router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
       params.push(nome);
     }
 
-    if (equipe_id != null) {
-      // Verificar se a equipe existe
-      const [equipeExists] = await db.query('SELECT id FROM equipes WHERE id = ?', [equipe_id]);
-      if (equipeExists.length === 0) {
+    if (empresa_id != null) {
+      // Verificar se a empresa existe
+      const [empresaExists] = await db.query('SELECT id FROM empresas WHERE id = ?', [empresa_id]);
+      if (empresaExists.length === 0) {
         return res.status(404).json({ error: 'Equipe não encontrada.' });
       }
-      fields.push('equipe_id = ?');
-      params.push(equipe_id);
+      fields.push('empresa_id = ?');
+      params.push(empresa_id);
     }
 
     // Se um novo arquivo foi enviado, converter para base64
@@ -198,7 +198,7 @@ router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
       }
 
       const base64Content = convertToBase64(arquivo.buffer);
-      fields.push('content = ?');
+      fields.push('conteudo = ?');
       params.push(base64Content);
     }
 
@@ -214,13 +214,13 @@ router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.content, 
-        p.equipe_id,
-        p.created_at,
-        p.updated_at,
-        e.nome AS equipe_nome
+        p.conteudo, 
+        p.empresa_id,
+        p.criado_em,
+        p.atualizado_em,
+        e.nome AS empresa_nome
       FROM playbooks p
-      JOIN equipes e ON e.id = p.equipe_id
+      JOIN empresas e ON e.id = p.empresa_id
       WHERE p.id = ?
     `, [id]);
 
@@ -245,10 +245,10 @@ router.get('/:id/download', verifyToken, async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.content,
-        e.nome AS equipe_nome
+        p.conteudo,
+        e.nome AS empresa_nome
       FROM playbooks p
-      JOIN equipes e ON e.id = p.equipe_id
+      JOIN empresas e ON e.id = p.empresa_id
       WHERE p.id = ?
     `, [id]);
 
@@ -257,7 +257,7 @@ router.get('/:id/download', verifyToken, async (req, res) => {
     }
 
     const playbookData = playbook[0];
-    const base64Content = playbookData.content;
+    const base64Content = playbookData.conteudo;
 
     if (!base64Content) {
       return res.status(404).json({ error: 'Arquivo PDF não encontrado para este playbook.' });

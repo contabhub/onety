@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require("../config/database");
+const db = require("../../config/database");
 
 // ✅ GET: Listar campos por categoria
 router.get('/:categoria_id', async (req, res) => {
@@ -12,7 +12,7 @@ router.get('/:categoria_id', async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM campos_personalizados WHERE categoria_id = ? ORDER BY ordem ASC',
+      'SELECT * FROM crm_campos_personalizados WHERE categoria_id = ? ORDER BY ordem ASC',
       [categoria_id]
     );
     res.json(rows);
@@ -33,7 +33,7 @@ router.put('/:id', async (req, res) => {
 
   try {
     await db.query(
-      'UPDATE campos_personalizados SET nome = ?, descricao = ?, tipo = ? WHERE id = ?',
+      'UPDATE crm_campos_personalizados SET nome = ?, descricao = ?, tipo = ? WHERE id = ?',
       [nome, descricao, tipo, id]
     );
     res.json({ message: 'Campo atualizado com sucesso' });
@@ -55,12 +55,12 @@ router.post('/', async (req, res) => {
 
   try {
     const [result] = await db.query(
-      'INSERT INTO campos_personalizados (categoria_id, nome, tipo, descricao, opcoes, obrigatorio, ordem) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO crm_campos_personalizados (categoria_id, nome, tipo, descricao, opcoes, obrigatorio, ordem) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [categoria_id, nome, tipo, descricao, opcoes, obrigatorio, ordem]
     );
 
     const [rows] = await db.query(
-      'SELECT * FROM campos_personalizados WHERE id = ?',
+      'SELECT * FROM crm_campos_personalizados WHERE id = ?',
       [result.insertId]
     );
 
@@ -76,7 +76,7 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM campos_personalizados WHERE id = ?', [id]);
+    await db.query('DELETE FROM crm_campos_personalizados WHERE id = ?', [id]);
     res.status(204).send();
   } catch (error) {
     console.error('Erro ao deletar campo personalizado:', error);
