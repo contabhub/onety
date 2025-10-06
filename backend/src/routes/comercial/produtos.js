@@ -70,28 +70,11 @@ router.get('/empresa/:empresa_id', verifyToken, async (req, res) => {
   const { empresa_id } = req.params;
 
   try {
-    // 1) Buscar role_empresa da empresa
-    const [[empresa]] = await db.query(
-      'SELECT role_empresa FROM empresas WHERE id = ?',
+    // Algumas bases não possuem role_empresa; retornamos sempre produtos da empresa + globais
+    const [products] = await db.query(
+      'SELECT * FROM produtos WHERE empresa_id = ? OR global = 1',
       [empresa_id]
     );
-    if (!empresa) {
-      return res.status(404).json({ error: 'Equipe não encontrada.' });
-    }
-
-    // 2) Montar a query conforme o role_empresa
-    let sql, params;
-    if (empresa.role_empresa === 'nao_franqueado') {
-      // ❌ não exibe globais
-      sql = 'SELECT * FROM produtos WHERE empresa_id = ?';
-      params = [empresa_id];
-    } else {
-      // ✅ exibe globais + da empresa
-      sql = 'SELECT * FROM produtos WHERE empresa_id = ? OR global = 1';
-      params = [empresa_id];
-    }
-
-    const [products] = await db.query(sql, params);
     res.json(products);
   } catch (error) {
     console.error('Erro ao listar produtos da empresa:', error);

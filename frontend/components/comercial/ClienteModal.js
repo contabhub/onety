@@ -44,9 +44,16 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nome || !formData.cpf) {
-      toast.error("Preencha os campos obrigatórios (Nome e CPF).");
-      return;
+    if (formData.tipo === 'pessoa_fisica') {
+      if (!formData.nome || !formData.cpf) {
+        toast.error('Preencha os campos obrigatórios (Nome e CPF).');
+        return;
+      }
+    } else {
+      if (!formData.razao_social || !formData.cnpj || !formData.representante_email) {
+        toast.error('Preencha os campos obrigatórios (Razão Social, CNPJ e Email do representante).');
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -54,7 +61,13 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
       if (!token) throw new Error("Não autenticado");
       const userRaw = localStorage.getItem("userData");
       const user = userRaw ? JSON.parse(userRaw) : null;
-      const empresaId = user?.EmpresaId || user?.empresa?.id;
+      const empresaId =
+        user?.EmpresaId ||
+        user?.empresa?.id ||
+        user?.Empresa?.id ||
+        user?.companyId ||
+        user?.empresa_id ||
+        user?.empresaId;
       if (!empresaId) throw new Error("Empresa não selecionada");
 
       const base = `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes`;
@@ -79,6 +92,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
             nome: formData.razao_social,
             razao_social: formData.razao_social,
             cpf_cnpj: formData.cnpj,
+            email: formData.representante_email,
             representante: formData.representante,
             representante_email: formData.representante_email,
             representante_funcao: formData.representante_funcao,
@@ -94,14 +108,18 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
             nacionalidade: formData.nacionalidade,
           };
 
+      console.log('[ClienteModal] Enviando payload:', payload);
       const res = await fetch(url, {
         method,
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Erro ao salvar cliente");
+        let data = {};
+        try { data = await res.json(); } catch {
+          try { const txt = await res.text(); data = { error: txt }; } catch {}
+        }
+        throw new Error(data.error || `Erro ao salvar cliente (HTTP ${res.status})`);
       }
       toast.success("Cliente salvo com sucesso");
       cliente ? onUpdate?.() : onCreate?.();

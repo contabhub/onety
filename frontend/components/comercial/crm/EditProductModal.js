@@ -12,10 +12,16 @@ const EditProductModal = ({ product, isOpen, onClose, onSave, mode = "edit" }) =
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const userRaw = localStorage.getItem("user");
-    if (userRaw) {
-      const user = JSON.parse(userRaw);
-      setUserRole(user.role);
+    // Detecta papel a partir do userData (permissoes.adm) ou fallback para user.role
+    const raw = localStorage.getItem("userData") || localStorage.getItem("user");
+    if (raw) {
+      try {
+        const u = JSON.parse(raw);
+        const isSuper = Array.isArray(u?.permissoes?.adm) && u.permissoes.adm.map(String).map(s=>s.toLowerCase()).includes('superadmin');
+        setUserRole(isSuper ? 'superadmin' : (u.role || ''));
+      } catch {
+        setUserRole('');
+      }
     }
   }, []);
 
@@ -42,18 +48,14 @@ const EditProductModal = ({ product, isOpen, onClose, onSave, mode = "edit" }) =
       return;
     }
 
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData") || localStorage.getItem("user");
     const token = localStorage.getItem("token");
 
     if (!userRaw || !token) return;
 
     const user = JSON.parse(userRaw);
-    const equipeId = user.equipe_id;
-
-    if (!equipeId) {
-      console.error("Usuário não tem equipe associada.");
-      return;
-    }
+    const empresaId = user?.EmpresaId || user?.empresa?.id || user?.empresa_id || user?.companyId;
+    if (!empresaId) { console.error('Usuário sem empresa associada.'); return; }
 
     try {
       if (mode === "create") {
@@ -63,11 +65,11 @@ const EditProductModal = ({ product, isOpen, onClose, onSave, mode = "edit" }) =
           valor,
           descricao,
           status,
-          equipe_id: equipeId,
+          empresa_id: empresaId,
           global
         };
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/produtos`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -87,7 +89,7 @@ const EditProductModal = ({ product, isOpen, onClose, onSave, mode = "edit" }) =
         // Editar produto existente
         const updatedProduct = { nome, descricao, status, global };
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/produtos/${product.id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/${product.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(updatedProduct),

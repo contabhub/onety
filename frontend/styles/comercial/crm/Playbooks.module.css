@@ -36,30 +36,37 @@
 }
 
 .addButton {
-  background: var(--onity-color-primary);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-m) var(--onity-space-l);
+  min-height: 48px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: 12px;
 }
 
 .addButton:hover {
-  background: var(--onity-color-primary-hover);
-  transform: translateY(-1px);
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
+.addButton:active {
+  transform: none;
 }
 
 .filters {
   display: flex;
-  gap: 20px;
+  gap: 0;
   margin-bottom: 30px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .searchContainer {
@@ -78,10 +85,10 @@
 }
 
 .searchInput {
-  width: 80%;
+  width: 30%;
   padding: 12px 12px 12px 40px;
   border: 2px solid var(--onity-color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
@@ -194,8 +201,13 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  color: var(--onity-icon-secondary);
+  color: var(--onity-color-text);
   font-size: 0.9rem;
+}
+
+.equipeInfo svg,
+.dateInfo svg {
+  color: var(--onity-color-text);
 }
 
 .cardFooter {
@@ -257,7 +269,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(3, 8, 66, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -312,6 +326,7 @@
 }
 
 .formGroup {
+  width: 93%;
   margin-bottom: 20px;
 }
 
@@ -325,10 +340,10 @@
 .formGroup input,
 .formGroup select {
   width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--onity-color-border);
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 10px 12px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
   transition: border-color 0.2s ease;
@@ -343,6 +358,8 @@
 .formGroup input[type="file"] {
   padding: 8px 12px;
   cursor: pointer;
+  font-size: 0.875rem;
+  width: 100%;
 }
 
 .disabledInput {

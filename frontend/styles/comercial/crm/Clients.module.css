@@ -427,11 +427,31 @@
   color: var(--color-text-primary);
 }
 
-.table { width: 100%; border-collapse: collapse; margin-top: 12px; background: var(--color-surface-1); border-radius: 10px; overflow: hidden; }
-.table th, .table td { padding: 14px 18px; text-align: left; vertical-align: middle; font-size: 0.98rem; color: var(--color-text-primary); }
-.table th { background: var(--color-surface-2); border-bottom: 1px solid var(--color-divider); font-weight: 700; color: var(--brand-primary); }
-.table tr:not(:last-child) { border-bottom: 1px solid var(--color-divider); }
-.table tr:hover { background: var(--color-surface-2); }
+.table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 12px; }
+.table thead th {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-weight: 700;
+  text-align: left;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+.table tbody tr.tableCardRow td {
+  background: var(--color-surface-1);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+.table tbody td, .table tbody tr.tableCardRow td {
+  padding: 16px 18px;
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+.table tbody tr.tableCardRow:hover td { background: var(--color-surface-2); }
+.table tbody tr.tableCardRow td:first-child { border-left: 1px solid var(--color-border); border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+.table tbody tr.tableCardRow td:last-child { border-right: 1px solid var(--color-border); border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+.table tbody tr.tableCardRow td { background: var(--color-surface-1); }
+.table .actionsCol { width: 1%; white-space: nowrap; }
 
 .actionButton { background: var(--color-surface-2); color: var(--brand-primary); border-radius: 8px; padding: 8px 14px; font-weight: 600; margin-right: 8px; }
 .deleteButton { background: color-mix(in srgb, var(--error) 12%, transparent); color: var(--error); border-radius: 8px; padding: 8px 14px; font-weight: 600; }

@@ -30,10 +30,10 @@ const ProdutoCadastro = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("user") || localStorage.getItem("userData");
     if (userRaw) {
       const user = JSON.parse(userRaw);
-      setUserRole(user.role);
+      setUserRole(user.role || user?.permissoes?.adm?.[0] || "");
     }
   }, []);
 
@@ -42,21 +42,21 @@ const ProdutoCadastro = () => {
     setLoading(true);
     setError(null); // Resetando erro antes de uma nova tentativa
     try {
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData") || localStorage.getItem("user");
       const token = localStorage.getItem("token");
 
       if (!userRaw || !token) return;
 
       const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const empresaId = user?.EmpresaId || user?.empresa?.id || user?.empresa_id || user?.companyId;
 
-      if (!equipeId) {
-        console.error("Usuário não tem equipe associada.");
+      if (!empresaId) {
+        console.error("Usuário não tem empresa associada.");
         return;
       }
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/produtos/equipe/${equipeId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/empresa/${empresaId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -143,7 +143,7 @@ const ProdutoCadastro = () => {
     try {
       // Enviar requisição para excluir o produto no backend
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/produtos/${produtoId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/${produtoId}`,
         {
           method: "DELETE",
           headers: {
