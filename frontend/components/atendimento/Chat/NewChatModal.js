@@ -67,7 +67,7 @@ export default function NewChatModal({ isOpen, onClose, onConversationCreated })
       
       const token = localStorage.getItem('token');
       const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
-      const companyId = (JSON.parse(localStorage.getItem('userData') || '{}').companyId);
+      const companyId = (JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId);
       
       if (!userId) {
         throw new Error('Usuário não identificado');
@@ -77,13 +77,22 @@ export default function NewChatModal({ isOpen, onClose, onConversationCreated })
       }
       
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/company/${companyId}/teams`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento-usuarios/usuario/${userId}?empresa_id=${companyId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      setUserTeams(response.data || []);
+      // Mapear dados da API para o formato esperado pelo componente
+      const mappedTeams = response.data.map(team => ({
+        id: team.times_atendimento_id,
+        nome: team.time,
+        role: team.role,
+        created_at: team.criado_em,
+        empresa_id: team.empresa_id
+      }));
       
-      if (response.data.length === 0) {
+      setUserTeams(mappedTeams || []);
+      
+      if (mappedTeams.length === 0) {
         setError('Você não está vinculado a nenhum time. Entre em contato com o administrador.');
         return;
       }
@@ -100,19 +109,46 @@ export default function NewChatModal({ isOpen, onClose, onConversationCreated })
   // Buscar instâncias do time selecionado
   const fetchTeamInstances = async (teamId) => {
     try {
+      console.log('🔍 [FRONTEND] Iniciando busca de instâncias para teamId:', teamId);
       setLoading(true);
       setError('');
       
       const token = localStorage.getItem('token');
+      console.log('🔍 [FRONTEND] Token:', token ? 'presente' : 'ausente');
       
-             const response = await axios.get(
-         `${process.env.NEXT_PUBLIC_API_URL}/team-instances/team/${teamId}`,
-         { headers: { Authorization: `Bearer ${token}` } }
-       );
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento-instancias/time/${teamId}`;
+      console.log('🔍 [FRONTEND] URL da requisição:', url);
       
-      setTeamInstances(response.data || []);
+      const response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       
-      if (response.data.length === 0) {
+      // Debug: verificar dados da API
+      console.log('🔍 Dados brutos da API:', response.data);
+      
+      // Mapear dados da API para o formato esperado pelo componente
+      const mappedInstances = response.data.map(instance => {
+        console.log('🔍 Instância individual:', instance);
+        console.log('🔍 instance.id (vínculo):', instance.id);
+        console.log('🔍 instance.instancia_id (WhatsApp):', instance.instancia_id);
+        
+        return {
+          id: instance.id, // ID do vínculo times_atendimento_instancias
+          instance_name: instance.instancia_nome,
+          phone_number: instance.telefone,
+          instance_id: instance.instancia_codigo,
+          instancia_whatsapp_id: instance.instancia_id, // ID da instância WhatsApp
+          token: instance.token,
+          client_token: instance.cliente_token,
+          status: instance.status,
+          nivel_acesso: instance.nivel_acesso,
+          created_at: instance.criado_em
+        };
+      });
+      
+      console.log('🔍 Instâncias mapeadas:', mappedInstances);
+      
+      setTeamInstances(mappedInstances || []);
+      
+      if (mappedInstances.length === 0) {
         setError('Este time não possui instâncias WhatsApp configuradas. Entre em contato com o administrador.');
         return;
       }
@@ -154,8 +190,12 @@ export default function NewChatModal({ isOpen, onClose, onConversationCreated })
         assigned_user_id: userId
       };
       
+      console.log('🔍 Dados da conversa sendo enviados:', conversationData);
+      console.log('🔍 Instância selecionada completa:', instance);
+      console.log('🔍 instance.id que será enviado:', instance.id);
+      
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas`,
         conversationData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -224,6 +264,8 @@ export default function NewChatModal({ isOpen, onClose, onConversationCreated })
 
   // Lidar com seleção de time
   const handleTeamSelect = (team) => {
+    console.log('🔍 [FRONTEND] Time selecionado:', team);
+    console.log('🔍 [FRONTEND] team.id:', team.id);
     setSelectedTeam(team);
     fetchTeamInstances(team.id);
   };
