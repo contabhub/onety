@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const db = require('../config/database');
-const verifyToken = require("../middlewares/auth");
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 
 // 🔹 Listar fases de um funil
 router.get('/:funilId', verifyToken, async (req, res) => {

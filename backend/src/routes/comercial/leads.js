@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database'); // Conexão com banco de dados
-const verifyToken = require("../middlewares/auth");
+const db = require('../../config/database'); // Conexão com banco de dados
+const verifyToken = require('../../middlewares/auth');
 
 router.get("/projecao", async (req, res) => {
   const { funil_id, granularidade = "mes", ano } = req.query;
@@ -9,24 +9,24 @@ router.get("/projecao", async (req, res) => {
 
   let groupBy, dateSelect;
   if (granularidade === "dia") {
-    groupBy = "DATE(created_at), fase_funil_id";
-    dateSelect = "DATE(created_at) as periodo, fase_funil_id";
+    groupBy = "DATE(criado_em), funil_fase_id";
+    dateSelect = "DATE(criado_em) as periodo, funil_fase_id";
   } else if (granularidade === "semana") {
-    groupBy = "YEAR(created_at), WEEK(created_at), fase_funil_id";
-    dateSelect = "YEAR(created_at) as ano, WEEK(created_at) as semana, fase_funil_id";
+    groupBy = "YEAR(criado_em), WEEK(criado_em), funil_fase_id";
+    dateSelect = "YEAR(criado_em) as ano, WEEK(criado_em) as semana, funil_fase_id";
   } else if (granularidade === "ano") {
-    groupBy = "YEAR(created_at), fase_funil_id";
-    dateSelect = "YEAR(created_at) as periodo, fase_funil_id";
+    groupBy = "YEAR(criado_em), funil_fase_id";
+    dateSelect = "YEAR(criado_em) as periodo, funil_fase_id";
   } else {
     // padrão MES
-    groupBy = "YEAR(created_at), MONTH(created_at), fase_funil_id";
-    dateSelect = "YEAR(created_at) as ano, MONTH(created_at) as mes, fase_funil_id";
+    groupBy = "YEAR(criado_em), MONTH(criado_em), funil_fase_id";
+    dateSelect = "YEAR(criado_em) as ano, MONTH(criado_em) as mes, funil_fase_id";
   }
 
   let where = "funil_id = ?";
   let params = [funil_id];
   if (ano && granularidade !== "ano") {
-    where += " AND YEAR(created_at) = ?";
+    where += " AND YEAR(criado_em) = ?";
     params.push(ano);
   }
 
@@ -51,26 +51,26 @@ router.get("/projecao", async (req, res) => {
 
 // GET /leads/ranking-vendedores
 router.get('/ranking-vendedores', verifyToken, async (req, res) => {
-  const { team_id } = req.query;
-  if (!team_id ) {
-    return res.status(400).json({ error: "Parâmetros obrigatórios: team_id, inicio, fim" });
+  const { empresa_id } = req.query;
+  if (!empresa_id ) {
+    return res.status(400).json({ error: "Parâmetros obrigatórios: empresa_id, inicio, fim" });
   }
   try {
     const [rows] = await db.query(`
       SELECT 
-        l.user_id, 
-        u.full_name AS responsavel_nome,
+        l.usuario_id, 
+        u.full_nome AS responsavel_nome,
         u.avatar_url,
         SUM(l.status = 'ganhou') AS ganhos,
         SUM(l.status = 'aberto') AS abertos,
         SUM(l.status = 'perdeu') AS perdidos,
         COUNT(*) AS total
       FROM leads l
-      JOIN users u ON u.id = l.user_id
-      WHERE l.team_id = ?
-      GROUP BY l.user_id, u.full_name, u.avatar_url
+      JOIN users u ON u.id = l.usuario_id
+      WHERE l.empresa_id = ?
+      GROUP BY l.usuario_id, u.full_nome, u.avatar_url
       ORDER BY ganhos DESC, total DESC
-    `, [team_id]);
+    `, [empresa_id]);
     
     res.json(rows);
   } catch (err) {
@@ -88,28 +88,28 @@ router.get('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Passo 1: Buscar o lead (agora já traz user_id)
+    // Passo 1: Buscar o lead (agora já traz usuario_id)
     const [leadRows] = await db.query(`
       SELECT 
         leads.id,
-        leads.name,
+        leads.nome,
         leads.email,
         leads.telefone,
         leads.valor,
         leads.data_prevista,
         leads.status,
         leads.temperatura,
-        leads.created_at,
-        DATEDIFF(CURDATE(), leads.created_at) AS dias,
+        leads.criado_em,
+        DATEDIFF(CURDATE(), leads.criado_em) AS dias,
         leads.funil_id, 
-        leads.fase_funil_id,
-        leads.team_id,
-        leads.user_id,    -- 🔥 Importante trazer!
+        leads.funil_fase_id,
+        leads.empresa_id,
+        leads.usuario_id,    -- 🔥 Importante trazer!
         funis.nome AS funil_nome,
         funil_fases.nome AS fase_nome
       FROM leads
       LEFT JOIN funis ON leads.funil_id = funis.id
-      LEFT JOIN funil_fases ON leads.fase_funil_id = funil_fases.id
+      LEFT JOIN funil_fases ON leads.funil_fase_id = funil_fases.id
       WHERE leads.id = ?
     `, [id]);
 
@@ -119,17 +119,17 @@ router.get('/:id', verifyToken, async (req, res) => {
 
     const lead = leadRows[0];
 
-    // Novo: Buscar o usuário vinculado ao lead (user_id)
+    // Novo: Buscar o usuário vinculado ao lead (usuario_id)
     let responsavel_nome = "Não definido";
     let responsavel_avatar = null;
 
-    if (lead.user_id) {
+    if (lead.usuario_id) {
       const [userRows] = await db.query(
-        'SELECT full_name, avatar_url FROM users WHERE id = ?',
-        [lead.user_id]
+        'SELECT full_nome, avatar_url FROM users WHERE id = ?',
+        [lead.usuario_id]
       );
       if (userRows.length > 0) {
-        responsavel_nome = userRows[0].full_name;
+        responsavel_nome = userRows[0].full_nome;
         responsavel_avatar = userRows[0].avatar_url || null;
       }
     }
@@ -150,24 +150,24 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 // 🔹 1. Criar novo lead
 router.post('/', verifyToken, async (req, res) => {
-  const { name, email, telefone, team_id, funil_id, fase_funil_id, valor, data_prevista, status, user_id } = req.body;
+  const { nome, email, telefone, empresa_id, funil_id, funil_fase_id, valor, data_prevista, status, usuario_id } = req.body;
 
-  if (!name || !team_id || !funil_id || !fase_funil_id) {
-    return res.status(400).json({ error: 'Campos obrigatórios: name, user_id, team_id, funil_id e fase_funil_id.' });
+  if (!nome || !empresa_id || !funil_id || !funil_fase_id) {
+    return res.status(400).json({ error: 'Campos obrigatórios: nome, usuario_id, empresa_id, funil_id e funil_fase_id.' });
   }
 
   try {
     const [result] = await db.query(
-      `INSERT INTO leads (name, email, telefone, user_id, team_id, funil_id, fase_funil_id, valor, data_prevista, status)
+      `INSERT INTO leads (nome, email, telefone, usuario_id, empresa_id, funil_id, funil_fase_id, valor, data_prevista, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        name,
+        nome,
         email,
         telefone || '',
-        user_id,
-        team_id,
+        usuario_id,
+        empresa_id,
         funil_id,
-        fase_funil_id,
+        funil_fase_id,
         valor || 0,
         data_prevista || null,
         status || 'aberto'
@@ -190,25 +190,25 @@ router.get('/', verifyToken, async (req, res) => {
     let query = `
       SELECT 
         leads.id, 
-        leads.name, 
+        leads.nome, 
         leads.email, 
         leads.telefone, 
         leads.valor,
         leads.data_prevista,
         leads.temperatura,
         leads.status,
-        leads.created_at,
-        DATEDIFF(CURDATE(), leads.created_at) AS dias,
-        equipes.nome AS equipe_nome,
+        leads.criado_em,
+        DATEDIFF(CURDATE(), leads.criado_em) AS dias,
+        empresas.nome AS equipe_nome,
         funis.nome AS funil_nome,
         funil_fases.nome AS fase_nome,
-        leads.fase_funil_id,
-        leads.team_id,
-        leads.user_id
+        leads.funil_fase_id,
+        leads.empresa_id,
+        leads.usuario_id
       FROM leads
-      LEFT JOIN equipes ON leads.team_id = equipes.id
+      LEFT JOIN empresas ON leads.empresa_id = empresas.id
       LEFT JOIN funis ON leads.funil_id = funis.id
-      LEFT JOIN funil_fases ON leads.fase_funil_id = funil_fases.id
+      LEFT JOIN funil_fases ON leads.funil_fase_id = funil_fases.id
     `;
 
     const params = [];
@@ -219,19 +219,19 @@ router.get('/', verifyToken, async (req, res) => {
 
     const [leads] = await db.query(query, params);
 
-    // Para cada lead, buscar o usuário vinculado (user_id)
+    // Para cada lead, buscar o usuário vinculado (usuario_id)
     const leadsComResponsavel = await Promise.all(
       leads.map(async (lead) => {
         let responsavel_nome = "Não definido";
         let responsavel_avatar = null;
 
-        if (lead.user_id) {
+        if (lead.usuario_id) {
           const [userRows] = await db.query(
-            'SELECT full_name, avatar_url FROM users WHERE id = ?',
-            [lead.user_id]
+            'SELECT full_nome, avatar_url FROM users WHERE id = ?',
+            [lead.usuario_id]
           );
           if (userRows.length > 0) {
-            responsavel_nome = userRows[0].full_name;
+            responsavel_nome = userRows[0].full_nome;
             responsavel_avatar = userRows[0].avatar_url || null;
           }
         }
@@ -254,37 +254,37 @@ router.get('/', verifyToken, async (req, res) => {
 
 
 // 🔹 2. Listar todos os leads por equipe
-router.get('/equipe/:equipeId', verifyToken, async (req, res) => {
+router.get('/empresa/:empresaId', verifyToken, async (req, res) => {
   try {
     const { funil_id } = req.query;
-    const { equipeId } = req.params;
+    const { empresaId } = req.params;
 
     let query = `
       SELECT 
         leads.id, 
-        leads.name, 
+        leads.nome, 
         leads.email, 
         leads.telefone, 
         leads.valor,
         leads.data_prevista,
         leads.temperatura,
         leads.status,
-        leads.created_at,
-        DATEDIFF(CURDATE(), leads.created_at) AS dias,
-        equipes.nome AS equipe_nome,
+        leads.criado_em,
+        DATEDIFF(CURDATE(), leads.criado_em) AS dias,
+        empresas.nome AS equipe_nome,
         funis.nome AS funil_nome,
         funil_fases.nome AS fase_nome,
-        leads.fase_funil_id,
-        leads.team_id,
-        leads.user_id
+        leads.funil_fase_id,
+        leads.empresa_id,
+        leads.usuario_id
       FROM leads
-      LEFT JOIN equipes ON leads.team_id = equipes.id
+      LEFT JOIN empresas ON leads.empresa_id = empresas.id
       LEFT JOIN funis ON leads.funil_id = funis.id
-      LEFT JOIN funil_fases ON leads.fase_funil_id = funil_fases.id
-      WHERE leads.team_id = ?
+      LEFT JOIN funil_fases ON leads.funil_fase_id = funil_fases.id
+      WHERE leads.empresa_id = ?
     `;
 
-    const params = [equipeId];
+    const params = [empresaId];
 
     if (funil_id) {
       query += ` AND leads.funil_id = ?`;
@@ -293,19 +293,19 @@ router.get('/equipe/:equipeId', verifyToken, async (req, res) => {
 
     const [leads] = await db.query(query, params);
 
-    // Para cada lead, buscar o usuário vinculado (user_id)
+    // Para cada lead, buscar o usuário vinculado (usuario_id)
     const leadsComResponsavel = await Promise.all(
       leads.map(async (lead) => {
         let responsavel_nome = "Não definido";
         let responsavel_avatar = null;
 
-        if (lead.user_id) {
+        if (lead.usuario_id) {
           const [userRows] = await db.query(
-            'SELECT full_name, avatar_url FROM users WHERE id = ?',
-            [lead.user_id]
+            'SELECT full_nome, avatar_url FROM users WHERE id = ?',
+            [lead.usuario_id]
           );
           if (userRows.length > 0) {
-            responsavel_nome = userRows[0].full_name;
+            responsavel_nome = userRows[0].full_nome;
             responsavel_avatar = userRows[0].avatar_url || null;
           }
         }
@@ -331,33 +331,33 @@ router.get('/equipe/:equipeId', verifyToken, async (req, res) => {
 // 🔹 3. Atualizar um lead (todos os dados, inclusive mover de fase)
 router.put('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { name, email, telefone, team_id, funil_id, fase_funil_id, valor, data_prevista, status, user_id } = req.body;
+  const { nome, email, telefone, empresa_id, funil_id, funil_fase_id, valor, data_prevista, status, usuario_id } = req.body;
 
   try {
     await db.query(
       `UPDATE leads SET 
-        name = ?, 
+        nome = ?, 
         email = ?, 
         telefone = ?, 
-        team_id = ?, 
+        empresa_id = ?, 
         funil_id = ?, 
-        fase_funil_id = ?, 
+        funil_fase_id = ?, 
         valor = ?, 
         data_prevista = ?, 
         status = ? ,
-        user_id = ?
+        usuario_id = ?
       WHERE id = ?`,
       [
-        name,
+        nome,
         email,
         telefone,
-        team_id,
+        empresa_id,
         funil_id,
-        fase_funil_id,
+        funil_fase_id,
         valor,
         data_prevista,
         status,
-        user_id,
+        usuario_id,
         id
       ]
     );
@@ -396,14 +396,14 @@ router.post('/convert/:leadId', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Lead não encontrado.' });
     }
 
-    if (!lead.name || !lead.email || !lead.telefone) {
+    if (!lead.nome || !lead.email || !lead.telefone) {
       return res.status(400).json({ error: 'Dados incompletos para conversão de lead.' });
     }
 
     const [result] = await db.query(
-      `INSERT INTO clients (name, email, telefone, endereco, cpf_cnpj, lead_id, user_id)
+      `INSERT INTO pre_clientes (nome, email, telefone, endereco, cpf_cnpj, lead_id, usuario_id)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [lead.name, lead.email, lead.telefone, endereco, cpf_cnpj, lead.id, userId]
+      [lead.nome, lead.email, lead.telefone, endereco, cpf_cnpj, lead.id, userId]
     );
 
     await db.query('UPDATE leads SET status = "ganhou" WHERE id = ?', [leadId]);
@@ -420,17 +420,17 @@ router.post('/convert/:leadId', verifyToken, async (req, res) => {
 // 🔹 Mover lead para outra fase e atualizar o status automaticamente
 router.put('/:id/mover-fase', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { fase_funil_id } = req.body;
+  const { funil_fase_id } = req.body;
 
-  if (!fase_funil_id) {
-    return res.status(400).json({ error: 'O campo fase_funil_id é obrigatório.' });
+  if (!funil_fase_id) {
+    return res.status(400).json({ error: 'O campo funil_fase_id é obrigatório.' });
   }
 
   try {
     // 🔍 Buscar nome da nova fase
     const [faseRows] = await db.query(
       'SELECT nome FROM funil_fases WHERE id = ?',
-      [fase_funil_id]
+      [funil_fase_id]
     );
 
     if (faseRows.length === 0) {
@@ -459,8 +459,8 @@ router.put('/:id/mover-fase', verifyToken, async (req, res) => {
 
     // 📝 Atualizar lead com nova fase e novo status
     await db.query(
-      'UPDATE leads SET fase_funil_id = ?, status = ? WHERE id = ?',
-      [fase_funil_id, novoStatus, id]
+      'UPDATE leads SET funil_fase_id = ?, status = ? WHERE id = ?',
+      [funil_fase_id, novoStatus, id]
     );
 
     res.json({ message: `Fase e status do lead atualizados para "${novoStatus}".` });
@@ -477,14 +477,14 @@ router.get('/:lead_id/dados-personalizados', async (req, res) => {
   const { lead_id } = req.params;
 
   try {
-    // 1. Buscar o team_id direto da tabela leads
-    const [[lead]] = await db.query('SELECT team_id FROM leads WHERE id = ?', [lead_id]);
+    // 1. Buscar o empresa_id direto da tabela leads
+    const [[lead]] = await db.query('SELECT empresa_id FROM leads WHERE id = ?', [lead_id]);
     if (!lead) return res.status(404).json({ error: 'Lead não encontrado' });
 
     // 2. Buscar categorias da equipe
     const [categorias] = await db.query(
-      'SELECT * FROM categorias_personalizadas WHERE equipe_id = ? ORDER BY id DESC',
-      [lead.team_id]
+      'SELECT * FROM crm_categorias_personalizadas WHERE empresa_id = ? ORDER BY id DESC',
+      [lead.empresa_id]
     );
 
     const resultado = [];
@@ -492,7 +492,7 @@ router.get('/:lead_id/dados-personalizados', async (req, res) => {
     for (const categoria of categorias) {
       // 3. Buscar campos da categoria
       const [campos] = await db.query(
-        'SELECT * FROM campos_personalizados WHERE categoria_id = ? ORDER BY ordem ASC',
+        'SELECT * FROM crm_campos_personalizados WHERE categoria_id = ? ORDER BY ordem ASC',
         [categoria.id]
       );
 
@@ -501,7 +501,7 @@ router.get('/:lead_id/dados-personalizados', async (req, res) => {
       for (const campo of campos) {
         // 4. Buscar valor preenchido (se existir) para o campo
         const [[valorObj]] = await db.query(
-          'SELECT id, valor FROM valores_personalizados WHERE lead_id = ? AND campo_id = ?',
+          'SELECT id, valor FROM crm_valores_personalizados WHERE lead_id = ? AND campo_id = ?',
           [lead_id, campo.id]
         );
 
@@ -586,14 +586,14 @@ router.put('/:lead_id/temperatura', async (req, res) => {
 });
 
 
-router.get("/contratos-ganhos/:equipeId", verifyToken, async (req, res) => {
-  const equipeId = parseInt(req.params.equipeId, 10);
+router.get("/contratos-ganhos/:empresaId", verifyToken, async (req, res) => {
+  const empresaId = parseInt(req.params.empresaId, 10);
 
   try {
     // Buscar leads da equipe com status "ganhou"
     const [leadsGanhou] = await db.query(
-      "SELECT id FROM leads WHERE team_id = ? AND status = 'ganhou'",
-      [equipeId]
+      "SELECT id FROM leads WHERE empresa_id = ? AND status = 'ganhou'",
+      [empresaId]
     );
 
     if (leadsGanhou.length === 0) {
@@ -604,7 +604,7 @@ router.get("/contratos-ganhos/:equipeId", verifyToken, async (req, res) => {
 
     // Buscar clientes vinculados a esses leads
     const [clientes] = await db.query(
-      "SELECT id FROM clients WHERE lead_id IN (?)",
+      "SELECT id FROM pre_clientes WHERE lead_id IN (?)",
       [leadIds]
     );
 
@@ -628,16 +628,16 @@ router.get("/contratos-ganhos/:equipeId", verifyToken, async (req, res) => {
 });
 
 
-// GET /contracts/contratos-ganhos/:equipeId/light
-router.get("/contratos-ganhos/:equipeId/light", verifyToken, async (req, res) => {
+// GET /contracts/contratos-ganhos/:empresaId/light
+router.get("/contratos-ganhos/:empresaId/light", verifyToken, async (req, res) => {
   try {
-    const equipeId = parseInt(req.params.equipeId, 10) || 0;
+    const empresaId = parseInt(req.params.empresaId, 10) || 0;
     const userId = req.user.id;
 
     // (opcional, mas recomendado) valida se o usuário pertence à equipe
     const [v] = await db.query(
-      "SELECT 1 FROM user_equipes WHERE user_id = ? AND equipe_id = ? LIMIT 1",
-      [userId, equipeId]
+      "SELECT 1 FROM user_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1",
+      [userId, empresaId]
     );
     if (v.length === 0) {
       return res.status(403).json({ error: "Você não tem acesso a essa equipe." });
@@ -652,23 +652,23 @@ router.get("/contratos-ganhos/:equipeId/light", verifyToken, async (req, res) =>
         c.autentique,
         c.autentique_id,
         u.id        AS created_by_id,
-        u.full_name AS created_by,          -- nome do responsável
-        c.created_at,
+        u.full_nome AS created_by,          -- nome do responsável
+        c.criado_em,
         c.expires_at,
         c.client_id,
-        cl.name     AS client_name,
+        cl.nome     AS client_nome,
         c.start_at,
         c.end_at,
-        c.equipe_id,
+        c.empresa_id,
         c.rejected_by,
         c.valor
       FROM contracts c
-      INNER JOIN clients cl ON cl.id = c.client_id
+      INNER JOIN pre_clientes cl ON cl.id = c.client_id
       INNER JOIN leads   l  ON l.id = cl.lead_id
       INNER JOIN users   u  ON u.id = c.created_by
-      WHERE l.team_id = ? AND l.status = 'ganhou'
-      ORDER BY c.created_at DESC
-    `, [equipeId]);
+      WHERE l.empresa_id = ? AND l.status = 'ganhou'
+      ORDER BY c.criado_em DESC
+    `, [empresaId]);
 
     return res.json(contratos);
   } catch (error) {
@@ -711,15 +711,15 @@ router.get('/:lead_id/contatos-mensagens', verifyToken, async (req, res) => {
 // POST /leads/import
 // Body esperado:
 // {
-//   team_id, funil_id, fase_funil_id, user_id,
-//   leads: [ { name, email, telefone, valor, data_prevista, status } ]
+//   empresa_id, funil_id, funil_fase_id, usuario_id,
+//   leads: [ { nome, email, telefone, valor, data_prevista, status } ]
 // }
 router.post('/import', verifyToken, async (req, res) => {
   try {
-    const { team_id, funil_id, fase_funil_id, user_id, leads, temperatura_padrao } = req.body;
+    const { empresa_id, funil_id, funil_fase_id, usuario_id, leads, temperatura_padrao } = req.body;
 
-    if (!team_id || !funil_id || !fase_funil_id || !user_id) {
-      return res.status(400).json({ error: 'Parâmetros obrigatórios: team_id, funil_id, fase_funil_id, user_id.' });
+    if (!empresa_id || !funil_id || !funil_fase_id || !usuario_id) {
+      return res.status(400).json({ error: 'Parâmetros obrigatórios: empresa_id, funil_id, funil_fase_id, usuario_id.' });
     }
     if (!Array.isArray(leads) || leads.length === 0) {
       return res.status(400).json({ error: 'Lista de leads inválida.' });
@@ -731,7 +731,7 @@ router.post('/import', verifyToken, async (req, res) => {
 
     // Critério simples de duplicidade: mesmo email dentro da mesma equipe
     for (const item of leads) {
-      const name = (item?.name || '').trim();
+      const nome = (item?.nome || '').trim();
       const email = (item?.email || '').trim();
       const telefone = (item?.telefone || '').trim();
       const valor = Number(item?.valor || 0) || 0;
@@ -739,17 +739,17 @@ router.post('/import', verifyToken, async (req, res) => {
       const status = item?.status || 'aberto';
       const temperatura = (item?.temperatura || temperatura_padrao || 'neutro');
 
-      if (!name) {
+      if (!nome) {
         ignorados++;
-        erros.push({ item, motivo: 'name obrigatório' });
+        erros.push({ item, motivo: 'nome obrigatório' });
         continue;
       }
 
       try {
         if (email) {
           const [dups] = await db.query(
-            'SELECT id FROM leads WHERE email = ? AND team_id = ? LIMIT 1',
-            [email, team_id]
+            'SELECT id FROM leads WHERE email = ? AND empresa_id = ? LIMIT 1',
+            [email, empresa_id]
           );
           if (dups.length > 0) {
             ignorados++;
@@ -758,16 +758,16 @@ router.post('/import', verifyToken, async (req, res) => {
         }
 
         await db.query(
-          `INSERT INTO leads (name, email, telefone, user_id, team_id, funil_id, fase_funil_id, valor, data_prevista, status, temperatura)
+          `INSERT INTO leads (nome, email, telefone, usuario_id, empresa_id, funil_id, funil_fase_id, valor, data_prevista, status, temperatura)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            name,
+            nome,
             email,
             telefone,
-            user_id,
-            team_id,
+            usuario_id,
+            empresa_id,
             funil_id,
-            fase_funil_id,
+            funil_fase_id,
             valor,
             data_prevista,
             status,

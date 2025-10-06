@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/database"); // Adapte o caminho conforme necessário
+const db = require("../../config/database"); // Adapte o caminho conforme necessário
 
 
 
 
 
-// Buscar contatos por nome OU telefone, com parâmetro único "q"
+// Buscar crm_contatos por nome OU telefone, com parâmetro único "q"
 router.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -15,31 +15,31 @@ router.get('/search', async (req, res) => {
   }
 
   // Busca em ambos os campos, independente do que foi passado
-  const query = 'SELECT * FROM contatos WHERE nome LIKE ? OR telefone LIKE ?';
+  const query = 'SELECT * FROM crm_contatos WHERE nome LIKE ? OR telefone LIKE ?';
   const values = [`%${q}%`, `%${q}%`];
 
   try {
-    const [contatos] = await db.query(query, values);
-    return res.json(contatos);
+    const [crm_contatos] = await db.query(query, values);
+    return res.json(crm_contatos);
   } catch (error) {
-    console.error('Erro ao buscar contatos:', error);
-    return res.status(500).json({ error: 'Erro ao buscar contatos' });
+    console.error('Erro ao buscar crm_contatos:', error);
+    return res.status(500).json({ error: 'Erro ao buscar crm_contatos' });
   }
 });
 
-router.get('/equipe/:equipe_id', async (req, res) => {
-  const { equipe_id } = req.params;
+router.get('/equipe/:empresa_id', async (req, res) => {
+  const { empresa_id } = req.params;
 
   try {
-    const [contatos] = await db.query(
-      'SELECT * FROM contatos WHERE equipe_id = ?',
-      [equipe_id]
+    const [crm_contatos] = await db.query(
+      'SELECT * FROM crm_contatos WHERE empresa_id = ?',
+      [empresa_id]
     );
 
-    res.json(contatos);
+    res.json(crm_contatos);
   } catch (error) {
-    console.error("Erro ao buscar contatos da equipe:", error);
-    res.status(500).json({ error: "Erro ao buscar contatos da equipe" });
+    console.error("Erro ao buscar crm_contatos da equipe:", error);
+    res.status(500).json({ error: "Erro ao buscar crm_contatos da equipe" });
   }
 });
 
@@ -47,24 +47,24 @@ router.get('/equipe/:equipe_id', async (req, res) => {
 
 
 
-// 1. Listar os contatos de um lead
+// 1. Listar os crm_contatos de um lead
 router.get('/:lead_id', async (req, res) => {
   const { lead_id } = req.params; // Agora estamos pegando o lead_id diretamente da URL
 
   try {
-    const [contatos] = await db.query(
-      'SELECT * FROM contatos WHERE lead_id = ?',
+    const [crm_contatos] = await db.query(
+      'SELECT * FROM crm_contatos WHERE lead_id = ?',
       [lead_id]
     );
 
-    if (contatos.length === 0) {
+    if (crm_contatos.length === 0) {
       return res.status(404).json({ error: 'Nenhum contato encontrado para este lead' });
     }
 
-    return res.json(contatos);
+    return res.json(crm_contatos);
   } catch (error) {
-    console.error('Erro ao buscar contatos:', error);
-    return res.status(500).json({ error: 'Erro ao buscar contatos' });
+    console.error('Erro ao buscar crm_contatos:', error);
+    return res.status(500).json({ error: 'Erro ao buscar crm_contatos' });
   }
 });
 
@@ -74,7 +74,7 @@ router.get("/contato/:id", async (req, res) => {
 
   try {
     const [contato] = await db.query(
-      'SELECT * FROM contatos WHERE id = ?',
+      'SELECT * FROM crm_contatos WHERE id = ?',
       [id]
     );
 
@@ -92,7 +92,7 @@ router.get("/contato/:id", async (req, res) => {
 
 // 2. Criar um novo contato
 router.post("/", async (req, res) => {
-  const { lead_id, nome, email, telefone, cpf, equipe_id } = req.body;
+  const { lead_id, nome, email, telefone, cpf, empresa_id } = req.body;
 
   if (!nome || !email || !telefone) {
     return res.status(400).json({ error: "nome, email e telefone são obrigatórios" });
@@ -100,8 +100,8 @@ router.post("/", async (req, res) => {
 
   try {
     const [result] = await db.query(
-      "INSERT INTO contatos (lead_id, nome, email, telefone, cpf, equipe_id ) VALUES (?, ?, ?, ?, ?, ?)",
-      [lead_id, nome, email, telefone, cpf || null, equipe_id]
+      "INSERT INTO crm_contatos (lead_id, nome, email, telefone, cpf, empresa_id ) VALUES (?, ?, ?, ?, ?, ?)",
+      [lead_id, nome, email, telefone, cpf || null, empresa_id]
     );
     res.status(201).json({ message: "Contato criado com sucesso", id: result.insertId });
   } catch (error) {
@@ -113,7 +113,7 @@ router.post("/", async (req, res) => {
 // 4. Atualizar um contato existente
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { nome, email, telefone, cpf, equipe_id } = req.body;
+  const { nome, email, telefone, cpf, empresa_id } = req.body;
 
   if (!nome || !email || !telefone) {
     return res.status(400).json({ error: "Nome, email e telefone são obrigatórios" });
@@ -121,8 +121,8 @@ router.put("/:id", async (req, res) => {
 
   try {
     const [result] = await db.query(
-      "UPDATE contatos SET nome = ?, email = ?, telefone = ?, cpf = ?, equipe_id = ? WHERE id = ?",
-      [nome, email, telefone, cpf || null, equipe_id || null, id]
+      "UPDATE crm_contatos SET nome = ?, email = ?, telefone = ?, cpf = ?, empresa_id = ? WHERE id = ?",
+      [nome, email, telefone, cpf || null, empresa_id || null, id]
     );
 
     if (result.affectedRows === 0) {
@@ -143,7 +143,7 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await db.query("DELETE FROM contatos WHERE id = ?", [id]);
+    const [result] = await db.query("DELETE FROM crm_contatos WHERE id = ?", [id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Contato não encontrado" });
     }
@@ -166,7 +166,7 @@ router.patch("/:id/vincular", async (req, res) => {
 
   try {
     const [result] = await db.query(
-      "UPDATE contatos SET lead_id = ? WHERE id = ?",
+      "UPDATE crm_contatos SET lead_id = ? WHERE id = ?",
       [lead_id, id]
     );
 
@@ -188,7 +188,7 @@ router.patch("/:id/desvincular", async (req, res) => {
 
   try {
     const [result] = await db.query(
-      "UPDATE contatos SET lead_id = NULL WHERE id = ?",
+      "UPDATE crm_contatos SET lead_id = NULL WHERE id = ?",
       [id]
     );
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../../config/database');
 
 // 🔍 GET: Buscar valores personalizados por lead
 router.get('/:lead_id', async (req, res) => {
@@ -12,7 +12,7 @@ router.get('/:lead_id', async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM valores_personalizados WHERE lead_id = ?',
+      'SELECT * FROM crm_valores_personalizados WHERE lead_id = ?',
       [lead_id]
     );
     res.json(rows);
@@ -33,14 +33,14 @@ router.post('/', async (req, res) => {
   try {
     // Verifica se já existe
     const [existing] = await db.query(
-      'SELECT * FROM valores_personalizados WHERE lead_id = ? AND campo_id = ?',
+      'SELECT * FROM crm_valores_personalizados WHERE lead_id = ? AND campo_id = ?',
       [lead_id, campo_id]
     );
 
     if (existing.length > 0) {
       // Atualiza
       await db.query(
-        'UPDATE valores_personalizados SET valor = ?, updated_at = CURRENT_TIMESTAMP WHERE lead_id = ? AND campo_id = ?',
+        'UPDATE crm_valores_personalizados SET valor = ? WHERE lead_id = ? AND campo_id = ?',
         [valor, lead_id, campo_id]
       );
       return res.json({ message: 'Valor atualizado com sucesso' });
@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
 
     // Insere
     await db.query(
-      'INSERT INTO valores_personalizados (lead_id, campo_id, valor) VALUES (?, ?, ?)',
+      'INSERT INTO crm_valores_personalizados (lead_id, campo_id, valor) VALUES (?, ?, ?)',
       [lead_id, campo_id, valor]
     );
     res.status(201).json({ message: 'Valor criado com sucesso' });
@@ -70,7 +70,7 @@ router.put('/:id', async (req, res) => {
 
   try {
     // Verifica se o valor personalizado com o ID fornecido existe
-    const [existing] = await db.query('SELECT * FROM valores_personalizados WHERE id = ?', [id]);
+    const [existing] = await db.query('SELECT * FROM crm_valores_personalizados WHERE id = ?', [id]);
 
     if (existing.length === 0) {
       return res.status(404).json({ error: 'Valor personalizado não encontrado' });
@@ -78,7 +78,7 @@ router.put('/:id', async (req, res) => {
 
     // Atualiza o valor específico no banco de dados
     await db.query(
-      'UPDATE valores_personalizados SET valor = ? WHERE id = ?',
+      'UPDATE crm_valores_personalizados SET valor = ? WHERE id = ?',
       [valor, id] // Passando o valor e o id para atualizar o registro correto
     );
 
@@ -96,7 +96,7 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM valores_personalizados WHERE id = ?', [id]);
+    await db.query('DELETE FROM crm_valores_personalizados WHERE id = ?', [id]);
     res.status(204).send();
   } catch (error) {
     console.error('Erro ao deletar valor personalizado:', error);

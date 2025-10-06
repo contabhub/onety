@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const verifyToken = require('../middlewares/auth');
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 
 
 // Função para gerar código aleatório alfanumérico (6 caracteres)
@@ -16,10 +16,10 @@ function gerarCodigoProduto(tamanho = 6) {
 
 // Criar um novo produto (com código gerado automaticamente)
 router.post('/', verifyToken, async (req, res) => {
-  const { nome, valor, descricao, status = 'ativo', equipe_id, global} = req.body;
+  const { nome, valor, descricao, status = 'ativo', empresa_id, global, tipo = 'produto'} = req.body;
 
   if (!nome) {
-    return res.status(400).json({ error: 'Campos obrigatórios: nome, equipe_id' });
+    return res.status(400).json({ error: 'Campos obrigatórios: nome, empresa_id' });
   }
 
   // Função que garante código único
@@ -42,10 +42,10 @@ router.post('/', verifyToken, async (req, res) => {
     const valorFinal = valor === '' ? null : valor;
 
     const query = `
-      INSERT INTO produtos (codigo, nome, valor, descricao, status, equipe_id, global)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO produtos (codigo, nome, valor, descricao, status, empresa_id, global, tipo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const [result] = await db.execute(query, [codigo, nome, valorFinal, descricao, status, equipe_id, global]);
+    const [result] = await db.execute(query, [codigo, nome, valorFinal, descricao, status, empresa_id, global, tipo]);
 
     res.status(201).json({
       id: result.insertId,
@@ -54,8 +54,9 @@ router.post('/', verifyToken, async (req, res) => {
       valor: valorFinal,
       descricao,
       status,
-      equipe_id,
+      empresa_id,
       global,
+      tipo,
     });
   } catch (error) {
     console.error('Erro ao criar produto:', error);
@@ -64,36 +65,36 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 
-// Listar todos os produtos da equipe + (globais, exceto para 'nao_franqueado')
-router.get('/equipe/:equipe_id', verifyToken, async (req, res) => {
-  const { equipe_id } = req.params;
+// Listar todos os produtos da empresa + (globais, exceto para 'nao_franqueado')
+router.get('/empresa/:empresa_id', verifyToken, async (req, res) => {
+  const { empresa_id } = req.params;
 
   try {
-    // 1) Buscar role_equipe da equipe
-    const [[equipe]] = await db.query(
-      'SELECT role_equipe FROM equipes WHERE id = ?',
-      [equipe_id]
+    // 1) Buscar role_empresa da empresa
+    const [[empresa]] = await db.query(
+      'SELECT role_empresa FROM empresas WHERE id = ?',
+      [empresa_id]
     );
-    if (!equipe) {
+    if (!empresa) {
       return res.status(404).json({ error: 'Equipe não encontrada.' });
     }
 
-    // 2) Montar a query conforme o role_equipe
+    // 2) Montar a query conforme o role_empresa
     let sql, params;
-    if (equipe.role_equipe === 'nao_franqueado') {
+    if (empresa.role_empresa === 'nao_franqueado') {
       // ❌ não exibe globais
-      sql = 'SELECT * FROM produtos WHERE equipe_id = ?';
-      params = [equipe_id];
+      sql = 'SELECT * FROM produtos WHERE empresa_id = ?';
+      params = [empresa_id];
     } else {
-      // ✅ exibe globais + da equipe
-      sql = 'SELECT * FROM produtos WHERE equipe_id = ? OR global = 1';
-      params = [equipe_id];
+      // ✅ exibe globais + da empresa
+      sql = 'SELECT * FROM produtos WHERE empresa_id = ? OR global = 1';
+      params = [empresa_id];
     }
 
     const [products] = await db.query(sql, params);
     res.json(products);
   } catch (error) {
-    console.error('Erro ao listar produtos da equipe:', error);
+    console.error('Erro ao listar produtos da empresa:', error);
     res.status(500).json({ error: 'Erro ao listar produtos' });
   }
 });
@@ -121,7 +122,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 // Editar um produto
 router.put('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { nome, valor, descricao, status, global } = req.body;
+  const { nome, valor, descricao, status, global, tipo } = req.body;
 
   // Tratamento para o valor (igual ao POST)
   const valorFinal = valor === '' ? null : valor;
@@ -129,10 +130,10 @@ router.put('/:id', verifyToken, async (req, res) => {
   try {
     await db.query(
       `
-        UPDATE produtos SET nome = ?, valor = ?, descricao = ?, status = ?, global = ?
+        UPDATE produtos SET nome = ?, valor = ?, descricao = ?, status = ?, global = ?, tipo = ?
         WHERE id = ?
       `,
-      [nome, valorFinal, descricao, status, global, id]
+      [nome, valorFinal, descricao, status, global, tipo, id]
     );
 
     res.json({ message: 'Produto atualizado com sucesso.' });

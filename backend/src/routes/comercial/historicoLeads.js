@@ -1,8 +1,8 @@
 // routes/historicoLeads.js
 const express = require("express");
 const router = express.Router();
-const db = require("../config/database");
-const verifyToken = require("../middlewares/auth");
+const db = require("../../config/database");
+const verifyToken = require("../../middlewares/auth");
 
 // 🔹 Buscar histórico por lead
 router.get("/:leadId", verifyToken, async (req, res) => {

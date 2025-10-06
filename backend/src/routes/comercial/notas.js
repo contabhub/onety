@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const verifyToken = require('../middlewares/auth');
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 
 // 🔹 Criar nova nota
 router.post('/', verifyToken, async (req, res) => {
@@ -13,7 +13,7 @@ router.post('/', verifyToken, async (req, res) => {
 
   try {
     const [result] = await db.query(`
-      INSERT INTO notas (lead_id, usuario_id, conteudo)
+      INSERT INTO crm_notas (lead_id, usuario_id, conteudo)
       VALUES (?, ?, ?)
     `, [lead_id, usuario_id, conteudo]);
 
@@ -31,15 +31,15 @@ router.get('/:leadId', verifyToken, async (req, res) => {
   try {
     const [notas] = await db.query(`
       SELECT 
-        notas.id,
-        notas.conteudo,
-        notas.created_at,
+        crm_notas.id,
+        crm_notas.conteudo,
+        crm_notas.criado_em,
         users.full_name AS autor_nome,
         users.avatar_url
-      FROM notas
-      JOIN users ON users.id = notas.usuario_id
-      WHERE notas.lead_id = ?
-      ORDER BY notas.created_at DESC
+      FROM crm_notas
+      JOIN users ON users.id = crm_notas.usuario_id
+      WHERE crm_notas.lead_id = ?
+      ORDER BY crm_notas.criado_em DESC
     `, [leadId]);
 
     res.json(notas);
@@ -54,7 +54,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM notas WHERE id = ?', [id]);
+    await db.query('DELETE FROM crm_notas WHERE id = ?', [id]);
     res.json({ message: 'Nota deletada com sucesso.' });
   } catch (error) {
     console.error('Erro ao deletar nota:', error);

@@ -1,6 +1,6 @@
 const express = require("express");
-const pool = require("../config/database");
-const verifyToken = require("../middlewares/auth");
+const pool = require("../../config/database");
+const verifyToken = require("../../middlewares/auth");
 const router = express.Router();
 
 // 1. Rota para fazer upload de um arquivo (base64) associado ao lead
@@ -16,7 +16,7 @@ router.post('/upload/:lead_id', verifyToken, async (req, res) => {
   try {
     // Salvando o arquivo em base64 no banco de dados
     await pool.query(
-      'INSERT INTO arquivos (lead_id, nome_arquivo, arquivo_base64, tipo, enviado_por) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO crm_arquivos (lead_id, nome_arquivo, arquivo_url, tipo, enviado_por) VALUES (?, ?, ?, ?, ?)',
       [lead_id, fileName, base64File, fileType, enviado_por]
     );
 
@@ -33,7 +33,7 @@ router.get('/:lead_id', verifyToken, async (req, res) => {
 
   try {
     // Consultar todos os arquivos do lead
-    const [arquivos] = await pool.query('SELECT * FROM arquivos WHERE lead_id = ?', [lead_id]);
+    const [arquivos] = await pool.query('SELECT * FROM crm_arquivos WHERE lead_id = ?', [lead_id]);
 
     if (arquivos.length === 0) {
       return res.status(404).json({ error: 'Nenhum arquivo encontrado para este lead.' });
@@ -52,14 +52,14 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
   try {
     // Consultar o arquivo no banco de dados
-    const [arquivo] = await pool.query('SELECT * FROM arquivos WHERE id = ?', [id]);
+    const [arquivo] = await pool.query('SELECT * FROM crm_arquivos WHERE id = ?', [id]);
 
     if (arquivo.length === 0) {
       return res.status(404).json({ error: 'Arquivo não encontrado.' });
     }
 
     // Excluir o arquivo do banco de dados
-    await pool.query('DELETE FROM arquivos WHERE id = ?', [id]);
+    await pool.query('DELETE FROM crm_arquivos WHERE id = ?', [id]);
 
     res.json({ message: 'Arquivo excluído com sucesso.' });
   } catch (error) {
@@ -74,13 +74,13 @@ router.get('/download/:id', verifyToken, async (req, res) => {
 
   try {
     // Consultar o arquivo no banco de dados
-    const [arquivo] = await pool.query('SELECT * FROM arquivos WHERE id = ?', [id]);
+    const [arquivo] = await pool.query('SELECT * FROM crm_arquivos WHERE id = ?', [id]);
 
     if (arquivo.length === 0) {
       return res.status(404).json({ error: 'Arquivo não encontrado.' });
     }
 
-    const fileData = arquivo[0].arquivo_base64; // A string base64 do arquivo armazenado no banco
+    const fileData = arquivo[0].arquivo_url; // A string base64 do arquivo armazenado no banco
     const fileName = arquivo[0].nome_arquivo;  // Nome do arquivo
     const fileType = arquivo[0].tipo;          // Tipo do arquivo (ex: 'image/png', 'application/pdf', etc.)
 

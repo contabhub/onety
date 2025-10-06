@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
-const verifyToken = require('../middlewares/auth');
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 
-// 🔹 Resumo por tipo para uma equipe
-router.get('/equipe/:equipeId/por-tipo', verifyToken, async (req, res) => {
-  const { equipeId } = req.params;
+// 🔹 Resumo por tipo para uma empresa
+router.get('/empresa/:empresaId/por-tipo', verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   try {
     const [rows] = await db.query(`
       SELECT 
@@ -14,12 +14,12 @@ router.get('/equipe/:equipeId/por-tipo', verifyToken, async (req, res) => {
         COUNT(a.id) AS total,
         SUM(CASE WHEN a.status = 'pendente' THEN 1 ELSE 0 END) AS pendente,
         SUM(CASE WHEN a.status = 'concluida' THEN 1 ELSE 0 END) AS concluida
-      FROM tipos_atividade t
-      LEFT JOIN atividades a ON a.tipo_id = t.id
-      WHERE t.equipe_id = ?
+      FROM crm_tipos_atividades t
+      LEFT JOIN crm_atividades a ON a.tipo_id = t.id
+      WHERE t.empresa_id = ?
       GROUP BY t.id, t.nome
       ORDER BY t.nome ASC
-    `, [equipeId]);
+    `, [empresaId]);
 
     res.json(rows);
   } catch (error) {
@@ -57,7 +57,7 @@ router.post('/', verifyToken, async (req, res) => {
   
     try {
       const [result] = await db.query(`
-        INSERT INTO atividades 
+        INSERT INTO crm_atividades 
         (nome, observacao, data, hora, duracao, tipo_id, status, lead_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [nome, observacao, data, hora, duracao, tipo_id, status, lead_id]
@@ -81,8 +81,8 @@ router.get('/:leadId', verifyToken, async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT a.*, t.nome AS tipo_nome
-      FROM atividades a
-      LEFT JOIN tipos_atividade t ON a.tipo_id = t.id
+      FROM crm_atividades a
+      LEFT JOIN crm_tipos_atividades t ON a.tipo_id = t.id
       WHERE a.lead_id = ?
       ORDER BY a.data DESC, a.hora DESC
     `, [leadId]);
@@ -109,7 +109,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
   try {
     await db.query(`
-      UPDATE atividades SET 
+      UPDATE crm_atividades SET 
         nome = ?, 
         observacao = ?, 
         data = ?, 
@@ -133,7 +133,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM atividades WHERE id = ?', [id]);
+    await db.query('DELETE FROM crm_atividades WHERE id = ?', [id]);
     res.json({ message: 'Atividade deletada com sucesso.' });
   } catch (error) {
     console.error('Erro ao deletar atividade:', error);
@@ -151,7 +151,7 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
   }
 
   try {
-    await db.query('UPDATE atividades SET status = ? WHERE id = ?', [status, id]);
+    await db.query('UPDATE crm_atividades SET status = ? WHERE id = ?', [status, id]);
     res.json({ message: 'Status da atividade atualizado.' });
   } catch (error) {
     console.error('Erro ao atualizar status:', error);
@@ -159,27 +159,6 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Alterar status (opcional)
-router.patch('/:id/status', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  // Validação para garantir que o status seja válido
-  if (!['pendente', 'concluida'].includes(status)) {
-    return res.status(400).json({ error: 'Status inválido. Use "pendente" ou "concluida".' });
-  }
-
-  try {
-    // Atualizar o status da atividade no banco
-    await db.query('UPDATE atividades SET status = ? WHERE id = ?', [status, id]);
-
-    // Retorna uma resposta de sucesso
-    res.json({ message: 'Status da atividade atualizado.' });
-  } catch (error) {
-    console.error('Erro ao atualizar status:', error);
-    res.status(500).json({ error: 'Erro ao atualizar status da atividade.' });
-  }
-});
 
 
 module.exports = router;

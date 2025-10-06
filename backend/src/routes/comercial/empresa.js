@@ -1,50 +1,50 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/database"); // Adapte o caminho conforme necessário
+const db = require("../../config/database"); // Adapte o caminho conforme necessário
 
-// 1. Listar as empresas de um lead
+// 1. Listar as crm_empresas de um lead
 router.get('/:lead_id', async (req, res) => {
   const { lead_id } = req.params;
 
   try {
-    const [empresas] = await db.query(
-      'SELECT * FROM empresa WHERE lead_id = ?',
+    const [crm_empresas] = await db.query(
+      'SELECT * FROM crm_empresa WHERE lead_id = ?',
       [lead_id]
     );
 
-    if (empresas.length === 0) {
-      return res.status(404).json({ error: 'Nenhuma empresa encontrada para este lead' });
+    if (crm_empresas.length === 0) {
+      return res.status(404).json({ error: 'Nenhuma crm_empresa encontrada para este lead' });
     }
 
-    return res.json(empresas);
+    return res.json(crm_empresas);
   } catch (error) {
-    console.error('Erro ao buscar empresas:', error);
-    return res.status(500).json({ error: 'Erro ao buscar empresas' });
+    console.error('Erro ao buscar crm_empresas:', error);
+    return res.status(500).json({ error: 'Erro ao buscar crm_empresas' });
   }
 });
 
-// 2. Buscar uma empresa específica por ID
-router.get('/empresa/:id', async (req, res) => {
+// 2. Buscar uma crm_empresa específica por ID
+router.get('/crm_empresa/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [empresa] = await db.query(
-      'SELECT * FROM empresa WHERE id = ?',
+    const [crm_empresa] = await db.query(
+      'SELECT * FROM crm_empresa WHERE id = ?',
       [id]
     );
 
-    if (empresa.length === 0) {
+    if (crm_empresa.length === 0) {
       return res.status(404).json({ error: 'Empresa não encontrada' });
     }
 
-    return res.json(empresa[0]); // Retorna o primeiro (e único) resultado
+    return res.json(crm_empresa[0]); // Retorna o primeiro (e único) resultado
   } catch (error) {
-    console.error('Erro ao buscar empresa:', error);
-    return res.status(500).json({ error: 'Erro ao buscar empresa' });
+    console.error('Erro ao buscar crm_empresa:', error);
+    return res.status(500).json({ error: 'Erro ao buscar crm_empresa' });
   }
 });
 
-// 3. Criar uma nova empresa
+// 3. Criar uma nova crm_empresa
 router.post('/', async (req, res) => {
   const { lead_id, nome, cnpj, endereco } = req.body;
 
@@ -54,18 +54,18 @@ router.post('/', async (req, res) => {
 
   try {
     const [result] = await db.query(
-      'INSERT INTO empresa (lead_id, nome, cnpj, endereco) VALUES (?, ?, ?, ?)',
+      'INSERT INTO crm_empresa (lead_id, nome, cnpj, endereco) VALUES (?, ?, ?, ?)',
       [lead_id, nome, cnpj || null, endereco || null]
     );
     
     res.status(201).json({ message: 'Empresa criada com sucesso', id: result.insertId });
   } catch (error) {
-    console.error('Erro ao criar empresa:', error);
-    res.status(500).json({ error: 'Erro ao criar empresa' });
+    console.error('Erro ao criar crm_empresa:', error);
+    res.status(500).json({ error: 'Erro ao criar crm_empresa' });
   }
 });
 
-// 4. Atualizar uma empresa existente
+// 4. Atualizar uma crm_empresa existente
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { nome, cnpj, endereco } = req.body;
@@ -76,7 +76,7 @@ router.put('/:id', async (req, res) => {
 
   try {
     const [result] = await db.query(
-      'UPDATE empresa SET nome = ?, cnpj = ?, endereco = ? WHERE id = ?',
+      'UPDATE crm_empresa SET nome = ?, cnpj = ?, endereco = ? WHERE id = ?',
       [nome, cnpj || null, endereco || null, id]
     );
 
@@ -86,17 +86,17 @@ router.put('/:id', async (req, res) => {
 
     res.json({ message: 'Empresa atualizada com sucesso' });
   } catch (error) {
-    console.error('Erro ao atualizar empresa:', error);
-    res.status(500).json({ error: 'Erro ao atualizar empresa' });
+    console.error('Erro ao atualizar crm_empresa:', error);
+    res.status(500).json({ error: 'Erro ao atualizar crm_empresa' });
   }
 });
 
-// 5. Deletar uma empresa
+// 5. Deletar uma crm_empresa
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await db.query('DELETE FROM empresa WHERE id = ?', [id]);
+    const [result] = await db.query('DELETE FROM crm_empresa WHERE id = ?', [id]);
     
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Empresa não encontrada' });
@@ -104,8 +104,8 @@ router.delete('/:id', async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
-    console.error('Erro ao deletar empresa:', error);
-    res.status(500).json({ error: 'Erro ao deletar empresa' });
+    console.error('Erro ao deletar crm_empresa:', error);
+    res.status(500).json({ error: 'Erro ao deletar crm_empresa' });
   }
 });
 

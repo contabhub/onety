@@ -39,7 +39,24 @@ const webhookMonitorRoutes = require('./atendimento/webhook-monitor');
 const zapimessagesRoutes = require('./atendimento/zapimessages');
 const usuariosAtendimentoRoutes = require('./atendimento/usuarios');
 
-
+// Rotas do Comercial
+const arquivosRoutes = require('./comercial/arquivos');
+const atividadesRoutes = require('./comercial/atividades');
+const camposPersonalizadosRoutes = require('./comercial/camposPersonalizados');
+const categoriasCamposRoutes = require('./comercial/categoriasCampos');
+const contatosRoutes = require('./comercial/contatos');
+const crmRoutes = require('./comercial/crm');
+const empresaRoutes = require('./comercial/empresa');
+const funilFasesRoutes = require('./comercial/funil_fases');
+const funisRoutes = require('./comercial/funis');
+const historicoLeadsRoutes = require('./comercial/historicoLeads');
+const leadsComercialRoutes = require('./comercial/leads');
+const notasRoutes = require('./comercial/notas');
+const playbooksRoutes = require('./comercial/playbooks');
+const preClientesRoutes = require('./comercial/pre_clientes');
+const produtosComercialRoutes = require('./comercial/produtos');
+const tiposAtividadeRoutes = require('./comercial/tiposAtividade');
+const valoresPersonalizadosRoutes = require('./comercial/valoresPersonalizados');
 
 // Rotas do Onety
 router.use('/auth', authRoutes);
@@ -79,7 +96,24 @@ router.use('/atendimento/webhook-monitor', webhookMonitorRoutes);
 router.use('/atendimento/zapimessages', zapimessagesRoutes);
 router.use('/atendimento/usuarios', usuariosAtendimentoRoutes);
 
-
+// Rotas do Comercial
+router.use('/comercial/arquivos', arquivosRoutes);
+router.use('/comercial/atividades', atividadesRoutes);
+router.use('/comercial/campos-personalizados', camposPersonalizadosRoutes);
+router.use('/comercial/categorias-campos', categoriasCamposRoutes);
+router.use('/comercial/contatos', contatosRoutes);
+router.use('/comercial/crm', crmRoutes);
+router.use('/comercial/empresa', empresaRoutes);
+router.use('/comercial/funil-fases', funilFasesRoutes);
+router.use('/comercial/funis', funisRoutes);
+router.use('/comercial/historico-leads', historicoLeadsRoutes);
+router.use('/comercial/leads', leadsComercialRoutes);
+router.use('/comercial/notas', notasRoutes);
+router.use('/comercial/playbooks', playbooksRoutes);
+router.use('/comercial/pre-clientes', preClientesRoutes);
+router.use('/comercial/produtos', produtosComercialRoutes);
+router.use('/comercial/tipos-atividade', tiposAtividadeRoutes);
+router.use('/comercial/valores-personalizados', valoresPersonalizadosRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");

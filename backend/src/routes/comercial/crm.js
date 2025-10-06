@@ -1,18 +1,18 @@
 // routes/crm.js
 const router = require("express").Router();
-const db = require("../config/database");
-const verifyToken = require("../middlewares/auth");
+const db = require("../../config/database");
+const verifyToken = require("../../middlewares/auth");
 
 
-router.get("/:equipeId/:funilId", verifyToken, async (req, res) => {
+router.get("/:empresaId/:funilId", verifyToken, async (req, res) => {
   try {
-    const { equipeId, funilId } = req.params;
+    const { empresaId, funilId } = req.params;
     const userId = req.user.id;
 
     // 0) Segurança: o usuário pertence à equipe?
     const [vinculo] = await db.query(
-      "SELECT 1 FROM user_equipes WHERE user_id = ? AND equipe_id = ? LIMIT 1",
-      [userId, equipeId]
+      "SELECT 1 FROM usuarios_empresas WHERE user_id = ? AND empresa_id = ? LIMIT 1",
+      [userId, empresaId]
     );
     if (vinculo.length === 0) {
       return res.status(403).json({ error: "Você não tem acesso a essa equipe." });
@@ -20,8 +20,8 @@ router.get("/:equipeId/:funilId", verifyToken, async (req, res) => {
 
     // 1) Funil dessa equipe
     const [[funil]] = await db.query(
-      "SELECT id, equipe_id, nome, is_default FROM funis WHERE id = ? AND equipe_id = ?",
-      [funilId, equipeId]
+      "SELECT id, empresa_id, nome, padrao FROM funis WHERE id = ? AND empresa_id = ?",
+      [funilId, empresaId]
     );
     if (!funil) {
       return res.status(404).json({ error: "Funil não encontrado para esta equipe." });
@@ -38,24 +38,24 @@ router.get("/:equipeId/:funilId", verifyToken, async (req, res) => {
       `
       SELECT
         l.id,
-        l.name,
+        l.nome,
         l.email,
         l.telefone,
         l.valor,
         l.data_prevista,
         l.temperatura,
         l.status,
-        l.created_at,
+        l.criado_em,
         l.fase_funil_id,
         l.user_id,
         u.full_name  AS responsavel_nome,
         u.avatar_url AS responsavel_avatar
       FROM leads l
       LEFT JOIN users u ON u.id = l.user_id
-      WHERE l.team_id = ? AND l.funil_id = ?
-      ORDER BY l.created_at DESC
+      WHERE l.empresa_id = ? AND l.funil_id = ?
+      ORDER BY l.criado_em DESC
       `,
-      [equipeId, funilId]
+      [empresaId, funilId]
     );
 
     // 4) Agrupa os leads por fase
