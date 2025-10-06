@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { FaBox } from "react-icons/fa"; // Ícone de produto
-import styles from "../styles/ProdutoCadastro.module.css"; // Importe o CSS atualizado
+import styles from "../../styles/comercial/crm/ProdutoCadastro.module.css"; // Importe o CSS atualizado
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import Layout from "../components/layout/Layout";
-import EditProductModal from "../components/crm/EditProductModal";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
+import EditProductModal from "../../components/comercial/crm/EditProductModal";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
 
@@ -185,15 +186,11 @@ const ProdutoCadastro = () => {
   });
 
   return (
-    <div className={styles.container}>
-      <Layout>
-        <button className={styles.backButton} onClick={() => router.back()}>
-          <span className={styles.iconWrapper}>
-            
-            <FontAwesomeIcon icon={faArrowLeft} />
-          </span>
-          Voltar
-        </button>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
+      <div className={styles.container}>
 
         {/* Header com título e botão Novo Produto */}
         <div className={styles.headerContainer}>
@@ -242,7 +239,7 @@ const ProdutoCadastro = () => {
 
         {/* Lista de Produtos Cadastrados */}
         {loading ? (
-          <p>Carregando produtos...</p>
+          <SpaceLoader label="Carregando produtos..." />
         ) : error ? (
           <p className={styles.errorMessage}>{error}</p> // Exibe mensagem de erro
         ) : filteredProducts.length > 0 ? (
@@ -335,7 +332,9 @@ const ProdutoCadastro = () => {
           <p>Nenhum produto inativo encontrado.</p>
         </div> */}
 
-      </Layout>
+      </div>
+        </div>
+      </div>
       
       {/* Modal Unificado de Edição/Criação */}
       {isModalOpen && (
@@ -386,7 +385,7 @@ const ProdutoCadastro = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

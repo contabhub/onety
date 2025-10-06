@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-import styles from "../styles/CRM.module.css";
-import Layout from "../components/layout/Layout";
-import CreateCardModal from "../components/crm/CreateCardModal";
-import CRMCard from "../components/crm/CRMCard";
+import styles from "../../styles/comercial/crm/CRM.module.css";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import CreateCardModal from "../../components/comercial/crm/CreateCardModal";
+import CRMCard from "../../components/comercial/crm/CRMCard";
 
 import {
   DndContext,
@@ -17,18 +18,18 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import Column from "../components/crm/Column";
-import EditCardModal from "../components/crm/EditCardModal";
-import ImportLeadsModal from "../components/crm/ImportLeadsModal";
-import ExportLeadsModal from "../components/crm/ExportLeadsModal";
-import { registrarHistorico } from "../utils/registrarHistorico";
+import Column from "../../components/comercial/crm/Column";
+import EditCardModal from "../../components/comercial/crm/EditCardModal";
+import ImportLeadsModal from "../../components/comercial/crm/ImportLeadsModal";
+import ExportLeadsModal from "../../components/comercial/crm/ExportLeadsModal";
+import { registrarHistorico } from "../../utils/registrarHistorico";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch, faFileCsv, faThLarge, faList, faPencilAlt, faSnowflake, faFire, faInfoCircle, faThumbsUp, faThumbsDown, faBriefcase, faChevronDown, faChevronUp, faPlus, faBars, faCalendar
 } from "@fortawesome/free-solid-svg-icons";
-import { exportLeadsCSV } from '../utils/exportLeadsCSV';
-import meuLottieJson from '../assets/Loading.json';
-import Lottie from 'lottie-react';
+
+
+
 
 export default function CRM() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -471,14 +472,17 @@ export default function CRM() {
   };
 
   return (
-    <Layout>
-      {!isLoading && (funis.length === 0 || !funilSelecionado) ? (
+    <>
+    <div className={styles.page}>
+      <PrincipalSidebar />
+    {!isLoading && (funis.length === 0 || !funilSelecionado) ? (
         <p className={styles.warningText}>
           Nenhum funil encontrado.<br />
           Adicione o seu funil em <b>Configurações &gt; Funis</b>.
         </p>
       ) : (
         <>
+          <div className={styles.pageContent}>
           <div className={styles.headerRow}>
             <h1 className={styles.title}>CRM</h1>
 
@@ -599,25 +603,11 @@ export default function CRM() {
 
 
 
-          {isLoading ? (
-            <div className={styles.loadingContainer}>
-              <Lottie
-                animationData={meuLottieJson}
-                loop={true}
-                style={{ width: 200, height: 200 }}
-              />
-              <p className={styles.loadingText}>Carregando leads e funil...</p>
-            </div>
-          ) : Object.keys(columns).length === 0 || orderedColumnIds.length === 0 ? (
-            <div className={styles.loadingContainer}>
-              <Lottie
-                animationData={meuLottieJson}
-                loop={true}
-                style={{ width: 200, height: 200 }}
-              />
-              <p className={styles.loadingText}>Carregando colunas...</p>
-            </div>
-          ) : !hasVisibleLeads() ? (
+        {isLoading ? (
+          <SpaceLoader label="Carregando leads e funil..." />
+        ) : Object.keys(columns).length === 0 || orderedColumnIds.length === 0 ? (
+          <SpaceLoader label="Carregando colunas..." />
+        ) : !hasVisibleLeads() ? (
             <div className={styles.emptyStateContainer}>
               <div className={styles.emptyStateContent}>
                 <h3 className={styles.emptyStateTitle}>Nenhum lead encontrado</h3>
@@ -757,9 +747,11 @@ export default function CRM() {
             funis={funis}
             defaultFunilId={funilSelecionado}
           />
+          </div>
         </>
       )}
-    </Layout>
+    </div>
+    </>
   );
 }
 

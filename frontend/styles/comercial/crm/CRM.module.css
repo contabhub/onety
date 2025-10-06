@@ -6,9 +6,24 @@
   overflow-x: auto;
 }
 
+/* Layout da página com sidebar ao lado */
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
 
 .title {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   padding-left: 20px;
 }
 
@@ -39,28 +54,28 @@
 .searchIcon {
   position: absolute;
   left: 10px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   pointer-events: none;
 }
 
 .searchInput {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
   padding: 8px 8px 8px 32px; /* espaço para o ícone */
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   font-size: 14px;
   max-width: 250px;
 }
 .searchInput:focus {
-  border-color: var(--focus-ring);
+  border-color: var(--onity-color-primary);
   outline: none; /* opcional: remove a borda azul padrão do navegador */
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--color-border);
-  border-top: 4px solid var(--brand-primary);
+  border: 4px solid var(--onity-color-border);
+  border-top: 4px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 10px;
@@ -82,7 +97,7 @@
 
 .loadingText {
   font-size: 16px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-top: 8px;
 }
 
@@ -92,28 +107,28 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 24px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 20px;
   font-weight: 600;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 
 .iconTop {
-  color: var(--brand-secondary);
+  color: var(--onity-icon-secondary);
   width: 20px;
   height: 20px;
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
   padding: 8px;
   border-radius: 8px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
 }
 
 .column {
   min-width: 300px;
   height: 80vh;
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -125,7 +140,7 @@
   font-weight: 600;
   font-size: 18px;
   margin-bottom: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -135,12 +150,12 @@
   display: flex;
   gap: 10px;
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   align-items: center;
 }
 
 .crmCard {
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   border-radius: 10px;
   padding: 10px;
   margin: 10px;
@@ -158,7 +173,7 @@
 
 .crmCardContent svg {
   font-size: 16px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 
@@ -181,7 +196,7 @@
   flex-direction: column;
   gap: 4px;
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .crmCardPhone,
@@ -198,7 +213,7 @@
 }
 
 .crmCardUser {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
   padding: 0.4rem;
   border-radius: 50%;
   display: flex;
@@ -215,7 +230,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 0.9rem;
 }
 
@@ -223,7 +238,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 /* Modal */
@@ -241,15 +256,15 @@
 }
 
 .modal {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   padding: 24px;
   border-radius: 8px;
   max-width: 500px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--color-border);
+  box-shadow: var(--onity-elev-med);
+  border: 1px solid var(--onity-color-border);
 }
 
 .modalHeader {
@@ -258,12 +273,12 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .modalHeader h3 {
   margin: 0;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 18px;
   font-weight: 600;
 }
@@ -273,7 +288,7 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -285,7 +300,7 @@
 }
 
 .closeButton:hover {
-  background-color: var(--color-border);
+  background-color: var(--onity-color-border);
 }
 
 .modalBody {
@@ -297,7 +312,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding-top: 15px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--onity-color-border);
 }
 
 .formGroup {
@@ -308,49 +323,49 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .formGroup .leadInfo {
   margin: 0;
   padding: 8px 12px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 4px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-weight: 500;
 }
 
 .select {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .select:focus {
   outline: none;
-  border-color: var(--focus-ring);
-  box-shadow: 0 0 0 2px var(--focus-ring);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary);
 }
 
 .confirmation {
   margin: 0;
   padding: 12px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 4px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   line-height: 1.5;
 }
 
 .cancelButton {
-  background: var(--color-border);
-  color: var(--color-text-primary);
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
   border: none;
   padding: 10px 20px;
   border-radius: 4px;
@@ -360,12 +375,12 @@
 }
 
 .cancelButton:hover {
-  background-color: var(--color-border);
+  background-color: var(--onity-color-border);
   opacity: 0.8;
 }
 
 .saveButton {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -376,7 +391,7 @@
 }
 
 .saveButton:hover:not(:disabled) {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   opacity: 0.9;
 }
 
@@ -389,22 +404,22 @@
   width: 100%;
   margin-bottom: 12px;
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--focus-ring);
-  box-shadow: 0 0 0 2px var(--focus-ring);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary);
 }
 
 .input::placeholder {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .modalActions {
@@ -412,11 +427,11 @@
   justify-content: flex-end;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--onity-color-border);
 }
 
 .saveBtn {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   padding: 10px 24px;
@@ -428,7 +443,7 @@
 }
 
 .saveBtn:hover:not(:disabled) {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   opacity: 0.9;
   box-shadow: 0 2px 8px rgba(23, 70, 162, 0.3);
 }
@@ -439,8 +454,8 @@
 }
 
 .cancelBtn {
-  background: var(--color-border);
-  color: var(--color-text-primary);
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
@@ -451,7 +466,7 @@
 }
 
 .cancelBtn:hover {
-  background-color: var(--color-border);
+  background-color: var(--onity-color-border);
   opacity: 0.8;
 }
 
@@ -459,7 +474,7 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 50%;
@@ -493,7 +508,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   gap: 10px;
 }
 
@@ -504,7 +519,7 @@
 }
 
 .userIconInline {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .crmCardTitleWithIcon,
@@ -568,7 +583,7 @@
 }
 
 .userIconInline {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   font-size: 14px;
 }
 
@@ -579,7 +594,7 @@
 
 .dropdownWrapper svg {
   font-size: 18px;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 /* Botão com área maior e sem decoração */
@@ -608,8 +623,8 @@
   position: absolute;
   top: 38px;
   right: 0;
-  background-color: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   padding: 4px 0;
@@ -632,51 +647,51 @@
 }
 
 .dropdownMenu button:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 .propostaTitle {
-  color: var(--brand-accent); /* amarelo vibrante */
+  color: var(--onity-color-warning); /* amarelo vibrante */
   font-weight: bold;
 }
 
 .ganhouTitle {
-  color: var(--success);
+  color: var(--onity-color-success);
   font-weight: bold;
 }
 
 .perdeuTitle {
-  color: var(--error);
+  color: var(--onity-color-error);
   font-weight: bold;
 }
 
 .propostaIcon {
-  color: var(--brand-accent);
+  color: var(--onity-color-warning);
   font-weight: 500;
 }
 
 .ganhouIcon {
-  color: var(--success);
+  color: var(--onity-color-success);
   font-weight: 500;
 }
 
 .perdeuIcon {
-  color: var(--error);
+  color: var(--onity-color-error);
   font-weight: 500;
 }
 
 .propostaValor {
-  color: var(--brand-accent);
+  color: var(--onity-color-warning);
   font-weight: 600;
 }
 
 .ganhouValor {
-  color: var(--success);
+  color: var(--onity-color-success);
   font-weight: 600;
 }
 
 .perdeuValor {
-  color: var(--error);
+  color: var(--onity-color-error);
   font-weight: 600;
 }
 
@@ -700,7 +715,7 @@
 }
 
 .quickAddBtn {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: #fff;
   border: none;
   border-radius: 999px;
@@ -719,8 +734,8 @@
 
 .cardIconLeft {
   font-size: 20px;
-  color: var(--brand-primary);
-  background-color: var(--color-bg);
+  color: var(--onity-color-primary);
+  background-color: var(--onity-color-bg);
   padding: 10px;
   border-radius: 8px;
   border: 2px solid #fff;
@@ -740,10 +755,10 @@
 }
 .funnelTab {
   padding: 0.5rem 1.2rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-weight: 500;
   font-size: 1rem;
   cursor: pointer;
@@ -751,14 +766,14 @@
   outline: none;
 }
 .funnelTab:hover {
-  background: var(--color-bg);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
   box-shadow: 0 0 0 2px #2563eb22;
 }
 .activeTab {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: #fff;
-  border: 1.5px solid var(--brand-primary);
+  border: 1.5px solid var(--onity-color-primary);
   font-weight: 600;
   box-shadow: 0 2px 8px #2563eb22;
 }
@@ -767,7 +782,7 @@
   font-weight: 600;
   margin-bottom: 6px;
   display: block;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 14px;
 }
 
@@ -799,9 +814,9 @@
 }
 
 .toolsToggleBtn {
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--onity-color-border);
   background: transparent;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -809,8 +824,8 @@
 }
 
 .toolsToggleBtn:hover {
-  border: 2px solid var(--brand-primary);
-  color: var(--brand-primary);
+  border: 2px solid var(--onity-color-primary);
+  color: var(--onity-color-primary);
 
 }
 
@@ -827,10 +842,10 @@
   right: 0;
   width: min(360px, 92vw);
   height: 100vh;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
-  border-left: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-left: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -841,7 +856,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .toolsDrawerContent {
@@ -853,7 +868,7 @@
 
 
 .exportBtn {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -870,13 +885,13 @@
 }
 
 .exportBtn:hover:not(:disabled) {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   box-shadow: 0 4px 16px rgba(25, 118, 210, 0.15);
 }
 
 .exportBtn:disabled {
-  background: var(--color-border);
-  color: var(--color-text-secondary);
+  background: var(--onity-color-border);
+  color: var(--onity-icon-secondary);
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -903,8 +918,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   padding: 8px 16px;
   margin: 0 0 0 20px;
@@ -917,13 +932,13 @@
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin-right: 8px;
   cursor: pointer;
 }
 
 .responsavelFilter input[type="checkbox"] {
-  accent-color: var(--focus-ring);
+  accent-color: var(--onity-color-primary);
   width: 16px;
   height: 16px;
   margin-right: 4px;
@@ -945,12 +960,12 @@
 }
 
 .responsavelDropdownBtn {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 15px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -959,14 +974,14 @@
   transition: border 0.2s;
 }
 .responsavelDropdownBtn:focus {
-  outline: 2px solid var(--focus-ring);
-  border-color: var(--focus-ring);
+  outline: 2px solid var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
 }
 
 .responsavelDropdownIcon {
   font-size: 13px;
   margin-left: 4px;
-  color: var(--focus-ring);
+  color: var(--onity-color-primary);
 }
 
 .responsavelDropdownMenu {
@@ -974,8 +989,8 @@
   top: 110%;
   left: 0;
   min-width: 220px;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(60, 80, 120, 0.10);
   padding: 12px 16px;
@@ -990,12 +1005,12 @@
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
 }
 
 .responsavelDropdownMenu input[type="checkbox"] {
-  accent-color: var(--focus-ring);
+  accent-color: var(--onity-color-primary);
   width: 16px;
   height: 16px;
   margin-right: 4px;
@@ -1020,14 +1035,14 @@
 }
 
 .funilNome {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin-left: 8px;
 }
 
 .funilDropdownMenu {
   min-width: 200px;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 10px;
   box-shadow: 0 6px 24px rgba(60, 80, 120, 0.13);
   z-index: 20;
@@ -1043,16 +1058,16 @@
   width: 100%;
   padding: 10px 18px;
   font-weight: 400;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: background 0.18s, color 0.18s, font-weight 0.18s;
 }
 
 .funilTab:hover,
 .funilTabActive {
-  background: var(--color-bg);
-  color: var(--brand-primary);
-  border: 1.5px solid var(--brand-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+  border: 1.5px solid var(--onity-color-primary);
   font-weight: 600;
   box-shadow: 0 2px 8px #2563eb22;
   padding: 10px 18px;
@@ -1067,8 +1082,8 @@
 
 .viewToggleBtn {
   background: none;
-  border: 2px solid var(--color-border);
-  color: var(--brand-primary);
+  border: 2px solid var(--onity-color-border);
+  color: var(--onity-color-primary);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 18px;
@@ -1080,14 +1095,14 @@
 }
 
 .viewToggleBtn:hover {
-  border: 2px solid var(--brand-primary);
-  background: var(--color-bg);
+  border: 2px solid var(--onity-color-primary);
+  background: var(--onity-color-bg);
 }
 
 .viewToggleActive {
-  border: 2px solid var(--brand-primary);
-  background: var(--color-bg);
-  color: var(--brand-primary);
+  border: 2px solid var(--onity-color-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-primary);
 }
 
 .listViewContainer {
@@ -1100,7 +1115,7 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 700px;
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
@@ -1109,12 +1124,12 @@
   padding: 14px 18px;
   text-align: left;
   font-size: 15px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   border-bottom: 1px solid #eee;
 }
 
 .listViewTable th {
-  background: var(--color-bg);
+  background: var(--onity-color-bg);
   font-weight: 600;
 }
 
@@ -1124,8 +1139,8 @@
 
 .listViewTable button {
   background: none;
-  border: 2px solid var(--brand-primary);
-  color: var(--brand-primary);
+  border: 2px solid var(--onity-color-primary);
+  color: var(--onity-color-primary);
   border-radius: 5px;
   padding: 4px 8px;
   font-size: 15px;
@@ -1134,12 +1149,12 @@
 }
 
 .listViewTable button:hover {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: #fff;
 }
 
 .leadNameLink {
-  color: var(--color-link);
+  color: var(--onity-color-primary);
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
@@ -1148,7 +1163,7 @@
 }
 
 .leadNameLink:hover {
-  color: var(--color-link);
+  color: var(--onity-color-primary);
   text-decoration: underline;
 }
 
@@ -1161,7 +1176,7 @@
 }
 
 .pageButton {
-  background-color: var(--ink-gray);
+  background-color: var(--onity-color-border);
   color: white;
   padding: 6px 14px;
   border-radius: 6px;
@@ -1172,11 +1187,11 @@
 }
 
 .pageButton:hover:not(.disabled) {
-  background-color: var(--color-text-secondary);
+  background-color: var(--onity-icon-secondary);
 }
 
 .disabled {
-  background-color: var(--color-border);
+  background-color: var(--onity-color-border);
   cursor: not-allowed;
 }
 
@@ -1185,18 +1200,18 @@
 }
 
 .faseGanhou {
-  color: var(--success) !important;
+  color: var(--onity-color-success) !important;
   font-weight: 600;
   border-radius: 6px;
 }
 .fasePerdeu {
-  color: var(--error) !important;
+  color: var(--onity-color-error) !important;
   font-weight: 600;
   border-radius: 6px;
 }
 
 .faseProposta {
-  color: var(--brand-accent) !important;
+  color: var(--onity-color-warning) !important;
   font-weight: 600;
   border-radius: 6px;
 }
@@ -1204,21 +1219,21 @@
 .crmCardDivider {
   width: 100%;
   height: 1px;
-  background: var(--color-divider);
+  background: var(--onity-color-border);
   margin: 12px 0 10px 0;
   border: none;
 }
 
 .warningText {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-top: 8px;
   text-align: center;
   font-size: 18px;
   font-weight: 500;
   padding: 12px;
   border-radius: 6px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   box-shadow: 0 1px 2px rgba(60, 80, 120, 0.04);
 }
 
@@ -1234,30 +1249,30 @@
 .emptyStateContent {
   text-align: center;
   max-width: 400px;
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 2px dashed var(--color-border);
+  border: 2px dashed var(--onity-color-border);
 }
 
 .emptyStateTitle {
   font-size: 24px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin-bottom: 16px;
 }
 
 .emptyStateDescription {
   font-size: 16px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   line-height: 1.5;
   margin-bottom: 24px;
 }
 
 .emptyStateIcon {
   font-size: 48px;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   margin-bottom: 16px;
   opacity: 0.7;
 }

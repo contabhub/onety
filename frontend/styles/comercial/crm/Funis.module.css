@@ -1,3 +1,17 @@
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
 .pageContainer {
     padding: 2rem;
   }
@@ -14,11 +28,11 @@
   }
   
   .pageSubtitle {
-    color: var(--color-text-secondary);
+    color: var(--onity-icon-secondary);
   }
   
   .addFunilButton {
-    background: var(--brand-primary);
+    background: var(--onity-color-primary);
     color: #fff;
     padding: 10px 20px;
     border-radius: 8px;
@@ -29,7 +43,7 @@
   }
 
   .addFunilButton:hover {
-    background-color: var(--brand-primary);
+    background-color: var(--onity-color-primary);
   }
   
   .funisContainer {
@@ -40,7 +54,7 @@
   }
   
   .funilCard {
-    background: var(--color-surface-1);
+    background: var(--onity-color-surface);
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     padding: 1rem;
@@ -59,9 +73,9 @@
   .addFaseButton {
     width: 100%;
     padding: 6px 10px;
-    background: var(--color-surface-1);
-    color: var(--brand-primary);
-    border: 1px dashed var(--brand-primary);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-primary);
+    border: 1px dashed var(--onity-color-primary);
     border-radius: 6px;
     margin-bottom: 10px;
     cursor: pointer;
@@ -69,7 +83,7 @@
   }
 
   .addFaseButton:hover {
-    background: var(--brand-primary);
+    background: var(--onity-color-primary);
     color: #fff;
   }
   
@@ -80,17 +94,17 @@
   
   .faseItem {
     padding: 8px 12px;
-    background: var(--color-bg);
+    background: var(--onity-color-bg);
     margin-bottom: 6px;
     border-radius: 6px;
     font-size: 14px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--onity-color-border);
   }
   
   /* styles/Funis.module.css */
 
 .funnelCard {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   padding: 1rem;
@@ -130,15 +144,15 @@
 }
 
 .menuButton:hover {
-  background: var(--color-bg);
+  background: var(--onity-color-bg);
 }
 
 .dropdownMenu {
   position: absolute;
   top: 60px;
   right: 10px;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   z-index: 10;
@@ -152,7 +166,7 @@
   padding: 10px 14px;
   width: 100%;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -160,15 +174,15 @@
 }
 
 .dropdownItem:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 .dropdownItem.disabled {
-  color: var(--color-border);
+  color: var(--onity-color-border);
   cursor: not-allowed;
 }
 .dropdownItem.hover {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .dropdownItemDelete {
@@ -186,8 +200,8 @@
 }
 
 .dropdownItemDelete:hover {
-  background-color: var(--color-bg);
-  color: var(--error);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-error);
 }
 
 .trashButton {
@@ -203,23 +217,23 @@
 }
 
 .trashButton:hover {
-  background-color: var(--color-bg); /* leve vermelho claro */
+  background-color: var(--onity-color-bg); /* leve vermelho claro */
 }
 
 .trashButton:hover .icon {
-  color: var(--error); /* vermelho escuro */
+  color: var(--onity-color-error); /* vermelho escuro */
 }
 
 /* estilo do ícone */
 .icon {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 18px;
   transition: color 0.2s ease;
 }
 
 .proposta {
-  background-color: var(--color-bg);
-  color: var(--brand-accent);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-warning);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -228,8 +242,8 @@
 
 
 .ganhou {
-  background-color: var(--color-bg);
-  color: var(--success);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-success);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -237,8 +251,8 @@
 }
 
 .perdeu {
-  background-color: var(--color-bg);
-  color: var(--error);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-error);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -266,7 +280,7 @@
 }
 
 .faseButtonsVertical button:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .faseAcoesContainer {
@@ -284,12 +298,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   transition: color 0.3s ease;
 }
 
 .backButton:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .funnelIcon {
@@ -303,7 +317,7 @@
 }
 
 .dragHandle {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 1.6em;
   margin-right: 10px;
   display: flex;
@@ -316,9 +330,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--color-text-secondary);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  color: var(--onity-icon-secondary);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 999px;
   padding: 2px 8px;
   font-size: 0.85em;
@@ -329,9 +343,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--color-text-secondary);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  color: var(--onity-icon-secondary);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
   border-radius: 999px;
   padding: 1px 6px;
   font-size: 0.8em;

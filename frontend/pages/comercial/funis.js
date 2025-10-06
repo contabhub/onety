@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import styles from "../styles/Funis.module.css"; // Importando o CSS correto
-import Layout from "../components/layout/Layout";
-import CreateFaseModal from "../components/crm/CreateFaseModal";
-import CreateFunilModal from "../components/crm/CreateFunilModal";
-import EditFunilModal from "../components/crm/EditFunilModal";
+import styles from "../../styles/comercial/crm/Funis.module.css"; // Importando o CSS correto
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
+import CreateFaseModal from "../../components/comercial/crm/CreateFaseModal";
+import CreateFunilModal from "../../components/comercial/crm/CreateFunilModal";
+import EditFunilModal from "../../components/comercial/crm/EditFunilModal";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { BsFunnelFill } from "react-icons/bs";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -21,12 +22,14 @@ export default function FunisPage() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [funilEditando, setFunilEditando] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchFunisAndFases();
   }, []);
 
   const fetchFunisAndFases = async () => {
+    setLoading(true);
     try {
       const userRaw = localStorage.getItem("user");
       const token = localStorage.getItem("token");
@@ -71,6 +74,8 @@ export default function FunisPage() {
       setFunis(funisComFases);
     } catch (error) {
       console.error("Erro ao buscar funis e fases:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -181,14 +186,15 @@ export default function FunisPage() {
   };
 
   return (
-    <Layout>
-      <button className={styles.backButton} onClick={() => router.back()}>
-        <span className={styles.iconWrapper}>
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </span>
-        Voltar
-      </button>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
       <div className={styles.pageContainer}>
+        {loading ? (
+          <SpaceLoader label="Carregando funis..." />
+        ) : (
+        <>
         <div className={styles.headerContainer}>
           <div>
             <h1 className={styles.pageTitle}>Funis e fases do negócio</h1>
@@ -306,6 +312,8 @@ export default function FunisPage() {
             </div>
           ))}
         </div>
+        </>
+        )}
       </div>
       <CreateFaseModal
         open={modalOpen}
@@ -344,6 +352,8 @@ export default function FunisPage() {
         theme="colored"
         transition={Bounce}
       />
-    </Layout>
+        </div>
+      </div>
+    </>
   );
 }
