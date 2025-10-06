@@ -16,29 +16,27 @@
 
 .newChatButton {
   width: 100%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--onity-space-s);
-  padding: calc(var(--onity-space-s) + 4px) var(--onity-space-m);
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-  border: none;
-  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
   font-size: 0.875rem;
-  font-weight: 600;
+  border: 1px solid var(--primary-color, #3b82f6);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s;
 }
 
 .newChatButton:hover {
-  background: var(--onity-color-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--onity-elev-med);
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
 }
 
 .newChatButton:active {
-  transform: translateY(0);
+  transform: none;
 }
 
 .header {
@@ -77,7 +75,7 @@
   padding: var(--onity-space-s) calc(var(--onity-space-s) + 4px);
   background: none;
   border: none;
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--onity-color-text);
@@ -298,7 +296,7 @@
   color: var(--primary-color, #3b82f6);
   font-size: 0.75rem;
   font-weight: 500;
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   border: 1px solid var(--primary-color, #3b82f6);
   text-align: center;
   min-width: 80px;

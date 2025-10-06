@@ -233,7 +233,7 @@
   background-color: var(--onity-color-error);
   color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;

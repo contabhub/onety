@@ -17,7 +17,7 @@
 /* Container principal do modal */
 .modal {
   background: var(--onity-color-surface);
-  border-radius: var(--onity-radius-sm);
+  border-radius: 10px;
   box-shadow: var(--onity-elev-high);
   width: 100%;
   max-width: 480px;
@@ -116,8 +116,8 @@
 .input {
   padding: var(--onity-space-m) var(--onity-space-l);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
   font-size: 16px;
+  border-radius: 10px;
   background-color: var(--onity-color-bg);
   color: var(--onity-color-text);
   transition: all 0.2s;
@@ -125,6 +125,7 @@
 
 .input:focus {
   outline: none;
+  border-radius: 10px;
   border-color: var(--onity-color-primary);
   box-shadow: var(--onity-elev-low);
 }
@@ -146,6 +147,7 @@
   display: flex;
   gap: var(--onity-space-m);
   margin-top: var(--onity-space-s);
+  border-radius: 10px;
 }
 
 .cancelButton {
@@ -154,7 +156,7 @@
   border: 1px solid var(--onity-color-border);
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -175,6 +177,7 @@
   border: none;
   border-radius: var(--onity-radius-xs);
   font-size: 14px;
+  border-radius: 10px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

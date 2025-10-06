@@ -622,6 +622,15 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
               return user?.name || user?.username || 'Usuário';
             }
           })()}
+          currentUserAvatarUrl={(() => {
+            try {
+              const userData = JSON.parse(localStorage.getItem('user') || '{}');
+              return userData.avatar_url || user?.avatar_url || null;
+            } catch {
+              return user?.avatar_url || null;
+            }
+          })()}
+          customerAvatarUrl={conversation?.avatar_url || null}
           selectionMode={selectionMode}
           selectedMessages={selectedMessages}
           onSelectionChange={handleSelectionModeChange}
