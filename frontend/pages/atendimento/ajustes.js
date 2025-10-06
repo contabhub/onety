@@ -7,6 +7,7 @@ import Equipes from '../../components/atendimento/ajustes/Equipes';
 import Usuarios from '../../components/atendimento/ajustes/Usuarios';
 import Contatos from '../../components/atendimento/ajustes/Contatos';
 import Webhooks from '../../components/atendimento/ajustes/Webhooks';
+import Cargos from '../../components/atendimento/ajustes/Cargos';
 import Etiquetas from '../../components/atendimento/ajustes/Etiquetas';
 import LinksExternos from '../../components/atendimento/ajustes/LinksExternos';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar'
@@ -22,6 +23,7 @@ export default function Ajustes({ auth }) {
       setActiveSection(router.query.section);
     }
   }, [router.query.section]);
+
 
   const handleSectionChange = (section) => {
     setActiveSection(section);
@@ -47,6 +49,8 @@ export default function Ajustes({ auth }) {
         return <LinksExternos />;
       case 'webhooks':
         return <Webhooks />;
+      case 'cargos':
+        return <Cargos />;
       default:
         return <Conta />;
     }

@@ -1,0 +1,204 @@
+.container {
+  padding: var(--onity-space-l);
+  color: var(--onity-color-text);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-l);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: var(--onity-space-s);
+}
+
+.buttonPrimary {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  min-height: 38px;
+  min-width: 160px;
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+  font-size: 0.875rem;
+  border: 1px solid var(--primary-color, #3b82f6);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buttonPrimary:hover {
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
+}
+
+.searchRow {
+  margin-bottom: var(--onity-space-m);
+  display: flex;
+}
+
+.searchInput {
+  width: 420px;
+  max-width: 100%;
+  padding: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.thead th {
+  text-align: left;
+  padding: var(--onity-space-m);
+  background: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.row td {
+  padding: var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 9999px;
+  font-size: 12px;
+}
+
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--onity-space-m);
+}
+
+.modal {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalContent {
+  padding: var(--onity-space-l);
+}
+
+.field {
+  margin-bottom: var(--onity-space-m);
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--onity-space-s);
+  font-weight: 600;
+}
+
+.input {
+  width: 95%;
+  padding: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.permGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--onity-space-m);
+}
+
+.permCard {
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  padding: var(--onity-space-m);
+  background: var(--onity-color-bg);
+}
+
+.permList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: var(--onity-space-s);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.btnSecondary {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Ações em coluna dentro da tabela */
+.actionsCol {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.tableActionButton {
+  width: 100%;
+  min-width: 0;
+}
+
+

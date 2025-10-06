@@ -19,12 +19,31 @@ export default function CanaisAtendimento() {
   const [instanceToDelete, setInstanceToDelete] = useState(null);
   const [deletingInstance, setDeletingInstance] = useState(false);
   const statusIntervalRef = useRef(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const companyId = userData.EmpresaId;
+    // Detectar admin/superadmin e carregar permissões
+    try {
+      const roleCandidates = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const permsAdm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('admin') || permsAdm.includes('administrador');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(userData?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -560,32 +579,38 @@ export default function CanaisAtendimento() {
       {/* Middle section - Actions */}
       <div className={styles.cardActions}>
         {instancia.status === 'conectado' ? (
-          <button 
-            className={styles.actionButton}
-            onClick={() => handleDisconnect(instancia)}
-            title="Desconectar WhatsApp"
-          >
-            <X size={16} />
-            Desconectar
-          </button>
+          hasPerm('instancias', 'desconectar') && (
+            <button 
+              className={styles.actionButton}
+              onClick={() => handleDisconnect(instancia)}
+              title="Desconectar WhatsApp"
+            >
+              <X size={16} />
+              Desconectar
+            </button>
+          )
         ) : (
+          hasPerm('instancias', 'conectar') && (
+            <button 
+              className={styles.actionButton}
+              onClick={() => handleReconnect(instancia)}
+              title="Reconectar WhatsApp"
+            >
+              <RefreshCw size={16} />
+              Reconectar
+            </button>
+          )
+        )}
+        {hasPerm('instancias', 'excluir') && (
           <button 
             className={styles.actionButton}
-            onClick={() => handleReconnect(instancia)}
-            title="Reconectar WhatsApp"
+            onClick={() => handleDelete(instancia)}
+            title="Deletar instância"
           >
-            <RefreshCw size={16} />
-            Reconectar
+            <Trash size={16} />
+            Deletar
           </button>
         )}
-        <button 
-          className={styles.actionButton}
-          onClick={() => handleDelete(instancia)}
-          title="Deletar instância"
-        >
-          <Trash size={16} />
-          Deletar
-        </button>
       </div>
 
     </div>
@@ -629,30 +654,32 @@ export default function CanaisAtendimento() {
         {instancias.map(renderInstanciaCard)}
       </div>
 
-      <div className={styles.addButtonContainer} ref={dropdownRef}>
-        <button 
-          className={styles.addButton}
-          onClick={() => setShowDropdown(!showDropdown)}
-        >
-          <Plus size={24} />
-        </button>
-        
-        {showDropdown && (
-          <div className={styles.dropdown}>
-            <div className={styles.dropdownHeader}>
-              <span>Escolha seu provedor</span>
+      {hasPerm('instancias', 'criar') && (
+        <div className={styles.addButtonContainer} ref={dropdownRef}>
+          <button 
+            className={styles.addButton}
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            <Plus size={24} />
+          </button>
+          
+          {showDropdown && (
+            <div className={styles.dropdown}>
+              <div className={styles.dropdownHeader}>
+                <span>Escolha seu provedor</span>
+              </div>
+              <button 
+                className={styles.dropdownItem}
+                onClick={() => selectProvider('evolution')}
+              >
+                <MessageCircle size={16} />
+                <span>Evolution API</span>
+                <ChevronDown size={14} />
+              </button>
             </div>
-            <button 
-              className={styles.dropdownItem}
-              onClick={() => selectProvider('evolution')}
-            >
-              <MessageCircle size={16} />
-              <span>Evolution API</span>
-              <ChevronDown size={14} />
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
       
       {/* Modal QR Code */}
       {showQrModal && (

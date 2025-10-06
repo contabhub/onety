@@ -17,12 +17,31 @@ export default function Equipes() {
   const [availableInstances, setAvailableInstances] = useState([]);
   const [teamInstances, setTeamInstances] = useState({});
   const [teamUserCounts, setTeamUserCounts] = useState({});
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const companyId = userData.EmpresaId;
+    // Detectar admin/superadmin e carregar permissões
+    try {
+      const roleCandidates = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const permsAdm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('administrador') || permsAdm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(userData?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -288,13 +307,15 @@ export default function Equipes() {
         {equipe.padrao === 1 && (
           <div className={styles.padraoTag}>Padrão</div>
         )}
-        <button 
-          className={styles.editButton}
-          onClick={() => handleOpenEditModal(equipe)}
-          title="Editar equipe"
-        >
-          <Edit size={16} />
-        </button>
+        {(isAdmin || hasPerm('equipes', 'editar')) && (
+          <button 
+            className={styles.editButton}
+            onClick={() => handleOpenEditModal(equipe)}
+            title="Editar equipe"
+          >
+            <Edit size={16} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -367,13 +388,15 @@ export default function Equipes() {
           >
             <RefreshCw size={20} />
           </button>
-          <button 
-            className={styles.newButton}
-            onClick={handleOpenCreateModal}
-          >
-            <Plus size={20} />
-            Novo
-          </button>
+          {(isAdmin || hasPerm('equipes', 'criar')) && (
+            <button 
+              className={styles.newButton}
+              onClick={handleOpenCreateModal}
+            >
+              <Plus size={20} />
+              Novo
+            </button>
+          )}
         </div>
       </div>
 
@@ -409,13 +432,15 @@ export default function Equipes() {
           <div className={styles.emptyState}>
             <Users size={48} className={styles.emptyIcon} />
             <p>Nenhuma equipe encontrada</p>
-            <button 
-              className={styles.createFirstButton}
-              onClick={handleOpenCreateModal}
-            >
-              <Plus size={20} />
-              Criar primeira equipe
-            </button>
+            {(isAdmin || hasPerm('equipes', 'criar')) && (
+              <button 
+                className={styles.createFirstButton}
+                onClick={handleOpenCreateModal}
+              >
+                <Plus size={20} />
+                Criar primeira equipe
+              </button>
+            )}
           </div>
         ) : (
           Object.entries(currentGroupedEquipes)

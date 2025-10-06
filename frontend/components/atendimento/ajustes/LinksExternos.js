@@ -14,11 +14,31 @@ export default function LinksExternos() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
 
   // Verificar dados do usuário
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     setUserRole(userData.userRole || null);
+    // Detectar admin/superadmin e carregar permissões
+    try {
+      const roles = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const adm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roles.includes('superadmin') || roles.includes('administrador') || roles.includes('admin')
+        || adm.includes('superadmin') || adm.includes('administrador') || adm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(userData?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     
     if (!userData.EmpresaId) {
       setError('ID da empresa não encontrado. Faça login novamente.');
@@ -197,12 +217,14 @@ export default function LinksExternos() {
               Gerencie links úteis para sua empresa
             </p>
           </div>
-            <button 
-              onClick={openModal}
-              className={styles.headerAddButton}
-            >
-              Adicionar Link
-            </button>
+            {(isAdmin || hasPerm('linksExternos', 'criar')) && (
+              <button 
+                onClick={openModal}
+                className={styles.headerAddButton}
+              >
+                Adicionar Link
+              </button>
+            )}
         </div>
       </div>
       
@@ -232,7 +254,7 @@ export default function LinksExternos() {
             <LinkIcon size={48} className={styles.emptyIcon} />
             <h3>Nenhum link externo cadastrado</h3>
             <p>Adicione links úteis para sua empresa</p>
-            {(userRole === 'Administrador' || userRole === 'Superadmin') && (
+            {(isAdmin || hasPerm('linksExternos', 'criar')) && (
               <button 
                 onClick={openModal}
                 className={styles.addFirstButton}
@@ -264,8 +286,7 @@ export default function LinksExternos() {
                   <ExternalLink size={16} />
                   Abrir
                 </button>
-                
-                  <>
+                  {(isAdmin || hasPerm('linksExternos', 'editar')) && (
                     <button 
                       className={styles.actionButton}
                       onClick={() => handleEdit(link)}
@@ -274,6 +295,8 @@ export default function LinksExternos() {
                       <Edit size={16} />
                       Editar
                     </button>
+                  )}
+                  {(isAdmin || hasPerm('linksExternos', 'excluir')) && (
                     <button 
                       className={styles.actionButton}
                       onClick={() => handleDelete(link.id)}
@@ -282,7 +305,7 @@ export default function LinksExternos() {
                       <Trash size={16} />
                       Excluir
                     </button>
-                  </>
+                  )}
               </div>
             </div>
           ))
