@@ -60,9 +60,9 @@
 }
 
 .eyeButton:hover { 
-  background: var(--onity-color-bg);
-  color: var(--onity-color-primary);
-  opacity: 1; }
+  background: transparent;
+  color: var(--primary-color, #3b82f6); 
+}
 
 .contactInfo h2 {
   font-size: 1.125rem;
@@ -136,10 +136,10 @@
 
 .transferButton {
   padding: var(--onity-space-s) var(--onity-space-m);
-  background-color: var(--onity-color-surface);
-  color: var(--onity-color-primary);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
   font-size: 0.875rem;
-  border: 1px solid var(--onity-color-primary);
+  border: 1px solid var(--primary-color, #3b82f6);
   border-radius: var(--onity-radius-xs);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -149,7 +149,9 @@
 }
 
 .transferButton:hover { 
-  background-color: var(--onity-color-bg); }
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
+ }
 
 .assumeButton {
   padding: var(--onity-space-s) var(--onity-space-m);
@@ -168,11 +170,11 @@
 
 .finalizeButton {
   padding: var(--onity-space-s) var(--onity-space-m);
-  background-color: var(--onity-color-primary);
+  background-color: var(--primary-color, #3b82f6);
   color: var(--onity-color-primary-contrast);
   font-size: 0.875rem;
-  border: 1px solid var(--onity-color-primary);
   border-radius: var(--onity-radius-xs);
+  border: none;
   cursor: pointer;
   transition: background-color 0.2s;
   display: inline-flex;
@@ -181,7 +183,10 @@
 }
 
 .finalizeButton:hover {
-  background-color: var(--onity-color-primary-hover);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+  border: 1px solid var(--primary-color, #3b82f6);
+
 }
 
 .messagesContainer {
@@ -267,9 +272,8 @@
 }
 
 .editContactButton:hover {
-  background: var(--onity-color-bg);
-  color: var(--onity-color-primary);
-  opacity: 1;
+  background: transparent;
+  color: var(--primary-color, #3b82f6); 
 }
 
 .etiquetasContainer {

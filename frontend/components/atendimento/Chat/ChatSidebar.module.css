@@ -294,12 +294,12 @@
 .teamTag {
   display: inline-block;
   padding: var(--onity-space-xs) var(--onity-space-s);
-  background-color: var(--onity-color-bg);
-  color: var(--onity-color-primary);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: var(--onity-radius-xs);
-  border: 1px solid var(--onity-color-border);
+  border: 1px solid var(--primary-color, #3b82f6);
   text-align: center;
   min-width: 80px;
   max-width: 120px;
