@@ -94,6 +94,11 @@ router.get("/time/:times_atendimento_id", authOrApiKey, async (req, res) => {
       WHERE tai.times_atendimento_id = ?
     `, [req.params.times_atendimento_id]);
 
+    console.log('🔍 [BACKEND] Buscando instâncias para time:', req.params.times_atendimento_id);
+    console.log('🔍 [BACKEND] Resultado da query:', rows);
+    console.log('🔍 [BACKEND] tai.id (vínculo):', rows.map(r => r.id));
+    console.log('🔍 [BACKEND] tai.instancia_id (WhatsApp):', rows.map(r => r.instancia_id));
+
     res.json(rows);
   } catch (err) {
     console.error("Erro ao listar vínculos por time:", err);
