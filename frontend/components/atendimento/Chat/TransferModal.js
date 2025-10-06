@@ -20,10 +20,12 @@ export default function TransferModal({ isOpen, onClose, conversation, onTransfe
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const companyId = userData.companyId || userData.company_id || userData.empresaId || userData.EmpresaId || userData.empresa_id;
+      console.log('[TransferModal] fetchTeams empresaId/companyId:', companyId);
       
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/teams?company_id=${companyId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento?empresa_id=${companyId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -42,10 +44,12 @@ export default function TransferModal({ isOpen, onClose, conversation, onTransfe
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const companyId = userData.companyId || userData.company_id || userData.empresaId || userData.EmpresaId || userData.empresa_id;
+      console.log('[TransferModal] fetchUsers empresaId/companyId:', companyId);
       
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/company/${companyId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/usuarios/company/${companyId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -66,7 +70,7 @@ export default function TransferModal({ isOpen, onClose, conversation, onTransfe
       const token = localStorage.getItem('token');
       
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/team-instances/team/${teamId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento-instancias/time/${teamId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -122,7 +126,7 @@ export default function TransferModal({ isOpen, onClose, conversation, onTransfe
       const token = localStorage.getItem('token');
       
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversation.conversation_id}/transfer/team`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversation.conversation_id}/transfer/team`,
         {
           team_id: selectedTeam.id,
           team_whatsapp_instance_id: selectedInstance.id,
@@ -160,7 +164,7 @@ export default function TransferModal({ isOpen, onClose, conversation, onTransfe
       const token = localStorage.getItem('token');
       
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversation.conversation_id}/transfer/user`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversation.conversation_id}/transfer/user`,
         {
           assigned_user_id: selectedUser.id
         },

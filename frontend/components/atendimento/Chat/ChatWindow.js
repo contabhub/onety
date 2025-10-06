@@ -90,7 +90,7 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       const response = await axios.get(
-        `${apiUrl}/contatos-etiquetas/contato/${contactId}`,
+        `${apiUrl}/atendimento/leads-etiquetas/lead/${contactId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -117,7 +117,7 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
       const response = await axios.get(
-        `${apiUrl}/contacts/${contactId}`,
+        `${apiUrl}/atendimento/leads/${contactId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -204,7 +204,7 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
     try {
       const token = localStorage.getItem('token');
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversation.conversation_id}/read-all`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversation.conversation_id}/read-all`,
         { onlyCustomer: true },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -224,13 +224,45 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversation.conversation_id}/messages`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversation.conversation_id}/messages`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      console.log('📨 Mensagens carregadas:', response.data);
-      setMessages(response.data);
+      // Normalizar mensagens para o formato esperado pelo frontend
+      const normalized = (response.data || []).map((m) => {
+        const mapSender = (tipo) => {
+          if (tipo === 'cliente') return 'customer';
+          if (tipo === 'usuario') return 'user';
+          if (tipo === 'agente') return 'agent';
+          return tipo || 'system';
+        };
+        const mapType = (t) => {
+          // tipos no banco: 'text','image','audio','file','video'
+          if (!t) return 'text';
+          const val = String(t).toLowerCase();
+          if (['text','image','audio','file','video','photo','document'].includes(val)) return val === 'photo' ? 'image' : (val === 'document' ? 'file' : val);
+          return 'text';
+        };
+
+        return {
+          id: m.id,
+          conversation_id: m.conversas_id,
+          sender_type: mapSender(m.enviador_tipo),
+          sender_id: m.enviador_id,
+          message_type: mapType(m.tipo_mensagem),
+          content: m.conteudo,
+          media_url: m.midia_url,
+          created_at: m.criado_em,
+          read: m.lido,
+          assigned_user_id: m.assigned_user_id,
+          assigned_user_name: m.assigned_user_name,
+          conversation_status: m.conversation_status,
+          sender_user_name: m.sender_user_name
+        };
+      });
+      console.log('📨 Mensagens carregadas:', normalized);
+      setMessages(normalized);
       
       // Marcar mensagens como lidas após carregar
       await markMessagesAsRead();
@@ -318,7 +350,7 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversation.conversation_id}/assume/${user.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversation.conversation_id}/assume/${user.id}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -338,7 +370,7 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
     try {
       const token = localStorage.getItem('token');
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversation.conversation_id}/finalize`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversation.conversation_id}/finalize`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }

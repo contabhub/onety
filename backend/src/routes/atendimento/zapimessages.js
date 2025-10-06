@@ -107,7 +107,7 @@ router.post("/start", authOrApiKey, async (req, res) => {
     // 📝 5️⃣ Salva a mensagem no banco
     await pool.query(
       `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, lido)
-       VALUES (?, 'user', ?, 'text', ?, 0)`,
+       VALUES (?, 'usuario', ?, 'text', ?, 0)`,
       [conversationId, sender_id, message]
     );
 
@@ -245,7 +245,7 @@ router.post("/evolution/send", authOrApiKey, async (req, res) => {
     const insertAgentMessage = async ({ conversationId, senderId, content }) => {
       const [ins] = await pool.query(
         `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, lido)
-         VALUES (?, 'user', ?, 'text', ?, 0)`,
+         VALUES (?, 'usuario', ?, 'text', ?, 0)`,
         [conversationId, senderId || null, content]
       );
       return ins.insertId;
@@ -428,7 +428,7 @@ router.post("/evolution/send-audio", authOrApiKey, async (req, res) => {
     const insertAgentMessage = async ({ conversationId, senderId, content, messageType = 'audio', mediaUrl = null }) => {
       const [ins] = await pool.query(
         `INSERT INTO mensagens (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, midia_url, lido)
-         VALUES (?, 'user', ?, ?, ?, ?, 0)`,
+         VALUES (?, 'usuario', ?, ?, ?, ?, 0)`,
         [conversationId, senderId || null, content || 'Áudio', messageType, mediaUrl]
       );
       return ins.insertId;
@@ -697,7 +697,7 @@ router.post("/evolution/send-media", authOrApiKey, async (req, res) => {
         const [result] = await pool.query(
           `INSERT INTO mensagens 
            (conversas_id, enviador_tipo, enviador_id, tipo_mensagem, conteudo, midia_url)
-           VALUES (?, 'user', ?, ?, ?, ?)`,
+           VALUES (?, 'usuario', ?, ?, ?, ?)`,
           [conversationId, senderId, messageType, content, mediaUrl]
         );
         return result.insertId;
