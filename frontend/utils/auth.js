@@ -7,15 +7,10 @@ export function useAuth() {
 
   // Função para sincronizar dados do usuário com localStorage
   const syncUserData = useCallback(() => {
-    console.log('🔄 syncUserData chamado');
     
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('userData');
 
-    console.log('📊 Dados do localStorage:', {
-      hasToken: !!token,
-      hasUserData: !!userData
-    });
 
     if (token && userData) {
       try {

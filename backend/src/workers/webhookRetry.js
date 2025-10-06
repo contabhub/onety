@@ -145,7 +145,7 @@ async function reprocessCompanyEvents(companyId, limit = 50) {
            next_retry_at = NULL, 
            last_error = NULL,
            updated_at = NOW()
-       WHERE company_id = ? 
+       WHERE empresa_id = ? 
          AND status = 'failed' 
          AND attempts >= 3
          AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)

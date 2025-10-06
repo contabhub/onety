@@ -5,7 +5,7 @@ class ConversationHandler {
    * 🆕 Notifica nova conversa criada
    */
   static notifyNewConversation(conversationData) {
-    const { id, team_whatsapp_instance_id, customer_name, customer_phone, company_id } = conversationData;
+    const { id, times_atendimento_instancia_id, customer_name, customer_phone, company_id } = conversationData;
     
     // Notifica todos os usuários da empresa
     webSocketManager.emitToRoom(`company:${company_id}`, 'conversation:new', {

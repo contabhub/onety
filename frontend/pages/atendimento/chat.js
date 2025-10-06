@@ -15,26 +15,8 @@ export default function Chat({ auth }) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [companyStatus, setCompanyStatus] = useState(null);
 
-  // Debug: Log mudanças de aba
-  useEffect(() => {
-    console.log('🔄 Chat.js: Aba ativa mudou para:', activeTab);
-  }, [activeTab]);
 
   useEffect(() => {
-    console.log('🔍 Chat - useEffect executado:', { 
-      user, 
-      loading, 
-      auth,
-      hasToken: !!localStorage.getItem('token'),
-      hasUserData: !!localStorage.getItem('userData'),
-      companyId: (JSON.parse(localStorage.getItem('userData') || '{}').companyId)
-    });
-    
-    // Se ainda está carregando, aguardar
-    if (loading) {
-      console.log('⏳ Chat - Ainda carregando, aguardando...');
-      return;
-    }
     
     // Verificar se tem token e dados no localStorage como fallback
     const token = localStorage.getItem('token');
@@ -82,10 +64,6 @@ export default function Chat({ auth }) {
     return <BillingStatusBanner status={companyStatus} supportUrl={supportUrl} />;
   };
 
-  // Log adicional para debug
-  useEffect(() => {
-    console.log('🔍 Chat - Estado atual:', { user, loading, selectedConversation });
-  }, [user, loading, selectedConversation]);
 
   if (loading) {
     console.log('⏳ Chat - Carregando...');

@@ -246,10 +246,10 @@ router.get("/company/:companyId/user/:userId", authOrApiKey, async (req, res) =>
         wi.token AS zapi_token,
         
         -- Última mensagem
-        m.content AS last_message_content,
-        m.created_at AS last_message_time,
-        m.read AS last_message_read,
-        m.sender_type AS last_message_sender
+        m.conteudo AS last_message_content,
+        m.criado_em AS last_message_time,
+        m.lido AS last_message_read,
+        m.enviador_tipo AS last_message_sender
 
       FROM conversas c
       JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
@@ -257,10 +257,10 @@ router.get("/company/:companyId/user/:userId", authOrApiKey, async (req, res) =>
       JOIN instancias wi ON twi.instancia_id = wi.id
       LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
       LEFT JOIN leads cont ON c.lead_id = cont.id
-      LEFT JOIN messages m ON m.id = (
-        SELECT id FROM messages
-        WHERE conversation_id = c.id
-        ORDER BY created_at DESC
+      LEFT JOIN mensagens m ON m.id = (
+        SELECT id FROM mensagens
+        WHERE conversas_id = c.id
+        ORDER BY criado_em DESC
         LIMIT 1
       )
       WHERE t.empresa_id = ?
@@ -483,12 +483,12 @@ router.get("/:id/messages", authOrApiKey, async (req, res) => {
         c.status AS conversation_status,
         sender_user.nome AS sender_user_name,
         sender_user.apelido AS sender_user_nickname
-      FROM messages m
-      JOIN conversas c ON m.conversation_id = c.id
+      FROM mensagens m
+      JOIN conversas c ON m.conversas_id = c.id
       LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
-      LEFT JOIN usuarios sender_user ON m.sender_id = sender_user.id AND m.sender_type = 'user'
-      WHERE m.conversation_id = ?
-      ORDER BY m.created_at ASC
+      LEFT JOIN usuarios sender_user ON m.enviador_id = sender_user.id AND m.enviador_tipo = 'user'
+      WHERE m.conversas_id = ?
+      ORDER BY m.criado_em ASC
       `,
       [req.params.id]
     );
@@ -528,10 +528,10 @@ router.get("/team/:teamId/conversations", authOrApiKey, async (req, res) => {
 
     -- 🔔 Quantidade de mensagens não lidas (apenas do cliente)
     COALESCE((
-      SELECT COUNT(*) FROM messages
-       WHERE conversation_id = c.id
-         AND sender_type = 'customer'
-         AND \`read\` = 0
+      SELECT COUNT(*) FROM mensagens m2
+       WHERE m2.conversas_id = c.id
+         AND m2.enviador_tipo = 'cliente'
+         AND m2.lido = 0
     ), 0) AS unread_count,
         
         -- Informações da instância WhatsApp
@@ -543,20 +543,20 @@ router.get("/team/:teamId/conversations", authOrApiKey, async (req, res) => {
         wi.status AS whatsapp_status,
         
     -- Última mensagem
-    m.content AS last_message_content,
-    m.created_at AS last_message_time,
-    m.\`read\` AS last_message_read,
-    m.sender_type AS last_message_sender
+    m.conteudo AS last_message_content,
+    m.criado_em AS last_message_time,
+    m.lido AS last_message_read,
+    m.enviador_tipo AS last_message_sender
 
       FROM conversas c
       JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
       JOIN instancias wi ON twi.instancia_id = wi.id
       LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
       LEFT JOIN leads cont ON c.lead_id = cont.id
-      LEFT JOIN messages m ON m.id = (
-        SELECT id FROM messages
-        WHERE conversation_id = c.id
-        ORDER BY created_at DESC
+      LEFT JOIN mensagens m ON m.id = (
+        SELECT id FROM mensagens
+        WHERE conversas_id = c.id
+        ORDER BY criado_em DESC
         LIMIT 1
       )
       WHERE twi.times_atendimento_id = ?
@@ -601,48 +601,39 @@ router.get("/company/:companyId/all", authOrApiKey, async (req, res) => {
         c.status,
         c.usuario_responsavel_id AS assigned_user_id,
         c.lead_id AS contact_id,
-        u.nome AS assigned_user_name,   -- nome do usuário responsável
+        u.nome AS assigned_user_name,
         cont.nome AS contact_name,
         cont.email AS contact_email,
         c.criado_em AS created_at,
         c.atualizado_em AS updated_at,
-
-    -- 🔔 Quantidade de mensagens não lidas (apenas do cliente)
-    COALESCE((
-      SELECT COUNT(*) FROM messages
-       WHERE conversation_id = c.id
-         AND sender_type = 'customer'
-         AND \`read\` = 0
-    ), 0) AS unread_count,
-        
-        -- Informações da instância WhatsApp
+        COALESCE((
+          SELECT COUNT(*) FROM mensagens m2
+          WHERE m2.conversas_id = c.id
+            AND m2.enviador_tipo = 'cliente'
+            AND m2.lido = 0
+        ), 0) AS unread_count,
         wi.instancia_nome AS instance_name,
         wi.telefone AS phone_number,
         wi.instancia_id AS instance_id,
         wi.token AS token,
         wi.cliente_token AS client_token,
         wi.status AS whatsapp_status,
-        
-        -- Informações do time
         t.nome AS team_name,
         t.id AS team_id,
-        
-    -- Última mensagem
-    m.content AS last_message_content,
-    m.created_at AS last_message_time,
-    m.\`read\` AS last_message_read,
-    m.sender_type AS last_message_sender
-
+        m.conteudo AS last_message_content,
+        m.criado_em AS last_message_time,
+        m.lido AS last_message_read,
+        m.enviador_tipo AS last_message_sender
       FROM conversas c
       JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
       JOIN instancias wi ON twi.instancia_id = wi.id
       JOIN times_atendimento t ON twi.times_atendimento_id = t.id
       LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
       LEFT JOIN leads cont ON c.lead_id = cont.id
-      LEFT JOIN messages m ON m.id = (
-        SELECT id FROM messages
-        WHERE conversation_id = c.id
-        ORDER BY created_at DESC
+      LEFT JOIN mensagens m ON m.id = (
+        SELECT id FROM mensagens
+        WHERE conversas_id = c.id
+        ORDER BY criado_em DESC
         LIMIT 1
       )
       WHERE t.empresa_id = ?
@@ -673,15 +664,15 @@ router.patch("/:id/read-all", authOrApiKey, async (req, res) => {
 
     // 1) Atualiza mensagens
     const sql = onlyCustomer
-      ? `UPDATE messages
-           SET \`read\` = 1
-         WHERE conversation_id = ?
-           AND \`read\` = 0
-           AND sender_type = 'customer'`
-      : `UPDATE messages
-           SET \`read\` = 1
-         WHERE conversation_id = ?
-           AND \`read\` = 0`;
+      ? `UPDATE mensagens
+           SET lido = 1
+         WHERE conversas_id = ?
+           AND lido = 0
+           AND enviador_tipo = 'cliente'`
+      : `UPDATE mensagens
+           SET lido = 1
+         WHERE conversas_id = ?
+           AND lido = 0`;
 
     const [upd] = await pool.query(sql, [conversationId]);
 
@@ -694,10 +685,10 @@ router.patch("/:id/read-all", authOrApiKey, async (req, res) => {
     // 3) Recalcula o unread_count para responder e (opcional) emitir WS
     const [[{ unread_count }]] = await pool.query(
       `SELECT COUNT(*) AS unread_count
-         FROM messages
-        WHERE conversation_id = ?
-          AND sender_type = 'customer'
-          AND \`read\` = 0`,
+         FROM mensagens
+        WHERE conversas_id = ?
+          AND enviador_tipo = 'cliente'
+          AND lido = 0`,
       [conversationId]
     );
 

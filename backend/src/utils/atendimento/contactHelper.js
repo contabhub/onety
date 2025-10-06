@@ -31,8 +31,8 @@ async function findContactByPhone(phone, companyId) {
   const normalizedPhone = normalizePhone(phone);
   
   const [contacts] = await pool.query(
-    `SELECT * FROM contacts 
-     WHERE telefone = ? AND company_id = ? 
+    `SELECT * FROM leads 
+     WHERE telefone = ? AND empresa_id = ? 
      LIMIT 1`,
     [normalizedPhone, companyId]
   );
@@ -53,7 +53,7 @@ async function createContact({ nome, telefone, companyId, email = null }) {
   const normalizedPhone = normalizePhone(telefone);
   
   const [result] = await pool.query(
-    `INSERT INTO contacts (nome, telefone, email, company_id, notas_internas)
+    `INSERT INTO leads (nome, telefone, email, empresa_id, notas_internas)
      VALUES (?, ?, ?, ?, ?)`,
     [nome, normalizedPhone, email, companyId, JSON.stringify([])]
   );
@@ -63,7 +63,7 @@ async function createContact({ nome, telefone, companyId, email = null }) {
     nome,
     telefone: normalizedPhone,
     email,
-    company_id: companyId,
+    empresa_id: companyId,
     notas_internas: []
   };
 }
@@ -129,14 +129,14 @@ async function resolveOrCreateContact({ phone, companyId, customerName = null })
  */
 async function getCompanyIdFromTeamInstance(teamWhatsappInstanceId) {
   const [rows] = await pool.query(
-    `SELECT t.company_id 
-     FROM team_whatsapp_instances twi
-     JOIN teams t ON twi.team_id = t.id
+    `SELECT t.empresa_id 
+     FROM times_atendimento_instancias twi
+     JOIN times_atendimento t ON twi.times_atendimento_id = t.id
      WHERE twi.id = ?`,
     [teamWhatsappInstanceId]
   );
   
-  return rows.length > 0 ? rows[0].company_id : null;
+  return rows.length > 0 ? rows[0].empresa_id : null;
 }
 
 module.exports = {

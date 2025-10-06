@@ -29,13 +29,13 @@ class MessageHandler {
     // Evita duplicidade no ChatWindow usando um nome de evento específico da empresa
     (async () => {
       try {
-        // Buscar team_whatsapp_instance_id da conversa
+        // Buscar times_atendimento_instancia_id da conversa
         const [rows] = await pool.query(
-          'SELECT team_whatsapp_instance_id FROM conversations WHERE id = ? LIMIT 1',
+          'SELECT times_atendimento_instancia_id FROM conversas WHERE id = ? LIMIT 1',
           [conversation_id]
         );
         if (!rows.length) return;
-        const twiId = rows[0].team_whatsapp_instance_id;
+        const twiId = rows[0].times_atendimento_instancia_id;
         const companyId = await getCompanyIdFromTeamInstance(twiId);
         if (!companyId) return;
 
