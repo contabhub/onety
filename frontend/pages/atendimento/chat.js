@@ -14,6 +14,7 @@ export default function Chat({ auth }) {
   const [activeTab, setActiveTab] = useState('novos');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [companyStatus, setCompanyStatus] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
 
   useEffect(() => {
@@ -38,6 +39,18 @@ export default function Chat({ auth }) {
     if (user) {
       console.log('✅ Chat - Usuário encontrado:', user);
     }
+
+    // Detectar admin/superadmin para liberar visão completa
+    try {
+      const raw = localStorage.getItem('userData');
+      const u = raw ? JSON.parse(raw) : {};
+      const roles = [u?.userRole, u?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const adm = Array.isArray(u?.permissoes?.adm) ? u.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roles.includes('superadmin') || roles.includes('administrador') || roles.includes('admin') || adm.includes('superadmin') || adm.includes('administrador') || adm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+    } catch {
+      setIsAdmin(false);
+    }
   }, [user, loading, router, auth]);
 
   // Buscar status da empresa para exibir banner
@@ -45,7 +58,7 @@ export default function Chat({ auth }) {
     const fetchCompanyStatus = async () => {
       try {
         const token = localStorage.getItem('token');
-        const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+        const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId || JSON.parse(localStorage.getItem('userData') || '{}').companyId;
         if (!token || !companyId) return;
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/${companyId}`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
@@ -94,6 +107,7 @@ export default function Chat({ auth }) {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           refreshTrigger={refreshTrigger}
+          isAdmin={isAdmin}
         />
         <ChatWindow 
           conversation={selectedConversation}
@@ -130,6 +144,7 @@ export default function Chat({ auth }) {
             }
           }}
           onTabChange={setActiveTab}
+          isAdmin={isAdmin}
         />
       </div>
     </div>

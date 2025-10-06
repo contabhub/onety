@@ -3,11 +3,11 @@ function verificarPermissao(permissao) {
     try {
       const permissoes = (req.user && req.user.permissoes) || {};
 
-      if (
-        permissoes.adm &&
-        Array.isArray(permissoes.adm) &&
-        permissoes.adm.includes("superadmin")
-      ) {
+      // Admins globais: superadmin OU admin têm passe livre
+      const admList = Array.isArray(permissoes.adm)
+        ? permissoes.adm.map((p) => String(p).toLowerCase())
+        : [];
+      if (admList.includes("superadmin") || admList.includes("admin")) {
         return next();
       }
 

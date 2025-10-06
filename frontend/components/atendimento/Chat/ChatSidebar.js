@@ -140,7 +140,7 @@ const formatLastMessagePreview = (conversation) => {
   return content.length > 50 ? content.substring(0, 50) + '...' : content;
 };
 
-export default function ChatSidebar({ onSelectConversation, selectedConversation, activeTab, onTabChange, refreshTrigger }) {
+export default function ChatSidebar({ onSelectConversation, selectedConversation, activeTab, onTabChange, refreshTrigger, isAdmin = false }) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -198,6 +198,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       case 'outros':
         filteredByCategory = conversations.filter(conv => {
           const assignedId = parseInt(conv.assigned_user_id);
+          // Admin/Superadmin podem ver todos, mas a aba 'outros' mantém conceito de "não meus"
           return assignedId && assignedId !== userIdNumber && conv.status !== 'fechada';
         });
         break;
@@ -349,8 +350,28 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       const conversationsData = response.data?.conversations || [];
       console.log(`✅ ${conversationsData.length} conversas encontradas para a empresa:`, conversationsData);
 
-      setConversations(conversationsData);
-      await enrichConversationsWithLabels(conversationsData);
+      // Normalizar shape esperado pelo frontend
+      const normalized = conversationsData.map((c) => ({
+        conversation_id: c.conversation_id ?? c.id ?? c.conversa_id,
+        customer_name: c.customer_name ?? c.nome_cliente ?? c.cliente_nome ?? null,
+        customer_phone: c.customer_phone ?? c.telefone_cliente ?? c.cliente_telefone ?? null,
+        avatar_url: c.avatar_url ?? c.customer_avatar_url ?? null,
+        status: c.status ?? c.conversation_status ?? 'aberta',
+        assigned_user_id: c.assigned_user_id ?? c.responsavel_id ?? null,
+        assigned_user_name: c.assigned_user_name ?? c.responsavel_nome ?? null,
+        created_at: c.created_at ?? c.criado_em ?? new Date().toISOString(),
+        updated_at: c.updated_at ?? c.atualizado_em ?? c.created_at ?? new Date().toISOString(),
+        team_name: c.team_name ?? c.time ?? c.equipe ?? null,
+        whatsapp_instance_name: c.whatsapp_instance_name ?? c.instance_name ?? null,
+        last_message_content: c.last_message_content ?? c.ultima_mensagem ?? null,
+        last_message_time: c.last_message_time ?? c.ultima_mensagem_em ?? null,
+        last_message_type: c.last_message_type ?? c.ultima_mensagem_tipo ?? null,
+        contact_id: c.contact_id ?? c.contato_id ?? null,
+        unread_count: c.unread_count ?? c.nao_lidas ?? 0
+      }));
+
+      setConversations(normalized);
+      await enrichConversationsWithLabels(normalized);
     } catch (error) {
       console.error('❌ Erro ao buscar conversas da empresa:', error);
       setConversations([]);
@@ -455,7 +476,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       console.log('✅ UserId encontrado, userRole:', currentUserRole);
 
       // Se for administrador, buscar todas as conversas da empresa
-      if (currentUserRole === 'Administrador' || currentUserRole === 'Superadmin') {
+      if (isAdmin || currentUserRole === 'Administrador' || currentUserRole === 'Superadmin') {
         console.log('👑 Usuário é administrador, buscando todas as conversas da empresa');
         fetchAllCompanyConversations();
       } else {
@@ -486,7 +507,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       console.log('🔄 ChatSidebar: Refresh trigger ativado, recarregando conversas');
 
       // Usar a função apropriada baseada no papel do usuário
-      if (userRole === 'Administrador' || userRole === 'Superadmin') {
+      if (isAdmin || userRole === 'Administrador' || userRole === 'Superadmin') {
         fetchAllCompanyConversations();
       } else {
         fetchAllConversations();

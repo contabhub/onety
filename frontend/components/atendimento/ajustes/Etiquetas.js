@@ -21,6 +21,8 @@ export default function Etiquetas() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ nome: '', cor: '#3B82F6' });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
 
   const companyId = useMemo(() => {
     try {
@@ -33,6 +35,12 @@ export default function Etiquetas() {
     'Authorization': `Bearer ${localStorage.getItem('token')}`,
     'Content-Type': 'application/json'
   }), []);
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
 
   const loadLabels = async () => {
     try {
@@ -49,6 +57,18 @@ export default function Etiquetas() {
   };
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem('userData');
+      const user = raw ? JSON.parse(raw) : {};
+      const roles = [user?.userRole, user?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const adm = Array.isArray(user?.permissoes?.adm) ? user.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roles.includes('superadmin') || roles.includes('administrador') || roles.includes('admin') || adm.includes('superadmin') || adm.includes('administrador') || adm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(user?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     if (companyId) loadLabels();
   }, [companyId]);
 
@@ -107,9 +127,11 @@ export default function Etiquetas() {
           <h1 className={styles.title}>Etiquetas</h1>
           <p className={styles.subtitle}>{labels.length} etiqueta{labels.length !== 1 ? 's' : ''}</p>
         </div>
-        <button className={styles.newButton} onClick={() => openModal()}>
-          Nova etiqueta
-        </button>
+        {(isAdmin || hasPerm('etiquetas', 'criar')) && (
+          <button className={styles.newButton} onClick={() => openModal()}>
+            Nova etiqueta
+          </button>
+        )}
       </div>
 
       <div className={styles.webhooksList}>
@@ -123,7 +145,9 @@ export default function Etiquetas() {
             <div className={styles.emptyIcon}>🏷️</div>
             <h3>Nenhuma etiqueta</h3>
             <p>Crie etiquetas para organizar seus contatos</p>
-            <button className={styles.emptyButton} onClick={() => openModal()}>Criar primeira etiqueta</button>
+            {(isAdmin || hasPerm('etiquetas', 'criar')) && (
+              <button className={styles.emptyButton} onClick={() => openModal()}>Criar primeira etiqueta</button>
+            )}
           </div>
         ) : (
           labels.map(label => (
@@ -137,12 +161,16 @@ export default function Etiquetas() {
               </div>
               <div className={styles.webhookActions}>
                 <div className={styles.actionButtons}>
-                  <button className={styles.actionButton} onClick={() => openModal(label)} title="Editar">
-                    <Edit size={16} />
-                  </button>
-                  <button className={styles.actionButton} onClick={() => remove(label.id)} title="Excluir">
-                    <Trash2 size={16} />
-                  </button>
+                  {(isAdmin || hasPerm('etiquetas', 'editar')) && (
+                    <button className={styles.actionButton} onClick={() => openModal(label)} title="Editar">
+                      <Edit size={16} />
+                    </button>
+                  )}
+                  {(isAdmin || hasPerm('etiquetas', 'excluir')) && (
+                    <button className={styles.actionButton} onClick={() => remove(label.id)} title="Excluir">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

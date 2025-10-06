@@ -68,22 +68,25 @@ export default function MessageComposer({
       return true; // É o responsável
     }
     
-    // Verificar se é administrador
+    // Verificar se é Admin/Superadmin por múltiplas fontes
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userRole = userData.userRole;
+    const roleCandidates = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+    const permsAdm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+    const isAdminUser = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('administrador') || permsAdm.includes('admin');
     
     console.log('🔍 Verificação de permissões:', {
       currentUserId,
       assignedUserId,
-      userRole,
+      roleCandidates,
+      permsAdm,
       hasAssignedUser,
       companyStatus,
       isCanceled: isCompanyCanceled(),
-      canSend: userRole === 'Administrador' || userRole === 'Superadmin'
+      isAdminUser
     });
     
-    if (userRole === 'Administrador' || userRole === 'Superadmin') {
-      return true; // É administrador
+    if (isAdminUser) {
+      return true; // Admin/Superadmin sempre podem enviar
     }
     
     return false; // Não pode enviar
@@ -94,7 +97,7 @@ export default function MessageComposer({
     const fetchCompanyStatus = async () => {
       try {
         const token = localStorage.getItem('token');
-        const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+        const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId || JSON.parse(localStorage.getItem('userData') || '{}').companyId;
         
         if (!token || !companyId) return;
         

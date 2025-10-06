@@ -28,7 +28,7 @@ const getReadableTextColor = (hexColor) => {
   }
 };
 
-export default function ChatWindow({ conversation, onConversationUpdate, onTabChange }) {
+export default function ChatWindow({ conversation, onConversationUpdate, onTabChange, isAdmin = false }) {
   const { user } = useAuth();
   const { socket } = useWebSocket();
   const [messages, setMessages] = useState([]);
@@ -465,11 +465,8 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
     // Se é o dono da conversa, pode transferir
     if (String(currentUserId) === String(assignedUserId)) return true;
     
-    // Se é administrador, pode transferir
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userRole = userData.userRole;
-    
-    if (userRole === 'Administrador' || userRole === 'Superadmin') return true;
+    // Admin/Superadmin sempre podem transferir
+    if (isAdmin) return true;
     
     return false;
   };
@@ -479,11 +476,8 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
     const currentUserId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
     const assignedUserId = conversation?.assigned_user_id;
     
-    // Verificar se é administrador primeiro
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userRole = userData.userRole;
-    
-    if (userRole === 'Administrador'|| userRole === 'Superadmin') return true;
+    // Admin/Superadmin sempre podem concluir
+    if (isAdmin) return true;
     
     // Se a conversa não tem responsável, apenas admin pode concluir
     if (!assignedUserId) return false;

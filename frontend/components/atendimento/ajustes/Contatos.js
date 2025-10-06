@@ -24,6 +24,14 @@ export default function Contatos() {
   const [contatoToDelete, setContatoToDelete] = useState(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
@@ -31,6 +39,17 @@ export default function Contatos() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const companyId = userData.EmpresaId;
     setUserRole(userData.userRole || null);
+    // Detectar admin/superadmin e carregar permissões
+    try {
+      const roleCandidates = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const permsAdm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('administrador') || permsAdm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(userData?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -289,7 +308,7 @@ export default function Contatos() {
             >
               <Eye size={16} />
             </button>
-              <>
+              {(isAdmin || hasPerm('contatos', 'editar')) && (
                 <button
                   className={styles.editButton}
                   onClick={() => handleOpenEditModal(contato)}
@@ -297,6 +316,8 @@ export default function Contatos() {
                 >
                   <Edit2 size={16} />
                 </button>
+              )}
+              {(isAdmin || hasPerm('contatos', 'excluir')) && (
                 <button
                   className={styles.deleteButton}
                   onClick={() => handleOpenDeleteModal(contato)}
@@ -304,7 +325,7 @@ export default function Contatos() {
                 >
                   <Trash2 size={16} />
                 </button>
-              </>
+              )}
           </div>
         </td>
       </tr>
@@ -345,26 +366,32 @@ export default function Contatos() {
         </div>
         <div className={styles.headerActions}>
             <>
-              <button 
-                className={styles.importButton}
-                onClick={handleOpenImportModal}
-              >
-                <Upload size={20} />
-                Importar
-              </button>
-              <button 
-                className={styles.exportButton}
-                onClick={handleOpenExportModal}
-              >
-                <Download size={20} />
-                Exportar
-              </button>
-              <button 
-                className={styles.newButton}
-                onClick={handleOpenCreateModal}
-              >
-                Novo Contato
-              </button>
+              {(isAdmin || hasPerm('contatos', 'importar')) && (
+                <button 
+                  className={styles.importButton}
+                  onClick={handleOpenImportModal}
+                >
+                  <Upload size={20} />
+                  Importar
+                </button>
+              )}
+              {(isAdmin || hasPerm('contatos', 'exportar')) && (
+                <button 
+                  className={styles.exportButton}
+                  onClick={handleOpenExportModal}
+                >
+                  <Download size={20} />
+                  Exportar
+                </button>
+              )}
+              {(isAdmin || hasPerm('contatos', 'criar')) && (
+                <button 
+                  className={styles.newButton}
+                  onClick={handleOpenCreateModal}
+                >
+                  Novo Contato
+                </button>
+              )}
             </>
           <button 
             className={styles.refreshButton}
@@ -407,7 +434,7 @@ export default function Contatos() {
           <div className={styles.emptyState}>
             <User size={48} className={styles.emptyIcon} />
             <p>{searchTerm ? 'Nenhum contato encontrado' : 'Nenhum contato cadastrado'}</p>
-            {!searchTerm && (userRole === 'Administrador' || userRole === 'Superadmin') && (
+            {!searchTerm && (isAdmin || hasPerm('contatos', 'criar')) && (
               <button 
                 className={styles.createFirstButton}
                 onClick={handleOpenCreateModal}

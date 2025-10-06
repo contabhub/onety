@@ -31,6 +31,29 @@ export default function Conta() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [adminUsers, setAdminUsers] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Detectar se usuário é admin/superadmin
+  useEffect(() => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const roleCandidates = [userData?.userRole, userData?.nivel]
+        .filter(Boolean)
+        .map(r => String(r).toLowerCase());
+      const permsAdm = Array.isArray(userData?.permissoes?.adm)
+        ? userData.permissoes.adm.map(v => String(v).toLowerCase())
+        : [];
+      const adminMatch = roleCandidates.includes('superadmin')
+        || roleCandidates.includes('administrador')
+        || roleCandidates.includes('admin')
+        || permsAdm.includes('superadmin')
+        || permsAdm.includes('administrador')
+        || permsAdm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+    } catch {
+      setIsAdmin(false);
+    }
+  }, []);
 
   // Função para buscar dados da empresa
   const fetchCompanyData = async () => {
@@ -258,6 +281,7 @@ export default function Conta() {
       )}
       
       <form onSubmit={handleSubmit} className={styles.form}>
+        <fieldset disabled={!isAdmin} style={{ border: 'none', padding: 0, margin: 0 }}>
         {/* Dados da empresa */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Dados da empresa</h2>
@@ -507,16 +531,19 @@ export default function Conta() {
             </div>
           </div>
         </section>
+        </fieldset>
 
-        <div className={styles.formActions}>
-          <button 
-            type="submit" 
-            className={styles.submitButton}
-            disabled={saving}
-          >
-            {saving ? 'Salvando...' : 'Salvar alterações'}
-          </button>
-        </div>
+        {isAdmin && (
+          <div className={styles.formActions}>
+            <button 
+              type="submit" 
+              className={styles.submitButton}
+              disabled={saving}
+            >
+              {saving ? 'Salvando...' : 'Salvar alterações'}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

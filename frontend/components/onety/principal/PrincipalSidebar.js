@@ -51,6 +51,13 @@ const MODULE_REGISTRY = {
         icon: <Settings size={18} />,
         route: '/atendimento/ajustes'
       }
+      ,
+      {
+        id: 'cargos',
+        label: 'Cargos',
+        icon: <Users size={18} />,
+        route: '/atendimento/ajustes?section=cargos'
+      }
     ]
   },
   comercial: {

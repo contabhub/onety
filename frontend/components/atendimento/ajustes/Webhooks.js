@@ -28,6 +28,15 @@ const Webhooks = () => {
     status: 'ativo'
   });
 
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
+
   // Eventos disponíveis no sistema
   const availableEvents = [
     { id: 'MESSAGE_RECEIVED', label: 'Mensagem recebida', description: 'Quando uma mensagem é recebida do cliente' },
@@ -80,6 +89,18 @@ const Webhooks = () => {
 
   // Carregar webhooks ao montar o componente
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem('userData');
+      const user = raw ? JSON.parse(raw) : {};
+      const roles = [user?.userRole, user?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const adm = Array.isArray(user?.permissoes?.adm) ? user.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roles.includes('superadmin') || roles.includes('administrador') || roles.includes('admin') || adm.includes('superadmin') || adm.includes('administrador') || adm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(user?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     loadWebhooks();
   }, []);
 
@@ -279,12 +300,14 @@ const Webhooks = () => {
             {webhooks.length} webhook{webhooks.length !== 1 ? 's' : ''} cadastrado{webhooks.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <button 
-          className={styles.newButton}
-          onClick={() => openModal()}
-        >
-          Novo Webhook
-        </button>
+        {(isAdmin || hasPerm('webhooks', 'criar')) && (
+          <button 
+            className={styles.newButton}
+            onClick={() => openModal()}
+          >
+            Novo Webhook
+          </button>
+        )}
       </div>
 
       {/* Lista de webhooks */}
@@ -301,12 +324,14 @@ const Webhooks = () => {
             </div>
             <h3>Nenhum webhook cadastrado</h3>
             <p>Configure webhooks para receber eventos automáticos da plataforma</p>
-            <button 
-              className={styles.emptyButton}
-              onClick={() => openModal()}
-            >
-              Criar primeiro webhook
-            </button>
+            {(isAdmin || hasPerm('webhooks', 'criar')) && (
+              <button 
+                className={styles.emptyButton}
+                onClick={() => openModal()}
+              >
+                Criar primeiro webhook
+              </button>
+            )}
           </div>
         ) : (
           webhooks.map(webhook => (
@@ -337,31 +362,37 @@ const Webhooks = () => {
                   </span>
                 </div>
                 <div className={styles.actionButtons}>
-                  <button 
-                    className={styles.actionButton}
-                    onClick={() => toggleStatus(webhook.id)}
-                    title="Alternar status"
-                  >
-                    {webhook.status === 'ativo' ? (
-                      <ToggleRight size={16} />
-                    ) : (
-                      <ToggleLeft size={16} />
-                    )}
-                  </button>
-                  <button 
-                    className={styles.actionButton}
-                    onClick={() => openModal(webhook)}
-                    title="Editar webhook"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button 
-                    className={styles.actionButton}
-                    onClick={() => deleteWebhook(webhook.id)}
-                    title="Deletar webhook"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {(isAdmin || hasPerm('webhooks', 'editar')) && (
+                    <button 
+                      className={styles.actionButton}
+                      onClick={() => toggleStatus(webhook.id)}
+                      title="Alternar status"
+                    >
+                      {webhook.status === 'ativo' ? (
+                        <ToggleRight size={16} />
+                      ) : (
+                        <ToggleLeft size={16} />
+                      )}
+                    </button>
+                  )}
+                  {(isAdmin || hasPerm('webhooks', 'editar')) && (
+                    <button 
+                      className={styles.actionButton}
+                      onClick={() => openModal(webhook)}
+                      title="Editar webhook"
+                    >
+                      <Edit size={16} />
+                    </button>
+                  )}
+                  {(isAdmin || hasPerm('webhooks', 'excluir')) && (
+                    <button 
+                      className={styles.actionButton}
+                      onClick={() => deleteWebhook(webhook.id)}
+                      title="Deletar webhook"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

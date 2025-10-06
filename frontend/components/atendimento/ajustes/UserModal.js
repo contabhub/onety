@@ -18,6 +18,9 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [role, setRole] = useState('Atendente');
   const [companyLinkId, setCompanyLinkId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [cargos, setCargos] = useState([]);
+  const [cargoId, setCargoId] = useState(null);
 
   // Preencher formulário quando editando
   useEffect(() => {
@@ -59,6 +62,44 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
     }
   }, [isOpen, isEdit]);
 
+  // Detectar admin/superadmin e carregar cargos (somente para admin/superadmin)
+  useEffect(() => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const roleCandidates = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const permsAdm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('administrador') || permsAdm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+    } catch {
+      setIsAdmin(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const fetchCargos = async () => {
+      try {
+        if (!isOpen || !isAdmin) return;
+        const token = localStorage.getItem('token');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const empresaId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+        if (!token || !apiUrl || !empresaId) return;
+        const res = await fetch(`${apiUrl}/cargos`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-empresa-id': empresaId
+          }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : [];
+        const withoutSuperadmin = list.filter(c => String(c?.nome || '').toLowerCase() !== 'superadmin');
+        setCargos(withoutSuperadmin);
+        if (!cargoId && withoutSuperadmin[0]?.id) setCargoId(withoutSuperadmin[0].id);
+      } catch {}
+    };
+    fetchCargos();
+  }, [isOpen, isAdmin]);
+
   // Carregar role atual do usuário para a empresa selecionada (quando editando)
   useEffect(() => {
     const loadUserCompanyRole = async () => {
@@ -78,10 +119,12 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
         if (vinculo) {
           setRole(vinculo.cargo_id || 'Atendente');
           setCompanyLinkId(vinculo.vinculo_id);
+          setCargoId(vinculo.cargo_id || null);
         } else {
           // mantém escolha default carregada
           setRole('Atendente');
           setCompanyLinkId(null);
+          setCargoId(null);
         }
       } catch (e) {
         // Silencioso: não bloquear a edição em caso de erro
@@ -272,59 +315,60 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
         }
       }
       
-      // Vincular/atualizar role do usuário na empresa
-      try {
-        if (!isEdit) {
-          // Criação: criar vínculo com role atual
-          const linkResponse = await fetch(`${apiUrl}/usuarios-empresas`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              usuario_id: result.id,
-              empresa_id: parseInt(companyId),
-              cargo_id: role
-            })
-          });
-          if (!linkResponse.ok) {
-            console.warn('Usuário criado mas não foi possível vincular/definir role na empresa');
-          }
-        } else {
-          // Edição: atualizar vínculo existente, senão criar
-          if (companyLinkId) {
-            const upd = await fetch(`${apiUrl}/usuarios-empresas/${companyLinkId}`, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ cargo_id: role })
-            });
-            if (!upd.ok) {
-              console.warn('Não foi possível atualizar o role na empresa');
-            }
-          } else {
-            const crt = await fetch(`${apiUrl}/usuarios-empresas`, {
+      // Vincular/atualizar cargo do usuário na empresa (somente admin/superadmin)
+      if (isAdmin) {
+        try {
+          const chosenCargoId = cargoId || role; // fallback para compat
+          if (!isEdit) {
+            const linkResponse = await fetch(`${apiUrl}/usuarios-empresas`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                usuario_id: user.id,
+                usuario_id: result.id,
                 empresa_id: parseInt(companyId),
-                cargo_id: role
+                cargo_id: chosenCargoId
               })
             });
-            if (!crt.ok) {
-              console.warn('Não foi possível criar o vínculo com role');
+            if (!linkResponse.ok) {
+              console.warn('Usuário criado mas não foi possível vincular/definir cargo na empresa');
+            }
+          } else {
+            if (companyLinkId) {
+              const upd = await fetch(`${apiUrl}/usuarios-empresas/${companyLinkId}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cargo_id: chosenCargoId })
+              });
+              if (!upd.ok) {
+                console.warn('Não foi possível atualizar o cargo na empresa');
+              }
+            } else {
+              const crt = await fetch(`${apiUrl}/usuarios-empresas`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  usuario_id: user.id,
+                  empresa_id: parseInt(companyId),
+                  cargo_id: chosenCargoId
+                })
+              });
+              if (!crt.ok) {
+                console.warn('Não foi possível criar o vínculo com cargo');
+              }
             }
           }
+        } catch (linkErr) {
+          console.warn('Falha ao definir cargo do usuário na empresa:', linkErr?.message || linkErr);
         }
-      } catch (linkErr) {
-        console.warn('Falha ao definir role do usuário na empresa:', linkErr?.message || linkErr);
       }
       
       // Call success callback
@@ -425,6 +469,26 @@ export default function UserModal({ isOpen, onClose, onSuccess, user = null, isE
                 <option value="Administrador">Administrador</option>
               </select>
             </div>
+            {isAdmin && (
+              <div className={styles.formGroup}>
+                <label htmlFor="cargoId" className={styles.label}>
+                  Cargo na Empresa
+                </label>
+                <select
+                  id="cargoId"
+                  name="cargoId"
+                  value={cargoId || ''}
+                  onChange={(e) => setCargoId(Number(e.target.value))}
+                  className={styles.input}
+                  disabled={loading}
+                >
+                  <option value="" disabled>Selecione um cargo</option>
+                  {cargos.map(c => (
+                    <option key={c.id} value={c.id}>{c.nome}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>

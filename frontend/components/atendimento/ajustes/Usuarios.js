@@ -8,7 +8,7 @@ export default function Usuarios() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterProfile, setFilterProfile] = useState('');
+  // Removido filtro por perfil
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [adminId, setAdminId] = useState(null);
@@ -16,6 +16,14 @@ export default function Usuarios() {
   const [editingUser, setEditingUser] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [permissoes, setPermissoes] = useState({});
+
+  const hasPerm = (area, perm) => {
+    if (isAdmin) return true;
+    const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
+    return areaPerms.includes(perm);
+  };
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
@@ -23,6 +31,17 @@ export default function Usuarios() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const companyId = userData.EmpresaId;
     setUserRole(userData.userRole || null);
+    // Detectar admin/superadmin e carregar permissões
+    try {
+      const roleCandidates = [userData?.userRole, userData?.nivel].filter(Boolean).map(r => String(r).toLowerCase());
+      const permsAdm = Array.isArray(userData?.permissoes?.adm) ? userData.permissoes.adm.map(v => String(v).toLowerCase()) : [];
+      const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('administrador') || permsAdm.includes('admin');
+      setIsAdmin(Boolean(adminMatch));
+      setPermissoes(userData?.permissoes || {});
+    } catch {
+      setIsAdmin(false);
+      setPermissoes({});
+    }
     
     if (!token) {
       setError('Token de autenticação não encontrado. Faça login novamente.');
@@ -128,29 +147,7 @@ export default function Usuarios() {
   };
 
   // Função para obter o perfil do usuário
-  const getUserProfile = (user) => {
-    if (user.is_admin === 1) {
-      return 'Administrador';
-    }
-    return 'Usuário';
-  };
-
-  // Função para obter o perfil principal (para o admin da conta)
-  const getMainProfile = (user) => {
-    if (user.is_admin === 1 && user.id === adminId) {
-      return 'Administrador da conta';
-    }
-    return null;
-  };
-
-  // Classe de cor para role
-  const getRoleClass = (role) => {
-    if (!role) return 'roleUser';
-    const normalized = role.toLowerCase();
-    if (normalized.includes('superadmin') || normalized.includes('super')) return 'roleSuperadmin';
-    if (normalized.includes('administrador')) return 'roleAdmin';
-    return 'roleUser';
-  };
+  // Removidas labels e classes de perfil
 
   // Filtrar usuários baseado na busca e filtro
   const filteredUsuarios = usuarios.filter(usuario => {
@@ -161,10 +158,7 @@ export default function Usuarios() {
 
     const matchesSearch = usuario.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          usuario.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = !filterProfile || getUserProfile(usuario) === filterProfile;
-    
-    return matchesSearch && matchesFilter;
+    return matchesSearch;
   });
 
   // Calcular paginação
@@ -208,24 +202,16 @@ export default function Usuarios() {
             className={styles.input}
           />
         </div>
-        <div className={styles.filterSelect}>
-          <select
-            value={filterProfile}
-            onChange={(e) => setFilterProfile(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">Perfil:</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Usuário">Usuário</option>
-          </select>
-        </div>
+        {/* Filtro de perfil removido */}
         <div className={styles.headerActions}>
-            <button 
-              className={styles.newButton}
-              onClick={handleOpenCreateModal}
-            >
-              Novo Usuário
-            </button>
+            {(isAdmin || hasPerm('usuarios', 'criar')) && (
+              <button 
+                className={styles.newButton}
+                onClick={handleOpenCreateModal}
+              >
+                Novo Usuário
+              </button>
+            )}
           <button 
             className={styles.refreshButton}
             onClick={fetchUsuarios}
@@ -267,13 +253,15 @@ export default function Usuarios() {
           <div className={styles.emptyState}>
             <User size={48} className={styles.emptyIcon} />
             <p>Nenhum usuário encontrado</p>
-              <button 
-                className={styles.createFirstButton}
-                onClick={handleOpenCreateModal}
-              >
-                <Plus size={20} />
-                Adicionar primeiro usuário
-              </button>
+              {(isAdmin || hasPerm('usuarios', 'criar')) && (
+                <button 
+                  className={styles.createFirstButton}
+                  onClick={handleOpenCreateModal}
+                >
+                  <Plus size={20} />
+                  Adicionar primeiro usuário
+                </button>
+              )}
           </div>
         ) : (
           <div className={styles.tableContainer}>
@@ -282,15 +270,12 @@ export default function Usuarios() {
                 <tr>
                   <th className={styles.th}>Usuário</th>
                   <th className={styles.th}>Apelido</th>
-                  <th className={styles.th}>Perfis</th>
                   <th className={styles.th} style={{ width: '80px' }}>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {currentUsuarios.map((usuario) => {
-                  const profile = getUserProfile(usuario);
-                  const mainProfile = getMainProfile(usuario);
-                  const roleLabel = usuario.role || profile;
+                  const isCompanyAdmin = usuario.is_admin === 1 && usuario.id === adminId;
                   return (
                     <tr key={usuario.id} className={styles.tr}>
                       <td className={`${styles.td} ${styles.nameCell}`}>
@@ -310,23 +295,23 @@ export default function Usuarios() {
                             <span className={styles.usuarioNome}>{usuario.nome}</span>
                             <span className={styles.usuarioEmail}>{usuario.email}</span>
                           </div>
+                          {isCompanyAdmin && (
+                            <span className={styles.roleTagMain} style={{ marginLeft: 12, alignSelf: 'flex-start' }}>Administrador da empresa</span>
+                          )}
                         </div>
                       </td>
                       <td className={styles.td}>{usuario.apelido || usuario.nome?.split(' ')[0]}</td>
-                      <td className={styles.td}>
-                        <div className={styles.roleGroup}>
-                          {mainProfile && <span className={styles.roleTagMain}>{mainProfile}</span>}
-                          <span className={`${styles.roleTag} ${styles[getRoleClass(roleLabel)]}`}>{roleLabel}</span>
-                        </div>
-                      </td>
+                      {/* Coluna de perfis removida */}
                       <td className={`${styles.td} ${styles.actionCell}`}>
-                          <button
-                            className={styles.editButton}
-                            onClick={() => handleOpenEditModal(usuario)}
-                            title="Editar usuário"
-                          >
-                            <Edit2 size={16} />
-                          </button>
+                          {(isAdmin || hasPerm('usuarios', 'editar')) && (
+                            <button
+                              className={styles.editButton}
+                              onClick={() => handleOpenEditModal(usuario)}
+                              title="Editar usuário"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                          )}
                       </td>
                     </tr>
                   );
