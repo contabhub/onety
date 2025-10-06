@@ -1,0 +1,339 @@
+.pageContainer {
+    padding: 2rem;
+  }
+  
+  .headerContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .pageTitle {
+    font-size: 1.8rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .pageSubtitle {
+    color: var(--color-text-secondary);
+  }
+  
+  .addFunilButton {
+    background: var(--brand-primary);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .addFunilButton:hover {
+    background-color: var(--brand-primary);
+  }
+  
+  .funisContainer {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    gap: 20px;
+  }
+  
+  .funilCard {
+    background: var(--color-surface-1);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1rem;
+    width: 260px;
+    flex-shrink: 0;
+  }
+  
+  .funilTitle {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+  }
+  
+  .addFaseButton {
+    width: 100%;
+    padding: 6px 10px;
+    background: var(--color-surface-1);
+    color: var(--brand-primary);
+    border: 1px dashed var(--brand-primary);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .addFaseButton:hover {
+    background: var(--brand-primary);
+    color: #fff;
+  }
+  
+  .faseList {
+    padding-left: 0;
+    list-style: none;
+  }
+  
+  .faseItem {
+    padding: 8px 12px;
+    background: var(--color-bg);
+    margin-bottom: 6px;
+    border-radius: 6px;
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+  }
+  
+  /* styles/Funis.module.css */
+
+.funnelCard {
+  background: var(--color-surface-1);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  width: 260px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  margin: 0; /* zera o margin-bottom para alinhamento vertical com o menu */
+}
+
+.menuButton {
+  background: transparent;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.menuButton:hover {
+  background: var(--color-bg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  width: 160px;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  width: 100%;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background-color: var(--color-bg);
+}
+
+.dropdownItem.disabled {
+  color: var(--color-border);
+  cursor: not-allowed;
+}
+.dropdownItem.hover {
+  color: var(--color-text-secondary);
+}
+
+.dropdownItemDelete {
+    display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  width: 100%;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdownItemDelete:hover {
+  background-color: var(--color-bg);
+  color: var(--error);
+}
+
+.trashButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.trashButton:hover {
+  background-color: var(--color-bg); /* leve vermelho claro */
+}
+
+.trashButton:hover .icon {
+  color: var(--error); /* vermelho escuro */
+}
+
+/* estilo do ícone */
+.icon {
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  transition: color 0.2s ease;
+}
+
+.proposta {
+  background-color: var(--color-bg);
+  color: var(--brand-accent);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+.ganhou {
+  background-color: var(--color-bg);
+  color: var(--success);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.perdeu {
+  background-color: var(--color-bg);
+  color: var(--error);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.faseContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.faseButtonsVertical {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.faseButtonsVertical button {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.faseButtonsVertical button:hover {
+  color: var(--brand-primary);
+}
+
+.faseAcoesContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+  transition: color 0.3s ease;
+}
+
+.backButton:hover {
+  color: var(--brand-primary);
+}
+
+.funnelIcon {
+  color: #4de3f7;
+  background: #e6f8fd;
+  border-radius: 16px;
+  padding: 8px;
+  font-size: 32px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.dragHandle {
+  color: var(--color-text-secondary);
+  font-size: 1.6em;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  cursor: grab;
+}
+
+/* ID badges discretos */
+.idBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.85em;
+  margin-right: 8px;
+}
+
+.idBadgeSmall {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 0.8em;
+  margin-right: 6px;
+}

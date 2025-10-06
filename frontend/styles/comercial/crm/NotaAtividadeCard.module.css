@@ -1,0 +1,167 @@
+/* Remove os ícones nativos do input date/time (Chrome, Edge) */
+.dateInput input::-webkit-calendar-picker-indicator,
+.timeInput input::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* Firefox */
+.dateInput input[type="date"],
+.timeInput input[type="time"] {
+  -moz-appearance: textfield;
+}
+
+
+.card {
+    background: var(--color-surface-1);
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    font-weight: 500;
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 0;
+  }
+  
+  .tabs span {
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    padding: 6px 0;
+    color: var(--color-text-secondary);
+  }
+  
+  .activeTab {
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--focus-ring);
+  }
+  
+  .content {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+  }
+  
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+  
+  .textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 15px;
+    background: var(--color-surface-1);
+    color: var(--color-text-primary);
+    padding: 4px 0;
+  }
+  
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .dropdown {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .select {
+    border: none;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    background: none;
+    appearance: none;
+  }
+  
+  .dateInput, .timeInput {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .secondaryBtn {
+    background: var(--color-bg);
+    color: var(--focus-ring);
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .saveBtn {
+    background: var(--focus-ring);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .mic {
+    color: var(--color-border);
+    margin-right: 10px;
+  }
+  
+  .select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    padding: 4px 6px;
+  }
+  
+  .dateInput input,
+  .timeInput input {
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+  }
+
+  .footerAtividade {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .inputRow {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .buttonRow {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  
+  

@@ -1,0 +1,197 @@
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.modalOpen {
+  display: flex;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.content {
+  background: var(--color-surface-1);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 1000px;
+  width: 100%;
+  position: relative;
+}
+
+/* Alinhamento geral do header */
+.header {
+  display: flex;
+  justify-content: space-between; /* Espalha os elementos ao longo do eixo horizontal */
+  align-items: center; /* Alinha todos os itens verticalmente no centro */
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.header h2 {
+  display: flex;
+  align-items: center; /* Garante que o ícone e o texto fiquem centralizados */
+  margin-right: 20px; /* Espaço entre o título e o select */
+}
+
+.header .select {
+  flex-grow: 1; /* O select ocupa o espaço disponível entre o título e o botão de fechar */
+  margin-right: 10px; /* Espaço entre o select e o botão de fechar */
+}
+
+.select{
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.select:hover {
+  border-bottom: 1px solid var(--brand-primary);
+}
+
+.icon{
+  margin-right: 10px;
+  color: var(--brand-primary); 
+  background-color: var(--color-bg);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+.header .closeButton {
+  background-color: transparent;
+  color: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header .closeButton:hover {
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  transition: all 0.3s ease;
+}
+
+.close {
+  background-color: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 20px;
+}
+
+.close:hover {
+  color: var(--error);
+} 
+
+.productSelect,
+.productDetails {
+  margin-top: 20px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.input[type="number"],
+.input[type="text"] {
+  padding: 8px;
+  width: 60%;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  padding: 10px 20px;
+  background-color: var(--brand-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 30px;
+}
+
+.saveButton:hover {
+  background-color: var(--brand-primary);
+}
+
+.vinculadoProduct {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: var(--color-bg);
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.removeButton {
+  background-color: var(--error);
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  background-color: var(--error);
+}
+
+.vinculadosContainer {
+  margin-top: 20px;
+}
+
+.vinculadoTable {
+  width: 100%;
+  border-collapse: collapse; /* Para evitar espaçamento entre as células */
+  margin-top: 10px;
+}
+
+.vinculadoTable th, .vinculadoTable td {
+  padding: 10px;
+  text-align: left; /* Alinha o texto à esquerda */
+  border-bottom: 1px solid var(--color-border); /* Linha abaixo das células */
+}
+
+.vinculadoTable th {
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.vinculadoTable td {
+  font-size: 14px; /* Ajusta o tamanho da fonte */
+}
+
+.removeButton {
+  background-color: var(--error);
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  background-color: var(--error);
+}

@@ -1,0 +1,159 @@
+/* Estilo geral do modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Conteúdo do Modal */
+.modalContent {
+  background-color: var(--color-surface-1);
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Header do Modal */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modalTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalIcon {
+  color: var(--brand-primary); /* Cor laranja do ícone */
+  background-color: var(--color-bg);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+/* Botão de Fechar */
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--color-text-primary);
+}
+
+.closeButton:hover {
+  color: var(--error);
+}
+
+/* Formulário dentro do modal */
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Campos do formulário */
+.fieldContainer {
+  margin-bottom: 16px;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.requiredField {
+  color: var(--error);
+}
+
+/* Estilo dos campos de entrada */
+.input, .textarea, .select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Container de checkbox */
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Mensagem de erro */
+.errorMessage {
+  color: var(--error);
+  background-color: var(--color-bg);
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+/* Container de botões */
+.buttonContainer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Botões */
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.primaryButton {
+  background-color: var(--brand-primary);
+  color: white;
+}
+
+.primaryButton:hover {
+  background-color: var(--brand-primary);
+}
+
+.secondaryButton {
+  background-color: var(--color-text-secondary);
+  color: white;
+}
+
+.secondaryButton:hover {
+  background-color: var(--color-text-secondary);
+} 
+  

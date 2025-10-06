@@ -1,0 +1,171 @@
+/* Estilo do container de produtos */
+.title {
+  font-size: 24px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cardProduct {
+  display: flex;
+  flex-direction: column; /* Mudei para coluna para organizar melhor as informações */
+  background-color: var(--color-surface-1);
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.iconWrapper {
+  color: var(--color-border);
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  padding: 5px;
+}
+
+.productInfo {
+  padding-left: 15px;
+  margin-bottom: 10px;
+}
+
+.productInfo span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.menuButtonContainer {
+  position: relative;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--color-surface-1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  width: 150px;
+  padding: 10px;
+  z-index: 10;
+}
+
+.editButton, .deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.editButton:hover, .deleteButton:hover {
+  background-color: var(--color-bg);
+}
+
+.noProducts {
+  color: var(--color-text-secondary);
+}
+
+.errorMessage {
+  color: var(--error);
+}
+
+/* Estilos para nome do produto */
+.productName {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.productValue {
+  font-size: 16px;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* Detalhes do produto (quantidade, desconto, valor de venda) */
+.productDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  padding: 5px 0;
+  border-bottom: 1px solid #00a1bd16;
+}
+
+.productDetails span {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/* Estilos para quantidade, desconto e valor de venda */
+.productQuantity,
+.productDiscount,
+.productSale {
+  font-weight: bold;
+}
+
+.productQuantity {
+  color: var(--brand-primary); /* Cor para a quantidade */
+}
+
+.productDiscount {
+  color: var(--success); /* Destacar o desconto em verde */
+}
+
+.productSale {
+  color: var(--brand-accent); /* Destaque para o valor de venda (ex. laranja) */
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Alinha verticalmente o ícone e o texto */
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.userIcon {
+  margin-right: 10px; /* Espaço entre o ícone e o texto */
+  color: var(--brand-primary); 
+  background-color: transparent;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 24px; /* Aumenta o tamanho do ícone */
+}
+
+.addContactButton {
+  padding: 5px;
+  background-color: transparent;
+  color: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.addContactButton:hover {
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  transition: all 0.3s ease;
+}
+
+.totalValue {
+  font-size: 18px; /* Tamanho de fonte maior para dar destaque */
+  font-weight: bold; /* Deixar o valor em negrito */
+  color: var(--color-text-primary); /* Cor escura para boa visibilidade */
+  margin-top: 20px; /* Espaçamento superior para separar do conteúdo acima */
+  padding: 10px 0; /* Espaçamento interno para tornar o layout mais agradável */
+  border-radius: 5px; /* Bordas arredondadas */
+  width: 100%;
+  box-sizing: border-box; /* Para garantir que o padding não afete a largura */
+}
+
+.totalValue span {
+  color: var(--brand-primary); /* Cor azul para dar destaque ao valor */
+}
