@@ -70,16 +70,40 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
-        id: 'leads',
-        label: 'Leads',
+        id: 'clients',
+        label: 'Clientes',
         icon: <Users size={18} />,
-        route: '/comercial/leads'
+        route: '/comercial/clients'
       },
       {
-        id: 'vendas',
-        label: 'Vendas',
+        id: 'crm',
+        label: 'CRM',
         icon: <Target size={18} />,
-        route: '/comercial/vendas'
+        route: '/comercial/crm'
+      },
+      {
+        id: 'funis',
+        label: 'Funis',
+        icon: <FileText size={18} />,
+        route: '/comercial/funis'
+      },
+      {
+        id: 'playbooks',
+        label: 'Playbooks',
+        icon: <FileText size={18} />,
+        route: '/comercial/playbooks'
+      },
+      {
+        id: 'tipos-atividades',
+        label: 'Tipos de Atividades',
+        icon: <Settings size={18} />,
+        route: '/comercial/tipos-de-atividades'
+      },
+      {
+        id: 'cadastro-produtos',
+        label: 'Produtos',
+        icon: <DollarSign size={18} />,
+        route: '/comercial/cadastro-produtos'
       }
     ]
   },
