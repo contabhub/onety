@@ -15,7 +15,7 @@ export default function EditFunilModal({ open, onClose, funil, onSave }) {
   const fetchFases = async (funilId) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${funilId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${funilId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -37,7 +37,7 @@ export default function EditFunilModal({ open, onClose, funil, onSave }) {
 
     try {
       // Atualiza o nome do funil
-      const resFunil = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funis/${funil.id}`, {
+      const resFunil = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${funil.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -53,7 +53,7 @@ export default function EditFunilModal({ open, onClose, funil, onSave }) {
 
       // Atualiza cada fase
       for (const fase of fases) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${fase.id}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${fase.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

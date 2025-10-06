@@ -36,7 +36,7 @@ export default function CRM() {
   const [selectedColumnId, setSelectedColumnId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [teamId, setTeamId] = useState(null);
+  const [empresaId, setEmpresaId] = useState(null);
   const [funilId, setFunilId] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
@@ -72,7 +72,7 @@ export default function CRM() {
 
   const fetchData = async () => {
     try {
-      const userRaw = localStorage.getItem('user');
+      const userRaw = localStorage.getItem('userData');
       const token = localStorage.getItem('token');
 
       if (!userRaw || !token) {
@@ -88,18 +88,18 @@ export default function CRM() {
       }
 
       const userId = user.id;
-      const equipeId = user.equipe_id;
+      const empresaId = user.EmpresaId;
 
-      if (!equipeId) {
-        console.warn('Usuário não está vinculado a nenhuma equipe.');
+      if (!empresaId) {
+        console.warn('Usuário não está vinculado a nenhuma empresa.');
         setColumns({});
         return;
       }
 
-      setTeamId(equipeId);
+      setEmpresaId(empresaId);
 
-      // 🔵 Busca o funil da equipe - COM TOKEN
-      const funilRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funis/${equipeId}`, {
+      // 🔵 Busca o funil da empresa - COM TOKEN
+      const funilRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${empresaId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const funilData = await funilRes.json();
@@ -108,7 +108,7 @@ export default function CRM() {
       const firstFunilId = funilData[0]?.id;
 
       if (!firstFunilId) {
-        console.warn("Nenhum funil encontrado para a equipe.");
+        console.warn("Nenhum funil encontrado para a empresa.");
         setColumns({});
         setIsLoading(false); // Para quando não há funis
         return;
@@ -119,7 +119,7 @@ export default function CRM() {
       loadFunilContent(firstFunilId); // 🔁 nova função que vamos criar
       try {
         // Carregar fases do funil para o modal de importação
-        const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${firstFunilId}`, {
+        const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${firstFunilId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const fasesData = await fasesRes.json();
@@ -139,11 +139,11 @@ export default function CRM() {
   const loadFunilContent = async (fId) => {
     try {
       const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem('user'));
-      const equipeId = user.equipe_id;
+      const user = JSON.parse(localStorage.getItem('userData'));
+      const empresaId = user.EmpresaId;
 
       // 🔵 Nova rota consolidada que retorna funil, fases e leads em uma única chamada
-      const crmRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/crm/${equipeId}/${fId}`, {
+      const crmRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/crm/${empresaId}/${fId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -173,15 +173,19 @@ export default function CRM() {
         // Adiciona o nome da fase a cada lead para compatibilidade com o código existente
         const leadsComFase = (fase.leads || []).map(lead => ({
           ...lead,
+          name: lead.nome, // Mapeia 'nome' para 'name' para compatibilidade com o frontend
           fase_nome: fase.nome,
           hasPendingActivity: pendingMap[lead.id] || false
         }));
+        
         
         newColumns[fase.id] = {
           title: fase.nome,
           cards: leadsComFase,
         };
       });
+      
+      console.log('🏗️ Colunas montadas:', newColumns);
 
       setColumns(newColumns);
       setFunilId(fId);
@@ -207,7 +211,7 @@ export default function CRM() {
     const uniqueIds = Array.from(new Set(leadIds));
     const results = await Promise.all(uniqueIds.map(async (id) => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atividades/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/atividades/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -228,7 +232,7 @@ export default function CRM() {
       (async () => {
         try {
           const token = localStorage.getItem('token');
-          const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${funilSelecionado}`, {
+          const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${funilSelecionado}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const fasesData = await fasesRes.json();
@@ -240,25 +244,26 @@ export default function CRM() {
     }
   }, [funilSelecionado]);
 
-  // Buscar membros da equipe ao carregar teamId
+  // Buscar membros da empresa ao carregar empresaId
   useEffect(() => {
-    async function fetchMembrosEquipe() {
-      if (!teamId) return;
+    async function fetchMembrosEmpresa() {
+      if (!empresaId) return;
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user_equipes/${teamId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios-empresas/empresa/${empresaId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Erro ao buscar membros da equipe');
+        if (!res.ok) throw new Error('Erro ao buscar membros da empresa');
         const data = await res.json();
+        // A nova API retorna diretamente o array de membros
         setMembrosEquipe(Array.isArray(data) ? data : []);
       } catch (err) {
         setMembrosEquipe([]);
-        console.error('Erro ao buscar membros da equipe:', err);
+        console.error('Erro ao buscar membros da empresa:', err);
       }
     }
-    fetchMembrosEquipe();
-  }, [teamId]);
+    fetchMembrosEmpresa();
+  }, [empresaId]);
 
   const handleDragStart = (event) => {
     const { active } = event;
@@ -297,16 +302,16 @@ export default function CRM() {
       const token = localStorage.getItem('token');
 
       // 🔵 Atualizar fase no backend
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${activeCardId}/mover-fase`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${activeCardId}/mover-fase`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ fase_funil_id: parseInt(destColId) }),
+        body: JSON.stringify({ funil_fase_id: parseInt(destColId) }),
       });
 
       // ⬇️ Registrar movimentação
       await registrarHistorico({
         lead_id: activeCardId,
-        usuario_id: JSON.parse(localStorage.getItem("user"))?.id,
+        usuario_id: JSON.parse(localStorage.getItem("userData"))?.id,
         tipo: "movimentacao",
         titulo: "Lead movido de fase",
         descricao: `Lead movido de "${columns[sourceColId].title}" para "${columns[destColId].title}"`,
@@ -362,19 +367,19 @@ export default function CRM() {
   const handleSaveCard = async (updatedCard) => {
     const token = localStorage.getItem('token');
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${updatedCard.id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${updatedCard.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          name: updatedCard.name,
+          nome: updatedCard.name,
           email: updatedCard.email,
           telefone: updatedCard.telefone,
-          team_id: teamId,
+          empresa_id: empresaId,
           funil_id: funilId,
-          fase_funil_id: parseInt(selectedColumnId),
+          funil_fase_id: parseInt(selectedColumnId),
           valor: updatedCard.valor || 0,
           data_prevista: updatedCard.dataPrevista || null,
           status: updatedCard.status || 'aberto'
@@ -581,7 +586,7 @@ export default function CRM() {
             </div>
 
             {/* Botões de alternância de visualização */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className={styles.viewToggleContainer}>
               <button
                 type="button"
                 className={`${styles.viewToggleBtn} ${viewMode === 'crm' ? styles.viewToggleActive : ''}`}
@@ -690,7 +695,7 @@ export default function CRM() {
               id,
               title: col.title,
             }))}
-            teamId={teamId}
+            teamId={empresaId}
             funilId={funilId}
           />
 
@@ -730,7 +735,7 @@ export default function CRM() {
           <ImportLeadsModal
             open={showImportModal}
             onClose={() => setShowImportModal(false)}
-            teamId={teamId}
+            teamId={empresaId}
             funis={funis}
             funilSelecionado={funilSelecionado}
             fases={fasesDoFunil}
@@ -743,7 +748,7 @@ export default function CRM() {
           <ExportLeadsModal
             open={showExportModal}
             onClose={() => setShowExportModal(false)}
-            teamId={teamId}
+            teamId={empresaId}
             funis={funis}
             defaultFunilId={funilSelecionado}
           />

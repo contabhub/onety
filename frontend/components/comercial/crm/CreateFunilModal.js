@@ -13,7 +13,7 @@ export default function CreateFunilModal({ open, onClose, onFunilCreated }) {
   async function handleCreate() {
     try {
       const token = localStorage.getItem('token');
-      const userRaw = localStorage.getItem('user');
+      const userRaw = localStorage.getItem('userData');
 
       if (!token || !userRaw) {
         toast.error("Usuário ou token não encontrado.");
@@ -21,21 +21,21 @@ export default function CreateFunilModal({ open, onClose, onFunilCreated }) {
       }
 
       const user = JSON.parse(userRaw);
-      const equipe_id = user.equipe_id;
+      const empresa_id = user.EmpresaId;
 
-      if (!equipe_id) {
-        toast.warning("Usuário não possui equipe associada.");
+      if (!empresa_id) {
+        toast.warning("Usuário não possui empresa associada.");
         return;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funis`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          equipe_id,
+          empresa_id,
           nome,
           is_default: isDefault
         })

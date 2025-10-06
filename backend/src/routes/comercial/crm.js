@@ -9,13 +9,13 @@ router.get("/:empresaId/:funilId", verifyToken, async (req, res) => {
     const { empresaId, funilId } = req.params;
     const userId = req.user.id;
 
-    // 0) Segurança: o usuário pertence à equipe?
+    // 0) Segurança: o usuário pertence à empresa?
     const [vinculo] = await db.query(
-      "SELECT 1 FROM usuarios_empresas WHERE user_id = ? AND empresa_id = ? LIMIT 1",
+      "SELECT 1 FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1",
       [userId, empresaId]
     );
     if (vinculo.length === 0) {
-      return res.status(403).json({ error: "Você não tem acesso a essa equipe." });
+      return res.status(403).json({ error: "Você não tem acesso a essa empresa." });
     }
 
     // 1) Funil dessa equipe
@@ -24,7 +24,7 @@ router.get("/:empresaId/:funilId", verifyToken, async (req, res) => {
       [funilId, empresaId]
     );
     if (!funil) {
-      return res.status(404).json({ error: "Funil não encontrado para esta equipe." });
+      return res.status(404).json({ error: "Funil não encontrado para esta empresa." });
     }
 
     // 2) Fases do funil (ordenadas)
@@ -46,12 +46,12 @@ router.get("/:empresaId/:funilId", verifyToken, async (req, res) => {
         l.temperatura,
         l.status,
         l.criado_em,
-        l.fase_funil_id,
-        l.user_id,
-        u.full_name  AS responsavel_nome,
+        l.funil_fase_id,
+        l.usuario_id,
+        u.nome AS responsavel_nome,
         u.avatar_url AS responsavel_avatar
       FROM leads l
-      LEFT JOIN users u ON u.id = l.user_id
+      LEFT JOIN usuarios u ON u.id = l.usuario_id
       WHERE l.empresa_id = ? AND l.funil_id = ?
       ORDER BY l.criado_em DESC
       `,
@@ -61,10 +61,10 @@ router.get("/:empresaId/:funilId", verifyToken, async (req, res) => {
     // 4) Agrupa os leads por fase
     const mapaFases = new Map(fases.map(f => [f.id, { ...f, leads: [] }]));
     for (const lead of leads) {
-      if (!mapaFases.has(lead.fase_funil_id)) {
+      if (!mapaFases.has(lead.funil_fase_id)) {
         // Se houver lead em fase inexistente, evita quebrar o front
-        mapaFases.set(lead.fase_funil_id, {
-          id: lead.fase_funil_id,
+        mapaFases.set(lead.funil_fase_id, {
+          id: lead.funil_fase_id,
           funil_id: Number(funilId),
           nome: "(Fase não encontrada)",
           descricao: null,
@@ -72,7 +72,7 @@ router.get("/:empresaId/:funilId", verifyToken, async (req, res) => {
           leads: []
         });
       }
-      mapaFases.get(lead.fase_funil_id).leads.push(lead);
+      mapaFases.get(lead.funil_fase_id).leads.push(lead);
     }
 
     // 5) Contagem por fase e total

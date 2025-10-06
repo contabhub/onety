@@ -34,6 +34,41 @@ router.get("/count/:empresa_id", async (req, res) => {
   }
 });
 
+// Buscar membros de uma empresa específica
+router.get("/empresa/:empresa_id", async (req, res) => {
+  try {
+    const { empresa_id } = req.params;
+    
+    // Busca os membros da empresa com informações completas dos usuários
+    const [rows] = await pool.query(`
+      SELECT 
+        ue.id,
+        ue.usuario_id,
+        ue.empresa_id,
+        ue.cargo_id,
+        ue.departamento_id,
+        ue.criado_em,
+        u.id as user_id,
+        u.nome as full_name,
+        u.email,
+        u.avatar_url,
+        c.nome as cargo_nome,
+        d.nome as departamento_nome
+      FROM usuarios_empresas ue
+      LEFT JOIN usuarios u ON ue.usuario_id = u.id
+      LEFT JOIN cargos c ON ue.cargo_id = c.id
+      LEFT JOIN departamentos d ON ue.departamento_id = d.id
+      WHERE ue.empresa_id = ?
+      ORDER BY u.nome ASC
+    `, [empresa_id]);
+    
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar membros da empresa." });
+  }
+});
+
 // Lista com filtros e paginação
 router.get("/", async (req, res) => {
   try {

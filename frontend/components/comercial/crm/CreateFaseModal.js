@@ -16,7 +16,7 @@ export default function CreateFaseModal({ open, onClose, funilId, onFaseCreated 
       const token = localStorage.getItem('token');
 
       // Buscar fases existentes do funil 
-      const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${funilId}`, {
+      const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${funilId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -31,7 +31,7 @@ export default function CreateFaseModal({ open, onClose, funilId, onFaseCreated 
       const maiorOrdem = fasesUsuario.reduce((max, fase) => Math.max(max, fase.ordem), -1);
       const novaOrdem = maiorOrdem + 1;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
