@@ -274,7 +274,7 @@ export default function MessageComposer({
       });
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zapimessages/evolution/send-media`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/zapimessages/evolution/send-media`,
         {
           instanceName,
           number: customerPhone,
@@ -366,7 +366,7 @@ export default function MessageComposer({
       });
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zapimessages/evolution/send-media`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/zapimessages/evolution/send-media`,
         {
           instanceName,
           number: customerPhone,
@@ -458,7 +458,7 @@ export default function MessageComposer({
       });
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zapimessages/evolution/send-media`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/zapimessages/evolution/send-media`,
         {
           instanceName,
           number: customerPhone,
@@ -705,7 +705,7 @@ export default function MessageComposer({
       });
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zapimessages/evolution/send-audio`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/zapimessages/evolution/send-audio`,
         {
           instanceName,
           number: customerPhone,
@@ -787,7 +787,7 @@ export default function MessageComposer({
     try {
       const token = localStorage.getItem('token');
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/conversations/${conversationId}/reopen`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversationId}/reopen`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -871,7 +871,7 @@ export default function MessageComposer({
       });
       
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/zapimessages/evolution/send`,
+        `${process.env.NEXT_PUBLIC_API_URL}/atendimento/zapimessages/evolution/send`,
         {
           instanceName,
           number: customerPhone,

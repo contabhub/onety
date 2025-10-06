@@ -359,9 +359,14 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
 
     await conn.beginTransaction();
 
-    // 1) conversa atual
+    // 1) conversa atual + time atual (origem)
     const [convRows] = await conn.query(
-      "SELECT id, times_atendimento_instancia_id FROM conversas WHERE id = ? FOR UPDATE",
+      `SELECT c.id, c.times_atendimento_instancia_id,
+              t.id AS current_team_id, t.nome AS current_team_name
+         FROM conversas c
+         JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+         JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+        WHERE c.id = ? FOR UPDATE`,
       [id]
     );
     if (convRows.length === 0) {
@@ -398,6 +403,18 @@ router.patch("/:id/transfer/team", authOrApiKey, async (req, res) => {
     );
 
     await conn.commit();
+
+    // Registrar transferência por tipo (equipe) em conversas_transferencias
+    try {
+      const fromTeamId = convRows[0]?.current_team_id || null;
+      await conn.query(
+        `INSERT INTO conversas_transferencias (conversas_id, transferido_por, transferido_para)
+         VALUES (?, ?, ?)`,
+        [id, fromTeamId, team_id]
+      );
+    } catch (logErr) {
+      console.warn("⚠️ Falha ao registrar conversas_transferencias (equipe):", logErr?.message || logErr);
+    }
 
     try {
       // Notificar frontend sobre atualização da conversa (muda equipe e possível responsável)
@@ -444,7 +461,7 @@ router.patch("/:id/transfer/user", authOrApiKey, async (req, res) => {
     }
 
     // Verifica se o usuário existe
-    const [user] = await pool.query(`SELECT id, nome, apelido FROM usuarios WHERE id = ?`, [assigned_user_id]);
+    const [user] = await pool.query(`SELECT id, nome FROM usuarios WHERE id = ?`, [assigned_user_id]);
     if (user.length === 0) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
@@ -455,12 +472,24 @@ router.patch("/:id/transfer/user", authOrApiKey, async (req, res) => {
       [assigned_user_id, id]
     );
 
+    // Registrar transferência usuário -> usuário em conversas_transferencias
+    try {
+      const fromUserId = conversation[0].usuario_responsavel_id || null;
+      await pool.query(
+        `INSERT INTO conversas_transferencias (conversas_id, de_usuario_id, para_usuario_id)
+         VALUES (?, ?, ?)`,
+        [id, fromUserId, assigned_user_id]
+      );
+    } catch (logErr) {
+      console.warn("⚠️ Falha ao registrar conversas_transferencias (usuario):", logErr?.message || logErr);
+    }
+
     console.log(`✅ Conversa ${id} transferida para usuário ${assigned_user_id}`);
 
     res.json({ 
       success: true, 
       message: "Conversa transferida para o usuário com sucesso.",
-      assigned_user_name: user[0].nome || user[0].apelido
+      assigned_user_name: user[0].nome
     });
   } catch (err) {
     console.error("🚨 Erro ao transferir conversa para usuário:", err);
@@ -481,12 +510,11 @@ router.get("/:id/messages", authOrApiKey, async (req, res) => {
         c.usuario_responsavel_id AS assigned_user_id,
         u.nome AS assigned_user_name,
         c.status AS conversation_status,
-        sender_user.nome AS sender_user_name,
-        sender_user.apelido AS sender_user_nickname
+        sender_user.nome AS sender_user_name
       FROM mensagens m
       JOIN conversas c ON m.conversas_id = c.id
       LEFT JOIN usuarios u ON c.usuario_responsavel_id = u.id
-      LEFT JOIN usuarios sender_user ON m.enviador_id = sender_user.id AND m.enviador_tipo = 'user'
+      LEFT JOIN usuarios sender_user ON m.enviador_id = sender_user.id AND m.enviador_tipo = 'usuario'
       WHERE m.conversas_id = ?
       ORDER BY m.criado_em ASC
       `,

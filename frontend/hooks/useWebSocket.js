@@ -23,21 +23,24 @@ export function useWebSocket() {
   const connectSocket = () => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const companyId = userData.EmpresaId;
+    const companyId = userData.EmpresaId || userData.empresaId || userData.empresa_id || userData.companyId || userData.company_id;
 
     if (!token) return null;
 
     console.log('🔄 Tentando conectar WebSocket...');
-    console.log('🏢 CompanyId do userData:', companyId);
+    console.log('🏢 EmpresaId/CompanyId do userData:', companyId);
     
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000';
     console.log('🔗 URL do WebSocket:', wsUrl);
     
     const newSocket = io(wsUrl, {
-      auth: { token, companyId },
-      reconnection: false, // Desabilitamos reconnection automático para controlar manualmente
-      timeout: 20000, // 20 segundos de timeout
-      forceNew: true
+      auth: { token: `Bearer ${token}` , companyId },
+      transports: ['websocket', 'polling'],
+      path: '/socket.io',
+      reconnection: false,
+      timeout: 20000,
+      forceNew: true,
+      withCredentials: true
     });
 
     // Eventos de conexão
@@ -49,7 +52,7 @@ export function useWebSocket() {
       // Entrar na sala da empresa
       if (companyId) {
         newSocket.emit('join:company', Number(companyId));
-        console.log('[WS] join:company enviado com companyId =', companyId);
+        console.log('[WS] join:company enviado com empresaId/companyId =', companyId);
       }
     });
 
@@ -59,7 +62,7 @@ export function useWebSocket() {
       try {
         const serverCompanyId = data?.user?.company_id;
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        const localCompanyId = userData.EmpresaId;
+        const localCompanyId = userData.EmpresaId || userData.empresaId || userData.empresa_id || userData.companyId || userData.company_id;
 
         console.log('[WS] user:connected recebido:', {
           serverCompanyId,

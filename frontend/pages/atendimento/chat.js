@@ -17,24 +17,25 @@ export default function Chat({ auth }) {
 
 
   useEffect(() => {
-    
-    // Verificar se tem token e dados no localStorage como fallback
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('userData');
     
+    // Se ainda está carregando, não decide nada
+    if (loading) return;
+
     if (!user && (!token || !userData)) {
       console.log('❌ Chat - Sem usuário e sem dados no localStorage, redirecionando para login');
       router.push('/login');
-    } else if (!user && token && userData) {
-      console.log('⚠️ Chat - Usuário não no estado, mas dados existem no localStorage. Aguardando sincronização...');
-      // Dar um tempo para o useAuth sincronizar
-      setTimeout(() => {
-        if (!auth?.user) {
-          console.log('❌ Chat - Timeout na sincronização, redirecionando para login');
-          router.push('/login');
-        }
-      }, 2000);
-    } else if (user) {
+      return;
+    }
+
+    if (!user && token && userData) {
+      console.log('⚠️ Chat - Aguardando sincronização do useAuth, evitando timeout curto');
+      // Não redireciona; deixa a tela mostrar o estado de carregamento
+      return;
+    }
+
+    if (user) {
       console.log('✅ Chat - Usuário encontrado:', user);
     }
   }, [user, loading, router, auth]);
