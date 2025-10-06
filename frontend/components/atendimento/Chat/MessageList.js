@@ -430,6 +430,8 @@ export default function MessageList({
   loading, 
   currentUserId, 
   currentUserName,
+  currentUserAvatarUrl, // URL do avatar do usuário atual
+  customerAvatarUrl, // URL do avatar do cliente (pode ser midia_url do contato)
   selectionMode = false,
   selectedMessages = [],
   onSelectionChange = () => {},
@@ -596,15 +598,14 @@ export default function MessageList({
   };
 
   // Função para obter o avatar ou ícone do remetente
-  const getSenderIcon = (message) => {
+  const getSenderAvatar = (message) => {
     if (message.sender_type === 'customer') {
-      return '👤';
-    } else if (message.sender_type === 'user' || message.sender_type === 'agent') {
-      return '💬';
-    } else if (message.sender_type === 'system') {
-      return '⚙️';
+      return customerAvatarUrl || null;
     }
-    return '👤';
+    if (message.sender_type === 'user' || message.sender_type === 'agent') {
+      return currentUserAvatarUrl || null;
+    }
+    return null;
   };
 
   // Função para verificar se uma mensagem está selecionada
@@ -653,6 +654,7 @@ export default function MessageList({
           const isOutgoing = isOutgoingMessage(message);
           const isSelected = isMessageSelected(message.id);
           
+          const avatarUrl = getSenderAvatar(message);
           return (
             <div
               key={message.id}
@@ -660,6 +662,16 @@ export default function MessageList({
                 isOutgoing ? styles.outgoing : styles.incoming
               } ${isSelected ? styles.selected : ''}`}
             >
+              {/* Avatar do remetente */}
+              {!isOutgoing && (
+                <div className={styles.messageAvatar} title={getSenderName(message)}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={getSenderName(message) || 'Avatar'} />
+                  ) : (
+                    <span>{(getSenderName(message) || 'C').charAt(0)}</span>
+                  )}
+                </div>
+              )}
               {/* Checkbox para seleção */}
               {selectionMode && (
                 <div className={styles.messageCheckbox}>
@@ -698,6 +710,17 @@ export default function MessageList({
                   
                 </div>
               </div>
+
+              {/* Avatar do remetente (lado direito para mensagens enviadas) */}
+              {isOutgoing && (
+                <div className={styles.messageAvatar} title={getSenderName(message)}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={getSenderName(message) || 'Avatar'} />
+                  ) : (
+                    <span>{(getSenderName(message) || 'U').charAt(0)}</span>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

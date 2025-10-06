@@ -47,7 +47,7 @@
   opacity: 0.7;
   cursor: pointer;
   padding: var(--onity-space-xs);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   transition: all 0.2s;
 }
 
@@ -175,7 +175,7 @@
   display: flex;
   align-items: center;
   padding: var(--onity-space-m);
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-sm);
   cursor: pointer;
   transition: all 0.2s;
   border: 1px solid var(--onity-color-border);
@@ -206,7 +206,7 @@
 .userInitials {
   width: 40px;
   height: 40px;
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,7 +250,7 @@
   font-size: 11px;
   font-weight: 500;
   padding: var(--onity-space-xs) var(--onity-space-s);
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-sm);
   white-space: nowrap;
 }
 
@@ -299,7 +299,7 @@
   border: 1px solid var(--onity-color-border);
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -321,7 +321,7 @@
   background: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
   border: none;
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

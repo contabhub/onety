@@ -114,7 +114,7 @@
   padding: var(--onity-space-xl);
   text-align: center;
   background-color: var(--onity-color-bg);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   border: 1px solid var(--onity-color-border);
 }
 

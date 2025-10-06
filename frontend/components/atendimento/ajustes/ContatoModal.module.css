@@ -6,6 +6,8 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,7 +20,7 @@
   background: var(--onity-color-surface);
   border-radius: 0.75rem;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -101,8 +103,8 @@
 .input,
 .select,
 .textarea {
-  width: 100%;
-  padding: 0.75rem;
+  width: 95%;
+  padding: 0.75rem; /* levemente menor para reduzir a altura */
   border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -141,7 +143,7 @@
 
 .inputWithPrefixField {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2rem;
+  padding: 0.625rem 0.625rem 0.625rem 2rem; /* acompanha redução dos inputs */
   border: 1px solid var(--onity-color-border);
   border-radius: 0.5rem;
   font-size: 0.875rem;

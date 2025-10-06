@@ -34,8 +34,37 @@
 .messageContent {
   max-width: 70%;
   padding: var(--onity-space-m) var(--onity-space-l);
-  border-radius: var(--onity-radius-sm);
+  border-radius: 10px;
   position: relative;
+}
+
+/* Avatar das mensagens */
+.messageAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--onity-color-border);
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+.message.incoming .messageAvatar {
+  margin-right: var(--onity-space-s);
+}
+
+.message.outgoing .messageAvatar {
+  margin-left: var(--onity-space-s);
+}
+
+.messageAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .messageInside {
@@ -45,13 +74,13 @@
 .message.incoming .messageContent {
   background-color: var(--onity-color-bg);
   color: var(--onity-color-text);
-  border-bottom-left-radius: var(--onity-radius-xs);
+  border-bottom-left-radius: 10px;
 }
 
 .message.outgoing .messageContent {
   background-color: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
-  border-bottom-right-radius: var(--onity-radius-xs);
+  border-bottom-right-radius: 10px;
 }
 
 .messageText {
@@ -253,7 +282,7 @@
 /* Modo de seleção */
 .message.selected {
   background-color: rgba(59, 130, 246, 0.1);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
 }
 
 .messageCheckbox {

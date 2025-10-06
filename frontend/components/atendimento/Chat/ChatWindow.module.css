@@ -140,7 +140,7 @@
   color: var(--primary-color, #3b82f6);
   font-size: 0.875rem;
   border: 1px solid var(--primary-color, #3b82f6);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.2s;
   display: inline-flex;
@@ -159,7 +159,7 @@
   color: var(--onity-color-primary-contrast);
   font-size: 0.875rem;
   border: none;
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -173,7 +173,7 @@
   background-color: var(--primary-color, #3b82f6);
   color: var(--onity-color-primary-contrast);
   font-size: 0.875rem;
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;

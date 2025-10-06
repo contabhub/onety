@@ -33,7 +33,7 @@ const MODULE_REGISTRY = {
   atendimento: {
     id: 'atendimento',
     nome: 'Atendimento',
-    icon: <MessageSquare size={16} />,
+    icon: <MessageSquare size={20} />,
     logos: {
       light: '/img/atendimento preto.png',
       dark: '/img/atendimento branco.png'
@@ -42,13 +42,13 @@ const MODULE_REGISTRY = {
       {
         id: 'chat',
         label: 'Chat',
-        icon: <MessageSquare size={14} />,
+        icon: <MessageSquare size={18} />,
         route: '/atendimento/chat'
       },
       {
         id: 'ajustes',
         label: 'Ajustes',
-        icon: <Settings size={14} />,
+        icon: <Settings size={18} />,
         route: '/atendimento/ajustes'
       }
     ]
@@ -56,7 +56,7 @@ const MODULE_REGISTRY = {
   comercial: {
     id: 'comercial',
     nome: 'Comercial',
-    icon: <Users size={16} />,
+    icon: <Users size={20} />,
     logos: {
       light: '/img/Comercial preto.png',
       dark: '/img/Comercial branco.png'
@@ -65,13 +65,13 @@ const MODULE_REGISTRY = {
       {
         id: 'leads',
         label: 'Leads',
-        icon: <Users size={14} />,
+        icon: <Users size={18} />,
         route: '/comercial/leads'
       },
       {
         id: 'vendas',
         label: 'Vendas',
-        icon: <Target size={14} />,
+        icon: <Target size={18} />,
         route: '/comercial/vendas'
       }
     ]
@@ -79,7 +79,7 @@ const MODULE_REGISTRY = {
   contratual: {
     id: 'contratual',
     nome: 'Contratual',
-    icon: <FileText size={16} />,
+    icon: <FileText size={20} />,
     logos: {
       light: '/img/Contratual preto.png',
       dark: '/img/Contratual Branco.png'
@@ -88,13 +88,13 @@ const MODULE_REGISTRY = {
       {
         id: 'contratos',
         label: 'Contratos',
-        icon: <FileText size={14} />,
+        icon: <FileText size={18} />,
         route: '/contratual/contratos'
       },
       {
         id: 'documentos',
         label: 'Documentos',
-        icon: <FileText size={14} />,
+        icon: <FileText size={18} />,
         route: '/contratual/documentos'
       }
     ]
@@ -102,7 +102,7 @@ const MODULE_REGISTRY = {
   financeiro: {
     id: 'financeiro',
     nome: 'Financeiro',
-    icon: <DollarSign size={16} />,
+    icon: <DollarSign size={20} />,
     logos: {
       light: '/img/Financeiro Preto.png',
       dark: '/img/Financeiro branco.png'
@@ -111,13 +111,13 @@ const MODULE_REGISTRY = {
       {
         id: 'contas-pagar',
         label: 'Contas a Pagar',
-        icon: <DollarSign size={14} />,
+        icon: <DollarSign size={18} />,
         route: '/financeiro/contas-pagar'
       },
       {
         id: 'contas-receber',
         label: 'Contas a Receber',
-        icon: <DollarSign size={14} />,
+        icon: <DollarSign size={18} />,
         route: '/financeiro/contas-receber'
       }
     ]
@@ -125,7 +125,7 @@ const MODULE_REGISTRY = {
   'gestão de processos': {
     id: 'gestão de processos',
     nome: 'Gestão de Processos',
-    icon: <Settings size={16} />,
+    icon: <Settings size={20} />,
     logos: {
       light: '/img/Gestão preto.png',
       dark: '/img/Gestão branco.png'
@@ -134,13 +134,13 @@ const MODULE_REGISTRY = {
       {
         id: 'processos',
         label: 'Processos',
-        icon: <Settings size={14} />,
+        icon: <Settings size={18} />,
         route: '/gestao-processos/processos'
       },
       {
         id: 'workflows',
         label: 'Workflows',
-        icon: <ChevronRight size={14} />,
+        icon: <ChevronRight size={18} />,
         route: '/gestao-processos/workflows'
       }
     ]
@@ -148,7 +148,7 @@ const MODULE_REGISTRY = {
   auditoria: {
     id: 'auditoria',
     nome: 'Auditoria',
-    icon: <Shield size={16} />,
+    icon: <Shield size={20} />,
     logos: {
       light: '/img/Auditoria Preto.png',
       dark: '/img/Auditoria Branco.png'
@@ -157,13 +157,13 @@ const MODULE_REGISTRY = {
       {
         id: 'logs',
         label: 'Logs',
-        icon: <Shield size={14} />,
+        icon: <Shield size={18} />,
         route: '/auditoria/logs'
       },
       {
         id: 'relatorios',
         label: 'Relatórios',
-        icon: <FileText size={14} />,
+        icon: <FileText size={18} />,
         route: '/auditoria/relatorios'
       }
     ]
@@ -171,7 +171,7 @@ const MODULE_REGISTRY = {
   estratégico: {
     id: 'estratégico',
     nome: 'Estratégico',
-    icon: <Target size={16} />,
+    icon: <Target size={20} />,
     logos: {
       light: '/img/Estratégico Preto.png',
       dark: '/img/Estratégico Branco.png'
@@ -180,13 +180,13 @@ const MODULE_REGISTRY = {
       {
         id: 'dashboard',
         label: 'Dashboard',
-        icon: <Target size={14} />,
+        icon: <Target size={18} />,
         route: '/estrategico/dashboard'
       },
       {
         id: 'metas',
         label: 'Metas',
-        icon: <Target size={14} />,
+        icon: <Target size={18} />,
         route: '/estrategico/metas'
       }
     ]
