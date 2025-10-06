@@ -37,18 +37,24 @@ export default function PlaybooksPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData") || localStorage.getItem("user");
       if (!token || !userRaw) throw new Error("Usuário não autenticado.");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/playbooks`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/playbooks`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
       
-      if (!res.ok) throw new Error("Erro ao buscar playbooks.");
-      const data = await res.json();
+      if (!res.ok) {
+        const ct = res.headers.get("content-type") || "";
+        const errBody = ct.includes("application/json") ? await res.json() : await res.text();
+        const message = typeof errBody === "string" ? errBody : (errBody?.error || "Erro ao buscar playbooks.");
+        throw new Error(message);
+      }
+      const ct = res.headers.get("content-type") || "";
+      const data = ct.includes("application/json") ? await res.json() : [];
       setPlaybooks(data);
     } catch (err) {
       toast.error(err.message);
@@ -58,13 +64,22 @@ export default function PlaybooksPage() {
   };
 
   useEffect(() => {
-    // Define o equipeId primeiro
-    const userRaw = localStorage.getItem("user");
+    // Define o empresaId primeiro (tenta em userData e user)
+    const userRaw = localStorage.getItem("userData") || localStorage.getItem("user");
     if (userRaw) {
       const user = JSON.parse(userRaw);
-      setEquipeId(user.equipe_id);
+      const inferredEmpresaId =
+        user.EmpresaId ??
+        user?.empresa_id ??
+        user?.empresaId ??
+        user?.empresa?.id ??
+        user?.Empresa?.id ??
+        user?.companyId ??
+        null;
+      // Reutilizando o estado existente para não refatorar muito agora
+      setEquipeId(inferredEmpresaId);
     }
-    
+
     fetchPlaybooks();
   }, []);
 
@@ -72,7 +87,7 @@ export default function PlaybooksPage() {
   const searchResults = search ? 
     playbooks.filter(p => 
       p.nome.toLowerCase().includes(search.toLowerCase()) ||
-      p.equipe_nome.toLowerCase().includes(search.toLowerCase())
+      p.empresa_nome.toLowerCase().includes(search.toLowerCase())
     ) : 
     playbooks;
 
@@ -97,17 +112,25 @@ export default function PlaybooksPage() {
     }
 
     // Busca o equipe_id do localStorage se não estiver definido
-    const currentEquipeId = equipeId || (() => {
-      const userRaw = localStorage.getItem("user");
+    const currentEmpresaId = equipeId || (() => {
+      const userRaw = localStorage.getItem("userData") || localStorage.getItem("user");
       if (userRaw) {
         const user = JSON.parse(userRaw);
-        return user.equipe_id;
+        return (
+          user.EmpresaId ??
+          user?.empresa_id ??
+          user?.empresaId ??
+          user?.empresa?.id ??
+          user?.Empresa?.id ??
+          user?.companyId ??
+          null
+        );
       }
       return null;
     })();
 
-    if (!currentEquipeId) {
-      toast.error("Erro: Usuário não tem equipe definida");
+    if (!currentEmpresaId) {
+      toast.error("Erro: Usuário não tem empresa definida");
       return;
     }
 
@@ -126,15 +149,16 @@ export default function PlaybooksPage() {
       const token = localStorage.getItem("token");
       const formDataToSend = new FormData();
       formDataToSend.append("nome", formData.nome);
-      formDataToSend.append("equipe_id", currentEquipeId);
+      // Back agora espera empresa_id
+      formDataToSend.append("empresa_id", currentEmpresaId);
       
       if (formData.arquivo) {
         formDataToSend.append("arquivo", formData.arquivo);
       }
 
       const url = playbookEdit ? 
-        `${process.env.NEXT_PUBLIC_API_URL}/playbooks/${playbookEdit.id}` :
-        `${process.env.NEXT_PUBLIC_API_URL}/playbooks`;
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/playbooks/${playbookEdit.id}` :
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/playbooks`;
 
       const method = playbookEdit ? "PUT" : "POST";
 
@@ -147,11 +171,14 @@ export default function PlaybooksPage() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Erro ao salvar playbook");
+        const ct = res.headers.get("content-type") || "";
+        const errBody = ct.includes("application/json") ? await res.json() : await res.text();
+        const message = typeof errBody === "string" ? errBody : (errBody?.error || "Erro ao salvar playbook");
+        throw new Error(message);
       }
 
-      const data = await res.json();
+      const ct = res.headers.get("content-type") || "";
+      const data = ct.includes("application/json") ? await res.json() : null;
       toast.success(playbookEdit ? "Playbook atualizado com sucesso!" : "Playbook criado com sucesso!");
       
       resetForm();
@@ -166,7 +193,7 @@ export default function PlaybooksPage() {
     setPlaybookEdit(playbook);
     setFormData({
       nome: playbook.nome,
-      equipe_id: playbook.equipe_id,
+      equipe_id: playbook.empresa_id,
       arquivo: null
     });
     setShowForm(true);
@@ -178,7 +205,7 @@ export default function PlaybooksPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/playbooks/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/playbooks/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -205,7 +232,7 @@ export default function PlaybooksPage() {
       }
 
       // Usar o endpoint de download do backend
-      const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL}/playbooks/${playbookId}/download`;
+      const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL}/comercial/playbooks/${playbookId}/download`;
       
       const response = await fetch(downloadUrl, {
         headers: {
@@ -263,12 +290,6 @@ export default function PlaybooksPage() {
           <h1>
             <FontAwesomeIcon icon={faFileAlt} /> Playbooks
           </h1>
-          <button 
-            className={styles.addButton}
-            onClick={() => setShowForm(true)}
-          >
-            <FontAwesomeIcon icon={faPlus} /> Novo Playbook
-          </button>
         </div>
 
         {/* Filtros */}
@@ -283,6 +304,12 @@ export default function PlaybooksPage() {
               className={styles.searchInput}
             />
           </div>
+          <button 
+            className={styles.addButton}
+            onClick={() => setShowForm(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Novo Playbook
+          </button>
         </div>
 
         {/* Lista de Playbooks */}
@@ -319,12 +346,12 @@ export default function PlaybooksPage() {
                 <div className={styles.cardContent}>
                   <div className={styles.equipeInfo}>
                     <FontAwesomeIcon icon={faUsers} />
-                    <span>{playbook.equipe_nome}</span>
+                    <span>{playbook.empresa_nome}</span>
                   </div>
                   
                   <div className={styles.dateInfo}>
                     <FontAwesomeIcon icon={faCalendar} />
-                    <span>Criado em: {formatDate(playbook.created_at)}</span>
+                    <span>Criado em: {formatDate(playbook.criado_em)}</span>
                   </div>
                 </div>
 
@@ -402,7 +429,6 @@ export default function PlaybooksPage() {
         </>
         )}
       </div>
-
       <ToastContainer
         position="top-right"
         autoClose={5000}

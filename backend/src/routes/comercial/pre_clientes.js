@@ -176,8 +176,18 @@ router.delete('/:id', verifyToken, async (req, res) => {
     if (cliente.length === 0) {
       return res.status(404).json({ error: 'Cliente não encontrado.' });
     }
-    // Verifica se há contratos vinculados
-    const [contratos] = await db.query('SELECT id FROM contracts WHERE client_id = ?', [id]);
+    // Verifica se há contratos vinculados (se a tabela existir)
+    let contratos = [];
+    try {
+      const [rows] = await db.query('SELECT id FROM contracts WHERE client_id = ?', [id]);
+      contratos = rows;
+    } catch (e) {
+      if (e?.code !== 'ER_NO_SUCH_TABLE') {
+        throw e;
+      }
+      // Se a tabela 'contracts' não existe neste ambiente, ignoramos a verificação
+      contratos = [];
+    }
     if (contratos.length > 0) {
       return res.status(409).json({ error: 'Não é possível excluir: este cliente possui contratos vinculados.' });
     }

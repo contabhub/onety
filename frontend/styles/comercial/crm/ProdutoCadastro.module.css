@@ -167,7 +167,10 @@
 }
 
 .statusBadge {
-  /* Base styles for status badges */
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .activeStatus {
@@ -181,7 +184,10 @@
 }
 
 .typeBadge {
-  /* Base styles for type badges */
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .globalType {
@@ -364,6 +370,7 @@
 
 .input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .input:focus,
@@ -378,16 +385,19 @@
   background: var(--onity-color-primary);
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 10px 22px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: var(--onity-elev-med);
 }
 
 .button:hover {
   background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-high);
 }
 
 .icon2 {

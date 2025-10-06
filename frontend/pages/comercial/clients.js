@@ -308,7 +308,7 @@ export default function ClientsPage() {
     if (window.confirm(`Tem certeza que deseja excluir o cliente "${cliente.nome}"? Essa ação não poderá ser desfeita.`)) {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${cliente.id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${cliente.id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -430,7 +430,7 @@ export default function ClientsPage() {
                   </thead>
                   <tbody>
                     {clientesPagina.map((c) => (
-                      <tr key={c.id}>
+                      <tr key={c.id} className={styles.tableCardRow}>
                         <td>{c.tipo === "empresa" ? "Empresa" : "Pessoa Física"}</td>
                         <td>{c.nome}</td>
                         <td>{formatarCpfCnpj(c.cpf_cnpj)}</td>

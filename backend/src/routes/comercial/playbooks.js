@@ -6,11 +6,6 @@ const cloudinary = require('../../config/cloudinary');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Função auxiliar para converter PDF para base64
-function convertToBase64(buffer) {
-  return buffer.toString('base64');
-}
-
 // 🔹 Listar todos os playbooks
 router.get('/', verifyToken, async (req, res) => {
   try {
@@ -18,7 +13,7 @@ router.get('/', verifyToken, async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.conteudo, 
+        p.conteudo,
         p.empresa_id,
         p.criado_em,
         p.atualizado_em,
@@ -42,7 +37,7 @@ router.get('/empresa/:empresa_id', verifyToken, async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.conteudo, 
+        p.conteudo,
         p.empresa_id,
         p.criado_em,
         p.atualizado_em,
@@ -68,7 +63,7 @@ router.get('/:id', verifyToken, async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.conteudo, 
+        p.conteudo,
         p.empresa_id,
         p.criado_em,
         p.atualizado_em,
@@ -116,16 +111,20 @@ router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
     // Verificar se a empresa existe
     const [empresaExists] = await db.query('SELECT id FROM empresas WHERE id = ?', [empresa_id]);
     if (empresaExists.length === 0) {
-      return res.status(404).json({ error: 'Equipe não encontrada.' });
+      return res.status(404).json({ error: 'Empresa não encontrada.' });
     }
 
-    // Converter PDF para base64
-    const base64Content = convertToBase64(arquivo.buffer);
+    // Upload do PDF para Cloudinary
+    const base64 = `data:${arquivo.mimetype};base64,${arquivo.buffer.toString('base64')}`;
+    const cloudinaryResult = await cloudinary.uploader.upload(base64, {
+      folder: "onety/comercial/playbooks",
+      resource_type: "auto",
+    });
 
-    // Salvar no banco de dados
+    // Salvar no banco de dados (usando conteudo para armazenar a URL do Cloudinary)
     const [result] = await db.query(
       'INSERT INTO playbooks (nome, conteudo, empresa_id) VALUES (?, ?, ?)',
-      [nome, base64Content, empresa_id]
+      [nome, cloudinaryResult.secure_url, empresa_id]
     );
 
     const novoPlaybookId = result.insertId;
@@ -135,7 +134,7 @@ router.post('/', verifyToken, upload.single('arquivo'), async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.conteudo, 
+        p.conteudo,
         p.empresa_id,
         p.criado_em,
         p.atualizado_em,
@@ -184,22 +183,28 @@ router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
       // Verificar se a empresa existe
       const [empresaExists] = await db.query('SELECT id FROM empresas WHERE id = ?', [empresa_id]);
       if (empresaExists.length === 0) {
-        return res.status(404).json({ error: 'Equipe não encontrada.' });
+        return res.status(404).json({ error: 'Empresa não encontrada.' });
       }
       fields.push('empresa_id = ?');
       params.push(empresa_id);
     }
 
-    // Se um novo arquivo foi enviado, converter para base64
+    // Se um novo arquivo foi enviado, fazer upload para Cloudinary
     if (arquivo) {
       // Validar se é PDF
       if (!arquivo.originalname.toLowerCase().endsWith('.pdf')) {
         return res.status(400).json({ error: 'Apenas arquivos PDF são permitidos.' });
       }
 
-      const base64Content = convertToBase64(arquivo.buffer);
+      // Upload do PDF para Cloudinary
+      const base64 = `data:${arquivo.mimetype};base64,${arquivo.buffer.toString('base64')}`;
+      const cloudinaryResult = await cloudinary.uploader.upload(base64, {
+        folder: "onety/comercial/playbooks",
+        resource_type: "auto",
+      });
+
       fields.push('conteudo = ?');
-      params.push(base64Content);
+      params.push(cloudinaryResult.secure_url);
     }
 
     if (!fields.length) {
@@ -214,7 +219,7 @@ router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
       SELECT 
         p.id, 
         p.nome, 
-        p.conteudo, 
+        p.conteudo,
         p.empresa_id,
         p.criado_em,
         p.atualizado_em,
@@ -234,13 +239,13 @@ router.put('/:id', verifyToken, upload.single('arquivo'), async (req, res) => {
   }
 });
 
-// 🔹 Download de PDF do playbook (base64)
+// 🔹 Download de PDF do playbook (Cloudinary)
 router.get('/:id/download', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     console.log('🔍 Tentando fazer download do playbook ID:', id);
     
-    // Buscar o playbook e seu conteúdo base64
+    // Buscar o playbook e sua URL do Cloudinary
     const [playbook] = await db.query(`
       SELECT 
         p.id, 
@@ -257,23 +262,14 @@ router.get('/:id/download', verifyToken, async (req, res) => {
     }
 
     const playbookData = playbook[0];
-    const base64Content = playbookData.conteudo;
+    const cloudinaryUrl = playbookData.conteudo;
 
-    if (!base64Content) {
+    if (!cloudinaryUrl) {
       return res.status(404).json({ error: 'Arquivo PDF não encontrado para este playbook.' });
     }
 
-    // Converter base64 para buffer
-    const buffer = Buffer.from(base64Content, 'base64');
-    
-    // Configurar headers para download
-    const fileName = `${playbookData.nome.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-    
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Length', buffer.length);
-    
-    res.send(buffer);
+    // Redirecionar para o Cloudinary
+    res.redirect(cloudinaryUrl);
   } catch (error) {
     console.error('❌ Erro ao fazer download do playbook:', error);
     res.status(500).json({ error: 'Erro ao fazer download do playbook' });
