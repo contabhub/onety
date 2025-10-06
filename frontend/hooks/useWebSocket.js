@@ -22,13 +22,18 @@ export function useWebSocket() {
 
   const connectSocket = () => {
     const token = localStorage.getItem('token');
-    const companyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const companyId = userData.EmpresaId;
 
     if (!token) return null;
 
     console.log('🔄 Tentando conectar WebSocket...');
+    console.log('🏢 CompanyId do userData:', companyId);
     
-    const newSocket = io(process.env.NEXT_PUBLIC_WS_URL, {
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000';
+    console.log('🔗 URL do WebSocket:', wsUrl);
+    
+    const newSocket = io(wsUrl, {
       auth: { token, companyId },
       reconnection: false, // Desabilitamos reconnection automático para controlar manualmente
       timeout: 20000, // 20 segundos de timeout
@@ -53,11 +58,18 @@ export function useWebSocket() {
     newSocket.on('user:connected', (data) => {
       try {
         const serverCompanyId = data?.user?.company_id;
-        const localCompanyId = JSON.parse(localStorage.getItem('userData') || '{}').EmpresaId;
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const localCompanyId = userData.EmpresaId;
 
         console.log('[WS] user:connected recebido:', {
           serverCompanyId,
-          localCompanyId
+          localCompanyId,
+          userData: {
+            id: userData.id,
+            email: userData.email,
+            EmpresaId: userData.EmpresaId,
+            EmpresaNome: userData.EmpresaNome
+          }
         });
 
         if (serverCompanyId && String(serverCompanyId) !== String(localCompanyId)) {

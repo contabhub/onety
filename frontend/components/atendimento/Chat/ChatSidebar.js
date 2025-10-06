@@ -177,7 +177,8 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
 
   // Função para filtrar conversas baseado no filtro ativo e termo de busca
   const getFilteredConversations = () => {
-    const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userId = userData.id;
     const userIdNumber = parseInt(userId);
 
     // Primeiro aplicar filtro por categoria
@@ -230,7 +231,8 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
 
   // Função para calcular contadores de cada categoria
   const getConversationCounts = () => {
-    const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userId = userData.id;
     const userIdNumber = parseInt(userId);
 
     const novos = conversations.filter(conv =>
@@ -254,8 +256,9 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
   const fetchUserTeams = async () => {
     try {
       const token = localStorage.getItem('token');
-      const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userId = userData.id;
+      const companyId = userData.EmpresaId;
 
       if (!userId) {
         console.error('❌ UserId não encontrado para buscar times');
@@ -267,7 +270,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
         return [];
       }
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/team-users/user/${userId}?company_id=${companyId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento-usuarios/usuario/${userId}?empresa_id=${companyId}`;
       console.log('🔍 Buscando times do usuário na empresa:', url);
 
       const response = await axios.get(url, {
@@ -294,7 +297,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
         return [];
       }
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/conversations/team/${teamId}/conversations`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/team/${teamId}/conversations`;
       console.log('🔍 Buscando conversas do time:', teamId, 'URL:', url);
 
       const response = await axios.get(url, {
@@ -326,7 +329,8 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       setLoading(true);
 
       const token = localStorage.getItem('token');
-      const companyId = JSON.parse(localStorage.getItem('userData') || '{}').companyId;
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const companyId = userData.EmpresaId;
 
       if (!companyId) {
         console.error('❌ CompanyId não encontrado');
@@ -335,7 +339,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
         return;
       }
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/conversations/company/${companyId}/all`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/company/${companyId}/all`;
       console.log('🔍 Buscando todas as conversas da empresa:', url);
 
       const response = await axios.get(url, {
@@ -375,11 +379,11 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       const allConversations = [];
 
       for (const team of userTeams) {
-        const teamConversations = await fetchTeamConversations(team.team_id);
+        const teamConversations = await fetchTeamConversations(team.times_atendimento_id);
         // Adicionar informações do time a cada conversa
         const conversationsWithTeam = teamConversations.map(conv => ({
           ...conv,
-          team_id: team.team_id,
+          team_id: team.times_atendimento_id,
           team_name: team.time,
           user_role: team.role
         }));
@@ -414,7 +418,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       if (toFetch.length === 0) return;
 
       const requests = toFetch.map(id =>
-        fetch(`${apiUrl}/contatos-etiquetas/contato/${id}`, {
+        fetch(`${apiUrl}/atendimento/leads-etiquetas/lead/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).then(res => res.ok ? res.json() : []).catch(() => [])
       );
@@ -442,9 +446,9 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
     console.log('🆔 User ID:', user?.id);
 
     // Verificar se temos dados suficientes para buscar conversas
-    const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const currentUserRole = userData.userRole || null;
+    const userId = userData.id;
+    const currentUserRole = userData.permissoes?.adm?.includes('admin') ? 'Administrador' : 'Usuário';
     setUserRole(currentUserRole);
 
     if (userId) {
@@ -461,7 +465,9 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
     } else {
       console.log('❌ UserId não encontrado, não buscando conversas');
       console.log('🔍 Verificando localStorage:', {
-        userId: (JSON.parse(localStorage.getItem('userData') || '{}').id)
+        userId: userData.id,
+        EmpresaId: userData.EmpresaId,
+        permissoes: userData.permissoes
       });
 
       // Se não temos dados suficientes mas ainda estamos carregando, aguardar
@@ -524,7 +530,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
         created_at: incoming.created_at ?? new Date().toISOString(),
         updated_at: incoming.updated_at ?? incoming.created_at ?? new Date().toISOString(),
         team_name: incoming.team_name ?? null,
-        instance_name: incoming.instance_name ?? null,
+        whatsapp_instance_name: incoming.whatsapp_instance_name ?? null,
         last_message_content: incoming.last_message_content ?? null,
         last_message_time: incoming.last_message_time ?? null,
         contact_id: incoming.contact_id ?? null
@@ -569,7 +575,8 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       }
 
       const conversationId = message.conversation_id;
-      const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userId = userData.id;
       const userIdNumber = parseInt(userId);
 
       // Verificar se o usuário está atualmente visualizando esta conversa
@@ -652,7 +659,8 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       const conversationId = payload?.conversation_id ?? message?.conversation_id;
       if (!conversationId) return;
 
-      const userId = user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userId = userData.id;
       const userIdNumber = parseInt(userId);
 
       const isViewingThisConversation = selectedConversation?.conversation_id == conversationId;
@@ -719,7 +727,7 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       if (e.key === 'userData' && e.newValue) {
         console.log('🔄 userData mudou no localStorage:', e.newValue);
         const newUserData = JSON.parse(e.newValue);
-        const newUserRole = newUserData.userRole;
+        const newUserRole = newUserData.permissoes?.adm?.includes('admin') ? 'Administrador' : 'Usuário';
 
         // Forçar nova busca de conversas
         setLoading(true);
@@ -738,8 +746,9 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
 
     // Polling para mudanças no localStorage (fallback)
     const interval = setInterval(() => {
-      const currentUserId = (JSON.parse(localStorage.getItem('userData') || '{}').id);
-      const currentUserRole = (JSON.parse(localStorage.getItem('userData') || '{}').userRole);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const currentUserId = userData.id;
+      const currentUserRole = userData.permissoes?.adm?.includes('admin') ? 'Administrador' : 'Usuário';
       if (currentUserId && (!user?.id || String(user.id) !== String(currentUserId))) {
         console.log('🔄 Mudança detectada via polling - userData.id:', currentUserId, 'userRole:', currentUserRole);
         setLoading(true);
