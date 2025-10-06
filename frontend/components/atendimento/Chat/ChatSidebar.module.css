@@ -20,7 +20,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--onity-space-s);
-  padding: var(--onity-space-s) var(--onity-space-m);
+  padding: var(--onity-space-m) var(--onity-space-1);
+  min-height: 48px;
   background-color: transparent;
   color: var(--primary-color, #3b82f6);
   font-size: 0.875rem;
