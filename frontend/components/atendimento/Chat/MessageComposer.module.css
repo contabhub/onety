@@ -47,8 +47,8 @@
 }
 
 .emojiButton:hover {
-  color: var(--onity-color-text);
-  background-color: var(--onity-color-bg);
+  color: var(--primary-color, #3b82f6);
+  border: none;
   opacity: 1;
 }
 
@@ -74,19 +74,20 @@
 .sendButton {
   padding: var(--onity-space-s);
   background-color: transparent;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   border: none;
   cursor: pointer;
 }
 
 .sendButton:hover:not(:disabled) {
   background-color: transparent;
-  color: var(--onity-color-primary-hover);
+  color: var(--primary-color, #3b82f6);
+  border: none;
 }
 
 .sendButton:disabled {
   background-color: transparent;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   cursor: not-allowed;
 }
 
@@ -213,7 +214,7 @@
 .micButton {
   padding: var(--onity-space-m);
   background-color: transparent;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   border: none;
   border-radius: var(--onity-radius-xs);
   cursor: pointer;
@@ -225,7 +226,8 @@
 }
 
 .micButton:hover {
-  color: var(--onity-color-primary-hover);
+  color: var(--primary-color, #3b82f6);
+  border: none;
 }
 
 .micButton:disabled {
@@ -310,8 +312,8 @@
 }
 
 .attachmentButton:hover {
-  color: var(--onity-color-text);
-  background-color: var(--onity-color-bg);
+  color: var(--primary-color, #3b82f6);
+  border: none;
   opacity: 1;
 }
 
