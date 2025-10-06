@@ -1,0 +1,220 @@
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+  
+  .formRow {
+    background: var(--color-surface-1);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+  
+  .input {
+    flex: 1;
+    background-color: var(--color-surface-2);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  
+  .input::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.8;
+  }
+  
+  .input:focus {
+    border-color: var(--focus-ring);
+    box-shadow: 0 0 0 3px rgba(24, 198, 227, 0.15);
+  }
+  
+  .addBtn {
+    background-color: var(--color-text-secondary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.4s ease
+  }
+
+  .addBtn:hover {
+        background-color: var(--color-text-secondary);
+  }
+  
+  .lista {
+    background: var(--color-surface-1);
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .item:last-child {
+    border-bottom: none;
+  }
+  
+  .item span {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  
+  .item button {
+    margin-left: 10px;
+    background: none;
+    border: none;
+    color: var(--focus-ring);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .inputEdit {
+    flex: 1;
+    background-color: var(--color-surface-2);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .inputEdit::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.8;
+  }
+
+  .inputEdit:focus {
+    border-color: var(--focus-ring);
+    box-shadow: 0 0 0 3px rgba(24, 198, 227, 0.15);
+    outline: none;
+  }
+  
+  .saveBtn {
+    background-color: var(--focus-ring);
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    margin-left: 8px;
+    cursor: pointer;
+  }
+  
+.actionButtons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* botão base para ícones */
+.iconButton {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+/* ícones padrão */
+.icon {
+  font-size: 20px; /* Aumentado */
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease;
+}
+
+/* hover genérico */
+.iconButton:hover {
+  background-color: var(--color-bg);
+}
+
+.iconButton:hover .icon {
+  color: var(--brand-primary);
+}
+
+/* botão de excluir */
+.deleteBtn:hover {
+  background-color: var(--color-bg);
+}
+
+.deleteBtn:hover .icon {
+  color: var(--error);
+}
+
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+  transition: color 0.3s ease;
+}
+
+.backButton:hover {
+  color: var(--brand-primary);
+}
+
+.spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--focus-ring);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loadingText {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-top: 8px;
+}

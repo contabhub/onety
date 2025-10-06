@@ -1,0 +1,131 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activityCard {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-surface-1);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  width: 100%;
+}
+
+.activityCard .left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activityCard .icon {
+  background-color: var(--color-bg);
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-text-primary);
+}
+
+.activityCard .content {
+  display: flex;
+  flex-direction: column;
+}
+
+.activityCard .content .name {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.activityCard .content .status {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.activityCard .actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.activityCard .checkButton {
+  background-color: transparent;
+  border: none;
+  color: var(--success);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.activityCard .menuButton {
+  background-color: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Estilos do ícone de check */
+.checkIcon {
+  color: var(--color-text-secondary);
+}
+.checkIcon:hover {
+  color: var(--focus-ring);
+}
+
+/* Estilos do ícone de menu */
+.menuIcon {
+  color: var(--color-text-secondary);
+}
+.menuIcon:hover {
+  color: var(--focus-ring);
+}
+
+/* Dropdown do menu */
+.activityCard .dropdownMenu {
+  position: relative; /* NECESSÁRIO para que o dropdown fique no lugar certo */
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  background-color: var(--color-surface-1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.activityCard .dropdownMenu button {
+  background-color: transparent;
+  border: none;
+  padding: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--brand-primary);
+  width: 100%; /* Faz os botões preencherem toda a largura */
+  text-align: left; /* Alinha o texto à esquerda */
+}
+
+.activityCard .dropdownMenu button:hover {
+  background-color: var(--color-bg);
+  color: var(--brand-primary); /* Altera a cor do texto ao passar o mouse */
+}
+
+.activityCard .dropdownMenu button:focus {
+  outline: none; /* Remove o contorno do botão */
+}
+
+.iconWrapper {
+  background-color: var(--color-bg); /* rosa claro */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

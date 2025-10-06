@@ -1,0 +1,537 @@
+/* Container principal */
+.container {
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* Header Container */
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: var(--color-surface-1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+/* Filtro de Produtos */
+.filterContainer {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.filterContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterLabel {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface-1);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.filterSelect:hover {
+  border-color: var(--brand-primary);
+}
+
+/* Container de Busca e Filtros */
+.searchFilterContainer {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Busca */
+.searchContainer {
+  flex: 0 1 300px;
+  min-width: 200px;
+}
+
+.searchContent {
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface-1);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.searchInput:hover {
+  border-color: var(--brand-primary);
+}
+
+/* Produtos */
+.productName {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.productDescription {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  margin-bottom: 8px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.productDescription:hover {
+  color: var(--brand-primary);
+}
+
+.productBadges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Badges */
+.badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statusBadge {
+  /* Base styles for status badges */
+}
+
+.activeStatus {
+  background-color: var(--color-bg);
+  color: var(--success);
+}
+
+.inactiveStatus {
+  background-color: var(--color-bg);
+  color: var(--error);
+}
+
+.typeBadge {
+  /* Base styles for type badges */
+}
+
+.globalType {
+  background-color: var(--color-bg);
+  color: var(--brand-primary);
+}
+
+.localType {
+  background-color: var(--color-bg);
+  color: var(--brand-accent);
+}
+
+/* Modal de Descrição */
+.descriptionModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.descriptionModalContent {
+  background-color: var(--color-surface-1);
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.descriptionModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.descriptionModalTitle {
+  margin: 0;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.descriptionModalClose {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--color-text-secondary);
+}
+
+.descriptionModalClose:hover {
+  color: var(--color-text-primary);
+}
+
+.descriptionModalBody {
+  margin-bottom: 16px;
+}
+
+.descriptionText {
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.descriptionModalInfo {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.descriptionModalInfo > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Responsividade para busca e filtros */
+@media (max-width: 768px) {
+  .searchFilterContainer {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .searchContainer {
+    min-width: auto;
+  }
+  
+  .filterContainer {
+    margin: 0;
+  }
+  
+  .headerContainer {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .descriptionModalInfo {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Título */
+/* Ícone ao lado do título */
+.icon {
+  margin-right: 10px;
+  color: var(--brand-primary); /* Cor laranja do ícone */
+  background-color: var(--color-bg);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+/* Título */
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+
+/* Formulário de Cadastro */
+/* Formulário de Cadastro */
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* Para os campos Código, Nome, Valor ficarem na mesma linha */
+.row {
+  display: flex;
+  gap: 20px;
+}
+
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkboxContainer input {
+  width: 20px;
+  height: 20px;
+}
+
+.checkboxContainer label {
+  font-size: 16px;
+  color: var(--color-text-primary);
+}
+
+
+.input,
+.select,
+.textarea {
+  flex: 1;
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  font-size: 16px;
+  padding: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: transparent;
+}
+
+.input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--brand-primary);
+  outline: none;
+}
+
+/* Botão de salvar */
+.button {
+  background: var(--brand-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.button:hover {
+  background: var(--brand-primary);
+}
+
+.icon2 {
+  color: #fff;
+  margin-right: 10px;
+}
+
+/* Ícones e layout da lista de produtos */
+.cardProduct {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface-1);
+  border-radius: 6px;
+}
+
+.cardProduct .iconWrapper {
+  background-color: var(--color-bg);
+  padding: 8px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.cardProduct .productInfo {
+  flex: 1;
+}
+
+.cardProduct .productInfo span {
+  display: block;
+}
+
+.cardProduct button {
+  color: var(--color-text-primary);
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cardProduct button:hover {
+  background-color: var(--color-bg);
+}
+
+
+/* Nenhum produto encontrado */
+.noProducts {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  padding: 20px 0;
+}
+
+.addProductButton {
+  background-color: var(--brand-primary);
+  padding: 10px;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.addProductButton:hover {
+  background-color: var(--brand-primary);
+}
+
+/* Seção de inativos */
+.inactiveProducts {
+  margin-top: 40px;
+  background-color: var(--color-bg);
+  padding: 20px;
+  border-radius: 6px;
+}
+
+.inactiveProducts h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.inactiveProducts p {
+  color: var(--color-text-secondary);
+  font-size: 16px;
+}
+
+/* Container do menu de opções (Elipse) */
+.menuButtonContainer {
+  position: relative;
+}
+
+.dotIcon {
+  font-size: 22px;
+}
+
+
+.menuButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--color-text-secondary);
+  transition: background-color 0.2s ease-in;
+  transition: color 0.2s ease-in;
+}
+
+.menuButton:hover {
+  color: var(--brand-primary);
+}
+
+/* Dropdown menu */
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.dropdownMenu button {
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.dropdownMenu button:hover {
+  background-color: var(--color-bg);
+}
+
+/* Estilos para os ícones dentro do menu */
+.editButton, .deleteButton {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.iconEditTrash {
+  margin-right: 8px;
+}
+
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+  transition: color 0.3s ease;
+}
+
+.backButton:hover {
+  color: var(--brand-primary);
+}
