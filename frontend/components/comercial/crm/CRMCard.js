@@ -110,7 +110,7 @@ export default function CRMCard({ data, onEdit }) {
       {...attributes}
       {...listeners}
       className={`${styles.crmCard} ${isDragging ? styles.dragging : ""}`}
-      onDoubleClick={() => router.push(`/leads/${data.id}`)}
+      onDoubleClick={() => router.push(`/comercial/leads/${data.id}`)}
     >
       <div className={styles.crmCardHeaderRow}>
         <div className={styles.cardIconLeft}>

@@ -42,15 +42,15 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
       setIsLoadingMembros(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user_equipes/${teamId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios-empresas/empresa/${teamId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Erro ao buscar membros da equipe");
+        if (!res.ok) throw new Error("Erro ao buscar membros da empresa");
         const data = await res.json();
         setMembrosEquipe(Array.isArray(data) ? data : []);
       } catch (err) {
         setMembrosEquipe([]);
-        console.error("Erro ao buscar membros da equipe:", err);
+        console.error("Erro ao buscar membros da empresa:", err);
       }
       setIsLoadingMembros(false);
     }
@@ -102,20 +102,20 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
       });
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: formData.name,
+          nome: formData.name,
           telefone: formData.telefone,
           email: formData.email,
           status,
-          team_id: parseInt(formData.team_id),
+          empresa_id: parseInt(formData.team_id),
           funil_id: parseInt(formData.funil_id),
-          fase_funil_id: parseInt(formData.fase_funil_id),
+          funil_fase_id: parseInt(formData.fase_funil_id),
           valor: parseFloat(
             formData.valor
               .toString()
@@ -123,7 +123,7 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
               .replace(",", ".")    // troca vírgula decimal por ponto
           ),
           data_prevista: formData.data_prevista || null,
-          user_id: formData.user_id ? parseInt(formData.user_id) : null,
+          usuario_id: formData.user_id ? parseInt(formData.user_id) : null,
 
 
         }),
@@ -218,9 +218,9 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
                 <option>Carregando...</option>
               ) : (
                 membrosEquipe
-                  .filter((m) => m.role !== 'superadmin')
+                  .filter((m) => m.cargo_nome !== 'superadmin')
                   .map((m) => (
-                    <option key={m.userId} value={m.userId}>
+                    <option key={m.user_id} value={m.user_id}>
                       {m.full_name}
                     </option>
                   ))

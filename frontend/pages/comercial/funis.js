@@ -31,21 +31,21 @@ export default function FunisPage() {
   const fetchFunisAndFases = async () => {
     setLoading(true);
     try {
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData");
       const token = localStorage.getItem("token");
 
       if (!userRaw || !token) return;
 
       const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const empresaId = user.EmpresaId;
 
-      if (!equipeId) {
-        console.error("Usuário não tem equipe associada.");
+      if (!empresaId) {
+        console.error("Usuário não tem empresa associada.");
         return;
       }
 
       const funisRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/funis/${equipeId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${empresaId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -61,7 +61,7 @@ export default function FunisPage() {
       const funisComFases = await Promise.all(
         funisData.map(async (funil) => {
           const fasesRes = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${funil.id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${funil.id}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -91,7 +91,7 @@ export default function FunisPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/funis/${funilId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${funilId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -135,7 +135,7 @@ export default function FunisPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/funil_fases/reordenar`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/reordenar`,
         {
           method: "POST",
           headers: {
@@ -167,7 +167,7 @@ export default function FunisPage() {
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${faseId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${faseId}`,
         {
           method: "DELETE",
           headers: {

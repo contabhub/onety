@@ -816,7 +816,7 @@
 .toolsToggleBtn {
   border: 2px solid var(--onity-color-border);
   background: transparent;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-border);
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -824,8 +824,8 @@
 }
 
 .toolsToggleBtn:hover {
-  border: 2px solid var(--onity-color-primary);
-  color: var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
 
 }
 
@@ -1083,7 +1083,7 @@
 .viewToggleBtn {
   background: none;
   border: 2px solid var(--onity-color-border);
-  color: var(--onity-color-primary);
+  color: var(--onity-color-border);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 18px;
@@ -1095,14 +1095,13 @@
 }
 
 .viewToggleBtn:hover {
-  border: 2px solid var(--onity-color-primary);
-  background: var(--onity-color-bg);
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
 }
 
 .viewToggleActive {
-  border: 2px solid var(--onity-color-primary);
-  background: var(--onity-color-bg);
-  color: var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
 }
 
 .listViewContainer {
@@ -1299,4 +1298,11 @@
   .emptyStateIcon {
     font-size: 36px;
   }
+}
+
+/* Botões de visualização */
+.viewToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
