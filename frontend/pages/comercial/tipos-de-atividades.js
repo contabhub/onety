@@ -1,8 +1,9 @@
 // pages/tipos-de-atividades.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import styles from "../styles/TiposAtividade.module.css";
-import Layout from "../components/layout/Layout";
+import styles from "../../styles/comercial/crm/TiposAtividade.module.css";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";  
@@ -110,85 +111,78 @@ export default function TiposDeAtividades() {
   };
 
   return (
-    <Layout>
-      <button className={styles.backButton} onClick={() => router.back()}>
-        <span className={styles.iconWrapper}>
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </span>
-        Voltar
-      </button>
-      <div className={styles.container}>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
+          <div className={styles.container}>
+            <h1 className={styles.title}>Tipos de Atividades</h1>
 
+            <div className={styles.formRow}>
+              <input
+                type="text"
+                placeholder="Novo tipo de atividade"
+                value={novoNome}
+                onChange={(e) => setNovoNome(e.target.value)}
+                className={styles.input}
+              />
+              <button className={styles.addBtn} onClick={handleCriar}>
+                Adicionar
+              </button>
+            </div>
 
-        <h1 className={styles.title}>Tipos de Atividades</h1>
-
-        <div className={styles.formRow}>
-          <input
-            type="text"
-            placeholder="Novo tipo de atividade"
-            value={novoNome}
-            onChange={(e) => setNovoNome(e.target.value)}
-            className={styles.input}
-          />
-          <button className={styles.addBtn} onClick={handleCriar}>
-            Adicionar
-          </button>
+            {loading ? (
+              <SpaceLoader label="Carregando atividades..." />
+            ) : (
+              <ul className={styles.lista}>
+                {tipos.map((tipo) => (
+                  <li key={tipo.id} className={styles.item}>
+                    {editandoId === tipo.id ? (
+                      <>
+                        <input
+                          className={styles.inputEdit}
+                          value={editandoNome}
+                          onChange={(e) => setEditandoNome(e.target.value)}
+                        />
+                        <button
+                          className={styles.saveBtn}
+                          onClick={() => handleAtualizar(tipo.id)}
+                        >
+                          Salvar
+                        </button>
+                        <button onClick={() => setEditandoId(null)}>Cancelar</button>
+                      </>
+                    ) : (
+                      <>
+                        <span>{tipo.nome}</span>
+                        <div className={styles.actionButtons}>
+                          <button
+                            title="Editar tipo"
+                            className={styles.iconButton}
+                            onClick={() => {
+                              setEditandoId(tipo.id);
+                              setEditandoNome(tipo.nome);
+                            }}
+                          >
+                            <FiEdit className={styles.icon} />
+                          </button>
+                          <button
+                            title="Excluir tipo"
+                            className={`${styles.iconButton} ${styles.deleteBtn}`}
+                            onClick={() => handleExcluir(tipo.id)}
+                          >
+                            <FiTrash2 className={styles.icon} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-
-        {loading ? (
-        <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p className={styles.loadingText}>Carregando atividades...</p>
       </div>
-      
-        ) : (
-          <ul className={styles.lista}>
-            {tipos.map((tipo) => (
-              <li key={tipo.id} className={styles.item}>
-                {editandoId === tipo.id ? (
-                  <>
-                    <input
-                      className={styles.inputEdit}
-                      value={editandoNome}
-                      onChange={(e) => setEditandoNome(e.target.value)}
-                    />
-                    <button
-                      className={styles.saveBtn}
-                      onClick={() => handleAtualizar(tipo.id)}
-                    >
-                      Salvar
-                    </button>
-                    <button onClick={() => setEditandoId(null)}>Cancelar</button>
-                  </>
-                ) : (
-                  <>
-                    <span>{tipo.nome}</span>
-                    <div className={styles.actionButtons}>
-                      <button
-                        title="Editar tipo"
-                        className={styles.iconButton}
-                        onClick={() => {
-                          setEditandoId(tipo.id);
-                          setEditandoNome(tipo.nome);
-                        }}
-                      >
-                        <FiEdit className={styles.icon} />
-                      </button>
-                      <button
-                        title="Excluir tipo"
-                        className={`${styles.iconButton} ${styles.deleteBtn}`}
-                        onClick={() => handleExcluir(tipo.id)}
-                      >
-                        <FiTrash2 className={styles.icon} />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </Layout>
+    </>
   );
 }

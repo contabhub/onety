@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/CRM.module.css";
+import styles from "../../../styles/comercial/crm/CRM.module.css";
 
 export default function EditCardModal({ open, onClose, onSave, initialData }) {
   const [formData, setFormData] = useState({

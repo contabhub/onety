@@ -1,6 +1,6 @@
 // components/crm/CreateFaseModal.js
 import { useState } from "react";
-import styles from "../../styles/CRM.module.css"; // já aproveita o estilo!
+import styles from "../../../styles/comercial/crm/CRM.module.css"; // já aproveita o estilo!
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -15,7 +15,7 @@ export default function CreateFaseModal({ open, onClose, funilId, onFaseCreated 
     try {
       const token = localStorage.getItem('token');
 
-      // Buscar fases existentes do funil
+      // Buscar fases existentes do funil 
       const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${funilId}`, {
         headers: {
           Authorization: `Bearer ${token}`

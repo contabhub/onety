@@ -1,8 +1,8 @@
 import React from "react";
 import { useDroppable } from "@dnd-kit/core"; // useDroppable vem do core!
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import SortableCard from "../crm/SortableCard"; // novo componente com useSortable
-import styles from "../../styles/Column.module.css";
+import SortableCard from "../../comercial/crm/SortableCard"; // novo componente com useSortable
+import styles from "../../../styles/comercial/crm/Column.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSuitcase, faSackDollar } from "@fortawesome/free-solid-svg-icons";
 

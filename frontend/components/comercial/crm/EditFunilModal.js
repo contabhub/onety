@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/CRM.module.css";
+import styles from "../../../styles/comercial/crm/CRM.module.css";
 
 export default function EditFunilModal({ open, onClose, funil, onSave }) {
   const [nome, setNome] = useState(funil?.nome || "");

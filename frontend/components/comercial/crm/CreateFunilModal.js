@@ -1,6 +1,6 @@
 // components/crm/CreateFunilModal.js
 import { useState } from "react";
-import styles from "../../styles/CRM.module.css"; // Mesmo arquivo de estilos
+import styles from "../../../styles/comercial/crm/CRM.module.css"; // Mesmo arquivo de estilos
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

@@ -1,7 +1,19 @@
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
 .container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 2rem;
 }
 
 .header {
@@ -14,7 +26,7 @@
 }
 
 .header h1 {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 2rem;
   font-weight: 600;
   margin: 0;
@@ -24,7 +36,7 @@
 }
 
 .addButton {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -39,7 +51,7 @@
 }
 
 .addButton:hover {
-  background: var(--brand-secondary);
+  background: var(--onity-color-primary-hover);
   transform: translateY(-1px);
 }
 
@@ -61,40 +73,40 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   z-index: 1;
 }
 
 .searchInput {
-  width: 100%;
+  width: 80%;
   padding: 12px 12px 12px 40px;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--onity-color-border);
   border-radius: 8px;
   font-size: 1rem;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   transition: border-color 0.2s ease;
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
 }
 
 .selectInput {
   padding: 12px 16px;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--onity-color-border);
   border-radius: 8px;
   font-size: 1rem;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   min-width: 200px;
   cursor: pointer;
 }
 
 .selectInput:focus {
   outline: none;
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
 }
 
 .playbooksGrid {
@@ -105,18 +117,18 @@
 }
 
 .playbookCard {
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 12px;
   padding: 20px;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .playbookCard:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card);
-  border-color: var(--brand-primary);
+  box-shadow: var(--onity-elev-med);
+  border-color: var(--onity-color-primary);
 }
 
 .cardHeader {
@@ -127,7 +139,7 @@
 }
 
 .cardHeader h3 {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0;
@@ -143,11 +155,11 @@
 
 .actionButton {
   background: none;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   padding: 8px;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   transition: all 0.2s ease;
   width: 32px;
   height: 32px;
@@ -157,19 +169,19 @@
 }
 
 .actionButton:hover {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border-color: var(--brand-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-primary);
 }
 
 .actionButton:first-child:hover {
-  color: var(--brand-accent);
-  border-color: var(--brand-accent);
+  color: var(--onity-color-warning);
+  border-color: var(--onity-color-warning);
 }
 
 .actionButton:last-child:hover {
-  color: var(--error);
-  border-color: var(--error);
+  color: var(--onity-color-error);
+  border-color: var(--onity-color-error);
 }
 
 .cardContent {
@@ -182,18 +194,18 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 0.9rem;
 }
 
 .cardFooter {
-  border-top: 1px solid var(--color-divider);
+  border-top: 1px solid var(--onity-color-border);
   padding-top: 16px;
 }
 
 .downloadButton {
   width: 100%;
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   padding: 10px 16px;
@@ -209,7 +221,7 @@
 }
 
 .downloadButton:hover {
-  background: var(--brand-secondary);
+  background: var(--onity-color-primary-hover);
   transform: translateY(-1px);
 }
 
@@ -218,7 +230,7 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 60px 20px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .emptyState svg {
@@ -230,7 +242,7 @@
 .emptyState h3 {
   font-size: 1.5rem;
   margin-bottom: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .emptyState p {
@@ -254,13 +266,13 @@
 }
 
 .modal {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 12px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .modalHeader {
@@ -268,12 +280,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px 24px 0;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--onity-color-border);
   margin-bottom: 24px;
 }
 
 .modalHeader h2 {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
@@ -284,15 +296,15 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   padding: 4px;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .closeButton:hover {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
 }
 
 .form {
@@ -306,7 +318,7 @@
 .formGroup label {
   display: block;
   margin-bottom: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-weight: 500;
 }
 
@@ -314,18 +326,18 @@
 .formGroup select {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--onity-color-border);
   border-radius: 8px;
   font-size: 1rem;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   transition: border-color 0.2s ease;
 }
 
 .formGroup input:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
 }
 
 .formGroup input[type="file"] {
@@ -334,8 +346,8 @@
 }
 
 .disabledInput {
-  background: var(--color-surface-2) !important;
-  color: var(--color-text-secondary) !important;
+  background: var(--onity-color-bg) !important;
+  color: var(--onity-icon-secondary) !important;
   cursor: not-allowed !important;
   opacity: 0.7;
 }
@@ -346,13 +358,13 @@
   justify-content: flex-end;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid var(--color-divider);
+  border-top: 1px solid var(--onity-color-border);
 }
 
 .cancelButton {
   background: none;
-  border: 2px solid var(--color-border);
-  color: var(--color-text-secondary);
+  border: 2px solid var(--onity-color-border);
+  color: var(--onity-icon-secondary);
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 1rem;
@@ -362,13 +374,13 @@
 }
 
 .cancelButton:hover {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border-color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-text);
 }
 
 .saveButton {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -380,7 +392,7 @@
 }
 
 .saveButton:hover {
-  background: var(--brand-secondary);
+  background: var(--onity-color-primary-hover);
   transform: translateY(-1px);
 }
 
@@ -391,7 +403,7 @@
   align-items: center;
   justify-content: center;
   height: 400px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .loadingContainer p {

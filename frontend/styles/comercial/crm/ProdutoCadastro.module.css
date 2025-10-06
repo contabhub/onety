@@ -1,7 +1,21 @@
+/* Layout lateral com sidebar */
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
 /* Container principal */
 .container {
-  margin: 40px auto;
-  padding: 20px;
+  padding: 2rem;
 }
 
 /* Header Container */
@@ -13,7 +27,7 @@
 }
 
 .card {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
@@ -24,7 +38,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
   text-align: left;
 }
 
@@ -44,17 +58,17 @@
 
 .filterLabel {
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 14px;
   white-space: nowrap;
 }
 
 .filterSelect {
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  background-color: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -63,12 +77,12 @@
 
 .filterSelect:focus {
   outline: none;
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .filterSelect:hover {
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
 }
 
 /* Container de Busca e Filtros */
@@ -93,27 +107,27 @@
 .searchInput {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
-  background-color: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
   font-size: 14px;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 .searchInput::placeholder {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .searchInput:hover {
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
 }
 
 /* Produtos */
@@ -125,7 +139,7 @@
 
 .productDescription {
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 14px;
   margin-bottom: 8px;
   max-width: 300px;
@@ -135,7 +149,7 @@
 }
 
 .productDescription:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .productBadges {
@@ -157,13 +171,13 @@
 }
 
 .activeStatus {
-  background-color: var(--color-bg);
-  color: var(--success);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-success);
 }
 
 .inactiveStatus {
-  background-color: var(--color-bg);
-  color: var(--error);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-error);
 }
 
 .typeBadge {
@@ -171,13 +185,13 @@
 }
 
 .globalType {
-  background-color: var(--color-bg);
-  color: var(--brand-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-primary);
 }
 
 .localType {
-  background-color: var(--color-bg);
-  color: var(--brand-accent);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-warning);
 }
 
 /* Modal de Descrição */
@@ -195,7 +209,7 @@
 }
 
 .descriptionModalContent {
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   padding: 24px;
   border-radius: 8px;
   max-width: 500px;
@@ -223,11 +237,11 @@
   font-size: 20px;
   cursor: pointer;
   padding: 4px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .descriptionModalClose:hover {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .descriptionModalBody {
@@ -237,7 +251,7 @@
 .descriptionText {
   margin: 8px 0 0 0;
   line-height: 1.5;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .descriptionModalInfo {
@@ -284,8 +298,8 @@
 /* Ícone ao lado do título */
 .icon {
   margin-right: 10px;
-  color: var(--brand-primary); /* Cor laranja do ícone */
-  background-color: var(--color-bg);
+  color: var(--onity-color-primary); /* Cor primária */
+  background-color: var(--onity-color-bg);
   padding: 10px;
   border-radius: 8px;
   font-size: 28px;
@@ -295,7 +309,7 @@
 .title {
   font-size: 28px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   display: flex;
   align-items: center;
   margin-bottom: 10px;
@@ -331,7 +345,7 @@
 
 .checkboxContainer label {
   font-size: 16px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 
@@ -340,7 +354,7 @@
 .textarea {
   flex: 1;
   border: none;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--onity-color-border);
   font-size: 16px;
   padding: 8px;
   outline: none;
@@ -355,13 +369,13 @@
 .input:focus,
 .select:focus,
 .textarea:focus {
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
   outline: none;
 }
 
 /* Botão de salvar */
 .button {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -373,7 +387,7 @@
 }
 
 .button:hover {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary-hover);
 }
 
 .icon2 {
@@ -387,13 +401,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-surface-1);
+  border-bottom: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
   border-radius: 6px;
 }
 
 .cardProduct .iconWrapper {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
   padding: 8px;
   border-radius: 50%;
   margin-right: 15px;
@@ -408,7 +422,7 @@
 }
 
 .cardProduct button {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   padding: 8px;
   border: none;
   border-radius: 6px;
@@ -416,20 +430,20 @@
 }
 
 .cardProduct button:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 
 /* Nenhum produto encontrado */
 .noProducts {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 18px;
   padding: 20px 0;
 }
 
 .addProductButton {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   padding: 10px;
   border-radius: 50%;
   color: white;
@@ -438,7 +452,7 @@
 }
 
 .addProductButton:hover {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary-hover);
 }
 
 /* Seção de inativos */
@@ -474,13 +488,13 @@
   border: none;
   cursor: pointer;
   padding: 5px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   transition: background-color 0.2s ease-in;
   transition: color 0.2s ease-in;
 }
 
 .menuButton:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 /* Dropdown menu */
@@ -488,8 +502,8 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
@@ -499,14 +513,14 @@
   padding: 10px 15px;
   background: none;
   border: none;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   text-align: left;
   width: 100%;
 }
 
 .dropdownMenu button:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 /* Estilos para os ícones dentro do menu */
@@ -528,10 +542,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   transition: color 0.3s ease;
 }
 
 .backButton:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }

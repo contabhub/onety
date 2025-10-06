@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import styles from "../styles/Playbooks.module.css";
-import Layout from "../components/layout/Layout";
+import styles from "../../styles/comercial/crm/Playbooks.module.css";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,8 +15,7 @@ import {
   faUsers,
   faCalendar
 } from "@fortawesome/free-solid-svg-icons";
-import meuLottieJson from '../assets/Loading.json';
-import Lottie from 'lottie-react';
+// Loader padrão substituído por SpaceLoader
 
 export default function PlaybooksPage() {
   const [playbooks, setPlaybooks] = useState([]);
@@ -249,20 +249,16 @@ export default function PlaybooksPage() {
     });
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className={styles.loadingContainer}>
-          <Lottie animationData={meuLottieJson} style={{ height: 200 }} />
-          <p>Carregando playbooks...</p>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
-    <Layout>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
       <div className={styles.container}>
+        {loading ? (
+          <SpaceLoader label="Carregando playbooks..." />
+        ) : (
+        <>
         <div className={styles.header}>
           <h1>
             <FontAwesomeIcon icon={faFileAlt} /> Playbooks
@@ -402,7 +398,9 @@ export default function PlaybooksPage() {
             </div>
           </div>
         )}
-
+        
+        </>
+        )}
       </div>
 
       <ToastContainer
@@ -418,6 +416,8 @@ export default function PlaybooksPage() {
         theme="light"
         transition={Bounce}
       />
-    </Layout>
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/EditProductModal.module.css"; // Importando o CSS para o modal
+import styles from "../../../styles/comercial/crm/EditProductModal.module.css"; // Importando o CSS para o modal
 import { FaBox } from "react-icons/fa"; // Ícone de produto
 
 const EditProductModal = ({ product, isOpen, onClose, onSave, mode = "edit" }) => {
