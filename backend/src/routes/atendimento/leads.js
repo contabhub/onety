@@ -9,6 +9,7 @@ const fs = require("fs");
 const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
 const { normalizePhone } = require("../../utils/atendimento/contactHelper");
+const ConversationHandler = require("../../websocket/handlers/atendimento/conversationHandler");
 
 // Configuração do multer para upload em memória
 const upload = multer({ 
@@ -116,6 +117,38 @@ router.put("/:id", authOrApiKey, async (req, res) => {
     
     if (rows.length === 0) {
       return res.status(404).json({ error: "Contato não encontrado." });
+    }
+
+    // Atualizar nome nas conversas vinculadas a este lead (conversas.lead_id)
+    try {
+      await pool.query(
+        `UPDATE conversas SET nome = ?, atualizado_em = NOW() WHERE lead_id = ?`,
+        [nome, req.params.id]
+      );
+
+      // Notificar Frontend via WebSocket sobre conversas afetadas (para refletir o novo nome)
+      try {
+        const [affectedConversations] = await pool.query(
+          `SELECT c.id AS conversation_id, t.empresa_id AS company_id
+             FROM conversas c
+             JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+             JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+            WHERE c.lead_id = ?`,
+          [req.params.id]
+        );
+
+        for (const conv of affectedConversations) {
+          try {
+            ConversationHandler.notifyConversationUpdated(Number(conv.conversation_id), { customer_name: nome }, conv.company_id);
+          } catch (wsErr) {
+            console.warn("WS notifyConversationUpdated falhou (leads -> conversas nome):", wsErr?.message || wsErr);
+          }
+        }
+      } catch (selErr) {
+        console.warn("Falha ao buscar conversas afetadas para WS:", selErr?.message || selErr);
+      }
+    } catch (convErr) {
+      console.warn("Falha ao atualizar nome nas conversas vinculadas:", convErr?.message || convErr);
     }
 
     res.json(rows[0]);

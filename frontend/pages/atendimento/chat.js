@@ -107,6 +107,25 @@ export default function Chat({ auth }) {
               if (updatedConversation.status === 'fechada') {
                 console.log('🔄 Chat.js: Conversa finalizada, disparando refresh do sidebar');
                 setRefreshTrigger(prev => prev + 1);
+              } else {
+                // Se a conversa foi assumida pelo usuário atual, forçar refresh e ir para "Meus"
+                try {
+                  const currentUserId = (user?.id || (JSON.parse(localStorage.getItem('userData') || '{}').id))?.toString();
+                  const assignedId = updatedConversation?.assigned_user_id != null
+                    ? updatedConversation.assigned_user_id.toString()
+                    : null;
+                  const prevAssignedId = selectedConversation?.assigned_user_id != null
+                    ? selectedConversation.assigned_user_id.toString()
+                    : null;
+
+                  if (assignedId && assignedId === currentUserId && assignedId !== prevAssignedId) {
+                    console.log('✅ Chat.js: Conversa assumida pelo usuário atual → forçando refresh e aba "meus"');
+                    setActiveTab('meus');
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                } catch (e) {
+                  console.warn('Falha ao avaliar mudança de responsável:', e?.message || e);
+                }
               }
             }
           }}

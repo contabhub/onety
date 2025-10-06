@@ -359,7 +359,8 @@ export default function ChatWindow({ conversation, onConversationUpdate, onTabCh
       
       // Atualizar conversa local
       const updatedConversation = { ...conversation, assigned_user_id: user.id };
-      onConversationUpdate(updatedConversation);
+      // Reutiliza a lógica central que também ajusta a aba correta (novos/meus/outros)
+      handleConversationUpdated(updatedConversation);
     } catch (error) {
       console.error('Erro ao assumir conversa:', error);
     }
