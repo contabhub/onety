@@ -14,7 +14,7 @@ const EditContactModal = ({ contactId, onClose, onSave, equipeId }) => {
     const fetchContact = async () => {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/contatos/contato/${contactId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/contato/${contactId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,13 +34,19 @@ const EditContactModal = ({ contactId, onClose, onSave, equipeId }) => {
   // Função para salvar as alterações
   const handleSave = async () => {
     setLoading(true);
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = JSON.parse(userRaw);
-    const equipeId = user.equipe_id;
+    const empresaId = user?.EmpresaId || user?.empresa?.id;
     const token = localStorage.getItem("token");
 
+    if (!empresaId) {
+      alert("Erro: Empresa não identificada. Por favor, recarregue a página.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos/${contactId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/${contactId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +57,7 @@ const EditContactModal = ({ contactId, onClose, onSave, equipeId }) => {
           email,
           telefone,
           cpf: cpf || null, // Permite CPF nulo
-          equipe_id: equipeId,
+          empresa_id: empresaId,
         }),
       });
       const data = await res.json();

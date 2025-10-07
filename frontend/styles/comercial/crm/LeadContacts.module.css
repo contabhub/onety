@@ -15,7 +15,7 @@
 
 .userIcon {
   margin-right: 10px; /* Espaço entre o ícone e o texto */
-  color: var(--brand-primary); 
+  color: var(--primary-color, #3b82f6); 
   background-color: transparent;
   border-radius: 6px;
   padding: 5px;
@@ -30,8 +30,8 @@
 .addContactButton {
   padding: 5px;
   background-color: transparent;
-  color: var(--color-border);
-  border: 1px solid var(--color-border);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-text);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -39,15 +39,15 @@
 }
 
 .addContactButton:hover {
-  color: var(--brand-primary);
-  border: 1px solid var(--brand-primary);
+  color: var(--primary-color, #3b82f6); 
+  border: 1px solid var(--primary-color, #3b82f6);
   transition: all 0.3s ease;
 }
 .linkContactButton {
   padding: 5px;
   background-color: transparent;
-  color: var(--color-border);
-  border: 1px solid var(--color-border);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-text);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -55,8 +55,8 @@
 }
 
 .linkContactButton:hover {
-  color: var(--brand-primary);
-  border: 1px solid var(--brand-primary);
+  color: var(--primary-color, #3b82f6); 
+  border: 1px solid var(--primary-color, #3b82f6);
   transition: all 0.3s ease;
 }
 
@@ -69,9 +69,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--color-surface-1);
+  background-color: transparent;
   margin-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .contactInfo {
@@ -93,7 +93,7 @@
 
 .contactEmail,
 .contactPhone {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 14px;
 }
 
@@ -101,7 +101,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 /* Overlay de fundo */
@@ -120,7 +120,7 @@
 
 /* Modal em si */
 .modal {
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   border-radius: 8px;
   padding: 20px;
   width: 400px;
@@ -156,9 +156,10 @@
 }
 
 .modalField input {
-  width: 100%;
+  width: 90%;
   padding: 10px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-bg);
   border-radius: 5px;
   font-size: 14px;
 }
@@ -180,21 +181,21 @@
 }
 
 .modalButtons button[type="submit"] {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
 }
 
 .modalButtons button[type="submit"]:hover {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .modalButtons button[type="button"] {
-  background-color: var(--color-bg);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
 }
 
 .modalButtons button[type="button"]:hover {
-  background-color: var(--color-border);
+  background-color: var(--onity-color-border);
 }
 
 /* Animação para o modal */
@@ -219,7 +220,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   display: flex;
   align-items: center;
 }
@@ -229,8 +230,8 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 10px;
@@ -244,7 +245,7 @@
 .dropdownMenu button {
   background: none;
   border: none;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   padding: 8px 10px;
   cursor: pointer;
   text-align: left;
@@ -254,19 +255,19 @@
 }
 
 .dropdownMenu button:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 .deleteButton {
-  color: var(--error);
+  color: var(--onity-color-error);
 }
 
 .deleteButton:hover {
-  color: var(--error);
+  color: var(--onity-color-error);
 }
 
 .menuButton:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .icon {
@@ -279,7 +280,7 @@
   align-items: center;
   margin-bottom: 10px;
   border-radius: 5px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .fileInfo {
@@ -292,7 +293,7 @@
 
 .fileUrl {
   font-size: 16px;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   text-decoration: none;
   font-weight: 600;
   margin-top: 4px;
@@ -306,7 +307,7 @@
 }
 
 .fileUrl:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary-hover);
   text-decoration: underline;
 }
 
@@ -326,7 +327,7 @@
 }
 
 .addFileButton {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   padding: 10px;
   border-radius: 5px;
@@ -336,7 +337,7 @@
 }
 
 .addFileButton:hover {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary-hover);
 }
 
 
@@ -349,7 +350,7 @@
   width: 100%;
   padding: 0.5rem;
   margin: 0.5rem 0 1rem 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 4px;
 }
 
@@ -363,13 +364,13 @@
 
 .resultItem {
   padding: 0.5rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .resultItem:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 .modalButtons {

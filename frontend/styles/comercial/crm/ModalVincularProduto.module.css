@@ -25,7 +25,7 @@
 }
 
 .content {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   padding: 20px;
   border-radius: 10px;
   max-width: 1000px;
@@ -55,17 +55,16 @@
 
 .select{
   border: none;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .select:hover {
-  border-bottom: 1px solid var(--brand-primary);
+  border-bottom: 1px solid var(--onity-color-primary);
 }
 
 .icon{
   margin-right: 10px;
-  color: var(--brand-primary); 
-  background-color: var(--color-bg);
+  color: var(--primary-color, #3b82f6); 
   padding: 10px;
   border-radius: 8px;
   font-size: 28px;
@@ -73,8 +72,8 @@
 
 .header .closeButton {
   background-color: transparent;
-  color: var(--color-border);
-  border: 1px solid var(--color-border);
+  color: var(--onity-color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 50%;
   padding: 5px;
   cursor: pointer;
@@ -84,20 +83,20 @@
 }
 
 .header .closeButton:hover {
-  color: var(--brand-primary);
-  border: 1px solid var(--brand-primary);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
   transition: all 0.3s ease;
 }
 
 .close {
   background-color: transparent;
   border: none;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 20px;
 }
 
 .close:hover {
-  color: var(--error);
+  color: var(--onity-color-error);
 } 
 
 .productSelect,
@@ -124,7 +123,7 @@
 
 .saveButton {
   padding: 10px 20px;
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   border: none;
   cursor: pointer;
@@ -133,20 +132,20 @@
 }
 
 .saveButton:hover {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .vinculadoProduct {
   display: flex;
   justify-content: space-between;
   padding: 10px;
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
   margin-bottom: 10px;
   border-radius: 5px;
 }
 
 .removeButton {
-  background-color: var(--error);
+  background-color: var(--onity-color-error);
   color: white;
   padding: 5px 10px;
   border: none;
@@ -155,7 +154,8 @@
 }
 
 .removeButton:hover {
-  background-color: var(--error);
+  background-color: var(--onity-color-error);
+  opacity: 0.9;
 }
 
 .vinculadosContainer {
@@ -171,12 +171,12 @@
 .vinculadoTable th, .vinculadoTable td {
   padding: 10px;
   text-align: left; /* Alinha o texto à esquerda */
-  border-bottom: 1px solid var(--color-border); /* Linha abaixo das células */
+  border-bottom: 1px solid var(--onity-color-border); /* Linha abaixo das células */
 }
 
 .vinculadoTable th {
   font-weight: bold;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .vinculadoTable td {
@@ -184,7 +184,7 @@
 }
 
 .removeButton {
-  background-color: var(--error);
+  background-color: var(--onity-color-error);
   color: white;
   padding: 5px 10px;
   border: none;
@@ -193,5 +193,6 @@
 }
 
 .removeButton:hover {
-  background-color: var(--error);
+  background-color: var(--onity-color-error);
+  opacity: 0.9;
 }

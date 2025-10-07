@@ -11,53 +11,42 @@ const AddFileModal = ({ leadId, isOpen, onClose, onSave }) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      setFileType(selectedFile.type.split("/")[1].toUpperCase()); // Captura o tipo de arquivo (PDF, JPEG, etc.)
+      setFileType(selectedFile.type.split("/")[1]?.toUpperCase() || "");
     }
   };
 
   const handleFileUpload = async () => {
-    if (!file) return;  // Se não houver arquivo selecionado, não envia nada
+    if (!file) return;
 
     setLoading(true);
 
-    const reader = new FileReader();
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("arquivo", file);
 
-    reader.onloadend = async () => {
-      const base64String = reader.result.split(',')[1]; // Remove a parte `data:image/jpeg;base64,`
-      const fileName = file.name;
-      const fileType = file.type;
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/arquivos/upload/${leadId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/arquivos/upload/${leadId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            base64File: base64String,
-            fileName,
-            fileType,
-          }),
-        });
+      let data = null;
+      try { data = await response.json(); } catch (_) { /* ignore parse errors */ }
 
-        const data = await response.json();
-        if (response.ok) {
-          console.log('Arquivo enviado com sucesso:', data);
-          onClose(); // Chama onClose para fechar o modal
-          onSave(); // Chama onSave para atualizar o estado ou UI no componente pai
-        } else {
-          console.error('Erro ao enviar arquivo:', data.error);
-        }
-      } catch (error) {
-        console.error('Erro ao enviar arquivo:', error);
-      } finally {
-        setLoading(false); // Restaura o estado de loading após a operação
+      if (response.ok) {
+        onClose();
+        onSave();
+      } else {
+        console.error('Erro ao enviar arquivo:', data?.error || response.statusText);
       }
-    };
-
-    reader.readAsDataURL(file); // Converte o arquivo em base64
+    } catch (error) {
+      console.error('Erro ao enviar arquivo:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return isOpen ? (

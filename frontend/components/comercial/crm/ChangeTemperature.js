@@ -18,7 +18,7 @@ export default function ChangeTemperature({ leadId, temperaturaAtual, onUpdate }
 
     try {
       // Chama a função de update no backend para alterar a temperatura
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${leadId}/temperatura`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${leadId}/temperatura`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -69,8 +69,8 @@ export default function ChangeTemperature({ leadId, temperaturaAtual, onUpdate }
             className={styles.option}
             onClick={() => handleTemperaturaChange("frio")}
             style={{
-              border: temperatura === "frio" ? "1px solid blue" : "none",
-              backgroundColor: temperatura === "frio" ? "#d1ecf1" : "transparent",
+              border: temperatura === "frio" ? "2px solid blue" : "1px solid transparent",
+              backgroundColor: "transparent",
             }}
           >
             <FontAwesomeIcon icon={faSnowflake} size="lg" color="blue" />
@@ -83,8 +83,8 @@ export default function ChangeTemperature({ leadId, temperaturaAtual, onUpdate }
             className={styles.option}
             onClick={() => handleTemperaturaChange("neutro")}
             style={{
-              border: temperatura === "neutro" ? "1px solid gray" : "none",
-              backgroundColor: temperatura === "neutro" ? "#d6d8db" : "transparent",
+              border: temperatura === "neutro" ? "1px solid gray" : "1px solid transparent",
+              backgroundColor: "transparent",
             }}
           >
             <FontAwesomeIcon icon={faInfoCircle} size="lg" color="gray" />
@@ -96,8 +96,8 @@ export default function ChangeTemperature({ leadId, temperaturaAtual, onUpdate }
             className={styles.option}
             onClick={() => handleTemperaturaChange("quente")}
             style={{
-              border: temperatura === "quente" ? "1px solid red" : "none",
-              backgroundColor: temperatura === "quente" ? "#f8d7da" : "transparent",
+              border: temperatura === "quente" ? "1px solid red" : "1px solid transparent",
+              backgroundColor: "transparent",
             }}
           >
             <FontAwesomeIcon icon={faFire} size="lg" color="red" />

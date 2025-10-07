@@ -167,8 +167,9 @@ router.post('/produto_lead', verifyToken, async (req, res) => {
 
   try {
     // Inserir o produto no lead com valor de venda, desconto e quantidade
+    // Coluna na base está como valor_id_venda (mantemos compatibilidade no payload usando alias no backend)
     const query = `
-      INSERT INTO produto_lead (produto_id, lead_id, valor_de_venda, desconto, quantidade)
+      INSERT INTO produto_lead (produto_id, lead_id, valor_id_venda, desconto, quantidade)
       VALUES (?, ?, ?, ?, ?)
     `;
     const [result] = await db.execute(query, [produto_id, lead_id, valor_de_venda, desconto, quantidade]);
@@ -195,7 +196,7 @@ router.get('/produto_lead/:lead_id', verifyToken, async (req, res) => {
 
   try {
     const [products] = await db.query(`
-      SELECT p.*, pl.desconto, pl.quantidade, pl.valor_de_venda
+      SELECT p.*, pl.desconto, pl.quantidade, pl.valor_id_venda AS valor_de_venda
       FROM produto_lead pl
       JOIN produtos p ON pl.produto_id = p.id
       WHERE pl.lead_id = ?
@@ -220,10 +221,10 @@ router.put('/produto_lead/:id', verifyToken, async (req, res) => {
   }
 
   try {
-    // Atualizar os dados do produto-lead
+    // Atualizar os dados do produto-lead (coluna na base: valor_id_venda)
     const query = `
       UPDATE produto_lead
-      SET valor_de_venda = ?, desconto = ?, quantidade = ?
+      SET valor_id_venda = ?, desconto = ?, quantidade = ?
       WHERE id = ?
     `;
     const [result] = await db.execute(query, [valor_de_venda, desconto, quantidade, id]);

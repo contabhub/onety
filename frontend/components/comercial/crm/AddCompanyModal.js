@@ -13,7 +13,7 @@ const AddCompanyModal = ({ leadId, onClose, onSave }) => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/empresas`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/empresa-leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,12 +79,14 @@ const AddCompanyModal = ({ leadId, onClose, onSave }) => {
             />
           </div>
           <div className={styles.modalButtons}>
-            <button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar"}
-            </button>
             <button type="button" onClick={onClose}>
               Cancelar
             </button>
+
+            <button type="submit" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar"}
+            </button>
+
           </div>
         </form>
       </div>

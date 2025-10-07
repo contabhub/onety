@@ -8,7 +8,7 @@
   
   .thermometerIcon {
       margin-right: 10px; /* Espaço entre o ícone e o texto */
-      color: var(--brand-primary); 
+      color: var(--primary-color, #3b82f6); 
       background-color: transparent;
       border-radius: 6px;
       padding: 5px;
@@ -38,7 +38,7 @@
   }
   
   .option:hover {
-    background-color: var(--color-bg);
+    background-color: var(--onity-color-bg);
   }
   
   .option span {
@@ -48,6 +48,6 @@
   
   .isUpdating {
     margin-top: 10px;
-    color: var(--brand-primary);
+    color: var(--onity-color-primary);
   }
   

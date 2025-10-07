@@ -22,7 +22,7 @@ const LeadCompanies = ({ leadId }) => {
   
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/empresas/${leadId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/empresa-leads/${leadId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -54,7 +54,7 @@ const LeadCompanies = ({ leadId }) => {
   const handleDeleteCompany = async (companyId) => {
     const token = localStorage.getItem("token");
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/empresas/${companyId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/empresa-leads/${companyId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

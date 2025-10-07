@@ -25,7 +25,7 @@ const VincularContatoModal = ({ leadId, onClose, onSave }) => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/contatos/search?q=${query}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/search?q=${query}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ const VincularContatoModal = ({ leadId, onClose, onSave }) => {
     const token = localStorage.getItem("token");
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos/${contatoId}/vincular`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/${contatoId}/vincular`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

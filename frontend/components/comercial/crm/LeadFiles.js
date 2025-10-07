@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FileText, Trash2, Plus } from "lucide-react";
+import { FileText, Trash2, Plus, Download } from "lucide-react";
 import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import AddFileModal from "../crm/AddFileModal"; // Importando o modal de adicionar arquivo
 
@@ -13,7 +13,7 @@ const LeadFiles = ({ leadId }) => {
     setLoading(true);
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/arquivos/${leadId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/arquivos/${leadId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,7 +39,7 @@ const LeadFiles = ({ leadId }) => {
   const handleDeleteFile = async (fileId) => {
     const token = localStorage.getItem("token");
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/arquivos/${fileId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/arquivos/${fileId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,6 +49,11 @@ const LeadFiles = ({ leadId }) => {
     } catch (error) {
       console.error("Erro ao excluir arquivo:", error);
     }
+  };
+
+  const handleDownload = (fileId) => {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/comercial/arquivos/download/${fileId}`;
+    window.open(url, '_blank');
   };
 
   useEffect(() => {
@@ -78,28 +83,26 @@ const LeadFiles = ({ leadId }) => {
               <div className={styles.fileInfo}>
                 {/* Exibir apenas a extensão do arquivo */}
                 <span className={styles.fileType}>
-                  {file.tipo.split("/")[1].toUpperCase()} {/* Exibe 'PDF', 'JPEG', etc. */}
+                  {file.tipo?.split("/")[1]?.toUpperCase() || "ARQUIVO"}
                 </span>
 
-                {/* Verificar se file.url existe antes de tentar acessar */}
-                {file.arquivo_base64 ? (
-                  <a
-                    href={`data:${file.tipo};base64,${file.arquivo_base64}`} // Para exibir o arquivo base64 diretamente
-                    download={file.nome_arquivo} // Usar o nome do arquivo para o download
-                    className={styles.fileUrl}
-                  >
-                    {file.nome_arquivo} {/* Exibe o nome do arquivo */}
-                  </a>
-                ) : (
-                  <span>Arquivo não disponível</span> // Exibe uma mensagem caso o arquivo não tenha URL
-                )}
+                {/* Link por nome com ação de download via backend */}
+                <button
+                  className={styles.fileUrl}
+                  onClick={() => handleDownload(file.id)}
+                  title="Baixar arquivo"
+                >
+                  {file.nome_arquivo}
+                </button>
               </div>
-              <button
-                className={styles.deleteButton}
-                onClick={() => handleDeleteFile(file.id)} // Deletar o arquivo
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className={styles.fileActions}>
+                <button
+                  className={styles.deleteButton}
+                  onClick={() => handleDeleteFile(file.id)} // Deletar o arquivo
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
