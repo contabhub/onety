@@ -1,7 +1,16 @@
 import { ArrowLeft, Smartphone, Phone, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
 import styles from './InstanceSelectionModal.module.css';
 
 export default function InstanceSelectionModal({ instances, selectedTeam, onSelect, onBack, loading }) {
+  const router = useRouter();
+  const [list, setList] = useState(Array.isArray(instances) ? instances : []);
+  const pollRef = useRef(null);
+
+  useEffect(() => {
+    setList(Array.isArray(instances) ? instances : []);
+  }, [instances]);
   
   // Função para obter ícone do status
   const getStatusIcon = (status) => {
@@ -66,6 +75,67 @@ export default function InstanceSelectionModal({ instances, selectedTeam, onSele
     return status === 'connected' || status === 'conectado';
   };
 
+  // Verificar permissão do usuário para gerenciar/conectar instâncias
+  const canManageInstances = (() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null;
+      const user = raw ? JSON.parse(raw) : {};
+      const adm = Array.isArray(user?.permissoes?.adm) ? user.permissoes.adm.map(String) : [];
+      const inst = Array.isArray(user?.permissoes?.instancias) ? user.permissoes.instancias.map(String) : [];
+      const isAdmin = adm.includes('admin') || adm.includes('superadmin');
+      const canConnect = inst.includes('conectar');
+      return isAdmin || canConnect;
+    } catch {
+      return false;
+    }
+  })();
+
+  const anyUnavailable = Array.isArray(list) && list.some((i) => !isInstanceAvailable(i));
+
+  // Função para refazer a leitura das instâncias do time (para auto refresh após reconexão)
+  const refetchInstances = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token || !selectedTeam?.id) return;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento-instancias/time/${selectedTeam.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const mapped = (data || []).map(inst => ({
+        id: inst.id,
+        instance_name: inst.instancia_nome,
+        phone_number: inst.telefone,
+        instance_id: inst.instancia_codigo,
+        instancia_whatsapp_id: inst.instancia_id,
+        token: inst.token,
+        client_token: inst.cliente_token,
+        status: inst.status
+      }));
+      setList(mapped);
+    } catch {}
+  };
+
+  // Inicia polling enquanto houver indisponíveis
+  useEffect(() => {
+    if (!anyUnavailable) {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+      return;
+    }
+    if (!pollRef.current) {
+      pollRef.current = setInterval(refetchInstances, 5000);
+    }
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [anyUnavailable, selectedTeam?.id]);
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -98,14 +168,14 @@ export default function InstanceSelectionModal({ instances, selectedTeam, onSele
       </div>
 
       <div className={styles.instancesList}>
-        {instances.length === 0 ? (
+        {list.length === 0 ? (
           <div className={styles.empty}>
             <Smartphone size={48} className={styles.emptyIcon} />
             <p>Nenhuma instância encontrada</p>
             <small>Este time não possui instâncias WhatsApp configuradas</small>
           </div>
         ) : (
-          instances.map((instance) => {
+          list.map((instance) => {
             const isAvailable = isInstanceAvailable(instance);
             
             return (
@@ -162,11 +232,33 @@ export default function InstanceSelectionModal({ instances, selectedTeam, onSele
         )}
       </div>
 
-      {instances.some(instance => !isInstanceAvailable(instance)) && (
+      {list.some(instance => !isInstanceAvailable(instance)) && (
         <div className={styles.footer}>
           <small>
             💡 Apenas instâncias conectadas podem ser usadas para iniciar atendimentos
           </small>
+          {canManageInstances && anyUnavailable && (
+            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  // abre ajustes em nova aba e inicia um refresh otimista
+                  window.open('/atendimento/ajustes?section=canais', '_blank', 'noopener');
+                  refetchInstances();
+                }}
+                style={{
+                  background: 'var(--onity-color-primary)',
+                  color: 'var(--onity-color-primary-contrast)',
+                  border: '1px solid transparent',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+                title="Abrir ajustes de canais"
+              >
+                Conectar instâncias nos Ajustes
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

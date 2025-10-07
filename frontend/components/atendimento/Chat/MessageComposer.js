@@ -841,43 +841,57 @@ export default function MessageComposer({
       const token = localStorage.getItem('token');
       
       // Extrair informações necessárias da conversa selecionada
-      const instanceName = selectedConversation.instance_name;
-      const customerPhone = selectedConversation.customer_phone;
+      const instanceName = (
+        selectedConversation.instance_name ||
+        selectedConversation.whatsapp_instance_name ||
+        selectedConversation.instanceName ||
+        selectedConversation.instance_name_fallback ||
+        null
+      );
+      const rawPhone = (
+        selectedConversation.customer_phone ||
+        selectedConversation.customerPhone ||
+        selectedConversation.telefone ||
+        selectedConversation.phone ||
+        selectedConversation.number ||
+        ''
+      ).toString();
       const text = message.trim();
       
       console.log('🔍 Dados da conversa:', {
         conversationId,
         instanceName,
-        customerPhone,
+        rawPhone,
         selectedConversation
       });
       
-      if (!instanceName || !customerPhone) {
+      if (!instanceName || !rawPhone) {
         throw new Error('Informações da instância ou telefone do cliente não encontradas');
       }
       
       // Validar formato do telefone (deve incluir código do país)
-      if (!customerPhone.startsWith('55')) {
+      let sendNumber = rawPhone.replace(/\s|\+/g, '');
+      if (!sendNumber.startsWith('55')) {
         console.warn('⚠️ Telefone não inclui código do país (55). Adicionando automaticamente.');
-        // Adicionar código do Brasil se não estiver presente
-        const formattedPhone = customerPhone.startsWith('+') ? customerPhone : `+55${customerPhone}`;
-        console.log('📱 Telefone formatado:', formattedPhone);
+        sendNumber = `55${sendNumber}`;
       }
+      console.log('📱 Telefone para envio:', sendNumber);
       
       const senderId = (JSON.parse(localStorage.getItem('userData') || '{}').id);
       
       console.log('📤 Enviando mensagem:', { 
         instanceName, 
-        number: customerPhone, 
+        number: sendNumber, 
         text, 
-        sender_id: senderId 
+        sender_id: senderId, 
+        selectedConversation
       });
       
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/atendimento/zapimessages/evolution/send`,
         {
           instanceName,
-          number: customerPhone,
+          number: sendNumber,
           text,
           sender_id: senderId,
           options: {}
