@@ -22,6 +22,7 @@ import Column from "../../components/comercial/crm/Column";
 import EditCardModal from "../../components/comercial/crm/EditCardModal";
 import ImportLeadsModal from "../../components/comercial/crm/ImportLeadsModal";
 import ExportLeadsModal from "../../components/comercial/crm/ExportLeadsModal";
+import ImportFromAtendimentoModal from "../../components/comercial/crm/ImportFromAtendimentoModal";
 import { registrarHistorico } from "../../utils/registrarHistorico";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -52,6 +53,7 @@ export default function CRM() {
   const [viewMode, setViewMode] = useState("crm");
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportFromAtModal, setShowImportFromAtModal] = useState(false);
   const [showToolsDrawer, setShowToolsDrawer] = useState(false);
 
   const [membrosEquipe, setMembrosEquipe] = useState([]);
@@ -723,6 +725,13 @@ export default function CRM() {
                   </button>
                   <button
                     className={styles.exportBtn}
+                    onClick={() => { setShowImportFromAtModal(true); setShowToolsDrawer(false); }}
+                    disabled={!empresaId || isLoading}
+                  >
+                    Buscar lead no Atendimento
+                  </button>
+                  <button
+                    className={styles.exportBtn}
                     onClick={() => { setShowExportModal(true); setShowToolsDrawer(false); }}
                     disabled={!funilSelecionado || isLoading}
                   >
@@ -740,6 +749,18 @@ export default function CRM() {
             funilSelecionado={funilSelecionado}
             fases={fasesDoFunil}
             membrosEquipe={membrosEquipe}
+            onImported={({ funilId }) => {
+              setIsLoading(true);
+              loadFunilContent(funilId || funilSelecionado).then(() => setIsLoading(false));
+            }}
+          />
+          <ImportFromAtendimentoModal
+            open={showImportFromAtModal}
+            onClose={() => setShowImportFromAtModal(false)}
+            empresaId={empresaId}
+            funis={funis}
+            defaultFunilId={funilSelecionado}
+            fases={fasesDoFunil}
             onImported={({ funilId }) => {
               setIsLoading(true);
               loadFunilContent(funilId || funilSelecionado).then(() => setIsLoading(false));

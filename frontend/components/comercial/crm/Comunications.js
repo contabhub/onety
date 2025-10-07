@@ -370,6 +370,16 @@ const Comunications = ({ leadId }) => {
     }
   };
 
+  const getConversationDisplayName = (conv) => {
+    const name = conv.customer_name || conv.nome_contato || '';
+    const phone = conv.customer_phone || conv.telefone || '';
+    const id = conv.conversation_id || conv.id || '';
+    
+    if (name) return `Conversa #${id}`;
+    if (phone) return `${phone} · #${id}`;
+    return `#${id}`;
+  };
+
   const createConversationAndSend = async (instance) => {
     console.log('[CRM] Instância selecionada', instance);
     try {
@@ -486,11 +496,10 @@ const Comunications = ({ leadId }) => {
               <button
                 key={c.conversation_id || c.id}
                 onClick={() => openLeadConversation(c)}
-                className={styles.startConversation}
-                style={{ background: 'transparent', color: 'var(--onity-color-text)', border: '1px solid var(--onity-color-border)' }}
-                title={`Abrir conversa ${c.conversation_id || c.id}`}
+                className={`${styles.conversationChip} ${(selectedLeadConversation && ((selectedLeadConversation.conversation_id || selectedLeadConversation.id) === (c.conversation_id || c.id))) ? styles.conversationChipActive : ''}`}
+                title={`Abrir conversa ${getConversationDisplayName(c)}`}
               >
-                #{c.conversation_id || c.id}
+                {getConversationDisplayName(c)}
               </button>
             ))}
           </div>
@@ -507,7 +516,10 @@ const Comunications = ({ leadId }) => {
             <div className={styles.messagesList}>
               {leadConvMessages.map((message, i) => {
                 const isSent = message.sender_type === 'user';
-                const nomeRemetente = isSent ? ((authUser?.full_name || legacyUser?.full_name || legacyUser?.nome || 'Você')) : (contato.nome || 'Contato');
+                const contactName = selectedLeadConversation?.customer_name || selectedLeadConversation?.nome_contato || leadFallback?.nome || leadFallback?.name || 'Contato';
+                const nomeRemetente = isSent
+                  ? (authUser?.full_name || legacyUser?.full_name || legacyUser?.nome || 'Você')
+                  : (message.sender_user_name || contactName);
                 const userAvatar = authUser?.avatar_url || legacyUser?.avatar_url || null;
                 const customerAvatar = selectedLeadConversation?.avatar_url || null;
                 const initials = getInitials(nomeRemetente);
@@ -642,12 +654,8 @@ const Comunications = ({ leadId }) => {
 
       <div className={styles.footer} onClick={(e) => { console.log('[CRM] footer click', e.target); }} role="region" aria-label="Comms Footer">
         <div className={styles.actionCard}>
-          <div className={styles.actionCardTitle}>Nova Conversa</div>
-          <div className={styles.actionCardDescription}>
-            Inicie uma conversa com o lead
-          </div>
           <button
-            className={styles.startConversation}
+            className={styles.startConversationCta}
             onMouseDown={() => console.log('[CRM] mousedown Iniciar conversa')}
             onClick={() => {
               console.log('[CRM] click Iniciar conversa');
