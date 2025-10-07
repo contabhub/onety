@@ -420,17 +420,17 @@ router.post('/convert/:leadId', verifyToken, async (req, res) => {
 // 🔹 Mover lead para outra fase e atualizar o status automaticamente
 router.put('/:id/mover-fase', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { funil_fase_id } = req.body;
+  const { fase_funil_id } = req.body;
 
-  if (!funil_fase_id) {
-    return res.status(400).json({ error: 'O campo funil_fase_id é obrigatório.' });
+  if (!fase_funil_id) {
+    return res.status(400).json({ error: 'O campo fase_funil_id é obrigatório.' });
   }
 
   try {
     // 🔍 Buscar nome da nova fase
     const [faseRows] = await db.query(
       'SELECT nome FROM funil_fases WHERE id = ?',
-      [funil_fase_id]
+      [fase_funil_id]
     );
 
     if (faseRows.length === 0) {
@@ -460,7 +460,7 @@ router.put('/:id/mover-fase', verifyToken, async (req, res) => {
     // 📝 Atualizar lead com nova fase e novo status
     await db.query(
       'UPDATE leads SET funil_fase_id = ?, status = ? WHERE id = ?',
-      [funil_fase_id, novoStatus, id]
+      [fase_funil_id, novoStatus, id]
     );
 
     res.json({ message: `Fase e status do lead atualizados para "${novoStatus}".` });

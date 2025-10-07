@@ -514,13 +514,13 @@ export default function CRM() {
                     Todos
                   </label>
                   {membrosEquipe
-                    .filter((m) => m.role !== 'superadmin')
+                    .filter((m) => m.role !== 'superadmin' && m.usuarioId)
                     .map((m) => (
-                      <label key={m.userId}>
+                      <label key={m.usuarioId}>
                         <input
                           type="checkbox"
-                          checked={responsaveisSelecionados.includes(m.userId.toString())}
-                          onChange={() => handleResponsavelChange(m.userId.toString())}
+                          checked={responsaveisSelecionados.includes(m.usuarioId.toString())}
+                          onChange={() => handleResponsavelChange(m.usuarioId.toString())}
                         />
                         {m.full_name}
                       </label>
