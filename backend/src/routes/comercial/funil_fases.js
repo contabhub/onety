@@ -26,9 +26,16 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'funil_id e nome são obrigatórios.' });
     }
 
+    const normalizedNome = String(nome)
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
     const [result] = await db.query(
       'INSERT INTO funil_fases (funil_id, nome, descricao, ordem) VALUES (?, ?, ?, ?)',
-      [funil_id, nome, descricao || '', ordem || 0]
+      [funil_id, normalizedNome, descricao || '', ordem || 0]
     );
 
     res.status(201).json({ message: 'Fase criada com sucesso.', faseId: result.insertId });
@@ -48,9 +55,16 @@ router.put('/:id', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'O campo nome é obrigatório.' });
     }
 
+    const normalizedNome = String(nome)
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
     await db.query(
       'UPDATE funil_fases SET nome = ?, descricao = ?, ordem = ? WHERE id = ?',
-      [nome, descricao || '', ordem || 0, id]
+      [normalizedNome, descricao || '', ordem || 0, id]
     );
 
     res.json({ message: 'Fase atualizada com sucesso.' });

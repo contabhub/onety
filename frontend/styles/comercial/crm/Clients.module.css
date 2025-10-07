@@ -350,8 +350,8 @@
   background: var(--brand-primary);
   color: var(--color-surface-1);
   border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
+  border-radius: 10px;
+  padding: 8px 12px;
   font-weight: 600;
   cursor: pointer;
   transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
@@ -359,6 +359,36 @@
 }
 .button:hover { background: color-mix(in srgb, var(--brand-primary) 90%, black); transform: translateY(-1px); }
 .button:focus { outline: none; box-shadow: 0 0 0 3px var(--focus-ring-inner), 0 0 0 6px var(--focus-ring), var(--shadow-card); }
+
+/* Botão igual ao de Novo Playbook */
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  padding: 12px 20px;
+  min-height: 40px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: 12px;
+}
+
+.addButton:hover {
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
+.addButton:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.addButton:active { transform: none; }
 
 .searchContainer {
   display: flex;
@@ -391,6 +421,12 @@
   justify-content: space-between;
   gap: 16px;
 }
+.toolbarHeader .filtersRowBox {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
 .filtersRow {
   display: flex;
   align-items: center;
@@ -403,16 +439,16 @@
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: 10px;
-  padding: 10px;
+  padding: 6px;
   box-shadow: var(--onity-elev-low);
 }
 
 .searchInput {
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 1rem;
-  min-width: 240px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  min-width: 300px;
   background-color: var(--color-surface-1);
   color: var(--color-text-primary);
   transition: all 0.12s ease;
@@ -420,14 +456,17 @@
 .searchInput:focus { outline: none; border-color: var(--focus-ring); box-shadow: 0 0 0 3px var(--focus-ring-inner); }
 
 .filterSelect {
-  padding: 12px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background-color: var(--color-surface-1);
-  color: var(--color-text-primary);
+  padding: 8px 12px;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
 }
+.filterSelect:focus { outline: none; box-shadow: none; border-color: var(--onity-color-primary); }
+.filterSelect option { background-color: var(--onity-color-surface); color: var(--onity-color-text); }
 
-.table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 12px; }
+.table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; border: 1px solid var(--onity-color-border); border-radius: 12px; overflow: hidden; }
 .table thead th {
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
@@ -436,25 +475,21 @@
   padding: 14px 18px;
   border-bottom: 1px solid var(--onity-color-border);
 }
-.table tbody tr.tableCardRow td {
-  background: var(--color-surface-1);
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
-}
+
+
 .table tbody td, .table tbody tr.tableCardRow td {
   padding: 16px 18px;
   color: var(--color-text-primary);
   vertical-align: middle;
 }
-.table tbody tr.tableCardRow:hover td { background: var(--color-surface-2); }
-.table tbody tr.tableCardRow td:first-child { border-left: 1px solid var(--color-border); border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-.table tbody tr.tableCardRow td:last-child { border-right: 1px solid var(--color-border); border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-.table tbody tr.tableCardRow td { background: var(--color-surface-1); }
+.table tbody tr.tableCardRow:hover td { background: var(--onity-color-surface); }
+.table tbody tr.tableCardRow td:first-child { border-left: none; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.table tbody tr.tableCardRow td:last-child { border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.table tbody tr.tableCardRow td { background: var(--onity-color-surface); border-left: none; border-right: none; }
 .table .actionsCol { width: 1%; white-space: nowrap; }
 
-.actionButton { background: var(--color-surface-2); color: var(--brand-primary); border-radius: 8px; padding: 8px 14px; font-weight: 600; margin-right: 8px; }
-.deleteButton { background: color-mix(in srgb, var(--error) 12%, transparent); color: var(--error); border-radius: 8px; padding: 8px 14px; font-weight: 600; }
+.actionButton { background: transparent; color: var(--brand-primary); border: 1px solid var(--color-text-primary); border-radius: 8px; padding: 0; width: 28px; height: 28px; font-weight: 600; margin-right: 6px; display: inline-flex; align-items: center; justify-content: center; }
+.deleteButton { background: transparent; color: var(--error); border: 1px solid var(--color-text-primary); border-radius: 8px; padding: 0; width: 28px; height: 28px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
 
 @media (max-width: 700px) {
   .page { flex-direction: column; }

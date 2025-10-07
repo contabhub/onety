@@ -31,20 +31,26 @@
     color: var(--onity-icon-secondary);
   }
   
-  .addFunilButton {
-    background: var(--onity-color-primary);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
+.addFunilButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  padding: 12px 20px;
+  min-height: 40px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
 
-  .addFunilButton:hover {
-    background-color: var(--onity-color-primary);
-  }
+.addFunilButton:hover {
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
   
   .funisContainer {
     display: flex;
@@ -74,8 +80,8 @@
     width: 100%;
     padding: 6px 10px;
     background: var(--onity-color-surface);
-    color: var(--onity-color-primary);
-    border: 1px dashed var(--onity-color-primary);
+  color: var(--onity-color-text);
+  border: 1px dashed var(--onity-color-text);
     border-radius: 6px;
     margin-bottom: 10px;
     cursor: pointer;
@@ -151,12 +157,16 @@
   position: absolute;
   top: 60px;
   right: 10px;
-  background: var(--onity-color-surface);
+  /* Fundo translúcido para permitir blur do conteúdo atrás */
+  background: var(--onity-color-surface-translucent, rgba(17, 25, 40, 0.55));
   border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   z-index: 10;
   width: 160px;
+  /* Aplica desfoque do que está atrás do dropdown */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .dropdownItem {
@@ -277,6 +287,7 @@
   font-size: 14px;
   cursor: pointer;
   padding: 2px;
+  color: var(--onity-color-text);
 }
 
 .faseButtonsVertical button:hover {

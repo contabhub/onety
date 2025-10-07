@@ -10,6 +10,16 @@ export default function CreateFunilModal({ open, onClose, onFunilCreated }) {
 
   if (!open) return null;
 
+  function normalizeTitleCase(text) {
+    if (!text) return "";
+    return text
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
   async function handleCreate() {
     try {
       const token = localStorage.getItem('token');
@@ -28,6 +38,8 @@ export default function CreateFunilModal({ open, onClose, onFunilCreated }) {
         return;
       }
 
+      const normalizedNome = normalizeTitleCase(nome.trim());
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis`, {
         method: "POST",
         headers: {
@@ -36,7 +48,7 @@ export default function CreateFunilModal({ open, onClose, onFunilCreated }) {
         },
         body: JSON.stringify({
           empresa_id,
-          nome,
+          nome: normalizedNome,
           is_default: isDefault
         })
       });
@@ -44,6 +56,7 @@ export default function CreateFunilModal({ open, onClose, onFunilCreated }) {
       const data = await res.json();
 
       if (res.ok) {
+        setNome("");
         onFunilCreated(); // Atualiza lista de funis
         onClose();
       } else {

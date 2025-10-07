@@ -37,8 +37,131 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const formatCpf = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return digits.replace(/(\d{3})(\d+)/, '$1.$2');
+    if (digits.length <= 9) return digits.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+  };
+
+  const formatRg = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '').slice(0, 10);
+    // Formato comum: 00.000.000-0 (pode variar por estado)
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return digits.replace(/(\d{2})(\d+)/, '$1.$2');
+    if (digits.length <= 8) return digits.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+    return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{0,1})/, '$1.$2.$3-$4');
+  };
+
+  const formatPhoneBr = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 6) return digits.replace(/(\d{2})(\d+)/, '($1) $2');
+    if (digits.length <= 10) return digits.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
+    return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+  };
+
+  const formatCnpj = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '').slice(0, 14);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return digits.replace(/(\d{2})(\d+)/, '$1.$2');
+    if (digits.length <= 8) return digits.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+    if (digits.length <= 12) return digits.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+    return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, '$1.$2.$3/$4-$5');
+  };
+
+  const formatCep = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return digits.replace(/(\d{5})(\d{0,3})/, '$1-$2');
+  };
+
+  const handleBuscarCEP = async (cep) => {
+    const cepLimpo = String(cep || '').replace(/\D/g, '');
+    if (cepLimpo.length !== 8) return;
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setFormData((prev) => ({
+          ...prev,
+          endereco: data.logradouro || prev.endereco,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado,
+        }));
+      }
+    } catch (err) {
+      // silêncio: não bloquear fluxo se a API estiver indisponível
+    }
+  };
+
+  const handleBuscarCNPJ = async (cnpj) => {
+    const cnpjLimpo = String(cnpj || '').replace(/\D/g, '');
+    if (cnpjLimpo.length !== 14) return;
+    try {
+      const res = await fetch(`https://publica.cnpj.ws/cnpj/${cnpjLimpo}`);
+      const data = await res.json();
+      if (data && data.razao_social) {
+        const est = data.estabelecimento || {};
+        const telefoneFormatado = est.telefone1 && est.ddd1 ? `(${est.ddd1}) ${est.telefone1}` : undefined;
+        setFormData((prev) => ({
+          ...prev,
+          razao_social: data.razao_social || prev.razao_social,
+          nome: data.razao_social || prev.nome,
+          telefone: telefoneFormatado ? formatPhoneBr(telefoneFormatado) : prev.telefone,
+          endereco: `${est.logradouro || ''} ${est.numero || ''}`.trim() || prev.endereco,
+          bairro: est.bairro || prev.bairro,
+          cidade: (est.cidade && est.cidade.nome) || prev.cidade,
+          estado: (est.estado && est.estado.sigla) || prev.estado,
+          cep: est.cep ? formatCep(est.cep) : prev.cep,
+        }));
+      }
+    } catch (err) {
+      // silêncio: falhas de consulta não devem travar o formulário
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (formData.tipo === 'pessoa_fisica') {
+      if (name === 'cpf') {
+        const formatted = formatCpf(value);
+        setFormData((prev) => ({ ...prev, cpf: formatted }));
+        return;
+      }
+      if (name === 'rg') {
+        const formatted = formatRg(value);
+        setFormData((prev) => ({ ...prev, rg: formatted }));
+        return;
+      }
+      if (name === 'telefone') {
+        const formatted = formatPhoneBr(value);
+        setFormData((prev) => ({ ...prev, telefone: formatted }));
+        return;
+      }
+      if (name === 'cep') {
+        const formatted = formatCep(value);
+        setFormData((prev) => ({ ...prev, cep: formatted }));
+        return;
+      }
+    }
+    if (formData.tipo === 'empresa' && name === 'cnpj') {
+      const formatted = formatCnpj(value);
+      setFormData((prev) => ({ ...prev, cnpj: formatted }));
+      return;
+    }
+    if (name === 'telefone') {
+      const formatted = formatPhoneBr(value);
+      setFormData((prev) => ({ ...prev, telefone: formatted }));
+      return;
+    }
+    if (name === 'cep') {
+      const formatted = formatCep(value);
+      setFormData((prev) => ({ ...prev, cep: formatted }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -188,7 +311,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>Endereço</div>
                 <div className={styles.grid}>
-                  <div className={styles.field}><label>CEP</label><div className={styles.inputBox}><input name="cep" value={formData.cep} onChange={handleChange} /></div></div>
+                  <div className={styles.field}><label>CEP</label><div className={styles.inputBox}><input name="cep" value={formData.cep} onChange={handleChange} onBlur={(e) => handleBuscarCEP(e.target.value)} /></div></div>
                   <div className={styles.field}><label>Endereço</label><div className={styles.inputBox}><input name="endereco" value={formData.endereco} onChange={handleChange} /></div></div>
                   <div className={styles.field}><label>Número</label><div className={styles.inputBox}><input name="numero" value={formData.numero} onChange={handleChange} /></div></div>
                   <div className={styles.field}><label>Complemento</label><div className={styles.inputBox}><input name="complemento" value={formData.complemento} onChange={handleChange} /></div></div>
@@ -215,7 +338,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
                 <div className={styles.sectionTitle}>Dados da Empresa</div>
                 <div className={styles.grid}>
                   <div className={styles.field}><label>Razão Social</label><div className={styles.inputBox}><input name="razao_social" value={formData.razao_social} onChange={handleChange} /></div></div>
-                  <div className={styles.field}><label>CNPJ *</label><div className={styles.inputBox}><input name="cnpj" value={formData.cnpj} onChange={handleChange} /></div></div>
+                  <div className={styles.field}><label>CNPJ *</label><div className={styles.inputBox}><input name="cnpj" value={formData.cnpj} onChange={handleChange} onBlur={(e) => handleBuscarCNPJ(e.target.value)} /></div></div>
                   <div className={styles.field}><label>Telefone</label><div className={styles.inputBox}><input name="telefone" value={formData.telefone} onChange={handleChange} /></div></div>
                 </div>
               </div>
@@ -223,7 +346,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>Endereço</div>
                 <div className={styles.grid}>
-                  <div className={styles.field}><label>CEP</label><div className={styles.inputBox}><input name="cep" value={formData.cep} onChange={handleChange} /></div></div>
+                  <div className={styles.field}><label>CEP</label><div className={styles.inputBox}><input name="cep" value={formData.cep} onChange={handleChange} onBlur={(e) => handleBuscarCEP(e.target.value)} /></div></div>
                   <div className={styles.field}><label>Endereço</label><div className={styles.inputBox}><input name="endereco" value={formData.endereco} onChange={handleChange} /></div></div>
                   <div className={styles.field}><label>Número</label><div className={styles.inputBox}><input name="numero" value={formData.numero} onChange={handleChange} /></div></div>
                   <div className={styles.field}><label>Complemento</label><div className={styles.inputBox}><input name="complemento" value={formData.complemento} onChange={handleChange} /></div></div>

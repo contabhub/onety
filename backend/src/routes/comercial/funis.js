@@ -23,9 +23,17 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'empresa_id e nome são obrigatórios.' });
     }
 
+    // Normaliza: Primeira letra maiúscula de cada palavra, restante minúscula
+    const normalizedNome = String(nome)
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
     const [result] = await db.query(
       'INSERT INTO funis (empresa_id, nome, padrao) VALUES (?, ?, ?)',
-      [empresa_id, nome, padrao || false]
+      [empresa_id, normalizedNome, padrao || false]
     );
 
     const novoFunilId = result.insertId;
@@ -66,7 +74,14 @@ router.put('/:id', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'O campo nome é obrigatório.' });
     }
 
-    await db.query('UPDATE funis SET nome = ?, padrao = ? WHERE id = ?', [nome, padrao || false, id]);
+    const normalizedNome = String(nome)
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
+    await db.query('UPDATE funis SET nome = ?, padrao = ? WHERE id = ?', [normalizedNome, padrao || false, id]);
     res.json({ message: 'Funil atualizado com sucesso.' });
   } catch (error) {
     console.error('Erro ao atualizar funil:', error);
