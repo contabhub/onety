@@ -323,14 +323,14 @@ small, .caption {
    Dark:  <html data-theme="dark">  ...
 */
 
-/* Sidebar Fix - Ajuste automático para todas as páginas que usam sidebar */
-body {
+/* Sidebar Fix - aplica margem apenas quando houver sidebar */
+body.has-sidebar {
   margin-left: 72px !important;
   transition: margin-left 0.15s ease-out;
 }
 
 /* Ajuste para sidebar expandida */
-body.sidebar-expanded {
+body.has-sidebar.sidebar-expanded {
   margin-left: 242px !important;
 }
 
