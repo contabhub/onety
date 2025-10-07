@@ -12,17 +12,17 @@ const { resolveOrCreateContact, getCompanyIdFromTeamInstance } = require("../../
  */
 router.post("/", authOrApiKey, async (req, res) => {
   try {
-    const { team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id } = req.body;
+    const { team_whatsapp_instance_id, customer_name, customer_phone, assigned_user_id, contact_id } = req.body;
 
     if (!team_whatsapp_instance_id || !customer_phone) {
       return res.status(400).json({ error: "Campos obrigatórios: team_whatsapp_instance_id e customer_phone." });
     }
 
-    // 🔍 Busca o company_id e resolve/cria contato
-    let contactId = null;
+    // 🔍 Resolve contato: se vier contact_id do CRM, priorizar ele SEMPRE
+    let contactId = contact_id || null;
     const companyId = await getCompanyIdFromTeamInstance(team_whatsapp_instance_id);
     
-    if (companyId && customer_phone) {
+    if (!contactId && companyId && customer_phone) {
       try {
         const contact = await resolveOrCreateContact({
           phone: customer_phone,
@@ -81,6 +81,37 @@ router.get("/", authOrApiKey, async (req, res) => {
     res.json(rows);
   } catch (err) {   
     res.status(500).json({ error: "Erro ao buscar conversas." });
+  }
+});
+
+/**
+ * 📌 Listar conversas por contato/lead
+ * GET /atendimento/conversas/contact/:contactId
+ */
+router.get("/contact/:contactId", authOrApiKey, async (req, res) => {
+  try {
+    const { contactId } = req.params;
+    console.log(`🔎 [conversas] Listando conversas do contato ${contactId}`);
+    const [rows] = await pool.query(
+      `SELECT 
+         c.id AS conversation_id,
+         c.nome AS customer_name,
+         c.telefone AS customer_phone,
+         c.status,
+         c.usuario_responsavel_id AS assigned_user_id,
+         c.lead_id AS contact_id,
+         c.criado_em AS created_at,
+         c.atualizado_em AS updated_at
+       FROM conversas c
+       WHERE c.lead_id = ?
+       ORDER BY c.atualizado_em DESC`,
+      [contactId]
+    );
+    console.log(`🔎 [conversas] ${rows.length} conversa(s) encontradas para contato ${contactId}`);
+    res.json(rows);
+  } catch (err) {
+    console.error("🚨 Erro ao listar conversas por contato:", err);
+    res.status(500).json({ error: "Erro ao listar conversas por contato." });
   }
 });
 

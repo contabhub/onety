@@ -62,7 +62,7 @@ export default function LeadTimeline({ leadId, reloadTrigger }) {
               <strong>{item.titulo}</strong>
               <span>
                 {item.criado_em
-                  ? format(new Date(item.criado_em), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                  ? format(new Date(new Date(item.criado_em).getTime() - 3 * 60 * 60 * 1000), "dd/MM/yyyy HH:mm", { locale: ptBR })
                   : null}
               </span>
             </div>

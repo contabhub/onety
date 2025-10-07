@@ -72,15 +72,19 @@
 }
 
 .message.incoming .messageContent {
-  background-color: var(--onity-color-bg);
+  background-color: var(--onity-color-surface);
   color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-bottom-left-radius: 10px;
+  box-shadow: var(--onity-elev-low);
 }
 
 .message.outgoing .messageContent {
-  background-color: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid transparent;
   border-bottom-right-radius: 10px;
+  box-shadow: var(--onity-elev-low);
 }
 
 .messageText {
@@ -102,7 +106,7 @@
 }
 
 .message.outgoing .messageSender {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--onity-color-text);
 }
 
 .messageTime {
