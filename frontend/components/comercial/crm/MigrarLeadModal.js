@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/CRM.module.css";
+import styles from "../../../styles/comercial/crm/CRM.module.css";
 
 export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
   const [funis, setFunis] = useState([]);

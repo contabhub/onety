@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import styles from "../../styles/LeadInfoCard.module.css";
+import styles from "../../../styles/comercial/crm/LeadInfoCard.module.css";
 import { Calendar, DollarSign, User } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faEllipsisV, faPen, faTrash, faExchangeAlt } from "@fortawesome/free-solid-svg-icons";
@@ -40,7 +40,7 @@ export default function LeadInfoCard({ lead, onUpdated}) {
   
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${lead.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${lead.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,7 +49,7 @@ export default function LeadInfoCard({ lead, onUpdated}) {
   
       if (!res.ok) throw new Error("Erro ao excluir lead");
   
-      router.push("/crm"); // Redireciona após deletar
+      router.push("/comercial/crm"); // Redireciona após deletar
     } catch (error) {
       console.error("Erro ao excluir lead:", error);
       alert("Erro ao excluir lead. Tente novamente.");
@@ -91,10 +91,10 @@ export default function LeadInfoCard({ lead, onUpdated}) {
 
 
       <div className={styles.nameSection}>
-        <h3 className={styles.title}>{lead.name}</h3>
+        <h3 className={styles.title}>{lead.nome || lead.name}</h3>
         <h4 className={styles.subtitle}>{formatPhoneNumber(lead.telefone)}</h4>
         <p className={styles.createdAt}>
-          Criado em {new Date(lead.created_at).toLocaleDateString('pt-BR', {
+          Criado em {new Date(lead.criado_em || lead.created_at).toLocaleDateString('pt-BR', {
             day: 'numeric', month: 'short', year: 'numeric'
           })}
         </p>

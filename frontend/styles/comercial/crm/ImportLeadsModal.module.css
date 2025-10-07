@@ -10,17 +10,17 @@
 
 .modal {
   width: min(900px, 96vw);
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   border-radius: 8px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
 }
 
 .header {
   padding: 16px;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .content {
@@ -29,7 +29,7 @@
 
 .footer {
   padding: 16px;
-  border-top: 1px solid var(--color-divider);
+  border-top: 1px solid var(--onity-color-border);
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -51,28 +51,28 @@
 }
 
 .field label {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 12px;
 }
 
 .input,
 .select {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   padding: 10px 12px;
 }
 
 .input:focus,
 .select:focus {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--onity-color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--focus-ring-inner) inset;
+  box-shadow: 0 0 0 1px var(--onity-color-primary) inset;
 }
 
 .primaryBtn {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: #fff;
   border: 0;
   padding: 10px 16px;
@@ -86,9 +86,9 @@
 }
 
 .secondaryBtn {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -97,8 +97,8 @@
 
 .ghostBtn {
   background: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
+  color: var(--onity-icon-secondary);
+  border: 1px solid var(--onity-color-border);
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -106,18 +106,18 @@
 
 .helperText {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-top: 8px;
 }
 
 .errorText {
   margin-top: 12px;
-  color: var(--error);
+  color: var(--onity-color-error);
 }
 
 .successText {
   margin-top: 12px;
-  color: var(--success);
+  color: var(--onity-color-success);
 }
 
 .dropdownWrapper {
@@ -126,9 +126,9 @@
 
 .dropdownBtn {
   width: 100%;
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   padding: 10px 12px;
   border-radius: 6px;
   text-align: left;
@@ -138,13 +138,13 @@
 
 .dropdownBtn:hover {
   background: rgba(255,255,255,0.03);
-  border-color: var(--color-divider);
+  border-color: var(--onity-color-border);
 }
 
 .dropdownBtn:focus-visible {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--onity-color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--focus-ring-inner) inset;
+  box-shadow: 0 0 0 1px var(--onity-color-primary) inset;
 }
 
 .dropdownMenu {
@@ -152,12 +152,12 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   padding: 10px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   max-height: 260px;
   overflow: auto;
   z-index: 10;
@@ -177,7 +177,7 @@
   width: 8px;
 }
 .dropdownMenu::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--onity-color-border);
   border-radius: 8px;
 }
 .dropdownMenu::-webkit-scrollbar-track {

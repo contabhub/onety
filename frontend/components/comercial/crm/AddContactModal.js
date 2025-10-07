@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "../../styles/LeadContacts.module.css";
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/router";
 

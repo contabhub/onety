@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "../../styles/LeadContacts.module.css";
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import { CloudUpload, XCircle } from "lucide-react";
 
 const AddFileModal = ({ leadId, isOpen, onClose, onSave }) => {

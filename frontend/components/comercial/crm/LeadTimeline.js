@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import styles from '../../styles/LeadTimeline.module.css';
+import styles from '../../../styles/comercial/crm/LeadTimeline.module.css';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { FileText, CheckCircle, MoveRight, MoreVertical } from 'lucide-react';
-import meuLottieJson from '../../assets/Loading.json';
-import Lottie from 'lottie-react';
+import SpaceLoader from '../../onety/menu/SpaceLoader';
 
 
 
@@ -16,7 +15,7 @@ export default function LeadTimeline({ leadId, reloadTrigger }) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/historico-leads/${leadId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/historico-leads/${leadId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -40,14 +39,7 @@ export default function LeadTimeline({ leadId, reloadTrigger }) {
       </h3>
 
       {loading ? (
-        <div className={styles.loadingContainer}>
-          <Lottie 
-            animationData={meuLottieJson} 
-            loop={true}
-            style={{ width: 200, height: 200 }}
-          />
-                    <span className={styles.loadingText}>Carregando histórico...</span>
-        </div>
+        <SpaceLoader label="Carregando histórico..." size={100} minHeight={150} />
       ) : (
 <>
       {historico.map((item) => (

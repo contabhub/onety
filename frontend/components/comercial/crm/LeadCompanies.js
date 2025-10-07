@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import styles from "../../styles/LeadContacts.module.css";
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import { Pencil, Plus, Building2 , Trash } from "lucide-react"; // Importando ícones necessários
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";

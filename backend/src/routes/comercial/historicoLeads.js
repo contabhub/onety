@@ -10,9 +10,9 @@ router.get("/:leadId", verifyToken, async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      `SELECT h.*, u.full_name, u.avatar_url 
+      `SELECT h.*, u.nome as full_name, u.avatar_url 
        FROM historico_leads h
-       LEFT JOIN users u ON h.usuario_id = u.id
+       LEFT JOIN usuarios u ON h.usuario_id = u.id
        WHERE h.lead_id = ?
        ORDER BY h.criado_em DESC`,
       [leadId]

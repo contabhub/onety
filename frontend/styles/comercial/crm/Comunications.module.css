@@ -1,0 +1,274 @@
+.container {
+  background-color: var(--color-surface-1);
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+}
+
+.date {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.tabBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1.5px solid var(--color-border);
+}
+
+.tab {
+  padding: 7px 16px;
+  background: var(--color-bg);
+  border-radius: 6px 6px 0 0;
+  color: var(--brand-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabActive {
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
+  border-bottom: 2.5px solid var(--success);
+  font-weight: bold;
+}
+
+.tabIcon {
+  margin-right: 4px;
+}
+
+/* Conversa (balões, avatar, alinhamento) */
+.chatArea {
+  min-height: 220px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 0 2px 10px 2px;
+  background: var(--color-bg);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.messagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.messageRow {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 4px;
+}
+
+.sentRow {
+  justify-content: flex-end;
+}
+
+.receivedRow {
+  justify-content: flex-start;
+}
+
+.avatarLeft, .avatarRight {
+  width: 36px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.avatarBubble {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0 6px;
+  border: 2px solid var(--color-border);
+}
+
+.messageBubbleWrapper {
+  max-width: 65%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sentRow .messageBubbleWrapper {
+  align-items: flex-end;
+}
+
+.remetenteInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.remetenteNome {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.messageBubble {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  min-width: 48px;
+  box-shadow: 0 1px 2px #0001;
+  word-break: break-word;
+}
+
+.sentRow .messageBubble {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.receivedRow .messageBubble {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+}
+
+.footer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.startConversation {
+  background-color: var(--brand-primary);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.startConversation:hover {
+  background-color: var(--brand-primary);
+}
+
+.loading,
+.noMessages {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: 18px 0;
+}
+
+.messageImage {
+  max-width: 180px;
+  max-height: 220px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.fileBubble {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  border-radius: 9px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 160px;
+}
+
+.fileInfo {
+  flex: 1;
+}
+
+.fileName {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-text-primary);
+  margin-bottom: 1px;
+  word-break: break-word;
+}
+
+.fileExtText {
+  font-size: 13px;
+  color: #fff;
+  background-color: var(--brand-accent);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.downloadBtn {
+  background: var(--color-surface-1);
+  border: 1px solid var(--brand-accent);
+  color: var(--brand-accent);
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background .2s, color .2s;
+  margin-left: 10px;
+}
+
+.downloadBtn:hover {
+  background: var(--brand-accent);
+  color: #fff;
+}
+
+.fileIcon {
+  min-width: 28px;
+  min-height: 28px;
+}
+
+
+/* Modal para expandir imagem */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(24, 24, 28, 0.84);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1111;
+  cursor: pointer;
+}
+.modalImage {
+  max-width: 88vw;
+  max-height: 88vh;
+  border-radius: 10px;
+  box-shadow: 0 6px 40px 0 #0008;
+  background: var(--color-surface-1);
+  cursor: zoom-out;
+  animation: fadeIn 0.18s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96);}
+  to   { opacity: 1; transform: scale(1);}
+}
+

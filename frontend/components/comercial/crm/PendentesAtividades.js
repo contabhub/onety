@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { FaCheck } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { registrarHistorico } from "../../utils/registrarHistorico";
-import styles from "../../styles/PendentesAtividades.module.css";
+import { registrarHistorico } from "../../../utils/registrarHistorico";
+import styles from "../../../styles/comercial/crm/PendentesAtividades.module.css";
 import { CalendarDays } from "lucide-react";
 
 export default function PendentesAtividades({ atividadesPendentes, leadId, onUpdated }) {

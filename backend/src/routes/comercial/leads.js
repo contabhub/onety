@@ -125,7 +125,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 
     if (lead.usuario_id) {
       const [userRows] = await db.query(
-        'SELECT full_nome, avatar_url FROM users WHERE id = ?',
+        'SELECT nome as full_nome, avatar_url FROM usuarios WHERE id = ?',
         [lead.usuario_id]
       );
       if (userRows.length > 0) {

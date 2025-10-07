@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/NotaAtividadeCard.module.css";
+import styles from "../../../styles/comercial/crm/NotaAtividadeCard.module.css";
 import { Calendar, Clock, Mic, ChevronDown, Filter } from "lucide-react";
-import { registrarHistorico } from "../../utils/registrarHistorico";
+import { registrarHistorico } from "../../../utils/registrarHistorico";
 import CreateActivityModal from "./CreateActivityModal";
 
 export default function NotaAtividadeCard({ leadId, onCreated }) {
@@ -38,7 +38,7 @@ useEffect(() => {
 
     useEffect(() => {
         // Obter equipeId do localStorage
-        const userRaw = localStorage.getItem("user");
+        const userRaw = localStorage.getItem("userData");
         if (userRaw) {
             try {
                 const userObj = JSON.parse(userRaw);
@@ -48,17 +48,31 @@ useEffect(() => {
     }, []);
 
     useEffect(() => {
+        // Tenta obter o usuário do localStorage primeiro
+        const userRaw = localStorage.getItem("userData");
+        if (userRaw) {
+            try {
+                const userObj = JSON.parse(userRaw);
+                setUser(userObj);
+                console.log("Usuário carregado do localStorage", userObj);
+                return;
+            } catch (err) {
+                console.error("Erro ao parsear userData", err);
+            }
+        }
+
+        // Se não tiver no localStorage, busca da API
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         })
             .then((res) => res.json())
             .then((data) => {
-                console.log("Usuário carregado", data);
+                console.log("Usuário carregado da API", data);
                 setUser(data);
             })
             .catch((err) => console.error("Erro ao carregar usuário", err));
@@ -66,7 +80,7 @@ useEffect(() => {
 
     const fetchTiposAtividade = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos-atividade/equipe/${equipeId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/tipos-atividade/empresa/${equipeId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
@@ -77,10 +91,16 @@ useEffect(() => {
     };
 
     const handleSubmit = async () => {
+        if (!user || !user.id) {
+            console.error("Usuário não carregado");
+            alert("Erro: Usuário não identificado. Por favor, recarregue a página.");
+            return;
+        }
+
         setLoading(true);
         try {
             if (aba === "nota") {
-                const notaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notas`, {
+                const notaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/notas`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -106,7 +126,7 @@ useEffect(() => {
                 });
 
             } else {
-                const atividadeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atividades`, {
+                const atividadeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/atividades`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

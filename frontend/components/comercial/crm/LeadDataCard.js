@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import styles from '../../styles/LeadDataCard.module.css';
+import styles from "../../../styles/comercial/crm/LeadDataCard.module.css";
 import { Info, Link, Pencil } from 'lucide-react';
 import EditLeadDataModal from '../crm/EditLeadDataModal';
 

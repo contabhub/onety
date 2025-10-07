@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FileText, Trash2, Plus } from "lucide-react";
-import styles from "../../styles/LeadContacts.module.css";
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import AddFileModal from "../crm/AddFileModal"; // Importando o modal de adicionar arquivo
 
 const LeadFiles = ({ leadId }) => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaBox } from 'react-icons/fa';
-import styles from '../../styles/ModalVincularProduto.module.css'; // Estilos do modal
+import styles from '../../../styles/comercial/crm/ModalVincularProduto.module.css'; // Estilos do modal
 import { toast } from 'react-toastify'; // Para notificações (opcional)
 
 const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {

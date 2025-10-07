@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/LeadContacts.module.css";
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 
 const VincularContatoModal = ({ leadId, onClose, onSave }) => {
   const [query, setQuery] = useState("");

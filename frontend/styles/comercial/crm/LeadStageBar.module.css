@@ -3,7 +3,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   padding: 12px 20px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.03);
@@ -14,18 +14,18 @@
   display: flex;
   align-items: center;
   padding: 8px 14px;
-  background-color: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 20px;
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .stageItem:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
 }
 
 .stageName {
@@ -36,18 +36,18 @@
 
 .arrow {
   margin: 0 6px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 20px;
 }
 
 .atual {
-  background-color: var(--color-bg);
-  border: 1px solid var(--focus-ring);
-  color: var(--brand-primary);
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-primary);
+  color: var(--onity-color-primary);
   font-weight: bold;
 }
 
 .final {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
 }
