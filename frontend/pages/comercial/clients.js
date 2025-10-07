@@ -371,7 +371,7 @@ export default function ClientsPage() {
             <div className={styles.toolbarHeader}>
               <span className={styles.title}>Clientes</span>
               <div className={styles.filtersRowBox}>
-                <button onClick={handleNovoCliente} className={styles.button}>
+                <button onClick={handleNovoCliente} className={styles.addButton}>
                   <span style={{display:'inline-flex',gap:'8px',alignItems:'center'}}>
                     <Plus className="h-4 w-4" />
                     Novo Cliente
@@ -441,22 +441,18 @@ export default function ClientsPage() {
                             <button
                               className={styles.actionButton}
                               title="Editar Cliente"
+                              aria-label="Editar Cliente"
                               onClick={() => handleEditarCliente(c)}
                             >
-                              <span style={{display:'inline-flex',gap:'6px',alignItems:'center'}}>
-                                <Pencil className="h-4 w-4" />
-                                Editar
-                              </span>
+                              <Pencil className="h-2 w-2" />
                             </button>
                             <button
                               className={styles.deleteButton}
                               title="Excluir Cliente"
+                              aria-label="Excluir Cliente"
                               onClick={() => handleExcluirCliente(c)}
                             >
-                              <span style={{display:'inline-flex',gap:'6px',alignItems:'center'}}>
-                                <Trash2 className="h-4 w-4" />
-                                Excluir
-                              </span>
+                              <Trash2 className="h-2 w-2" />
                             </button>
                           </td>
                         )}

@@ -36,6 +36,16 @@ export default function EditFunilModal({ open, onClose, funil, onSave }) {
     if (!token) return;
 
     try {
+      const normalizeTitleCase = (text) =>
+        (text || "")
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+
+      const normalizedNome = normalizeTitleCase(nome.trim());
+
       // Atualiza o nome do funil
       const resFunil = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${funil.id}`, {
         method: "PUT",
@@ -44,7 +54,7 @@ export default function EditFunilModal({ open, onClose, funil, onSave }) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          nome,
+          nome: normalizedNome,
           is_default: false,
         }),
       });

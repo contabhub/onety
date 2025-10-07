@@ -14,32 +14,39 @@ export default function TiposDeAtividades() {
   const [editandoId, setEditandoId] = useState(null);
   const [editandoNome, setEditandoNome] = useState("");
   const [token, setToken] = useState(null);
-  const [equipeId, setEquipeId] = useState(null); // Estado único para equipe_id
+  const [empresaId, setEmpresaId] = useState(null); // Estado único para empresa_id
   const [loading, setLoading] = useState(false); // Novo estado para loading
   const router = useRouter();
 
   useEffect(() => {
     const t = localStorage.getItem("token");
     setToken(t);
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData") || localStorage.getItem("user");
     if (userRaw) {
       try {
         const user = JSON.parse(userRaw);
-        if (user.equipe_id) setEquipeId(user.equipe_id);
+        const inferredEmpresaId =
+          user.EmpresaId ??
+          user?.empresa_id ??
+          user?.empresaId ??
+          user?.empresa?.id ??
+          user?.Empresa?.id ??
+          null;
+        if (inferredEmpresaId) setEmpresaId(inferredEmpresaId);
       } catch {}
     }
   }, []);
 
   useEffect(() => {
-    if (token && equipeId) fetchTipos();
-  }, [token, equipeId]);
+    if (token && empresaId) fetchTipos();
+  }, [token, empresaId]);
 
   const fetchTipos = async () => {
-    if (!equipeId) return;
+    if (!empresaId) return;
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/tipos-atividade/equipe/${equipeId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/tipos-atividade/empresa/${empresaId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -59,10 +66,14 @@ export default function TiposDeAtividades() {
   };
 
   const handleCriar = async () => {
-    if (!novoNome.trim() || !equipeId) return;
+    if (!novoNome.trim()) return;
+    if (!empresaId) {
+      console.warn("empresaId não definido – não é possível criar o tipo.");
+      return;
+    }
     try {
-      const payload = { nome: novoNome, equipe_id: equipeId };
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos-atividade`, {
+      const payload = { nome: novoNome, empresa_id: empresaId };
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/tipos-atividade`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,10 +89,10 @@ export default function TiposDeAtividades() {
   };
 
   const handleAtualizar = async (id) => {
-    if (!equipeId) return;
+    if (!empresaId) return;
     try {
-      const payload = { nome: editandoNome, equipe_id: equipeId };
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos-atividade/${id}`, {
+      const payload = { nome: editandoNome, empresa_id: empresaId };
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/tipos-atividade/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -98,9 +109,9 @@ export default function TiposDeAtividades() {
   };
 
   const handleExcluir = async (id) => {
-    if (!confirm("Deseja excluir este tipo de atividade?") || !equipeId) return;
+    if (!confirm("Deseja excluir este tipo de atividade?") || !empresaId) return;
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos-atividade/${id}?equipe_id=${equipeId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/tipos-atividade/${id}?empresa_id=${empresaId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -150,7 +161,7 @@ export default function TiposDeAtividades() {
                         >
                           Salvar
                         </button>
-                        <button onClick={() => setEditandoId(null)}>Cancelar</button>
+                        <button className={styles.cancelBtn} onClick={() => setEditandoId(null)}>Cancelar</button>
                       </>
                     ) : (
                       <>

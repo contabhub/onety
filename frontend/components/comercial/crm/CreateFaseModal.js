@@ -14,6 +14,13 @@ export default function CreateFaseModal({ open, onClose, funilId, onFaseCreated 
   async function handleCreate() {
     try {
       const token = localStorage.getItem('token');
+      const normalizeTitleCase = (text) =>
+        (text || "")
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
 
       // Buscar fases existentes do funil 
       const fasesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${funilId}`, {
@@ -39,7 +46,7 @@ export default function CreateFaseModal({ open, onClose, funilId, onFaseCreated 
         },
         body: JSON.stringify({
           funil_id: funilId,
-          nome,
+          nome: normalizeTitleCase(nome.trim()),
           descricao,
           ordem: novaOrdem
         })

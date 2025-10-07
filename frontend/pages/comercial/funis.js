@@ -281,20 +281,28 @@ export default function FunisPage() {
                         {fase.nome !== "Ganhou" && fase.nome !== "Perdeu" && fase.nome !== "Proposta" && (
                           <div className={styles.faseAcoesContainer}>
                             <div className={styles.faseButtonsVertical}>
-                              <button
-                                onClick={() =>
-                                  moverFase(funil.id, fase.id, "cima")
-                                }
-                              >
-                                ▲
-                              </button>
-                              <button
-                                onClick={() =>
-                                  moverFase(funil.id, fase.id, "baixo")
-                                }
-                              >
-                                ▼
-                              </button>
+                              {(() => {
+                                const fasesUsuarioOrdenadas = funil.fases
+                                  .filter((f) => f.nome !== "Ganhou" && f.nome !== "Perdeu" && f.nome !== "Proposta")
+                                  .sort((a, b) => a.ordem - b.ordem);
+                                const idx = fasesUsuarioOrdenadas.findIndex((f) => f.id === fase.id);
+                                const podeSubir = idx > 0;
+                                const podeDescer = idx < fasesUsuarioOrdenadas.length - 1;
+                                return (
+                                  <>
+                                    {podeSubir && (
+                                      <button onClick={() => moverFase(funil.id, fase.id, "cima")}>
+                                        ▲
+                                      </button>
+                                    )}
+                                    {podeDescer && (
+                                      <button onClick={() => moverFase(funil.id, fase.id, "baixo")}>
+                                        ▼
+                                      </button>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                             <button
                               onClick={() => handleDeleteFase(fase.id)}
