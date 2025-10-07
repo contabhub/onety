@@ -183,20 +183,16 @@
 
 .actionCard {
   background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
   border-radius: 12px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.2s;
 }
 
-.actionCard:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
+
 
 .actionCardTitle {
   font-size: 15px;
@@ -212,34 +208,61 @@
   margin-bottom: 4px;
 }
 
-.startConversation {
-  background-color: var(--brand-primary);
-  color: white;
+/* Botões da lista de conversas */
+.conversationChip {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color .2s, border-color .2s, background .2s, box-shadow .2s;
+}
+
+.conversationChip:hover {
+  color: var(--primary-color, #3b82f6);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.conversationChipActive {
+  color: var(--primary-color, #3b82f6);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+/* Botão CTA Iniciar Conversa */
+.startConversationCta {
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+  border-color: var(--primary-color, #3b82f6);  
   padding: 12px 32px;
-  border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   position: relative;
   z-index: 11;
   pointer-events: auto;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
-  transition: transform 0.2s, background-color 0.2s;
+  letter-spacing: .2px;
+  transition: transform 0.2s, background-color 0.2s, box-shadow .2s;
 }
 
-.startConversation:hover {
-  background-color: var(--brand-primary);
+.startConversationCta:hover {
+  background: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
   transform: translateY(-1px);
 }
 
-.startConversation:active {
+.startConversationCta:active {
   transform: translateY(0);
 }
 
-.startConversation:disabled {
-  opacity: 0.5;
+.startConversationCta:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .loading,
