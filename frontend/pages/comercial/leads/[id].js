@@ -39,12 +39,31 @@ export default function LeadDetails() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Verificar se a resposta é válida antes de tentar fazer parse do JSON
+      if (!res.ok) {
+        console.error('Erro na resposta da API:', res.status, res.statusText);
+        alert(`Erro ao carregar lead: ${res.status} - ${res.statusText}`);
+        setIsLoading(false);
+        return;
+      }
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Resposta não é JSON:', contentType);
+        alert('Erro: Resposta inválida do servidor');
+        setIsLoading(false);
+        return;
+      }
+
       const leadData = await res.json();
       setLead(leadData);
       setIsLoading(false);
 
     } catch (error) {
       console.error('Erro ao buscar lead:', error);
+      alert(`Erro ao carregar lead: ${error.message}`);
+      setIsLoading(false);
     }
   };
 
@@ -123,39 +142,63 @@ export default function LeadDetails() {
         {fasesDoFunil.length > 0 && (
           <LeadStageBar
             fases={fasesDoFunil}
-            faseAtualId={lead.fase_funil_id}
+            faseAtualId={lead.funil_fase_id}
             onChangeFase={async (novaFaseId) => {
-              if (novaFaseId === lead.fase_funil_id) return;
+              if (!novaFaseId || novaFaseId === undefined || novaFaseId === null) {
+                alert('Erro: ID da fase inválido. Tente novamente.');
+                return;
+              }
 
-              const token = localStorage.getItem('token');
-              const userRaw = localStorage.getItem('userData');
-              const user = userRaw ? JSON.parse(userRaw) : null;
-              const usuario_id = user?.id;
+              const faseIdNumerico = parseInt(novaFaseId, 10);
+              if (isNaN(faseIdNumerico)) {
+                alert('Erro: ID da fase deve ser um número válido.');
+                return;
+              }
+              
+              if (faseIdNumerico === lead.funil_fase_id) {
+                return;
+              }
 
-              const faseAnterior = fasesDoFunil.find(f => f.id === lead.fase_funil_id)?.nome || "Fase anterior";
-              const novaFase = fasesDoFunil.find(f => f.id === novaFaseId)?.nome || "Nova fase";
+              try {
+                const token = localStorage.getItem('token');
+                const userRaw = localStorage.getItem('userData');
+                const user = userRaw ? JSON.parse(userRaw) : null;
+                const usuario_id = user?.id;
 
-              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${lead.id}/mover-fase`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ fase_funil_id: novaFaseId }),
-              });
+                const faseAnterior = fasesDoFunil.find(f => f.id === lead.funil_fase_id)?.nome || "Fase anterior";
+                const novaFase = fasesDoFunil.find(f => f.id === faseIdNumerico)?.nome || "Nova fase";
 
-              // 🔄 Registrar no histórico
-              await registrarHistorico({
-                lead_id: lead.id,
-                usuario_id,
-                tipo: "movimentacao",
-                titulo: "Lead movido de fase",
-                descricao: `Lead movido de "${faseAnterior}" para "${novaFase}"`,
-                token,
-              });
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${lead.id}/mover-fase`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ fase_funil_id: faseIdNumerico }),
+                });
 
-              setLead((prev) => ({ ...prev, fase_funil_id: novaFaseId }));
-              setReloadTrigger(Date.now()); // Atualiza a timeline
+                if (!response.ok) {
+                  const errorData = await response.json();
+                  throw new Error(`Erro ${response.status}: ${errorData.error || response.statusText}`);
+                }
+
+                // 🔄 Registrar no histórico
+                await registrarHistorico({
+                  lead_id: lead.id,
+                  usuario_id,
+                  tipo: "movimentacao",
+                  titulo: "Lead movido de fase",
+                  descricao: `Lead movido de "${faseAnterior}" para "${novaFase}"`,
+                  token,
+                });
+
+                setLead((prev) => ({ ...prev, funil_fase_id: faseIdNumerico }));
+                setReloadTrigger(Date.now());
+                
+              } catch (error) {
+                console.error('Erro ao mover lead de fase:', error);
+                alert(`Erro ao mover lead de fase: ${error.message}`);
+              }
             }}
           />
         )}
@@ -187,7 +230,9 @@ export default function LeadDetails() {
                 setReloadTrigger(Date.now());
               }} />
 
-            <Comunications leadId={lead.id} />
+            <div className={styles.placeholderCard}>
+              <Comunications leadId={lead.id} />
+            </div>
 
             <div className={styles.timelineScroll}>
               <LeadTimeline leadId={lead.id} reloadTrigger={reloadTrigger} />

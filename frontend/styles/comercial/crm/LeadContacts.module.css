@@ -10,6 +10,9 @@
   display: flex;
   align-items: center; /* Alinha verticalmente o ícone e o texto "Contatos" */
   margin: 0;
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  color: var(--onity-color-text);
 }
 
 

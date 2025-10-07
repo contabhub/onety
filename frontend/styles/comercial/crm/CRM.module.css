@@ -4,6 +4,8 @@
   gap: 16px;
   padding: 20px;
   overflow-x: auto;
+  background: var(--onity-color-bg);
+  min-height: calc(100vh - 100px);
 }
 
 /* Layout da página com sidebar ao lado */
@@ -12,6 +14,7 @@
   flex-direction: row;
   align-items: stretch;
   min-height: 100vh;
+  background: var(--onity-color-bg);
 }
 
 .pageContent {
@@ -19,6 +22,8 @@
   display: flex;
   flex-direction: column;
   padding: 12px 12px 24px 12px;
+  background: var(--onity-color-bg);
+  min-height: 100vh;
 }
 
 
@@ -477,20 +482,27 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: transparent;
-  color: var(--primary-color, #3b82f6);
-  border: 1px solid var(--primary-color, #3b82f6);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 2px solid var(--onity-color-text);
   border-radius: 50%;
   width: 56px;
   height: 56px;
   font-size: 28px;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s, opacity 0.2s, transform 0.2s;
+  box-shadow: var(--onity-elev-med);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
 .floatingBtn:hover {
-  background-color: var(--primary-color, #3b82f6);
-  color: var(--onity-color-text);
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(3, 8, 66, 0.3);
 }
 
 .columnCard {

@@ -41,8 +41,8 @@
   /* Dark palette (reference) */
   --onity-dark-primary-deep: #030842;
   --onity-dark-primary-light: #3B6EFF;
-  --onity-dark-bg: #0308425d;
-  --onity-dark-surface: #1a1f3da8;
+  --onity-dark-bg: #030842;
+  --onity-dark-surface: #1a1f3d;
   --onity-dark-text: #E1E4F2;
   --onity-dark-border: #303651;
 
@@ -144,6 +144,63 @@ html, body {
   font-family: var(--onity-font-family-sans);
   font-size: 16px;
   line-height: var(--onity-type-body-line);
+}
+
+/* Garantir que o fundo seja consistente em toda a aplicação */
+html {
+  background: var(--onity-color-bg) !important;
+}
+
+body {
+  background: var(--onity-color-bg) !important;
+}
+
+/* Para tema dark especificamente */
+[data-theme="dark"] html,
+[data-theme="dark"] body {
+  background: var(--onity-dark-bg) !important;
+}
+
+/* Scrollbar styling para consistência visual */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--onity-color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--onity-color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--onity-icon-secondary);
+}
+
+/* Scrollbar específico para tema dark */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--onity-dark-bg);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--onity-dark-border);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--onity-dark-primary-light);
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--onity-color-border) var(--onity-color-bg);
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: var(--onity-dark-border) var(--onity-dark-bg);
 }
 
 h1 {
@@ -265,5 +322,26 @@ small, .caption {
    Light: <html data-theme="light"> ...
    Dark:  <html data-theme="dark">  ...
 */
+
+/* Sidebar Fix - Ajuste automático para todas as páginas que usam sidebar */
+body {
+  margin-left: 72px !important;
+  transition: margin-left 0.15s ease-out;
+}
+
+/* Ajuste para sidebar expandida */
+body.sidebar-expanded {
+  margin-left: 242px !important;
+}
+
+/* Ajuste específico para páginas com layout flex */
+.page {
+  margin-left: 0 !important;
+}
+
+/* Ajuste para conteúdo principal */
+.pageContent {
+  margin-left: 0 !important;
+}
 
 

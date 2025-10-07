@@ -89,8 +89,9 @@
   }
 
   .movimentacaoIcon {
-    background-color: var(--onity-color-bg); /* azul claro */
-    color: var(--onity-color-primary); /* azul médio para o ícone */
+    background-color: var(--onity-color-bg);
+    /* Usa token temático com alto contraste em light/dark para a seta de movimentação */
+    color: var(--onity-color-text);
   }
   
   .headerWithIcon {

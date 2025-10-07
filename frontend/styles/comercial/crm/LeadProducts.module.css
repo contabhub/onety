@@ -129,6 +129,15 @@
   font-size: 14px;
 }
 
+.header h2 {
+  margin: 0;
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  color: var(--onity-color-text);
+  display: flex;
+  align-items: center;
+}
+
 .userIcon {
   margin-right: 10px; /* Espaço entre o ícone e o texto */
   color: var(--primary-color, #3b82f6); 

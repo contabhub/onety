@@ -95,7 +95,7 @@ const MODULE_REGISTRY = {
       },
       {
         id: 'tipos-atividades',
-        label: 'Tipos de Atividades',
+        label: 'Atividades',
         icon: <Settings size={18} />,
         route: '/comercial/tipos-de-atividades'
       },
@@ -308,17 +308,48 @@ export default function PrincipalSidebar() {
 
   const handleMouseEnter = () => {
     setHovered(true);
-    if (!pinned) setCollapsed(false);
+    if (!pinned) {
+      setCollapsed(false);
+      document.body.classList.add('sidebar-expanded');
+    }
   };
   const handleMouseLeave = () => {
     setHovered(false);
-    if (!pinned) setCollapsed(true);
+    if (!pinned) {
+      setCollapsed(true);
+      document.body.classList.remove('sidebar-expanded');
+    }
   };
   const handlePin = () => {
     const nextPinned = !pinned;
     setPinned(nextPinned);
     setCollapsed(!nextPinned);
+    
+    // Ajustar classe do body baseado no estado do pin
+    if (nextPinned) {
+      document.body.classList.add('sidebar-expanded');
+    } else {
+      document.body.classList.remove('sidebar-expanded');
+    }
   };
+
+
+  // Garantir que no primeiro carregamento a classe do body esteja correta
+  useEffect(() => {
+    const applyBodyClass = () => {
+      const shouldExpand = pinned || !collapsed;
+      if (shouldExpand) {
+        document.body.classList.add('sidebar-expanded');
+      } else {
+        document.body.classList.remove('sidebar-expanded');
+      }
+    };
+
+    applyBodyClass();
+    return () => {
+      document.body.classList.remove('sidebar-expanded');
+    };
+  }, [collapsed, pinned]);
 
 
   // Carrega módulos do localStorage e detecta módulo ativo
