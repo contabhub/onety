@@ -1,0 +1,50 @@
+.toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  height: 40px;
+  border-radius: 1000px;
+}
+
+.toggle:hover {
+  background-color: var(--onity-color-surface);
+}
+
+.label {
+  position: relative;
+  color: var(--onity-icon-secondary);
+  transition: color 0.1s ease-in-out;
+  padding: 0px 16px;
+  z-index: 2;
+  user-select: none;
+}
+
+.label.right {
+  margin-left: -8px;
+}
+
+.toggleBackground {
+  background-color: var(--onity-color-primary);
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: auto;
+  bottom: 0px;
+  z-index: 1;
+  border-radius: 1000px;
+  transition: left 0.1s ease-in-out, width 0.1s ease-in-out;
+}
+
+.toggle[data-enabled='true'] .label.right {
+  color: #fff;
+}
+
+.toggle[data-enabled='false'] .label.left {
+  color: #fff;
+}
+

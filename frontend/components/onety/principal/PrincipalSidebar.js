@@ -22,7 +22,8 @@ import {
   Contact,
   Webhook,
   Tag,
-  ExternalLink
+  ExternalLink,
+  Mic
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -80,6 +81,12 @@ const MODULE_REGISTRY = {
         label: 'CRM',
         icon: <Target size={18} />,
         route: '/comercial/crm'
+      },
+      {
+        id: 'vendedor-master',
+        label: 'Vendedor Master',
+        icon: <Mic size={18} />,
+        route: '/comercial/vendedor-master'
       },
       {
         id: 'funis',
