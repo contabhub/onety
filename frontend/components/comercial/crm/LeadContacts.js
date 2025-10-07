@@ -24,7 +24,7 @@ const LeadContacts = ({ leadId }) => {
     setLoading(true);
     const token = localStorage.getItem("token");
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/contatos/${leadId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/${leadId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ const LeadContacts = ({ leadId }) => {
   const handleDeleteContact = async (contactId) => {
     const token = localStorage.getItem("token");
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos/${contactId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/${contactId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -67,7 +67,7 @@ const LeadContacts = ({ leadId }) => {
     const token = localStorage.getItem("token");
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos/${contatoId}/desvincular`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/${contatoId}/desvincular`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,

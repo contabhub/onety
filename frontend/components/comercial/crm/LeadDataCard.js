@@ -15,7 +15,7 @@ export default function LeadDataCard({ leadDetails }) {
   const fetchDados = async () => {
     if (leadDetails?.id) {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${leadDetails.id}/dados-personalizados`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${leadDetails.id}/dados-personalizados`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -49,8 +49,8 @@ export default function LeadDataCard({ leadDetails }) {
     try {
       // Define a URL da API
       const url = valorId
-        ? `${process.env.NEXT_PUBLIC_API_URL}/valores-personalizados/${valorId}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/valores-personalizados`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/comercial/valores-personalizados/${valorId}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/comercial/valores-personalizados`;
 
       const method = valorId ? 'PUT' : 'POST';
       const body = valorId

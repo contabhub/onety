@@ -15,12 +15,18 @@ const AddContactModal = ({ leadId, onClose, onSave, equipeId }) => {
   const handleSave = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = JSON.parse(userRaw);
-    const equipeId = user.equipe_id;
+    const empresaId = user?.EmpresaId || user?.empresa?.id;
+
+    if (!empresaId) {
+      alert("Erro: Empresa não identificada. Por favor, recarregue a página.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +38,7 @@ const AddContactModal = ({ leadId, onClose, onSave, equipeId }) => {
           email,
           telefone,
           cpf: cpf || null, // Permite CPF nulo
-          equipe_id: equipeId,
+          empresa_id: empresaId,
         }),
       });
       const data = await res.json();
@@ -97,12 +103,13 @@ const AddContactModal = ({ leadId, onClose, onSave, equipeId }) => {
             />
           </div>
           <div className={styles.modalButtons}>
+          <button type="button" onClick={onClose}>
+              Cancelar
+            </button>
             <button type="submit" disabled={loading}>
               {loading ? "Salvando..." : "Salvar"}
             </button>
-            <button type="button" onClick={onClose}>
-              Cancelar
-            </button>
+
           </div>
         </form>
       </div>

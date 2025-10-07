@@ -23,21 +23,21 @@ const LeadProducts = ({ leadId }) => {
         setLoading(true);
         setError(null);
         try {
-            const userRaw = localStorage.getItem("user");
+            const userRaw = localStorage.getItem("userData");
             const token = localStorage.getItem("token");
 
             if (!userRaw || !token) return;
 
             const user = JSON.parse(userRaw);
-            const equipeId = user.equipe_id;
+            const empresaId = user?.EmpresaId || user?.empresa?.id;
 
-            if (!equipeId) {
-                console.error("Usuário não tem equipe associada.");
+            if (!empresaId) {
+                console.error("Usuário não tem empresa associada.");
                 return;
             }
 
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/produtos/produto_lead/${leadId}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/produto_lead/${leadId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }

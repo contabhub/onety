@@ -12,7 +12,7 @@ const EditCompanyModal = ({ companyId, onClose, onSave }) => {
     const fetchCompany = async () => {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/empresas/empresa/${companyId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/empresa-leads/crm_empresa/${companyId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ const EditCompanyModal = ({ companyId, onClose, onSave }) => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/empresas/${companyId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/empresa-leads/${companyId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

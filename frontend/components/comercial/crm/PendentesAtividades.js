@@ -12,10 +12,23 @@ export default function PendentesAtividades({ atividadesPendentes, leadId, onUpd
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
+    // Tenta obter o usuário do localStorage primeiro
+    const userRaw = localStorage.getItem("userData");
+    if (userRaw) {
+      try {
+        const userObj = JSON.parse(userRaw);
+        setUserId(userObj.id);
+        return;
+      } catch (err) {
+        console.error("Erro ao parsear userData", err);
+      }
+    }
+
+    // Se não tiver no localStorage, busca da API
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -31,7 +44,7 @@ export default function PendentesAtividades({ atividadesPendentes, leadId, onUpd
   const concluirAtividade = async (atividade) => {
     console.log("Clicou para concluir:", atividade);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atividades/${atividade.id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/atividades/${atividade.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +73,7 @@ export default function PendentesAtividades({ atividadesPendentes, leadId, onUpd
 
   const excluirAtividade = async (atividade) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atividades/${atividade.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/atividades/${atividade.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -21,22 +21,27 @@ const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {
 
     const fetchProdutos = async () => {
         try {
-            const userRaw = localStorage.getItem("user");
+            const userRaw = localStorage.getItem("userData");
             const token = localStorage.getItem("token");
 
             if (!userRaw || !token) return;
 
             const user = JSON.parse(userRaw);
-            const equipeId = user.equipe_id;
+            const empresaId = user?.EmpresaId || user?.empresa?.id;
+
+            if (!empresaId) {
+                console.error("Usuário não tem empresa associada.");
+                return;
+            }
 
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/produtos/equipe/${equipeId}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/empresa/${empresaId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
             const data = await res.json();
-            setProdutos(data);
+            setProdutos(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Erro ao carregar produtos:", error);
             toast.error("Erro ao carregar produtos!");
@@ -61,7 +66,7 @@ const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {
     const handleSubmit = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/produtos/produto_lead`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/produto_lead`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -94,13 +99,13 @@ const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {
             const token = localStorage.getItem("token");
 
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/produtos/produto_lead/${leadId}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/produto_lead/${leadId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
             const data = await res.json();
-            setProdutosVinculados(data); // Atualiza os produtos vinculados
+            setProdutosVinculados(Array.isArray(data) ? data : []); // Atualiza os produtos vinculados
         } catch (error) {
             console.error("Erro ao carregar produtos vinculados:", error);
             toast.error("Erro ao carregar produtos vinculados!");
@@ -114,7 +119,7 @@ const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {
             const token = localStorage.getItem("token");
 
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/produtos/produto_lead/${produtoLeadId}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/produto_lead/${produtoLeadId}`,
                 {
                     method: "DELETE",
                     headers: {
