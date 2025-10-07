@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FaBox } from "react-icons/fa"; // Ícone de produto
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV, faExpand } from "@fortawesome/free-solid-svg-icons";
-import styles from "../../styles/LeadProducts.module.css"; // Estilos do componente de produtos
+import styles from "../../../styles/comercial/crm/LeadProducts.module.css"; // Estilos do componente de produtos
 import ModalVincularProduto from "../crm/ModalVincularProduto"; // Modal para vinculação de produtos
 
 const LeadProducts = ({ leadId }) => {

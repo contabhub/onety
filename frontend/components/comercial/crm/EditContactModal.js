@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/LeadContacts.module.css";
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import { Pencil } from "lucide-react";
 
 const EditContactModal = ({ contactId, onClose, onSave, equipeId }) => {

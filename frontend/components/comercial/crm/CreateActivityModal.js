@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/CreateActivityModal.module.css";
+import styles from "../../../styles/comercial/crm/CreateActivityModal.module.css";
 import { FaTimes } from "react-icons/fa";
 
 export default function CreateActivityModal({ onClose, leadId, onCreated, equipeId }) {

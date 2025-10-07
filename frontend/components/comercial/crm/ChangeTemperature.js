@@ -6,7 +6,7 @@ import {
   faInfoCircle, // Info para "neutro"
   faThermometerHalf // Termômetro
 } from "@fortawesome/free-solid-svg-icons";
-import styles from "../../styles/Temperature.module.css"; // Ajuste o caminho conforme necessário
+import styles from "../../../styles/comercial/crm/Temperature.module.css"; // Ajuste o caminho conforme necessário
 
 export default function ChangeTemperature({ leadId, temperaturaAtual, onUpdate }) {
   const [temperatura, setTemperatura] = useState(temperaturaAtual); // Estado local para armazenar a temperatura

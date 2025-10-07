@@ -432,7 +432,7 @@
 
 .saveBtn {
   background: var(--onity-color-primary);
-  color: white;
+  color:var(--onity-color-text);
   border: none;
   padding: 10px 24px;
   border-radius: 6px;
@@ -474,15 +474,20 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: var(--onity-color-primary);
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--primary-color, #3b82f6);
+  border: 1px solid var(--primary-color, #3b82f6);
   border-radius: 50%;
   width: 56px;
   height: 56px;
   font-size: 28px;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.floatingBtn:hover {
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
 }
 
 .columnCard {
@@ -716,7 +721,7 @@
 
 .quickAddBtn {
   background-color: var(--onity-color-primary);
-  color: #fff;
+  color: var(--onity-color-text);
   border: none;
   border-radius: 999px;
   width: 24px;
@@ -736,10 +741,9 @@
   font-size: 20px;
   color: var(--onity-color-primary);
   background-color: var(--onity-color-bg);
-  padding: 10px;
+  padding: 4px;
   border-radius: 8px;
-  border: 2px solid #fff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--onity-color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -868,9 +872,9 @@
 
 
 .exportBtn {
-  background-color: var(--onity-color-primary);
-  color: #fff;
-  border: none;
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+  border: 1px solid var(--primary-color, #3b82f6);
   border-radius: 8px;
   padding: 0.65rem 1.3rem;
   font-size: 1rem;
@@ -885,8 +889,8 @@
 }
 
 .exportBtn:hover:not(:disabled) {
-  background-color: var(--onity-color-primary);
-  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.15);
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
 }
 
 .exportBtn:disabled {
@@ -1275,6 +1279,11 @@
   margin-bottom: 16px;
   opacity: 0.7;
 }
+
+.iconCase {
+  color: var(--primary-color, #3b82f6);
+}
+
 
 /* Responsividade para estado vazio */
 @media (max-width: 768px) {

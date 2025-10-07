@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
-import styles from "../../styles/PropostasCliente.module.css";
+import styles from "../../../styles/comercial/crm/PropostasCliente.module.css";
 
 export default function Propostas({ leadId }) {
     const router = useRouter();

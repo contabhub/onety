@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "../../styles/LeadContacts.module.css"; // Use o mesmo CSS para os modais
+import styles from "../../../styles/comercial/crm/LeadContacts.module.css"; // Use o mesmo CSS para os modais
 
 const AddCompanyModal = ({ leadId, onClose, onSave }) => {
   const [nome, setNome] = useState("");

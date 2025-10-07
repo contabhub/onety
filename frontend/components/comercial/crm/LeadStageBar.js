@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import styles from "../../styles/LeadStageBar.module.css";
+import styles from "../../../styles/comercial/crm/LeadStageBar.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 

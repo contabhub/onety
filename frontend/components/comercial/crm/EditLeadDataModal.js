@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/LeadDataCard.module.css";
+import styles from "../../../styles/comercial/crm/LeadDataCard.module.css";
 
 export default function EditLeadDataModal({ open, onClose, categoria, leadId, onSave }) {
   const [valores, setValores] = useState({});  // Cada campo terá seu próprio valor

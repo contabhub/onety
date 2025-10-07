@@ -121,7 +121,7 @@ export default function CRMCard({ data, onEdit }) {
           ) : data.hasPendingActivity ? (
             <FontAwesomeIcon icon={faCalendarAlt} style={{ color: '#F04F4F' }} />
           ) : (
-            <FontAwesomeIcon icon={faBriefcase}  />
+            <FontAwesomeIcon icon={faBriefcase} className={styles.iconCase} />
           )}
         </div>
 

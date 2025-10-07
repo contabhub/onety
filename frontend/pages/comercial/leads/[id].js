@@ -1,25 +1,24 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import Layout from '../../components/layout/Layout';
-import styles from '../../styles/LeadDetails.module.css';
-import LeadStageBar from '../../components/crm/LeadStageBar';
-import LeadInfoCard from '../../components/crm/LeadInfoCard';
-import NotaAtividadeCard from "../../components/crm/NotaAtividadeCard";
-import LeadTimeline from '../../components/crm/LeadTimeline';
-import PendentesAtividades from '../../components/crm/PendentesAtividades';
-import LeadDataCard from '../../components/crm/LeadDataCard';
-import { registrarHistorico } from '../../utils/registrarHistorico';
-import ChangeTemperature from "../../components/crm/ChangeTemperature";
-import LeadContacts from "../../components/crm/LeadContacts";
-import LeadCompanies from "../../components/crm/LeadCompanies";
-import LeadFiles from "../../components/crm/LeadFiles";
-import LeadProducts from "../../components/crm/LeadProducts";
-import Propostas from "../../components/crm/Propostas";
-import Comunications from "../../components/crm/Comunications";
+import PrincipalSidebar from '../../../components/onety/principal/PrincipalSidebar';
+import SpaceLoader from '../../../components/onety/menu/SpaceLoader';
+import styles from '../../../styles/comercial/crm/LeadDetails.module.css';
+import LeadStageBar from '../../../components/comercial/crm/LeadStageBar';
+import LeadInfoCard from '../../../components/comercial/crm/LeadInfoCard';
+import NotaAtividadeCard from "../../../components/comercial/crm/NotaAtividadeCard";
+import LeadTimeline from '../../../components/comercial/crm/LeadTimeline';
+import PendentesAtividades from '../../../components/comercial/crm/PendentesAtividades';
+import LeadDataCard from '../../../components/comercial/crm/LeadDataCard';
+import { registrarHistorico } from '../../../utils/registrarHistorico';
+import ChangeTemperature from "../../../components/comercial/crm/ChangeTemperature";
+import LeadContacts from "../../../components/comercial/crm/LeadContacts";
+import LeadCompanies from "../../../components/comercial/crm/LeadCompanies";
+import LeadFiles from "../../../components/comercial/crm/LeadFiles";
+import LeadProducts from "../../../components/comercial/crm/LeadProducts";
+import Propostas from "../../../components/comercial/crm/Propostas";
+import Comunications from "../../../components/comercial/crm/Comunications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import meuLottieJson from '../../assets/Loading.json';
-import Lottie from 'lottie-react';
 
 
 
@@ -37,7 +36,7 @@ export default function LeadDetails() {
   const fetchLead = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const leadData = await res.json();
@@ -65,7 +64,7 @@ export default function LeadDetails() {
     const fetchFases = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${lead.funil_id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${lead.funil_id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const fases = await res.json();
@@ -82,7 +81,7 @@ export default function LeadDetails() {
   const fetchAtividadesPendentes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atividades/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/atividades/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -108,24 +107,18 @@ export default function LeadDetails() {
   };
 
 
-  if (isLoading || !lead) {
-    return (
-      <div className={styles.spinnerContainer}>
-          <Lottie 
-            animationData={meuLottieJson} 
-            loop={true}
-            style={{ width: 200, height: 200 }}
-          />
-                  <p>Carregando lead...</p>
-      </div>
-    );
-  }
-
   return (
-    <Layout>
-      <button className={styles.backButton} onClick={() => router.back()}>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
+      {isLoading || !lead ? (
+        <SpaceLoader label="Carregando lead..." />
+      ) : (
+      <>
+      {/* <button className={styles.backButton} onClick={() => router.back()}>
         <FontAwesomeIcon icon={faArrowLeft} /> Voltar
-      </button>
+      </button> */}
       <div className={styles.background}>
         {fasesDoFunil.length > 0 && (
           <LeadStageBar
@@ -135,13 +128,14 @@ export default function LeadDetails() {
               if (novaFaseId === lead.fase_funil_id) return;
 
               const token = localStorage.getItem('token');
-              const user = JSON.parse(localStorage.getItem('user'));
+              const userRaw = localStorage.getItem('userData');
+              const user = userRaw ? JSON.parse(userRaw) : null;
               const usuario_id = user?.id;
 
               const faseAnterior = fasesDoFunil.find(f => f.id === lead.fase_funil_id)?.nome || "Fase anterior";
               const novaFase = fasesDoFunil.find(f => f.id === novaFaseId)?.nome || "Nova fase";
 
-              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${lead.id}/mover-fase`, {
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${lead.id}/mover-fase`, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
@@ -231,6 +225,10 @@ export default function LeadDetails() {
           </div>
         </div>
       </div>
-    </Layout>
+      </>
+      )}
+        </div>
+      </div>
+    </>
   );
 }
