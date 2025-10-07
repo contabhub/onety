@@ -268,7 +268,7 @@ export default function Modulos() {
     if (slug === 'atendimento') {
       router.push('/atendimento/chat')
     } else if (slug === 'comercial') {
-      router.push('/comercial/leads')
+      router.push('/comercial/clients')
     } else if (slug === 'financeiro') {
       router.push('/financeiro/contas-pagar')
     } else {
@@ -282,10 +282,28 @@ export default function Modulos() {
     router.push(`/onboarding/${moduloId}`)
   }
 
-  // Pode iniciar: status bloqueado e pré-requisito (se existir) já liberado
+  // Pode iniciar: status bloqueado, pré-requisito (se existir) já liberado E permissões adequadas
   const canStartModulo = (modulo) => {
     if (!modulo) return false
     if (modulo.status !== 'bloqueado') return false
+    
+    // Verificação específica para módulo de Atendimento (módulo 1)
+    if (Number(modulo.modulo_id) === 1) {
+      const userRaw = typeof window !== 'undefined' ? localStorage.getItem('userData') : null
+      const user = userRaw ? JSON.parse(userRaw) : null
+      
+      // Verifica se é superadmin, admin ou tem permissão do módulo 1
+      const isAdmin = Array.isArray(user?.permissoes?.adm) && (
+        user.permissoes.adm.includes('admin') || user.permissoes.adm.includes('superadmin')
+      )
+      const hasModulePermission = Array.isArray(user?.permissoes_modulos) && 
+        user.permissoes_modulos.includes(1)
+      
+      if (!isAdmin && !hasModulePermission) {
+        return false
+      }
+    }
+    
     const prereq = getPrerequisiteForModule(modulo)
     if (!prereq) return true
     const prereqName = (prereq.nome || prereq.name || '').toLowerCase()

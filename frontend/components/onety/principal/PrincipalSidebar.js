@@ -224,6 +224,18 @@ const MODULE_REGISTRY = {
   }
 };
 
+// Mapeamento de chaves do registry para IDs numéricos usados em permissoes_modulos
+// Mantém compatibilidade com telas de Cargos e página de Módulos
+const MODULE_KEY_TO_NUMERIC_ID = {
+  atendimento: 1,
+  estratégico: 2,
+  comercial: 3,
+  'gestão de processos': 4,
+  contratual: 5,
+  financeiro: 6,
+  auditoria: 7,
+};
+
 export default function PrincipalSidebar() {
   const [currentModule, setCurrentModule] = useState(null);
   const [activeItem, setActiveItem] = useState(null);
@@ -310,6 +322,7 @@ export default function PrincipalSidebar() {
     setHovered(true);
     if (!pinned) {
       setCollapsed(false);
+      document.body.classList.add('has-sidebar');
       document.body.classList.add('sidebar-expanded');
     }
   };
@@ -318,6 +331,7 @@ export default function PrincipalSidebar() {
     if (!pinned) {
       setCollapsed(true);
       document.body.classList.remove('sidebar-expanded');
+      // mantém has-sidebar enquanto o componente existir
     }
   };
   const handlePin = () => {
@@ -327,6 +341,7 @@ export default function PrincipalSidebar() {
     
     // Ajustar classe do body baseado no estado do pin
     if (nextPinned) {
+      document.body.classList.add('has-sidebar');
       document.body.classList.add('sidebar-expanded');
     } else {
       document.body.classList.remove('sidebar-expanded');
@@ -338,6 +353,7 @@ export default function PrincipalSidebar() {
   useEffect(() => {
     const applyBodyClass = () => {
       const shouldExpand = pinned || !collapsed;
+      document.body.classList.add('has-sidebar');
       if (shouldExpand) {
         document.body.classList.add('sidebar-expanded');
       } else {
@@ -348,6 +364,7 @@ export default function PrincipalSidebar() {
     applyBodyClass();
     return () => {
       document.body.classList.remove('sidebar-expanded');
+      document.body.classList.remove('has-sidebar');
     };
   }, [collapsed, pinned]);
 
@@ -361,18 +378,32 @@ export default function PrincipalSidebar() {
 
         const user = JSON.parse(userData);
         const empresaId = user?.EmpresaId || user?.empresa?.id;
-        
-        // Carrega todos os módulos disponíveis independente da empresa
-        const availableModules = Object.keys(MODULE_REGISTRY).map(key => ({
+
+        // Carrega todos os módulos disponíveis
+        let availableModules = Object.keys(MODULE_REGISTRY).map(key => ({
           id: key,
           ...MODULE_REGISTRY[key]
         }));
 
+        // Verifica permissões: admin/superadmin veem todos; demais filtram por permissoes_modulos
+        const isAdmin = Array.isArray(user?.permissoes?.adm) && (
+          user.permissoes.adm.includes('admin') || user.permissoes.adm.includes('superadmin')
+        );
+        if (!isAdmin) {
+          const allowedIds = Array.isArray(user?.permissoes_modulos)
+            ? user.permissoes_modulos.map((x) => Number(x))
+            : [];
+          availableModules = availableModules.filter((m) => {
+            const numericId = MODULE_KEY_TO_NUMERIC_ID[m.id] ?? -1;
+            return allowedIds.includes(numericId);
+          });
+        }
+
         setModules(availableModules);
 
         // Detecta módulo ativo baseado no module_id no localStorage
-        const activeModuleId = localStorage.getItem('activeModuleId') || 'atendimento';
-        const foundModule = availableModules.find(m => m.id === activeModuleId);
+        const activeModuleId = localStorage.getItem('activeModuleId') || availableModules[0]?.id || 'atendimento';
+        const foundModule = availableModules.find(m => m.id === activeModuleId) || availableModules[0] || null;
         
         if (foundModule) {
           setCurrentModule(foundModule);
