@@ -65,6 +65,18 @@ router.post("/", verifyToken, async (req, res) => {
   }
 
   try {
+    // Verificar se já existe uma contratada com o mesmo CNPJ na mesma empresa
+    if (cnpj) {
+      const [existingCnpj] = await pool.query(
+        "SELECT id FROM contratada WHERE cnpj = ? AND empresa_id = ?",
+        [cnpj, empresa_id]
+      );
+      
+      if (existingCnpj.length > 0) {
+        return res.status(400).json({ error: "Já existe uma empresa contratada com este CNPJ nesta empresa." });
+      }
+    }
+
     const [result] = await pool.query(
       `INSERT INTO contratada 
       (nome, razao_social, endereco, numero, complemento, bairro, cidade, estado, cep, cnpj, telefone, empresa_id, ativo)
@@ -99,6 +111,18 @@ router.put("/:id", verifyToken, async (req, res) => {
   } = req.body;
 
   try {
+    // Verificar se já existe uma contratada com o mesmo CNPJ na mesma empresa (excluindo o registro atual)
+    if (cnpj) {
+      const [existingCnpj] = await pool.query(
+        "SELECT id FROM contratada WHERE cnpj = ? AND empresa_id = ? AND id != ?",
+        [cnpj, empresa_id, id]
+      );
+      
+      if (existingCnpj.length > 0) {
+        return res.status(400).json({ error: "Já existe uma empresa contratada com este CNPJ nesta empresa." });
+      }
+    }
+
     const [result] = await pool.query("UPDATE contratada SET nome=?, razao_social=?, endereco=?, numero=?, complemento=?, bairro=?, cidade=?, estado=?, cep=?, cnpj=?, telefone=?, empresa_id=?, ativo=? WHERE id = ?",
       [nome, razao_social, endereco, numero, complemento, bairro, cidade, estado, cep, cnpj, telefone, empresa_id, ativo, id]
     );

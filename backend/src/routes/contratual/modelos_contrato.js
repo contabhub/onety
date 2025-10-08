@@ -27,6 +27,38 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 
+// Listar todos os modelos de contrato (versão light - apenas id e nome)
+router.get("/light", verifyToken, async (req, res) => {
+  const empresaId = req.headers['x-empresa-id'];
+  
+  try {
+    let query;
+    let params;
+    
+    if (empresaId && empresaId !== 'undefined') {
+      // Buscar modelos da empresa + globais
+      query = `SELECT id, nome as name, global as is_global
+               FROM modelos_contrato 
+               WHERE empresa_id = ? OR global = 1
+               ORDER BY global DESC, criado_em DESC`;
+      params = [empresaId];
+    } else {
+      // Buscar apenas modelos globais
+      query = `SELECT id, nome as name, global as is_global
+               FROM modelos_contrato 
+               WHERE global = 1
+               ORDER BY criado_em DESC`;
+      params = [];
+    }
+    
+    const [modelos] = await pool.query(query, params);
+    res.json(modelos);
+  } catch (error) {
+    console.error("Erro ao buscar modelos:", error);
+    res.status(500).json({ error: "Erro ao buscar modelos de contrato." });
+  }
+});
+
 // Listar todos os modelos de contrato
 router.get("/", verifyToken, async (req, res) => {
   try {

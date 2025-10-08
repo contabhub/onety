@@ -1,14 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
-import Layout from "../components/layout/Layout";
-import styles from "../styles/Contratos.module.css";
-import { useAuthRedirect } from "../utils/auth";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import styles from "../../styles/contratual/Contratos.module.css";
+import { useAuthRedirect } from "../../utils/auth";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
-import ModalCriarContrato from "../components/modal/ModalCriarContrato"; // Importar o componente Modal
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import meuLottieJson from '../assets/Loading.json';
+import meuLottieJson from '../../assets/Loading.json';
 import Lottie from 'lottie-react';
 
 
@@ -542,8 +541,10 @@ export default function Documentos() {
   };
 
   return (
-    <Layout>
-      <div className={styles.header}>
+    <div className={styles.page}>
+      <PrincipalSidebar />
+      <div className={styles.pageContent}>
+        <div className={styles.header}>
         <h1 className={styles.title}>Documentos</h1>
         <div className={styles.userButtonContainer}>
           <button className={styles.button} onClick={handleOpenModal}>
@@ -552,7 +553,6 @@ export default function Documentos() {
         </div>
       </div>
 
-      {/* {isModalOpen && <ModalCriarContrato onClose={handleCloseModal} />} */}
 
 
       {/* Filtro e alternância de visualização */}
@@ -1045,8 +1045,8 @@ export default function Documentos() {
         theme="colored"
         transition={Bounce}
       />
-    </Layout>
-
+      </div>
+    </div>
   );
 }
 

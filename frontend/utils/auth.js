@@ -1,4 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/router";
+
+// Hook para redirecionar usuários não autenticados
+export function useAuthRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      router.push('/login');
+    }
+  }, [router]);
+}
 
 // Hook para gerenciar autenticação do usuário
 export function useAuth() {
