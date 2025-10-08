@@ -1,0 +1,60 @@
+/* PropostasCliente.module.css */
+
+.container {
+  max-width: 400px;
+  margin-top: 1rem;
+}
+
+.h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.listaPropostas {
+  background: var(--color-surface-1);
+  border-bottom: 1px solid var(--color-border);
+  list-style: none;
+}
+
+.itemProposta {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.itemProposta:last-child {
+  border-bottom: none;
+}
+
+.itemProposta:hover {
+  background-color: var(--color-bg);
+}
+
+.itemProposta strong {
+  display: block;
+  font-weight: 600;
+  color: var(--brand-primary);
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+}
+
+.itemProposta div {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.userIcon {
+  margin-right: 10px;
+  /* Espaço entre o ícone e o texto */
+  color: var(--brand-primary); 
+  background-color: transparent;
+  border-radius: 6px;
+  padding: 5px;
+}

@@ -1,0 +1,265 @@
+/* Estilos gerais do contrato */
+.contractContainer {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  background: var(--color-surface-1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Banner de status do contrato */
+.bannerSuccess {
+  background-color: var(--success);
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.bannerError {
+  background-color: var(--color-text-secondary);
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.bannerRejected {
+  background-color: var(--error);
+  color: white;
+  border: 1px solid var(--color-border);
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+
+.bannerWarning {
+  background-color: var(--brand-accent);
+  color: black;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+/* Cabeçalho com logo */
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Corpo do contrato */
+.contractBody {
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.contractContent {
+  white-space: pre-line;
+  text-align: justify;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 20px;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 5px;
+}
+
+/* Signatários */
+.signatoriesSection {
+  margin-top: 30px;
+}
+
+.signatoriesList {
+  list-style: none;
+  padding: 0;
+}
+
+.signatory {
+  background: var(--color-bg);
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border-left: 5px solid var(--brand-primary);
+}
+
+.signStatus {
+  font-weight: bold;
+  color: var(--brand-primary);
+}
+
+/* Simulação de assinatura */
+.signature {
+  margin-top: 30px;
+  text-align: right;
+}
+
+.signatureText {
+  font-family: 'Dancing Script', cursive;
+  font-size: 24px;
+  color: var(--color-text-primary);
+  border-top: 1px solid var(--color-text-primary);
+  display: inline-block;
+  padding-top: 5px;
+}
+
+/* Botão de Download */
+.downloadSection {
+  justify-content: flex-start;
+  text-align: right;
+  margin-top: 20px;
+}
+
+.downloadButton {
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--brand-primary);
+  border-radius: 5px;
+  margin: 5px;
+  transition: 0.3s ease-in-out;
+}
+
+.downloadButton:hover {
+  background-color: var(--brand-primary);
+  opacity: 0.7;
+  color: var(--color-border);
+  opacity: 0.7;
+}
+
+/* 🔹 Estilização do progresso de assinaturas */
+.signatureProgress {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin: 15px 0;
+  padding: 10px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* 🔥 Barra de progresso de assinaturas */
+.progressContainer {
+  width: 100%;
+  background: var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+  height: 12px;
+}
+
+.progressBar {
+  height: 100%;
+  background: var(--brand-primary);
+  width: 0%;
+  /* Essa largura será dinâmica via JS */
+  transition: width 0.5s ease-in-out;
+}
+
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+  transition: color 0.3s ease;
+}
+
+.backButton:hover {
+  color: var(--brand-primary);
+}
+
+/* Wrapper da seta */
+.iconWrapper {
+  display: inline-flex;
+  transition: transform 0.3s ease;
+}
+
+/* Move a seta para a esquerda no hover */
+.backButton:hover .iconWrapper {
+  transform: translateX(-4px);
+}
+
+.rejectedBy {
+  color: var(--error);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.buttonGroupWrapper {
+  display: flex;
+  gap: 12px;
+  margin: 24px;
+  justify-content: center;
+}
+
+.primaryActionButton {
+  background-color: var(--brand-primary);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.primaryActionButton:hover {
+  background-color: var(--brand-primary);
+}
+
+.primaryActionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emailSuccess {
+  background-color: #4caf50 !important;
+}
+
+.dangerActionButton {
+  background-color: var(--error);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dangerActionButton:hover {
+  background-color: var(--error);
+}
+
+.dangerActionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

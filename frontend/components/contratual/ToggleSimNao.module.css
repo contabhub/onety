@@ -1,0 +1,67 @@
+.toggleContainer {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch {
+  width: 80px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--color-border);
+  position: relative;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+}
+.switchChecked {
+  background: var(--success);
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-surface-1);
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  transition: left 0.2s;
+  box-shadow: var(--shadow-card);
+  z-index: 2;
+}
+.circleChecked {
+  left: 48px;
+}
+
+.textSim {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: color 0.2s, font-weight 0.2s;
+  z-index: 3;
+  user-select: none;
+}
+.textNao {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: color 0.2s, font-weight 0.2s;
+  z-index: 3;
+  user-select: none;
+} 
