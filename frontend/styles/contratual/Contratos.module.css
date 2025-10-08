@@ -376,6 +376,32 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
 }
 
+.searchInput {
+  padding: 10px 14px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--onity-color-text);
+  min-width: 200px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: var(--onity-elev-med);
+}
+
+.searchInput:hover {
+    border-color: var(--primary-color, #3b82f6);
+  }
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary-color, #3b82f6);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color, #3b82f6) 25%, transparent);
+}
+
+.searchInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
 .actions {
   display: flex;
   align-items: center;

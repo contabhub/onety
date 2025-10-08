@@ -136,6 +136,12 @@ const MODULE_REGISTRY = {
         route: '/contratual/templates'
       },
       {
+        id: 'variaveis-personalizadas',
+        label: 'Variáveis Personalizadas',
+        icon: <Tag size={18} />,
+        route: '/contratual/variaveis-personalizadas'
+      },
+      {
         id: 'signatarios',
         label: 'Signatários',
         icon: <UserCheck size={18} />,
