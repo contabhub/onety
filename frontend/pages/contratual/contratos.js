@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from "react";
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import SpaceLoader from "../../components/onety/menu/SpaceLoader";
 import styles from "../../styles/contratual/Contratos.module.css";
-import { useAuthRedirect } from "../../utils/auth";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
@@ -37,7 +36,7 @@ export default function Contratos() {
   const isSuperAdmin = userRole === 'superadmin';
 
   const handleOpenModal = () => {
-    router.push('/criar-contrato-autentique');
+    router.push('/contratual/criar-contrato-autentique');
   };
 
   // Função para resetar página quando mudar quantidade de itens
@@ -63,10 +62,10 @@ export default function Contratos() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = userRaw ? JSON.parse(userRaw) : null;
-    const equipeId = user?.equipe_id ?? null;
-    setUserRole(user && user.role ? String(user.role).toLowerCase() : null);
+    const equipeId = user?.EmpresaId ?? null;
+    setUserRole(user && user.permissoes?.adm ? String(user.permissoes.adm[0]).toLowerCase() : null);
 
     if (!token || !equipeId) {
       setError("Você precisa estar logado e vinculado a uma equipe.");
@@ -75,12 +74,8 @@ export default function Contratos() {
 
 
     async function fetchContratos() {
-
-
-
-
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/equipe/${equipeId}/light`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/empresa/${equipeId}/light`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -133,7 +128,7 @@ export default function Contratos() {
         const token = localStorage.getItem("token");
 
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${contrato.id}/status`, {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${contrato.id}/status`, {
             method: "PATCH",
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -248,14 +243,14 @@ export default function Contratos() {
     const token = localStorage.getItem("token");
 
     // 1. Garante que a folha de assinaturas foi criada/atualizada
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${contratoId}/generate-signatures-base64`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${contratoId}/generate-signatures-base64`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` }
     });
 
     // 2. Só agora faz o download do PDF
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${contratoId}/download`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${contratoId}/download`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -300,7 +295,7 @@ export default function Contratos() {
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique/${contrato.autentique_id}/download?type=${type}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/${contrato.autentique_id}/download?type=${type}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -341,7 +336,7 @@ export default function Contratos() {
   const handleEditContract = async (id) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -374,7 +369,7 @@ export default function Contratos() {
   const handleCloneContract = async (id) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -430,7 +425,7 @@ export default function Contratos() {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/contracts/${contratoId}/signatories`,
+        `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${contratoId}/signatories`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -513,7 +508,7 @@ export default function Contratos() {
       const novaData = new Date(base);
       novaData.setDate(novaData.getDate() + Number(diasProlongar));
       const new_expires_at = novaData.toISOString().slice(0, 19).replace('T', ' ');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${contratoId}/prolongar`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${contratoId}/prolongar`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -534,7 +529,9 @@ export default function Contratos() {
 
   return (
     <>
-      <PrincipalSidebar />
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
       <div className={styles.pageContainer}>
         <div className={styles.header}>
           <h1 className={styles.title}>Contratos</h1>
@@ -1041,6 +1038,8 @@ export default function Contratos() {
           theme="colored"
           transition={Bounce}
         />
+      </div>
+        </div>
       </div>
     </>
   );

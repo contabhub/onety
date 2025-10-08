@@ -19,7 +19,7 @@ import {
   FaImage
 } from 'react-icons/fa'
 import { useState, useRef, useEffect } from 'react'
-import styles from '../styles/TiptapEditor.module.css'
+import styles from '../../styles/contratual/TiptapEditor.module.css'
 
 // Função para processar HTML e converter imagens para formato correto
 const processHtmlContent = (htmlContent) => {
