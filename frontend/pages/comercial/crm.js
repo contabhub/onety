@@ -470,9 +470,11 @@ export default function CRM() {
     return Object.values(columns).some(col => 
       col.cards.some(card => {
         const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
+        const ownerId = card.user_id ?? card.usuario_id;
+        const ownerIdStr = ownerId != null ? ownerId.toString() : null;
         const responsavelMatch =
           responsaveisSelecionados.includes('todos') ||
-          (card.user_id && responsaveisSelecionados.includes(card.user_id.toString()));
+          (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
         return nomeMatch && responsavelMatch;
       })
     );
@@ -515,18 +517,22 @@ export default function CRM() {
                     />
                     Todos
                   </label>
-                  {membrosEquipe
-                    .filter((m) => m.role !== 'superadmin' && m.usuarioId)
-                    .map((m) => (
-                      <label key={m.usuarioId}>
+                  {membrosEquipe.map((m) => {
+                    const memberIdRaw = m.usuario_id ?? m.user_id ?? m.usuarioId;
+                    if (!memberIdRaw) return null;
+                    const memberId = memberIdRaw.toString();
+                    const memberName = m.full_name || m.nome || m.name || m.email || `Usuário ${memberId}`;
+                    return (
+                      <label key={memberId}>
                         <input
                           type="checkbox"
-                          checked={responsaveisSelecionados.includes(m.usuarioId.toString())}
-                          onChange={() => handleResponsavelChange(m.usuarioId.toString())}
+                          checked={responsaveisSelecionados.includes(memberId)}
+                          onChange={() => handleResponsavelChange(memberId)}
                         />
-                        {m.full_name}
+                        {memberName}
                       </label>
-                    ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -653,12 +659,12 @@ export default function CRM() {
                           id={columnId}
                           title={column.title}
                           cards={column.cards.filter(card => {
-                            // Filtro por nome
                             const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
-                            // Filtro por responsável
+                            const ownerId = card.user_id ?? card.usuario_id;
+                            const ownerIdStr = ownerId != null ? ownerId.toString() : null;
                             const responsavelMatch =
                               responsaveisSelecionados.includes('todos') ||
-                              (card.user_id && responsaveisSelecionados.includes(card.user_id.toString()));
+                              (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
                             return nomeMatch && responsavelMatch;
                           })}
                           onEdit={(card) => handleEdit(card, columnId)}

@@ -994,7 +994,6 @@
 }
 .responsavelDropdownBtn:focus {
   outline: 2px solid var(--onity-color-primary);
-  border-color: var(--onity-color-primary);
 }
 
 .responsavelDropdownIcon {
@@ -1085,7 +1084,7 @@
 .funilTab:hover,
 .funilTabActive {
   background: var(--onity-color-bg);
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   border: 1.5px solid var(--onity-color-primary);
   font-weight: 600;
   box-shadow: 0 2px 8px #2563eb22;
