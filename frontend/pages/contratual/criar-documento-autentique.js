@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Layout from "../components/layout/Layout";
-import styles from "../styles/CriarContrato.module.css";
-import LeadsModal from "../components/modal/LeadsModal";
-import ClienteForm from "../components/assinador/ClienteForm";
-import ProdutoModal from "../components/assinador/ProdutoModal";
-import LeadToClientForm from "../components/assinador/LeadToClientForm";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import styles from "../../styles/contratual/CriarContrato.module.css";
+import LeadsModal from "../../components/comercial/modal/LeadsModal";
+import ClienteModal from "../../components/comercial/ClienteModal";
+import ClienteForm from "../../components/contratual/ClienteForm";
+import ProdutoModal from "../../components/contratual/ProdutoModal";
+import LeadToClientForm from "../../components/contratual/LeadToClientForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faPen, faTrash, faUser, faFileAlt, faBoxOpen, faUserPlus, faInfoCircle, faRocket, faCloudUploadAlt, faCheckCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { fetchClienteById } from "../utils/fetchClienteById";
-import ListaSignatarios from "../components/assinador/ListaSignatarios"; // Importar o componente
+import { fetchClienteById } from "../../utils/fetchClienteById";
+import ListaSignatarios from "../../components/contratual/ListaSignatarios";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ToggleSimNao from "../components/assinador/ToggleSimNao";
-import FullScreenLoader from '../components/FullScreenLoader';
-import meuLottieJson from '../assets/Contract.json';
-import TiptapEditor from "../components/TiptapEditor";
+import ToggleSimNao from "../../components/contratual/ToggleSimNao";
+import SpaceLoader from '../../components/onety/menu/SpaceLoader';
+import TiptapEditor from "../../components/contratual/TiptapEditor";
 
 // Adicione a função utilitária para converter arquivo em base64
 function fileToBase64(file) {
@@ -70,7 +70,8 @@ export default function CriarDocumentoAutentique() {
   const [empresasAtivas, setEmpresasAtivas] = useState([]); // Novo estado para múltiplas empresas
   const [customVariables, setCustomVariables] = useState([]);
   const [customValues, setCustomValues] = useState({});
-  const [showClienteFormModal, setShowClienteFormModal] = useState(false); // Novo controle
+  const [showClienteModal, setShowClienteModal] = useState(false); // Para criar novo cliente
+  const [showClienteFormModal, setShowClienteFormModal] = useState(false); // Para editar cliente existente
   const [leadSelecionado, setLeadSelecionado] = useState({});
   const [showLeadToClientForm, setShowLeadToClientForm] = useState(false);
   const [createdContractId, setCreatedContractId] = useState("");
@@ -87,6 +88,7 @@ export default function CriarDocumentoAutentique() {
   const [showUploadWarning, setShowUploadWarning] = useState(false); // Aviso de conflito entre modelo e upload
   const [uploadProgress, setUploadProgress] = useState(0); // Progresso do upload
   const [valorContrato, setValorContrato] = useState(""); // Valor do contrato (TCV) - NOVO
+  const [loadingClientes, setLoadingClientes] = useState(false); // Estado de carregamento dos clientes
 
 
   const handleLeadSelecionado = (lead) => {
@@ -225,13 +227,16 @@ export default function CriarDocumentoAutentique() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
+      const userDataRaw = localStorage.getItem("userData");
       const userRaw = localStorage.getItem("user");
-      if (!userRaw) return;
 
-      const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/equipe-empresa/equipe/${equipeId}`, {
+      if (!empresaId) return;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratada/empresa/${empresaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -261,22 +266,15 @@ export default function CriarDocumentoAutentique() {
       if (!token) return;
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Erro ao obter dados do usuário: ${res.statusText}`);
+        const userDataRaw = localStorage.getItem("userData");
+        const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+        
+        if (userData) {
+          setUsuario({
+            full_name: userData.nome || "",
+            email: userData.email || "",
+          });
         }
-
-        const data = await res.json();
-        setUsuario({
-          full_name: data.full_name || "",
-          email: data.email || "",
-        });
       } catch (err) {
         console.error(err);
       }
@@ -346,14 +344,14 @@ export default function CriarDocumentoAutentique() {
     const user = JSON.parse(userRaw);
 
     try {
+      const userData = JSON.parse(localStorage.getItem("userData") || "null");
+      const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/templates`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/empresa/${empresaId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "x-equipe-id": user?.equipe_id,
-
         },
       });
 
@@ -377,16 +375,25 @@ export default function CriarDocumentoAutentique() {
 
 
   async function fetchClientes() {
-    const token = localStorage.getItem("token"); // Obtém o token JWT do localStorage
+    const token = localStorage.getItem("token");
+    const userDataRaw = localStorage.getItem("userData");
     const userRaw = localStorage.getItem("user");
-    const user = JSON.parse(userRaw);
-    const equipeId = user.equipe_id;
+    
+    const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+    const user = userRaw ? JSON.parse(userRaw) : null;
+    const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
 
+    if (!empresaId) {
+      console.error("EmpresaId não encontrado");
+      return;
+    }
+
+    setLoadingClientes(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/equipe/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/empresa/${empresaId}`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,  // Envia o token JWT no cabeçalho
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -394,9 +401,15 @@ export default function CriarDocumentoAutentique() {
       if (!res.ok) throw new Error("Erro ao buscar clientes.");
 
       const data = await res.json();
+      console.log("🔍 [DEBUG] Clientes carregados:", data);
+      console.log("🔍 [DEBUG] Primeiro cliente:", data[0]);
+      console.log("🔍 [DEBUG] Campos do primeiro cliente:", data[0] ? Object.keys(data[0]) : "Nenhum cliente");
       setClientes(data);
     } catch (err) {
       console.error("Erro ao carregar clientes:", err);
+      toast.error("Erro ao carregar lista de clientes!");
+    } finally {
+      setLoadingClientes(false);
     }
   }
 
@@ -404,16 +417,20 @@ export default function CriarDocumentoAutentique() {
 
   const fetchProdutos = async () => {
     try {
+      const userDataRaw = localStorage.getItem("userData");
       const userRaw = localStorage.getItem("user");
       const token = localStorage.getItem("token");
 
-      if (!userRaw || !token) return;
+      if (!token) return;
 
-      const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+
+      if (!empresaId) return;
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/produtos/equipe/${equipeId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/empresa/${empresaId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -429,15 +446,19 @@ export default function CriarDocumentoAutentique() {
 
   const fetchContatos = async () => {
     try {
+      const userDataRaw = localStorage.getItem("userData");
       const userRaw = localStorage.getItem("user");
       const token = localStorage.getItem("token");
       
-      if (!userRaw || !token) return;
+      if (!token) return;
       
-      const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos/equipe/${equipeId}`, {
+      if (!empresaId) return;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/contatos/equipe/${empresaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -1047,16 +1068,42 @@ export default function CriarDocumentoAutentique() {
   };
 
   const handleClienteCriado = async (clientId) => {
+    console.log("🔍 [DEBUG] handleClienteCriado recebido:", clientId, "tipo:", typeof clientId);
+    
+    if (!clientId) {
+      console.error("ClientId não fornecido");
+      toast.error("Erro ao criar cliente: ID não encontrado");
+      return;
+    }
+
+    // Garantir que clientId seja uma string ou número
+    const clientIdStr = String(clientId);
+    console.log("🔍 [DEBUG] ClientId convertido para string:", clientIdStr);
+
     await fetchClientes();
 
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${clientIdStr}`;
+    console.log("🔍 [DEBUG] URL da requisição:", url);
+    
+    const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    
+    if (!res.ok) {
+      console.error("Erro ao buscar cliente criado:", res.status, res.statusText);
+      toast.error("Cliente criado, mas erro ao carregar dados");
+      setShowClienteModal(false);
+      setActiveTab("documento");
+      return;
+    }
+    
     const clienteData = await res.json();
+    console.log("🔍 [DEBUG] Dados do cliente carregado:", clienteData);
 
     setCliente(clienteData);
-    setClienteSelecionado(clientId.toString());
+    setClienteSelecionado(clientIdStr);
+    setShowClienteModal(false);
     setShowClienteFormModal(false);
     setActiveTab("documento");
   };
@@ -1300,6 +1347,7 @@ export default function CriarDocumentoAutentique() {
     }
     
     setActiveTab(tab);
+    setShowClienteModal(false);
     setShowClienteFormModal(false);
   };
 
@@ -1423,12 +1471,11 @@ export default function CriarDocumentoAutentique() {
   );
 
   return (
-    <Layout>
-      {loading && <FullScreenLoader animationData={meuLottieJson}/>}
-      <button className={styles.backButton} onClick={() => router.back()}>
-        <FontAwesomeIcon icon={faArrowLeft} /> Voltar
-      </button>
-      <h1 className={styles.title}>Criar Novo documento</h1>
+    <div className={styles.page}>
+      <PrincipalSidebar />
+      <div className={styles.pageContent}>
+        {loading && <SpaceLoader size={120} label="Criando documento..." showText={true} minHeight={300} />}
+        <h1 className={styles.title}>Criar Novo documento</h1>
       <div className={styles.infoContainer}>
         <FontAwesomeIcon icon={faRocket} className={styles.infoIcon} />
         <span className={styles.infoText}>
@@ -1482,22 +1529,43 @@ export default function CriarDocumentoAutentique() {
               className={styles.select}
               onChange={(e) => {
                 const clienteId = e.target.value;
-                const cliente = clientes.find(c => c.id.toString() === clienteId);
+                const clienteEncontrado = clientes.find(c => c.id.toString() === clienteId);
                 setClienteSelecionado(clienteId);
-                setCliente(cliente);
-                setShowClienteFormModal(true);
+                
+                // Se cliente existe, abre formulário normal; se não, abre modal
+                if (clienteEncontrado) {
+                  setCliente(clienteEncontrado);
+                  setShowClienteFormModal(true);
+                } else {
+                  setCliente({}); // Objeto vazio para evitar undefined
+                  setShowClienteModal(true);
+                }
               }}
               value={clienteSelecionado || ""}
+              disabled={loadingClientes}
             >
-              <option value="">Selecione um cliente...</option>
-              {clientes.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              <option value="" disabled>
+                {loadingClientes ? "Carregando clientes..." : "Selecione um cliente..."}
+              </option>
+              {clientes && clientes.length > 0 ? (
+                clientes.map((c) => {
+                  // Debug: verificar campos disponíveis
+                  console.log("🔍 [DEBUG] Renderizando cliente:", c);
+                  const nomeCliente = c.name || c.nome || c.razao_social || `Cliente ${c.id}`;
+                  return (
+                    <option key={c.id} value={c.id}>
+                      {nomeCliente}
+                    </option>
+                  );
+                })
+              ) : (
+                !loadingClientes && <option value="" disabled>Nenhum cliente encontrado</option>
+              )}
             </select>
 
             <button className={styles.button} onClick={() => {
-              setCliente(null);
-              setShowClienteFormModal(true);
+              setCliente({}); // Objeto vazio ao invés de null
+              setShowClienteModal(true);
             }}>
               Criar Cliente
             </button>
@@ -1510,254 +1578,257 @@ export default function CriarDocumentoAutentique() {
         <div>
           <h2 className={styles.tituloComIcone}><FontAwesomeIcon icon={faFileAlt} style={{ marginRight: 8, color: '#2563eb' }} />Dados do Documento</h2>
 
-                    {/* Modelo de documento e Upload de Arquivo - lado a lado */}
-          {/* Seção de Escolha do Documento */}
-          <div className={styles.documentChoiceSection}>
-            <h3 className={styles.sectionTitle}>Escolha o Documento</h3>
-            <p className={styles.sectionDescription}>
-              Selecione um modelo de documento existente ou faça upload de um arquivo PDF personalizado
-            </p>
+          <div className={styles.documentCardsContainer}>
+            {/* Card 1: Escolha do Documento */}
+            <div className={styles.documentCard}>
+              <h3>Escolha o Documento</h3>
+              <div className={styles.documentCardContent}>
             
-            <div className={styles.choiceContainer}>
-              {/* Opção 1: Modelo de documento */}
-              <div className={`${styles.choiceOption} ${selectedTemplate ? styles.choiceOptionActive : ''}`}>
-                <div className={styles.choiceHeader}>
-                  <div className={styles.choiceIcon}>
-                    <FontAwesomeIcon icon={faFileAlt} />
-                  </div>
-                  <div className={styles.choiceTitle}>
-                    <h4>Modelo de documento</h4>
-                    <p>Use um template pré-configurado</p>
-                  </div>
-                </div>
-                
-                <div className={styles.choiceContent}>
-                  <select 
-                    className={styles.templateSelect} 
-                    onChange={handleTemplateChangeWithWarning} 
-                    value={selectedTemplate || ""}
-                  >
-                    <option value="">Selecione um modelo...</option>
-                    {templates.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                  
-                  {selectedTemplate && (
-                    <div className={styles.selectedTemplateInfo}>
-                      <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#10b981', marginRight: '8px' }} />
-                      <span>Modelo selecionado</span>
+                {/* Opção 1: Modelo de documento */}
+                <div className={`${styles.choiceOption} ${selectedTemplate ? styles.choiceOptionActive : ''}`}>
+                  <div className={styles.choiceHeader}>
+                    <div className={styles.choiceIcon}>
+                      <FontAwesomeIcon icon={faFileAlt} />
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Separador Visual */}
-              <div className={styles.choiceDivider}>
-                <div className={styles.dividerLine}></div>
-                <div className={styles.dividerText}>OU</div>
-                <div className={styles.dividerLine}></div>
-              </div>
-
-              {/* Opção 2: Upload de Arquivo */}
-              <div className={`${styles.choiceOption} ${uploadedFile ? styles.choiceOptionActive : ''}`}>
-                <div className={styles.choiceHeader}>
-                  <div className={styles.choiceIcon}>
-                    <FontAwesomeIcon icon={faCloudUploadAlt} />
+                    <div className={styles.choiceTitle}>
+                      <h4>Modelo de documento</h4>
+                      <p>Use um template pré-configurado</p>
+                    </div>
                   </div>
-                  <div className={styles.choiceTitle}>
-                    <h4>Upload de Arquivo</h4>
-                    <p>Envie um PDF personalizado</p>
-                  </div>
-                </div>
-                
-                <div className={styles.choiceContent}>
-                  <div 
-                    className={`${styles.uploadArea} ${uploadedFile ? styles.uploadAreaActive : ''}`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    {!uploadedFile ? (
-                      <div className={styles.uploadPlaceholder}>
-                        <FontAwesomeIcon 
-                          icon={faCloudUploadAlt} 
-                          className={styles.uploadIcon}
-                        />
-                        <p className={styles.uploadText}>
-                          Arraste e solte um PDF aqui
-                        </p>
-                        <p className={styles.uploadSubtext}>
-                          ou clique para selecionar
-                        </p>
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={handleFileUpload}
-                          className={styles.fileInput}
-                          id="file-upload"
-                        />
-                        <label 
-                          htmlFor="file-upload"
-                          className={styles.uploadButton}
-                        >
-                          Selecionar PDF
-                        </label>
-                      </div>
-                    ) : (
-                      <div className={styles.uploadedFileInfo}>
-                        <FontAwesomeIcon 
-                          icon={faFileAlt} 
-                          className={styles.fileIcon}
-                        />
-                        <div className={styles.fileDetails}>
-                          <p className={styles.fileName}>
-                            {uploadFileName.length > 25 ? uploadFileName.substring(0, 25) + '...' : uploadFileName}
-                          </p>
-                          <p className={styles.fileSize}>
-                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                        <button
-                          onClick={handleRemoveFile}
-                          className={styles.removeFileButton}
-                          title="Remover arquivo"
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
+                  
+                  <div className={styles.choiceContent}>
+                    <select 
+                      className={styles.templateSelect} 
+                      onChange={handleTemplateChangeWithWarning} 
+                      value={selectedTemplate || ""}
+                    >
+                      <option value="">Selecione um modelo...</option>
+                      {templates.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    
+                    {selectedTemplate && (
+                      <div className={styles.selectedTemplateInfo}>
+                        <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#10b981', marginRight: '8px' }} />
+                        <span>Modelo selecionado</span>
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Separador Visual */}
+                <div className={styles.choiceDivider}>
+                  <div className={styles.dividerLine}></div>
+                  <div className={styles.dividerText}>OU</div>
+                  <div className={styles.dividerLine}></div>
+                </div>
+
+                {/* Opção 2: Upload de Arquivo */}
+                <div className={`${styles.choiceOption} ${uploadedFile ? styles.choiceOptionActive : ''}`}>
+                  <div className={styles.choiceHeader}>
+                    <div className={styles.choiceIcon}>
+                      <FontAwesomeIcon icon={faCloudUploadAlt} />
+                    </div>
+                    <div className={styles.choiceTitle}>
+                      <h4>Upload de Arquivo</h4>
+                      <p>Envie um PDF personalizado</p>
+                    </div>
+                  </div>
                   
-                  <div className={styles.uploadInfo}>
-                    <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: '6px', color: '#6b7280' }} />
-                    <span>Apenas arquivos PDF.</span>
+                  <div className={styles.choiceContent}>
+                    <div 
+                      className={`${styles.uploadArea} ${uploadedFile ? styles.uploadAreaActive : ''}`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      {!uploadedFile ? (
+                        <div className={styles.uploadPlaceholder}>
+                          <FontAwesomeIcon 
+                            icon={faCloudUploadAlt} 
+                            className={styles.uploadIcon}
+                          />
+                          <p className={styles.uploadText}>
+                            Arraste e solte um PDF aqui
+                          </p>
+                          <p className={styles.uploadSubtext}>
+                            ou clique para selecionar
+                          </p>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileUpload}
+                            className={styles.fileInput}
+                            id="file-upload"
+                          />
+                          <label 
+                            htmlFor="file-upload"
+                            className={styles.uploadButton}
+                          >
+                            Selecionar PDF
+                          </label>
+                        </div>
+                      ) : (
+                        <div className={styles.uploadedFileInfo}>
+                          <FontAwesomeIcon 
+                            icon={faFileAlt} 
+                            className={styles.fileIcon}
+                          />
+                          <div className={styles.fileDetails}>
+                            <p className={styles.fileName}>
+                              {uploadFileName.length > 25 ? uploadFileName.substring(0, 25) + '...' : uploadFileName}
+                            </p>
+                            <p className={styles.fileSize}>
+                              {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleRemoveFile}
+                            className={styles.removeFileButton}
+                            title="Remover arquivo"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className={styles.uploadInfo}>
+                      <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: '6px', color: '#6b7280' }} />
+                      <span>Apenas arquivos PDF.</span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Aviso de Conflito */}
+                {showUploadWarning && (
+                  <div className={styles.warningMessage}>
+                    <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '8px' }} />
+                    <span>
+                      <strong>Atenção:</strong> Você selecionou um modelo E fez upload de um arquivo. 
+                      O arquivo enviado terá prioridade sobre o modelo selecionado.
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Aviso de Conflito */}
-            {showUploadWarning && (
-              <div className={styles.warningMessage}>
-                <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '8px' }} />
-                <span>
-                  <strong>Atenção:</strong> Você selecionou um modelo E fez upload de um arquivo. 
-                  O arquivo enviado terá prioridade sobre o modelo selecionado.
-                </span>
+            {/* Card 2: Dados do Documento */}
+            <div className={styles.documentCard}>
+              <h3>Dados do Documento</h3>
+              <div className={styles.documentCardContent}>
+                
+                {/* Nome do Documento */}
+                <div>
+                  <label className={styles.label}>Nome do Documento</label>
+                  <input
+                    className={styles.input}
+                    type="text"
+                    placeholder={`${cliente?.name || 'Cliente'} - documento`}
+                    value={nomeDocumento || ""}
+                    onChange={(e) => setNomeDocumento(e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                  <small style={{ color: '#666', fontSize: '12px' }}>
+                    Deixe em branco para usar o nome padrão: "{cliente?.name || 'Cliente'} - documento"
+                  </small>
+                </div>
+
+                {/* Expiração */}
+                <div style={{ display: "flex", gap: "1rem", alignItems: "flex-end" }}>
+                  <div style={{ flex: 1 }}>
+                    <label className={styles.label}>Expira em</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <input
+                        className={styles.input}
+                        type="number"
+                        value={expiraEmDias || 15}
+                        onChange={(e) => {
+                          const dias = parseInt(e.target.value) || 0;
+                          setExpiraEmDias(dias);
+                          const novaData = new Date();
+                          novaData.setDate(novaData.getDate() + dias);
+                          setValidade(novaData.toISOString().slice(0, 16));
+                        }}
+                      />
+                      <span>Dias</span>
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 2 }}>
+                    <label className={styles.label}>Data da Expiração</label>
+                    <input
+                      className={styles.input}
+                      type="datetime-local"
+                      value={validade || ""}
+                      onChange={(e) => {
+                        const novaValidade = e.target.value;
+                        setValidade(novaValidade);
+
+                        const hoje = new Date();
+                        const dataSelecionada = new Date(novaValidade);
+                        const diffMs = dataSelecionada - hoje;
+                        const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                        setExpiraEmDias(diffDias);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Vigência */}
+                <div style={{ display: "flex", gap: "1rem", alignItems: "flex-end" }}>
+                  <div style={{ flex: 1 }}>
+                    <label className={styles.label}>Data de Início da Vigência</label>
+                    <input
+                      className={styles.input}
+                      type="date"
+                      value={vigenciaInicio || ""}
+                      onChange={(e) => {
+                        const novaDataInicio = e.target.value;
+                        setVigenciaInicio(novaDataInicio);
+
+                        const inicio = new Date(novaDataInicio);
+                        const fim = new Date(inicio);
+                        fim.setMonth(fim.getMonth() + vigenciaMeses);
+                        setVigenciaFim(fim.toISOString().slice(0, 10));
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <label className={styles.label}>Vigência em Meses</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <input
+                        className={styles.input}
+                        type="number"
+                        value={vigenciaMeses || 12}
+                        onChange={(e) => {
+                          const meses = parseInt(e.target.value) || 0;
+                          setVigenciaMeses(meses);
+
+                          const inicio = new Date(vigenciaInicio);
+                          const fim = new Date(inicio);
+                          fim.setMonth(fim.getMonth() + meses);
+                          setVigenciaFim(fim.toISOString().slice(0, 10));
+                        }}
+                      />
+                      <span>Meses</span>
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <label className={styles.label}>Data Final da Vigência</label>
+                    <input
+                      className={styles.input}
+                      type="date"
+                      value={vigenciaFim || ""}
+                      readOnly
+                    />
+                  </div>
+                </div>
+                
               </div>
-            )}
-          </div>
-
-          {/* Nome do Documento */}
-          <div style={{ marginTop: "2rem" }}>
-            <label className={styles.label}>Nome do Documento</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder={`${cliente?.name || 'Cliente'} - documento`}
-              value={nomeDocumento || ""}
-              onChange={(e) => setNomeDocumento(e.target.value)}
-              style={{ width: '100%', maxWidth: '500px' }}
-            />
-            <small style={{ color: '#666', fontSize: '12px' }}>
-              Deixe em branco para usar o nome padrão: "{cliente?.name || 'Cliente'} - documento"
-            </small>
-          </div>
-
-
-          {/* Expiração */}
-          <div style={{ marginTop: "2rem", display: "flex", gap: "2rem", alignItems: "flex-end" }}>
-            <div>
-              <label className={styles.label}>Expira em</label>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <input
-                  className={styles.input}
-                  type="number"
-                  value={expiraEmDias || 15}
-                  onChange={(e) => {
-                    const dias = parseInt(e.target.value) || 0;
-                    setExpiraEmDias(dias);
-                    const novaData = new Date();
-                    novaData.setDate(novaData.getDate() + dias);
-                    setValidade(novaData.toISOString().slice(0, 16));
-                  }}
-                />
-                <span>Dias</span>
-              </div>
-            </div>
-
-            <div>
-              <label className={styles.label}>Data da Expiração</label>
-              <input
-                className={styles.input}
-                type="datetime-local"
-                value={validade || ""}
-                onChange={(e) => {
-                  const novaValidade = e.target.value;
-                  setValidade(novaValidade);
-
-                  const hoje = new Date();
-                  const dataSelecionada = new Date(novaValidade);
-                  const diffMs = dataSelecionada - hoje;
-                  const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                  setExpiraEmDias(diffDias);
-                }}
-              />
-            </div>
-
-          </div>
-
-
-          {/* Vigência */}
-          <div style={{ marginTop: "2rem", display: "flex", gap: "2rem", alignItems: "flex-end" }}>
-            <div>
-              <label className={styles.label}>Data de Início da Vigência</label>
-              <input
-                className={styles.input}
-                type="date"
-                value={vigenciaInicio || ""}
-                onChange={(e) => {
-                  const novaDataInicio = e.target.value;
-                  setVigenciaInicio(novaDataInicio);
-
-                  const inicio = new Date(novaDataInicio);
-                  const fim = new Date(inicio);
-                  fim.setMonth(fim.getMonth() + vigenciaMeses);
-                  setVigenciaFim(fim.toISOString().slice(0, 10));
-                }}
-              />
-            </div>
-
-            <div>
-              <label className={styles.label}>Vigência em Meses</label>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <input
-                  className={styles.input}
-                  type="number"
-                  value={vigenciaMeses || 12}
-                  onChange={(e) => {
-                    const meses = parseInt(e.target.value) || 0;
-                    setVigenciaMeses(meses);
-
-                    const inicio = new Date(vigenciaInicio);
-                    const fim = new Date(inicio);
-                    fim.setMonth(fim.getMonth() + meses);
-                    setVigenciaFim(fim.toISOString().slice(0, 10));
-                  }}
-                />
-                <span>Meses</span>
-              </div>
-            </div>
-
-            <div>
-              <label className={styles.label}>Data Final da Vigência</label>
-              <input
-                className={styles.input}
-                type="date"
-                value={vigenciaFim || ""}
-                readOnly
-              />
             </div>
           </div>
 
@@ -1772,7 +1843,7 @@ export default function CriarDocumentoAutentique() {
 
 
       {activeTab === "signatarios" && (
-        <div>
+        <div className={styles.signatariosContainer}>
           <div className={styles.header}>
             <h2 className={styles.tituloComIcone}><FontAwesomeIcon icon={faUserPlus} style={{ marginRight: 8, color: '#2563eb' }} />Adicionar Signatários</h2>
             <button
@@ -2144,6 +2215,15 @@ export default function CriarDocumentoAutentique() {
       )}
 
 
+      {showClienteModal && (
+        <ClienteModal
+          cliente={cliente}
+          onClose={() => setShowClienteModal(false)}
+          onCreate={handleClienteCriado}
+          onUpdate={handleAtualizarCliente}
+        />
+      )}
+
       {showClienteFormModal && (
         <ClienteForm
           cliente={cliente}
@@ -2175,6 +2255,7 @@ export default function CriarDocumentoAutentique() {
         theme="colored"
         transition={Bounce}
       />
-    </Layout>
+      </div>
+    </div>
   );
 }

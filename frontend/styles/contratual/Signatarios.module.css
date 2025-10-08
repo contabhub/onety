@@ -883,7 +883,7 @@
 
 @media (max-width: 700px) {
   .page { 
-    flex-direction: column; 
+  flex-direction: column;
   }
   .pageHeader { 
     padding: 12px 10px; 

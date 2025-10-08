@@ -108,11 +108,46 @@
   padding: 10px;
   margin: 10px 0;
   border: 1px solid var(--onity-color-border);
-  border-radius: 5px;
+  border-radius: 10px;
   font-size: 16px;
   max-width: 300px;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.select option {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: 8px;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+/* Fallback para navegadores que não suportam color-mix */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .select:focus {
+    outline: none;
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--onity-color-bg);
 }
 
 .button {
@@ -122,7 +157,7 @@
   padding: 10px 15px;
   cursor: pointer;
   font-size: 16px;
-  border-radius: 5px;
+  border-radius: 10px;
   transition: 0.3s;
 }
 
@@ -932,4 +967,101 @@
 
 .contractValueDisplay strong {
   color: var(--onity-color-text);
+}
+
+/* Cards para a aba de documento */
+.documentCardsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.documentCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: var(--onity-elev-med);
+}
+
+.documentCard h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--onity-color-primary);
+}
+
+.documentCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 1024px) {
+  .documentCardsContainer {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .documentCard {
+    padding: 1.5rem;
+  }
+}
+
+/* Estilos específicos para a aba de signatários */
+.signatariosContainer .input {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.signatariosContainer .input:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.signatariosContainer .grid {
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.signatariosContainer .grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.signatariosContainer label {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--onity-color-text);
+}
+
+.signatariosContainer .signatarioActions {
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.signatariosContainer .button {
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.signatariosContainer .tabelaProdutos {
+  margin-top: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.signatariosContainer .tabelaProdutos th,
+.signatariosContainer .tabelaProdutos td {
+  padding: 12px 8px;
+  font-size: 14px;
 }

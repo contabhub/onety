@@ -245,8 +245,27 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
         }
         throw new Error(data.error || `Erro ao salvar cliente (HTTP ${res.status})`);
       }
+      
+      const responseData = await res.json();
+      console.log("🔍 [DEBUG] Resposta da API ClienteModal:", responseData);
       toast.success("Cliente salvo com sucesso");
-      cliente ? onUpdate?.() : onCreate?.();
+      
+      if (cliente) {
+        onUpdate?.(responseData);
+      } else {
+        // Garantir que apenas o ID seja passado, não o objeto inteiro
+        const clientId = responseData?.id || responseData?.clientId || responseData?.client_id;
+        console.log("🔍 [DEBUG] ClientId sendo passado:", clientId);
+        console.log("🔍 [DEBUG] Tipo do clientId:", typeof clientId);
+        
+        if (!clientId) {
+          console.error("❌ [DEBUG] Nenhum ID encontrado na resposta:", responseData);
+          toast.error("Erro: ID do cliente não encontrado na resposta");
+          return;
+        }
+        
+        onCreate?.(clientId);
+      }
     } catch (err) {
       toast.error(err.message);
     } finally {

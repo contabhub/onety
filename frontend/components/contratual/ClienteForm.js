@@ -28,7 +28,31 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
 
   useEffect(() => {
     if (cliente) {
-      setFormData({ ...formData, ...cliente });
+      // Garantir que todos os valores sejam strings para evitar undefined
+      const clienteData = {
+        type: cliente.type || "pessoa_fisica",
+        name: cliente.name || "",
+        cpf_cnpj: cliente.cpf_cnpj || "",
+        email: cliente.email || "",
+        telefone: cliente.telefone || "",
+        endereco: cliente.endereco || "",
+        equipe_id: cliente.equipe_id || "",
+        rg: cliente.rg || "",
+        estado_civil: cliente.estado_civil || "",
+        profissao: cliente.profissao || "",
+        sexo: cliente.sexo || "",
+        nacionalidade: cliente.nacionalidade || "",
+        cep: cliente.cep || "",
+        numero: cliente.numero || "",
+        complemento: cliente.complemento || "",
+        bairro: cliente.bairro || "",
+        cidade: cliente.cidade || "",
+        estado: cliente.estado || "",
+        representante: cliente.representante || "",
+        funcao: cliente.funcao || "",
+        lead_id: cliente.lead_id || null,
+      };
+      setFormData(clienteData);
     } else {
       const userRaw = localStorage.getItem("user");
       if (userRaw) {

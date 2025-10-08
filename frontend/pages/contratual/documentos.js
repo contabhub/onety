@@ -7,8 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import meuLottieJson from '../../assets/Loading.json';
-import Lottie from 'lottie-react';
+import SpaceLoader from '../../components/onety/menu/SpaceLoader';
 
 
 export default function Documentos() {
@@ -38,7 +37,7 @@ export default function Documentos() {
   const isSuperAdmin = userRole === 'superadmin';
 
   const handleOpenModal = () => {
-    router.push('/criar-documento-autentique');
+    router.push('/contratual/criar-documento-autentique');
   };
 
   // Função para resetar página quando mudar quantidade de itens
@@ -55,13 +54,18 @@ export default function Documentos() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const userDataRaw = localStorage.getItem("userData");
     const userRaw = localStorage.getItem("user");
+    
+    const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
     const user = userRaw ? JSON.parse(userRaw) : null;
-    const equipeId = user?.equipe_id ?? null;
+    
+    // Usar EmpresaId em vez de equipe_id
+    const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
     setUserRole(user && user.role ? String(user.role).toLowerCase() : null);
 
-    if (!token || !equipeId) {
-      setError("Você precisa estar logado e vinculado a uma equipe.");
+    if (!token || !empresaId) {
+      setError("Você precisa estar logado e vinculado a uma empresa.");
       return;
     }
 
@@ -72,7 +76,7 @@ export default function Documentos() {
 
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/equipe/${equipeId}/light`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/empresa/${empresaId}/light`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -401,7 +405,7 @@ export default function Documentos() {
       localStorage.setItem("clonedocumentoData", JSON.stringify(contractData));
       
       // Redireciona para a tela de criação com flag de clone
-      router.push("/criar-documento-autentique?clone=1");
+      router.push("/contratual/criar-documento-autentique?clone=1");
     } catch (err) {
       toast.error("Erro ao clonar contrato!");
     }
@@ -677,14 +681,12 @@ export default function Documentos() {
 
       {error && <p className={styles.error}>{error}</p>}
       {isLoading ? (
-        <div className={styles.loadingContainer}>
-          <Lottie
-            animationData={meuLottieJson}
-            loop={true}
-            style={{ width: 200, height: 200 }}
-          />
-          <p className={styles.loadingText}>Carregando contratos...</p>
-        </div>
+        <SpaceLoader 
+          size={120} 
+          label="Carregando contratos..." 
+          showText={true} 
+          minHeight={300}
+        />
       ) : (
         <>
           {/* Renderização condicional: tabela/lista ou Kanban */}

@@ -1,201 +1,276 @@
-.listaSignatariosContainer {
-    margin-top: 20px;
-    padding: 15px;
-  }
-  
-  .listaSignatariosContainer h3 {
-    font-size: 1.5rem;
-    color: var(--color-text-primary);
-    margin-bottom: 15px;
-  }
-  
-  .listaSignatariosContainer p {
-    font-size: 1.2rem;
-    color: var(--color-text-secondary);
-  }
-  
-  .tabelaProdutos {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    box-shadow: var(--shadow-card);
-    min-width: unset;
-    max-width: 100%;
-    table-layout: auto;
-  }
-  
-  .tabelaProdutos th,
-  .tabelaProdutos td {
-    padding: 12px;
-    border: 1px solid var(--color-border);
-    text-align: left;
-  }
-  
-  .tabelaProdutos th {
-    background-color: var(--color-surface-2);
-    font-weight: bold;
-    color: var(--color-text-primary);
-  }
-  
-  .tabelaProdutos tr:nth-child(even) {
-    background-color: var(--color-surface-2);
-  }
-  
-  .tabelaProdutos tr:hover {
-    background-color: var(--color-surface-1);
-  }
-  
-  .tabelaProdutos td {
-    font-size: 1rem;
-    color: var(--color-text-primary);
-  }
-  
-  .tabelaProdutos td:first-child {
-    text-transform: capitalize;
-  }
-  
-  .searchContainer {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 250px;
-  }
-  
-  .searchIcon {
-    position: absolute;
-    left: 10px;
-    color: var(--color-text-secondary);
-    pointer-events: none;
-  }
-  
-  .searchInput {
-    padding: 8px 8px 8px 32px; /* espaço para o ícone */
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    font-size: 14px;
-    max-width: 250px;
-    background-color: var(--color-surface-1);
-    color: var(--color-text-primary);
-  }
-  .searchInput:focus {
-    border-color: var(--brand-primary);
-    outline: none; /* opcional: remove a borda azul padrão do navegador */
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 20%, transparent);
-  }
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 8, 66, 0.6);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
 
-  /* Estilo base para ambos */
-.selectButton {
-  padding: 6px 14px;
-  border-radius: 4px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modalContent {
+  width: min(1200px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: var(--onity-elev-high);
+  animation: modalIn 0.2s ease;
+  position: relative;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Modal Header */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--onity-color-border);
+  position: sticky;
+  top: 0;
+  background: var(--onity-color-surface);
+  z-index: 10;
+}
+
+.modalHeader h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+/* Close Button */
+.closeButton {
+  background: transparent;
   border: none;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-error);
+}
+
+/* Container */
+.listaSignatariosContainer {
+  padding: 24px;
+}
+
+/* Search Container */
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--onity-icon-secondary);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.searchInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Table */
+.tabelaProdutos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--onity-elev-low);
+}
+
+.tabelaProdutos th,
+.tabelaProdutos td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tabelaProdutos th {
+  background: var(--onity-color-bg);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabelaProdutos tbody tr {
+  background: var(--onity-color-surface);
+  transition: background 0.2s ease;
+}
+
+.tabelaProdutos tbody tr:hover {
+  background: var(--onity-color-bg);
+}
+
+.tabelaProdutos td {
+  font-size: 14px;
+  color: var(--onity-color-text);
+}
+
+.tabelaProdutos td:first-child {
+  font-weight: 500;
+}
+
+/* Select Button */
+.selectButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
 }
 
-/* Botão para selecionar */
-.selectButton:not(.selected) {
-  background-color: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+.selectButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
 }
 
-.selectButton:not(.selected):hover {
-  background-color: var(--color-surface-1);
-}
-
-/* Botão quando já está selecionado */
 .selectButton.selected {
-  background-color: var(--brand-primary);
-  color: white;
-  border: 1px solid var(--brand-primary);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
 }
 
 .selectButton.selected:hover {
-  background-color: color-mix(in srgb, var(--brand-primary) 85%, black);
+  background: var(--onity-color-primary-hover);
 }
 
+/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 24px;
   gap: 12px;
 }
 
 .pageButton {
-  background-color: var(--color-text-primary);
-  color: white;
-  padding: 6px 16px;
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  padding: 8px 16px;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
+  font-size: 14px;
 }
 
 .pageButton:hover:not(.disabled) {
-  background-color: var(--color-text-secondary);
+  background: var(--onity-color-primary-hover);
 }
 
-.disabled {
-  background-color: var(--color-border);
-  color: var(--color-text-secondary);
+.pageButton.disabled {
+  background: var(--onity-color-bg);
+  color: var(--onity-icon-secondary);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .pageInfo {
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
+  font-size: 14px;
 }
 
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.45);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Empty State */
+.listaSignatariosContainer p {
+  font-size: 14px;
+  color: var(--onity-icon-secondary);
+  text-align: center;
+  padding: 40px 20px;
 }
 
-.modalContent {
-  background: var(--color-surface-1);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-  padding: 32px 12px 24px 12px;
-  max-width: 1200px;
-  width: 95vw;
-  max-height: 90vh;
-  overflow: auto;
-  overflow-x: auto;
-  position: relative;
-  animation: modalIn 0.2s;
-}
+/* Responsive */
+@media (max-width: 768px) {
+  .modalContent {
+    width: 98vw;
+    max-height: 95vh;
+  }
 
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
-}
+  .listaSignatariosContainer {
+    padding: 16px;
+  }
 
-.closeButton {
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  background: none;
-  border: none;
-  font-size: 1.7rem;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  z-index: 2;
-  padding: 4px 8px;
-  border-radius: 50%;
-  transition: background 0.2s;
-}
-.closeButton:hover {
-  background: var(--color-surface-2);
-  color: var(--brand-primary);
+  .modalHeader {
+    padding: 16px;
+  }
+
+  .searchContainer {
+    max-width: 100%;
+  }
+
+  .tabelaProdutos {
+    font-size: 12px;
+  }
+
+  .tabelaProdutos th,
+  .tabelaProdutos td {
+    padding: 10px 8px;
+  }
 }
