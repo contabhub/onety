@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import styles from "../styles/Signatarios.module.css";
+import { useEffect, useState } from "react";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
+import styles from "../../styles/contratual/Signatarios.module.css";
+import { useAuthRedirect } from "../../utils/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
-import Layout from "../components/layout/Layout";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import meuLottieJson from '../assets/Loading.json';
-import Lottie from 'lottie-react';
 
 
 const ITEMS_PER_PAGE = 5;
@@ -54,11 +54,12 @@ const opcoesFuncaoAssinatura = [
     'Assinar como corretor'
   ];
 
-const SignatariosPage = () => {
+export default function SignatariosPage() {
+  useAuthRedirect();
   const [signatarios, setSignatarios] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -69,34 +70,48 @@ const SignatariosPage = () => {
 
   // Busca equipe_id do usuário logado
   const getEquipeId = () => {
-    const userRaw = (typeof window !== "undefined") ? localStorage.getItem("user") : null;
+    const userRaw = (typeof window !== "undefined") ? localStorage.getItem("userData") : null;
     if (!userRaw) return null;
     try {
       const user = JSON.parse(userRaw);
-      return user.equipe_id;
+      // Tenta equipe_id primeiro, depois EmpresaId como fallback
+      return user.equipe_id || user.EmpresaId;
     } catch {
       return null;
     }
   };
 
   const fetchSignatarios = async () => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
     try {
       const token = localStorage.getItem("token");
       const equipeId = getEquipeId();
-      if (!token || !equipeId) throw new Error("Usuário não autenticado.");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios/equipe/${equipeId}`, {
+      
+      if (!token || !equipeId) {
+        throw new Error("Usuário não autenticado.");
+      }
+      
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios/empresa/${equipeId}`;
+      
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error("Erro ao buscar signatários.");
+      
+      if (!res.ok) {
+        throw new Error(`Erro ao buscar signatários: ${res.status}`);
+      }
+      
       const data = await res.json();
-      setSignatarios(data);
-      setFiltered(data);
+      const signatariosArray = Array.isArray(data) ? data : [];
+      setSignatarios(signatariosArray);
+      setFiltered(signatariosArray);
     } catch (err) {
       setError(err.message);
+      setSignatarios([]);
+      setFiltered([]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -104,11 +119,23 @@ const SignatariosPage = () => {
     fetchSignatarios();
   }, []);
 
+  // Inicializar filtered com array vazio se undefined
+  useEffect(() => {
+    if (filtered === undefined) {
+      setFiltered([]);
+    }
+  }, [filtered]);
+
   // Filtro/search
   useEffect(() => {
+    if (!signatarios || !Array.isArray(signatarios)) {
+      setFiltered([]);
+      return;
+    }
+    
     let filteredList = signatarios.filter(s =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase()) ||
+      (s.nome && s.nome.toLowerCase().includes(search.toLowerCase())) ||
+      (s.email && s.email.toLowerCase().includes(search.toLowerCase())) ||
       (s.cpf && s.cpf.includes(search)) ||
       (s.funcao_assinatura && s.funcao_assinatura.toLowerCase().includes(search.toLowerCase()))
     );
@@ -117,18 +144,18 @@ const SignatariosPage = () => {
   }, [search, signatarios]);
 
   // Paginação
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+  const totalPages = Math.ceil((filtered || []).length / ITEMS_PER_PAGE) || 1;
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIdx = startIdx + ITEMS_PER_PAGE;
-  const paginated = filtered.slice(startIdx, endIdx);
+  const paginated = (filtered || []).slice(startIdx, endIdx);
 
   // Handlers CRUD
   const handleOpenModal = (type, signatario = null) => {
     setModalType(type);
     setShowModal(true);
     if (type === "edit" && signatario) {
-      // Converter birth_date para YYYY-MM-DD se existir
-      let birthDate = signatario.birth_date;
+      // Converter data_nascimento para YYYY-MM-DD se existir
+      let birthDate = signatario.data_nascimento;
       if (birthDate) {
         // Pode vir como ISO ou Date
         const d = new Date(birthDate);
@@ -148,7 +175,16 @@ const SignatariosPage = () => {
       // Garantir que CPF já venha formatado
       let cpf = signatario.cpf || "";
       cpf = mascararCpfInput(cpf);
-      setForm({ ...signatario, birth_date: birthDate, telefone, cpf });
+      
+      // Mapear campos do backend para o frontend
+      setForm({ 
+        name: signatario.nome, // Backend usa 'nome', frontend usa 'name'
+        email: signatario.email,
+        cpf: cpf,
+        telefone: telefone,
+        birth_date: birthDate, // Frontend usa 'birth_date'
+        funcao_assinatura: signatario.funcao_assinatura
+      });
       setEditId(signatario.id);
     } else {
       setForm({ ...initialForm, telefone: "+55 " });
@@ -206,23 +242,34 @@ const SignatariosPage = () => {
       dataToSend.telefone = telLimpo;
       // Limpar tudo que não for número do CPF
       dataToSend.cpf = (dataToSend.cpf || "").replace(/\D/g, "");
+      
+      // Converter campos para compatibilidade com backend
+      const payload = { 
+        ...dataToSend, 
+        nome: dataToSend.name, // Backend espera 'nome'
+        data_nascimento: dataToSend.birth_date, // Backend espera 'data_nascimento'
+        empresa_id: equipeId 
+      };
+      delete payload.name; // Remove 'name' do payload
+      delete payload.birth_date; // Remove 'birth_date' do payload
+      
       if (modalType === "create") {
-        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios`, {
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ ...dataToSend, equipe_id: equipeId })
+          body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios/${editId}`, {
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios/${editId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify(dataToSend)
+          body: JSON.stringify(payload)
         });
       }
       if (!res.ok) throw new Error("Erro ao salvar signatário.");
@@ -238,7 +285,7 @@ const SignatariosPage = () => {
     if (!window.confirm("Tem certeza que deseja deletar este signatário?")) return;
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -346,131 +393,145 @@ const SignatariosPage = () => {
   }
 
   return (
-    <Layout>
-      <div className={styles.header}>
-        <span className={styles.title}>Signatários</span>
-        <button className={styles.addButton} onClick={() => handleOpenModal("create")}
-          style={{ marginLeft: 16 }}>
-          <FontAwesomeIcon icon={faPlus} /> Novo Signatário
-        </button>
-      </div>
-      <div className={styles.searchContainer}>
-        <input
-          className={styles.searchInput}
-          type="text"
-          placeholder="Buscar por nome, e-mail, CPF ou função..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {/* Filtro futuro, pode ser expandido */}
-        {/* <select className={styles.filterSelect} value={filterType} onChange={e => setFilterType(e.target.value)}>
-          <option value="">Todas as funções</option>
-        </select> */}
-      </div>
-      <div className={styles.container}>
-        {loading ? (
-          <div className={styles.loadingContainer}>
-          <Lottie 
-            animationData={meuLottieJson} 
-            loop={true}
-            style={{ width: 200, height: 200 }}
-          />
-            <p className={styles.loadingText}>Carregando signatários...</p>
-          </div>
-        ) : error ? (
-          <p style={{ color: 'red' }}>{error}</p>
-        ) : (
-          <>
-            <table className={styles.tabelaProdutos}>
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Email</th>
-                  <th>CPF</th>
-                  <th>Telefone</th>
-                  <th>Data de Nascimento</th>
-                  <th>Função</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.length === 0 ? (
-                  <tr><td colSpan={7}>Nenhum signatário encontrado.</td></tr>
-                ) : paginated.map(s => (
-                  <tr key={s.id}>
-                    <td>{s.name}</td>
-                    <td>{s.email}</td>
-                    <td>{formatarCpf(s.cpf)}</td>
-                    <td>{formatarTelefone(s.telefone)}</td>
-                    <td>{formatDateToBR(s.birth_date)}</td>
-                    <td>{s.funcao_assinatura || "-"}</td>
-                    <td>
-                      <button
-                        className={styles.editIcon}
-                        title="Editar Signatário"
-                        onClick={() => handleOpenModal("edit", s)}
-                      >
-                        <FontAwesomeIcon icon={faPen} />
-                      </button>
-                      <button
-                        className={styles.deleteBtn}
-                        title="Excluir Signatário"
-                        onClick={() => handleDelete(s.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* Paginação */}
-            {totalPages > 1 && (
-              <div className={styles.pagination}>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
-                >Anterior</button>
-                <span className={styles.pageInfo}>
-                  Página {currentPage} de {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-                >Próxima</button>
+    <div className={styles.page}>
+      <PrincipalSidebar />
+      <div className={styles.pageContent}>
+        <div className={styles.pageHeader}>
+          <div className={styles.toolbarBox}>
+            <div className={styles.toolbarHeader}>
+              <span className={styles.title}>Signatários</span>
+              <div className={styles.filtersRowBox}>
+                <button onClick={() => handleOpenModal("create")} className={styles.addButton}>
+                  <span style={{display:'inline-flex',gap:'8px',alignItems:'center'}}>
+                    <FontAwesomeIcon icon={faPlus} />
+                    Novo Signatário
+                  </span>
+                </button>
               </div>
-            )}
-          </>
-        )}
-      </div>
-      {/* Modal de criar/editar */}
-      {showModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3>{modalType === "create" ? "Novo Signatário" : "Editar Signatário"}</h3>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGrid}>
-                <div className={styles.formColumn}>
-                  <label>Nome <span style={{color: 'red'}}>*</span>
-                    <input name="name" value={form.name} onChange={handleChange} required className={styles.input} />
-                  </label>
-                  <label>Email <span style={{color: 'red'}}>*</span>
-                    <input name="email" value={form.email} onChange={handleChange} required type="email" className={styles.input} />
-                  </label>
-                  <label>CPF <span style={{color: 'red'}}>*</span>
-                    <input name="cpf" value={form.cpf} onChange={handleChange} required className={styles.input} maxLength={14} />
-                  </label>
+            </div>
+            <div className={styles.filtersRow}>
+              <div className={styles.filtersRowBox}>
+                <input
+                  className={styles.searchInput}
+                  type="text"
+                  placeholder="Buscar por nome, e-mail, CPF ou função..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className={styles.contentScroll}>
+          {isLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.spinner}></div>
+              <p className={styles.loadingText}>Carregando signatários...</p>
+            </div>
+          ) : (filtered || []).length === 0 ? (
+            <div style={{display:'grid',placeItems:'center',height:'50vh'}}>
+              <p className="p-6">Nenhum signatário encontrado.</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>CPF</th>
+                      <th>Telefone</th>
+                      <th>Data de Nascimento</th>
+                      <th>Função</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.map(s => (
+                      <tr key={s.id} className={styles.tableCardRow}>
+                        <td>{s.nome}</td>
+                        <td>{s.email}</td>
+                        <td>{formatarCpf(s.cpf)}</td>
+                        <td>{formatarTelefone(s.telefone)}</td>
+                        <td>{formatDateToBR(s.data_nascimento)}</td>
+                        <td>{s.funcao_assinatura || "-"}</td>
+                        <td>
+                          <button
+                            className={styles.actionButton}
+                            title="Editar Signatário"
+                            onClick={() => handleOpenModal("edit", s)}
+                          >
+                            <FontAwesomeIcon icon={faPen} />
+                          </button>
+                          <button
+                            className={styles.deleteButton}
+                            title="Excluir Signatário"
+                            onClick={() => handleDelete(s.id)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {totalPages > 1 && (
+                <div className={styles.pagination}>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
+                  >Anterior</button>
+                  <span className={styles.pageInfo}>
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+                  >Próxima</button>
                 </div>
-                <div className={styles.formColumn}>
-                  <label>Telefone <span style={{color: 'red'}}>*</span>
+              )}
+            </>
+          )}
+        </div>
+        
+        {/* Modal de criar/editar */}
+        {showModal && (
+          <div className={styles.modalOverlay} onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}>
+            <div className={styles.modalContent}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
+                <h3>{modalType === "create" ? "Novo Signatário" : "Editar Signatário"}</h3>
+                <button onClick={handleCloseModal} className={styles.cancelButton} type="button">Fechar</button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <h4>Dados do Signatário</h4>
+                <div className={styles.formGrid}>
+                  <div>
+                    <label>Nome <span style={{color: 'red'}}>*</span></label>
+                    <input name="name" value={form.name} onChange={handleChange} required className={styles.input} />
+                  </div>
+                  <div>
+                    <label>Email <span style={{color: 'red'}}>*</span></label>
+                    <input name="email" value={form.email} onChange={handleChange} required type="email" className={styles.input} />
+                  </div>
+                  <div>
+                    <label>CPF <span style={{color: 'red'}}>*</span></label>
+                    <input name="cpf" value={form.cpf} onChange={handleChange} required className={styles.input} maxLength={14} />
+                  </div>
+                  <div>
+                    <label>Telefone</label>
                     <input name="telefone" value={form.telefone} onChange={handleChange} className={styles.input} maxLength={20} />
-                  </label>
-                  <label>Data de Nascimento
+                  </div>
+                  <div>
+                    <label>Data de Nascimento</label>
                     <input name="birth_date" value={form.birth_date || ""} onChange={handleChange} type="date" className={styles.input} />
-                  </label>
-                  <label>Função <span style={{color: 'red'}}>*</span>
+                  </div>
+                  <div>
+                    <label>Função <span style={{color: 'red'}}>*</span></label>
                     <select
                       name="funcao_assinatura"
                       value={form.funcao_assinatura}
@@ -483,36 +544,34 @@ const SignatariosPage = () => {
                         <option key={opcao} value={opcao}>{opcao}</option>
                       ))}
                     </select>
-                  </label>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.modalActions}>
-                <button type="submit" className={styles.saveButton}>Salvar</button>
-                <button type="button" className={styles.cancelButton} onClick={handleCloseModal}>Cancelar</button>
-              </div>
-              {feedback && <p style={{ color: feedback.includes("sucesso") ? "green" : "red" }}>{feedback}</p>}
-            </form>
+                {feedback && <p style={{ color: feedback.includes("sucesso") ? "green" : "red", marginTop: '12px' }}>{feedback}</p>}
+                <div className={styles.modalActions}>
+                  <button type="button" className={styles.cancelButton} onClick={handleCloseModal}>Cancelar</button>
+                  <button type="submit" className={styles.saveButton}>
+                    {modalType === "create" ? "Criar Signatário" : "Salvar Alterações"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce}
-      />
-
-    </Layout>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+          transition={Bounce}
+        />
+      </div>
+    </div>
   );
-};
-
-export default SignatariosPage; 
+} 
