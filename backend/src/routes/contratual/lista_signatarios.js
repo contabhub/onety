@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const db = require('../config/database');
-const verifyToken = require("../middlewares/auth");
+const db = require('../../config/database');
+const verifyToken = require('../../middlewares/auth');
 
 // Listar todos os signatários salvos de uma empresa
 router.get('/empresa/:empresa_id', verifyToken, async (req, res) => {
