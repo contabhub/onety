@@ -4,6 +4,8 @@ const cors = require("cors");
 require("dotenv").config();
 const routes = require("./routes");
 const webSocketManager = require("./websocket");
+require("./workers/expireContracts");
+
 
 const app = express();
 
