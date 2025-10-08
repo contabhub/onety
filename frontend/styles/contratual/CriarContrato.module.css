@@ -696,7 +696,7 @@
 }
 
 .infoText {
-  color: var(--onity-color-primary);
+  color: var(--onity-);
   font-size: 14px;
   line-height: 1.5;
 }
