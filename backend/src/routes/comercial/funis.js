@@ -125,7 +125,7 @@ router.get('/leads/count/:funilId', verifyToken, async (req, res) => {
     const [rows] = await db.query(`
       SELECT fase.id, fase.nome, COUNT(l.id) AS leadsCount
       FROM funil_fases fase
-      LEFT JOIN leads l ON l.fase_funil_id = fase.id
+      LEFT JOIN leads l ON l.funil_fase_id = fase.id
       WHERE fase.funil_id = ?
       GROUP BY fase.id
       ORDER BY fase.ordem ASC
@@ -154,7 +154,7 @@ router.patch('/leads/:leadId/mover', verifyToken, async (req, res) => {
 
     // 1) Lead existe?
     const [leadRows] = await conn.query(
-      'SELECT id, funil_id AS from_funil_id, fase_funil_id AS from_fase_id FROM leads WHERE id = ? LIMIT 1',
+      'SELECT id, funil_id AS from_funil_id, funil_fase_id AS from_fase_id FROM leads WHERE id = ? LIMIT 1',
       [leadId]
     );
     if (!leadRows.length) {
@@ -186,7 +186,7 @@ router.patch('/leads/:leadId/mover', verifyToken, async (req, res) => {
 
     // 4) Atualiza lead
     await conn.query(
-      'UPDATE leads SET funil_id = ?, fase_funil_id = ? WHERE id = ?',
+      'UPDATE leads SET funil_id = ?, funil_fase_id = ? WHERE id = ?',
       [funil_id, fase_id, leadId]
     );
 

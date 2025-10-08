@@ -27,19 +27,19 @@ export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
   const fetchFunis = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData");
       
       if (!token || !userRaw) return;
       
       const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const empresaId = user?.EmpresaId || user?.empresa?.id;
       
-      if (!equipeId) {
-        console.error("Usuário não tem equipe associada.");
+      if (!empresaId) {
+        console.error("Usuário não tem empresa associada.");
         return;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funis/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${empresaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -58,7 +58,7 @@ export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
     setLoadingFases(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funil_fases/${funilId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funil-fases/${funilId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -83,7 +83,7 @@ export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/funis/leads/${lead.id}/mover`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/leads/${lead.id}/mover`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -126,6 +126,8 @@ export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
 
   if (!open) return null;
 
+  const leadNome = lead?.name || lead?.nome || lead?.Nome || "";
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
@@ -139,7 +141,7 @@ export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
         <div className={styles.modalBody}>
           <div className={styles.formGroup}>
             <label>Lead:</label>
-            <p className={styles.leadInfo}>{lead?.name}</p>
+            <p className={styles.leadInfo}>{leadNome}</p>
           </div>
 
           <div className={styles.formGroup}>
@@ -184,7 +186,7 @@ export default function MigrarLeadModal({ open, onClose, lead, onMigrated }) {
             <div className={styles.formGroup}>
               <label>Confirmação:</label>
               <p className={styles.confirmation}>
-                O lead <strong>{lead?.name}</strong> será movido para a fase{" "}
+                O lead <strong>{leadNome}</strong> será movido para a fase{" "}
                 <strong>
                   {fases.find(f => f.id === faseSelecionada)?.nome}
                 </strong>{" "}
