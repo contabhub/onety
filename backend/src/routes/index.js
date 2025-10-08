@@ -58,6 +58,17 @@ const produtosComercialRoutes = require('./comercial/produtos');
 const tiposAtividadeRoutes = require('./comercial/tiposAtividade');
 const valoresPersonalizadosRoutes = require('./comercial/valoresPersonalizados');
 
+// Rotas do Contratual
+const contratosRoutes = require('./contratual/contratos');
+const assinaturasRoutes = require('./contratual/assinaturas');
+const signatariosRoutes = require('./contratual/signatarios');
+const modelosContratoRoutes = require('./contratual/modelos_contrato');
+const variaveisPersonalizadasRoutes = require('./contratual/variaveis_personalizadas');
+const contratadaRoutes = require('./contratual/contratada');
+const contratosAutentiqueRoutes = require('./contratual/contratos-autentique');
+const documentosAutentiqueRoutes = require('./contratual/documentos-autentique');
+const documentosRoutes = require('./contratual/documentos');
+
 // Rotas do Onety
 router.use('/auth', authRoutes);
 router.use('/empresas', empresasRoutes);
@@ -114,6 +125,17 @@ router.use('/comercial/pre-clientes', preClientesRoutes);
 router.use('/comercial/produtos', produtosComercialRoutes);
 router.use('/comercial/tipos-atividade', tiposAtividadeRoutes);
 router.use('/comercial/valores-personalizados', valoresPersonalizadosRoutes);
+
+// Rotas do Contratual
+router.use('/contratual/contratos', contratosRoutes);
+router.use('/contratual/assinaturas', assinaturasRoutes);
+router.use('/contratual/signatarios', signatariosRoutes);
+router.use('/contratual/modelos-contrato', modelosContratoRoutes);
+router.use('/contratual/variaveis-personalizadas', variaveisPersonalizadasRoutes);
+router.use('/contratual/contratada', contratadaRoutes);
+router.use('/contratual/contratos-autentique', contratosAutentiqueRoutes);
+router.use('/contratual/documentos-autentique', documentosAutentiqueRoutes);
+router.use('/contratual/documentos', documentosRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");
