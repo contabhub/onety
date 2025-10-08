@@ -116,11 +116,13 @@ const ListaSignatarios = ({ onSelectSignatario, onClose }) => {  // onClose obri
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={onClose} title="Fechar">
-          <FontAwesomeIcon icon={faTimes} />
-        </button>
-        <div className={styles.listaSignatariosContainer}>
+        <div className={styles.modalHeader}>
           <h3>Lista de Signatários</h3>
+          <button className={styles.closeButton} onClick={onClose} title="Fechar">
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </div>
+        <div className={styles.listaSignatariosContainer}>
           <div className={styles.searchContainer}>
             <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
             <input
