@@ -104,10 +104,10 @@ export default function ListaVariaveis({ handleInsertVariable, setShowVariaveis 
         if (!userRaw || !token) return;
 
         const user = JSON.parse(userRaw);
-        const equipeId = user.equipe_id;
+        const equipeId = user.EmpresaId || user.empresa_id;
         if (!equipeId) return;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-variables/${equipeId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/empresa/${equipeId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -197,11 +197,11 @@ export default function ListaVariaveis({ handleInsertVariable, setShowVariaveis 
               ? customVariables.map((v) => (
                 <button
                   type="button"
-                  key={v.variable}
+                  key={v.variavel}
                   className={styles.variableItem}
-                  onClick={() => handleInsertVariable(v.variable)}
+                  onClick={() => handleInsertVariable(v.variavel)}
                 >
-                  {v.label} — <code>{`{{${v.variable}}}`}</code>
+                  {v.titulo} — <code>{`{{${v.variavel}}}`}</code>
                 </button>
               ))
               : variaveis[activeTab]?.map((v) => (

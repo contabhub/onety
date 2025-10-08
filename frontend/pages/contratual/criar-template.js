@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Layout from "../components/layout/Layout";
-import styles from "../styles/Templates.module.css";
-import TiptapEditor from "../components/TiptapEditor";
-import ListaVariaveis from "../components/assinador/ListaVariaveis";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import styles from "../../styles/contratual/Templates.module.css";
+import TiptapEditor from "../../components/contratual/TiptapEditor";
+import ListaVariaveis from "../../components/contratual/ListaVariaveis";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -22,10 +22,10 @@ export default function CriarTemplate() {
   const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     if (userRaw) {
       const parsed = JSON.parse(userRaw);
-      setUserRole(parsed.role?.toLowerCase() || "");
+      setUserRole(parsed.permissoes?.adm ? String(parsed.permissoes.adm[0]).toLowerCase() : "");
     }
   }, []);
 
@@ -46,7 +46,7 @@ export default function CriarTemplate() {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
 
     if (!token) {
       setError("Você precisa estar logado.");
@@ -61,15 +61,17 @@ export default function CriarTemplate() {
 
     try {
       const payload = {
-        name: titulo,
-        content: conteudo,
-        is_global: isGlobal,
-        equipe_id: isGlobal ? null : user?.equipe_id,
+        nome: titulo,
+        conteudo: conteudo,
+        global: isGlobal ? 1 : 0,
+        empresa_id: isGlobal ? null : user?.EmpresaId,
+        straton: 0,
+        funcionario: 0,
       };
 
       console.log("Payload enviado para API:", payload);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/templates`,
+        `${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato`,
         {
           method: "POST",
           headers: {
@@ -82,7 +84,7 @@ export default function CriarTemplate() {
 
       if (response.ok) {
         toast.success("Template criado com sucesso!");
-        setTimeout(() => router.push(`/templates`), 1500);
+        setTimeout(() => router.push(`/contratual/templates`), 1500);
         setTitulo("");
         setConteudo("");
         setError("");
@@ -102,17 +104,21 @@ export default function CriarTemplate() {
 
 
   return (
-    <Layout>
-      <button className={styles.backButton} onClick={() => router.back()}>
-        <span className={styles.iconWrapper}>
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </span>
-        Voltar
-      </button>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
+          <div className={styles.pageContainer}>
+            <button className={styles.backButton} onClick={() => router.back()}>
+              <span className={styles.iconWrapper}>
+                <FontAwesomeIcon icon={faArrowLeft} />
+              </span>
+              Voltar
+            </button>
 
-      <div className={styles.templatesHeader}>
-        <h1 className={styles.title}>Criar Novo Template</h1>
-      </div>
+            <div className={styles.templatesHeader}>
+              <h1 className={styles.title}>Criar Novo Template</h1>
+            </div>
       <div className={styles.container}>
         {error && <p className={styles.error}>{error}</p>}
         {successMessage && <p className={styles.success}>{successMessage}</p>}
@@ -183,20 +189,23 @@ export default function CriarTemplate() {
         </form>
       </div>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce}
-      />
-    </Layout>
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick={false}
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="colored"
+              transition={Bounce}
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

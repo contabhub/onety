@@ -1,0 +1,729 @@
+.page {
+    display: flex;  
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 100vh;
+  }
+  
+  .pageContent {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 12px 24px 12px;
+  }
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .container {
+    min-height: 100vh;
+    /* Ocupa toda a altura da viewport */
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--onity-color-border);
+  border-top: 4px solid var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loadingText {
+  font-size: 16px;
+  color: var(--onity-icon-secondary);
+  margin-top: 8px;
+}
+  
+  
+  
+  .userButtonContainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Espaço entre o UserMenu e o botão */
+  }
+  
+.title {
+  font-size: 26px;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  color: var(--onity-color-text);
+
+}
+
+.error {
+  color: var(--onity-color-error);
+  font-weight: bold;
+}
+
+.formContainer {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  background: var(--onity-color-surface);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  height: 100%;
+  margin-top: 20px;
+}
+
+.form input,
+.form textarea {
+  width: 100%;
+  padding: 18px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 5px;
+  margin-top: 6px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+
+.form input:focus,
+.form textarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+  
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  
+.table tr:not(:last-child) {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.viewIcon,
+.editIcon,
+.deleteBtn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 20px; /* Aumentado */
+  color: var(--onity-icon-secondary);
+  transition: color 0.2s ease;
+}
+
+.viewIcon:hover,
+.editIcon:hover,
+.deleteBtn:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+}
+  
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  
+  
+.button {
+  background-color: var(--onity-color-primary);
+  color: white;
+  font-weight: bold;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+}
+
+.button:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.success {
+  color: var(--onity-color-success);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+  
+  .templatesHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  
+  
+.newBtn {
+  background-color: var(--onity-color-primary);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.newBtn:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.tableContainer {
+  background: var(--onity-color-surface);
+  border-radius: 0 0 8px 8px; /* apenas embaixo */
+  overflow-x: auto;
+  margin-top: 15px;
+  overflow: hidden; /* evita borda dupla da table */
+
+  
+}
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+  
+  .table th,
+  .table td {
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+  
+  
+  
+.table th {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+  font-weight: 600;
+}
+
+.table tr:not(:last-child) {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.table thead {
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.table tbody tr:hover {
+  background-color: var(--onity-color-bg);
+}
+  
+  
+  
+  /* Oculta no mobile */
+  .desktopOnly {
+    display: block;
+  }
+  
+  .mobileOnly {
+    display: none;
+  }
+  
+.buttonSecundario {
+  background-color: transparent;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 4px;;
+  padding: 8px;
+  margin-bottom: 10px;
+  transition: 0.6s ease;
+  color: var(--onity-color-text);
+}
+
+.buttonSecundario:hover {
+  background-color: var(--onity-color-bg);
+  transition: border 0.3s ease;
+}
+  
+  
+  .editorWrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+.toolbar {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  padding: 6px 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+.toolbar button {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.toolbar button:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.contentEditable {
+  flex-grow: 1;
+  min-height: 600px;
+  border: 1px solid var(--onity-color-border);
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow-y: auto;
+  outline: none;
+  font-size: 16px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+  
+  
+  .checkboxWrapper {
+    display: flex;
+    align-items: center;
+    height: 38px;
+    /* altura compatível com o input */
+  }
+  
+  .checkboxLabel {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  
+.backButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--onity-color-text);
+  transition: color 0.3s ease;
+}
+
+.backButton:hover {
+  color: var(--onity-color-primary);
+}
+  
+  /* Wrapper da seta */
+  .iconWrapper {
+    display: inline-flex;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Move a seta para a esquerda no hover */
+  .backButton:hover .iconWrapper {
+    transform: translateX(-4px);
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 24px;
+    gap: 16px;
+  }
+  
+.pageButton {
+  padding: 8px 16px;
+  background-color: var(--onity-color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pageButton:hover:not(.disabled) {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.pageInfo {
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+}
+
+.disabled {
+  background-color: var(--onity-color-border);
+  cursor: not-allowed;
+}
+  
+  .buttonContainer{
+    display: flex;
+    text-align: right;
+    justify-content: flex-end;
+  }
+  
+  .checkContainer{
+    display: flex;
+    text-align: right;
+    justify-content: flex-end;
+  }
+  
+  
+  /* Mostra no mobile */
+  @media (max-width: 768px) {
+    .desktopOnly {
+      display: none;
+    }
+  
+    .mobileOnly {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  
+    .templateCard {
+      border: 1px solid #dee4ff;
+      border-radius: 8px;
+      padding: 16px;
+      background-color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+  
+    .cardInfo {
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: #333;
+    }
+  
+    .cardActions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  }
+  
+  .searchContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 24px 0 18px 0;
+  }
+  
+  .searchInputWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+  }
+  
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--onity-icon-secondary);
+  font-size: 1.1em;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  border: 1.5px solid var(--onity-color-border);
+  border-radius: 8px;
+  font-size: 1em;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: var(--onity-elev-med);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+  
+  @media (max-width: 600px) {
+    .searchInputWrapper {
+      max-width: 98vw;
+    }
+  }
+  
+.globalFilterSelect {
+  padding: 10px 14px;
+  border: 1.5px solid var(--onity-color-border);
+  border-radius: 8px;
+  background-color: var(--onity-color-surface);
+  font-size: 1em;
+  color: var(--onity-color-text);
+  margin-left: 16px;
+  min-width: 120px;
+  box-shadow: var(--onity-elev-med);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.globalFilterSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+  
+  @media (max-width: 600px) {
+    .globalFilterSelect {
+      min-width: 90px;
+      font-size: 0.95em;
+      margin-left: 8px;
+      padding: 8px 8px;
+    }
+  }
+  
+/* Posicionador de Variáveis */
+.variablePositioner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-primary);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--onity-elev-med);
+  z-index: 1000;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.positionerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.positionerHeader h4 {
+  margin: 0;
+  color: var(--onity-color-text);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.positionerHeader strong {
+  color: var(--onity-color-primary);
+  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+  
+  .positionOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+.positionButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  color: var(--onity-color-text);
+  text-align: left;
+}
+
+.positionButton:hover {
+  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-med);
+}
+  
+  .positionButton:active {
+    transform: translateY(0);
+  }
+  
+  /* Overlay para o modal */
+  .variablePositioner::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+  }
+  
+  /* Drag and Drop Styles */
+  .dragOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    cursor: grabbing;
+  }
+  
+.draggedVariable {
+  position: fixed;
+  z-index: 10000;
+  background: var(--onity-color-primary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--onity-color-primary) 35%, transparent);
+  pointer-events: none;
+  user-select: none;
+  animation: dragPulse 1s ease-in-out infinite alternate;
+  border: 2px solid var(--onity-color-primary-hover);
+}
+  
+  @keyframes dragPulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    100% {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+  }
+  
+  /* Cursor de arrastar quando hover na variável */
+  .draggedVariable:hover {
+    cursor: grabbing;
+  }
+  
+  /* Estilos para o seletor de itens por página */
+  .itemsPerPageContainer {
+    margin-left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: transparent;
+  }
+  
+.itemsPerPageSelect {
+  padding: 6px 10px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.itemsPerPageSelect:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.itemsPerPageSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+/* Estilos para informações adicionais da paginação */
+.paginationInfo {
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+  margin-left: 16px;
+}
+
+/* Estilos para mensagem quando há apenas uma página */
+.singlePageMessage {
+  text-align: center;
+  padding: 16px;
+  color: var(--onity-icon-secondary);
+  font-size: 14px;
+  background: var(--onity-color-bg);
+  border-radius: 6px;
+  margin-top: 16px;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+}
+  
+  /* Responsividade para mobile */
+  @media (max-width: 768px) {
+    .itemsPerPageContainer {
+      margin-left: 0;
+      margin-top: 12px;
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .itemsPerPageSelect {
+      min-width: 80px;
+    }
+  }

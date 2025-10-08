@@ -352,7 +352,7 @@ export default function CriarContratoAutentique() {
 
     try {
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/templates`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -388,7 +388,7 @@ export default function CriarContratoAutentique() {
     const equipeId = user.EmpresaId;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/clients/empresa/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/empresa/${equipeId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,  // Envia o token JWT no cabeçalho
@@ -442,7 +442,7 @@ export default function CriarContratoAutentique() {
       const user = JSON.parse(userRaw);
       const equipeId = user.EmpresaId;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/contatos/empresa/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/leads/empresa/${equipeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -1076,7 +1076,7 @@ export default function CriarContratoAutentique() {
     await fetchClientes();
 
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/clients/${clientId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${clientId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const clienteData = await res.json();

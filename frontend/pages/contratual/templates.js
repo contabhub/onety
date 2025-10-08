@@ -27,14 +27,23 @@ export default function Templates() {
     setCurrentPage(1); // Reset para primeira página
   };
 
+  
   // Filtro de busca + globalidade
   const filteredTemplates = templates.filter(t => {
-    const nameOk = t.name && t.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const templateName = t.name || t.nome; // Suporte para ambos os campos
+    const nameOk = templateName && templateName.toLowerCase().includes(searchTerm.toLowerCase());
+    const isGlobal = t.is_global !== undefined ? t.is_global : t.global; // Suporte para ambos os campos
     let globalOk = true;
-    if (globalFilter === "globais") globalOk = !!t.is_global;
-    if (globalFilter === "naoGlobais") globalOk = !t.is_global;
+    if (globalFilter === "globais") globalOk = !!isGlobal;
+    if (globalFilter === "naoGlobais") globalOk = !isGlobal;
     return nameOk && globalOk;
   });
+
+  // Debug: log dos templates e filtros
+  console.log("Templates state:", templates);
+  console.log("Filtered templates:", filteredTemplates);
+  console.log("Search term:", searchTerm);
+  console.log("Global filter:", globalFilter);
   const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage) || 1;
   const paginatedTemplates = filteredTemplates.slice(
     (currentPage - 1) * itemsPerPage,
@@ -51,18 +60,21 @@ export default function Templates() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
 
     if (!token) return;
     const user = JSON.parse(userRaw);
     setUser(user);
 
     // Fetch templates from the API
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/light`, {
+    const empresaId = user?.EmpresaId;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/empresa/${empresaId}/light`;
+    
+    console.log("URL da API:", url);
+    fetch(url, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
-        "x-empresa-id": user?.empresa_id || '',
       },
     })
       .then(res => {
@@ -72,8 +84,12 @@ export default function Templates() {
         return res.json();
       })
       .then(data => {
+        console.log("Dados recebidos da API:", data);
         if (Array.isArray(data)) {
           setTemplates(data);
+          console.log("Templates definidos:", data);
+        } else {
+          console.log("Dados não são um array:", data);
         }
         setIsLoading(false); // Finaliza carregamento
       })
@@ -86,7 +102,7 @@ export default function Templates() {
   }, []);
 
   const handleViewContract = (id) => {
-    router.push(`/editar-template?id=${id}`);
+    router.push(`/contratual/editar-template?id=${id}`);
   };
 
   const handleDeleteTemplate = (id) => {
@@ -116,20 +132,21 @@ export default function Templates() {
   };
 
   return (
-    <>
+    <div className={styles.page}>
       <PrincipalSidebar />
-      <div className={styles.pageContainer}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Modelos de Contrato</h1>
-          <div className={styles.userButtonContainer}>
-            <button
-              className={styles.button}
-              onClick={() => router.push("/criar-template")}
-            >
-              Criar Template
-            </button>
+      <div className={styles.pageContent}>
+        <div className={styles.pageContainer}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Modelos de Contrato</h1>
+            <div className={styles.userButtonContainer}>
+              <button
+                className={styles.button}
+                onClick={() => router.push("/contratual/criar-template")}
+              >
+                Criar Template
+              </button>
+            </div>
           </div>
-        </div>
         {/* Campo de busca */}
         <div className={styles.filtroContainer}>
           <label htmlFor="searchInput">Buscar:</label>
@@ -142,14 +159,7 @@ export default function Templates() {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            style={{
-              padding: '10px 14px',
-              border: '1px solid var(--color-border)',
-              borderRadius: '8px',
-              background: 'var(--color-surface-1)',
-              color: 'var(--color-text-primary)',
-              minWidth: '200px'
-            }}
+            className={styles.searchInput}
           />
           <select
             value={globalFilter}
@@ -196,46 +206,62 @@ export default function Templates() {
                 <tr>
                   <th>ID</th>
                   <th>Nome</th>
+                  <th>Criado por</th>
+                  <th>Criado em</th>
+                  <th>Global</th>
+                  <th>Straton</th>
+                  <th>Funcionário</th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedTemplates.map((template) => (
-                  <tr key={template.id}>
-                    <td>{template.id}</td>
-                    <td>{template.name}</td>
-                    <td className={styles.actions}>
-                      <button
-                        className={styles.viewIcon}
-                        title="Visualizar Template"
-                        onClick={() => router.push(`/templates/${template.id}`)}
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                      {(!template.is_global || user?.role === "superadmin") && (
-
+                {paginatedTemplates.map((template) => {
+                  const templateName = template.name || template.nome;
+                  const isGlobal = template.is_global !== undefined ? template.is_global : template.global;
+                  const criadoEm = template.criado_em ? new Date(template.criado_em).toLocaleDateString('pt-BR') : '-';
+                  
+                  return (
+                    <tr key={template.id}>
+                      <td>{template.id}</td>
+                      <td>{templateName}</td>
+                      <td>{template.criado_por || '-'}</td>
+                      <td>{criadoEm}</td>
+                      <td>{isGlobal ? 'Sim' : 'Não'}</td>
+                      <td>{template.straton ? 'Sim' : 'Não'}</td>
+                      <td>{template.funcionario ? 'Sim' : 'Não'}</td>
+                      <td className={styles.actions}>
                         <button
-                          className={styles.editIcon}
-                          onClick={() => handleViewContract(template.id)}
+                          className={styles.viewIcon}
+                          title="Visualizar Template"
+                          onClick={() => router.push(`/contratual/templates/${template.id}`)}
                         >
-                          <FontAwesomeIcon icon={faPen} />
+                          <FontAwesomeIcon icon={faEye} />
                         </button>
-                      )}
-                      {(!template.is_global || user?.role === "superadmin") && (
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={() => handleDeleteTemplate(template.id)}
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
-                      )}
+                        {(!isGlobal || user?.role === "superadmin") && (
 
-                    </td>
-                  </tr>
-                ))}
+                          <button
+                            className={styles.editIcon}
+                            onClick={() => handleViewContract(template.id)}
+                          >
+                            <FontAwesomeIcon icon={faPen} />
+                          </button>
+                        )}
+                        {(!isGlobal || user?.role === "superadmin") && (
+                          <button
+                            className={styles.deleteBtn}
+                            onClick={() => handleDeleteTemplate(template.id)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        )}
+
+                      </td>
+                    </tr>
+                  );
+                })}
                 {filteredTemplates.length === 0 && (
                   <tr>
-                    <td colSpan="3" style={{ textAlign: "center", padding: "20px" }}>
+                    <td colSpan="8" style={{ textAlign: "center", padding: "20px" }}>
                       Nenhum template encontrado.
                     </td>
                   </tr>
@@ -291,7 +317,8 @@ export default function Templates() {
           theme="colored"
           transition={Bounce}
         />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

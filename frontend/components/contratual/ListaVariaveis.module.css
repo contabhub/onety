@@ -1,6 +1,6 @@
 .container {
   font-family: Arial, sans-serif;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 /* Fundo escuro com transparência */
@@ -21,12 +21,12 @@
 /* Caixa branca centralizada */
 .modalContent {
   position: relative;
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 8px;
   width: 850px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   padding: 20px 30px 30px 30px;
 }
 
@@ -35,15 +35,15 @@
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 15px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
   padding-bottom: 10px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 /* Tabs container */
 .tabs {
   display: flex;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
   margin-bottom: 20px;
   gap: 6px;
   flex-wrap: wrap;
@@ -51,29 +51,33 @@
 
 /* Cada botão tab */
 .tabs button {
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
   border-bottom: none;
   border-radius: 5px 5px 0 0;
   padding: 8px 18px;
   cursor: pointer;
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   transition: background-color 0.3s ease;
   outline: none;
 }
 
 /* Tab ativo */
 .tabs button.activeTab {
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
-  border-bottom: 2px solid var(--brand-primary);
+  color: var(--primary-color, #3b82f6);
+  border: 1px solid var(--primary-color, #3b82f6);
+  border-bottom: 2px solid var(--primary-color, #3b82f6);
   font-weight: 700;
 }
 
 /* Hover nas tabs */
 .tabs button:hover:not(.activeTab) {
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);  color: var(--onity-color-text);
+  border: 1px solid var(--primary-color, #3b82f6);
+  border-bottom: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
+  font-weight: 700;
 }
 
 /* Lista das variáveis */
@@ -87,21 +91,22 @@
 /* Botão para cada variável */
 .variableItem {
   background-color: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 4px;
   padding: 8px 14px;
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.2s ease;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 /* Hover no botão da variável */
 .variableItem:hover {
-  background-color: var(--brand-primary);
-  color: #fff;
-  border-color: var(--brand-primary);
+  background-color: var(--onity-color-surface);  color: var(--onity-color-text);
+  border: 1px solid var(--primary-color, #3b82f6);
+  border-bottom: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
 }
 
 /* Botão fechar "X" no canto superior direito */
@@ -113,7 +118,7 @@
   border: none;
   font-size: 24px;
   font-weight: bold;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   cursor: pointer;
   transition: color 0.2s ease;
   padding: 0;
@@ -122,5 +127,5 @@
 }
 
 .closeModal:hover {
-  color: var(--error);
+  color: var(--onity-color-error);
 }

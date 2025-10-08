@@ -27,7 +27,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 
-// Listar todos os modelos de contrato (versão light - apenas id e nome)
+// Listar todos os modelos de contrato (versão light - todos os campos exceto conteudo)
 router.get("/light", verifyToken, async (req, res) => {
   const empresaId = req.headers['x-empresa-id'];
   
@@ -37,14 +37,14 @@ router.get("/light", verifyToken, async (req, res) => {
     
     if (empresaId && empresaId !== 'undefined') {
       // Buscar modelos da empresa + globais
-      query = `SELECT id, nome as name, global as is_global
+      query = `SELECT id, nome, criado_por, criado_em, atualizado_em, global, empresa_id, straton, funcionario
                FROM modelos_contrato 
                WHERE empresa_id = ? OR global = 1
                ORDER BY global DESC, criado_em DESC`;
       params = [empresaId];
     } else {
       // Buscar apenas modelos globais
-      query = `SELECT id, nome as name, global as is_global
+      query = `SELECT id, nome, criado_por, criado_em, atualizado_em, global, empresa_id, straton, funcionario
                FROM modelos_contrato 
                WHERE global = 1
                ORDER BY criado_em DESC`;
@@ -56,6 +56,25 @@ router.get("/light", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Erro ao buscar modelos:", error);
     res.status(500).json({ error: "Erro ao buscar modelos de contrato." });
+  }
+});
+
+// Listar modelos por empresa (versão light - todos os campos exceto conteudo)
+router.get("/empresa/:empresaId/light", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
+  
+  try {
+    const [modelos] = await pool.query(
+      `SELECT id, nome, criado_por, criado_em, atualizado_em, global, empresa_id, straton, funcionario
+       FROM modelos_contrato 
+       WHERE empresa_id = ? OR global = 1
+       ORDER BY global DESC, criado_em DESC`,
+      [empresaId]
+    );
+    res.json(modelos);
+  } catch (error) {
+    console.error("Erro ao buscar modelos da empresa:", error);
+    res.status(500).json({ error: "Erro ao buscar modelos de contrato da empresa." });
   }
 });
 

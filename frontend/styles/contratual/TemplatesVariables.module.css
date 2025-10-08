@@ -1,13 +1,32 @@
+/* Layout lateral com sidebar */
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
+.pageContainer {
+  position: relative;
+}
+
 .container {
   margin: 0 auto;
   padding: 20px;
 }
   
-  .title {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: var(--color-text-primary);
-  }
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: var(--onity-color-text);
+}
   .label {
     font-size: 18px;
     margin-bottom: 10px;
@@ -17,12 +36,12 @@
     width: 100%;
     padding: 10px;
     margin: 10px 0 30px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--onity-color-border);
     border-radius: 8px;
   }
   
   .variableList {
-    background-color: var(--color-bg);
+    background-color: var(--onity-color-bg);
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -31,7 +50,7 @@
   .subtitle {
     font-size: 20px;
     margin-bottom: 10px;
-    color: var(--color-text-primary);
+    color: var(--onity-color-text);
   }
   
   .variableList ul {
@@ -41,12 +60,12 @@
   
   .variableList li {
     padding: 8px 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--onity-color-border);
   }
   .addButton {
     margin: 10px 0;
     padding: 8px 14px;
-    background-color: var(--brand-primary);
+    background-color: var(--onity-color-primary);
     color: white;
     border: none;
     border-radius: 6px;
@@ -55,13 +74,12 @@
   }
 
   .addButton:hover {
-    background-color: var(--brand-primary);
-
+    background-color: var(--onity-color-primary-hover);
   }
   .cancelButton {
     margin: 10px 0;
     padding: 8px 14px;
-    background-color: var(--color-border);
+    background-color: var(--onity-color-border);
     color: white;
     border: none;
     border-radius: 6px;
@@ -73,7 +91,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 6px 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--onity-color-border);
   }
   
   .deleteButton {
@@ -98,7 +116,7 @@
 
   .deleteButton:hover {
     color: var(--error);
-    background-color: var(--color-surface-1);
+    background-color: var(--onity-color-surface);
     border: 2px solid var(--error);
 
   }
@@ -116,7 +134,7 @@
   }
   
   .modal {
-    background: var(--color-surface-1);
+    background: var(--onity-color-surface);
     padding: 20px;
     border-radius: 10px;
     width: 90%;
@@ -129,7 +147,7 @@
     padding: 8px;
     margin: 6px 0;
     border-radius: 6px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--onity-color-border);
   }
   
   .checkbox {
@@ -154,12 +172,12 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--color-text-primary);
+    color: var(--onity-color-text);
     transition: color 0.3s ease;
   }
   
   .backButton:hover {
-    color: var(--brand-primary);
+    color: var(--onity-color-primary);
   }
 
 .headerRow {
@@ -181,7 +199,7 @@
 
 .nomeVariavelPreview {
   font-size: 0.95em;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-bottom: 8px;
   font-family: monospace;
 }
@@ -189,7 +207,7 @@
 /* --- Estilos de tabela inspirados no Contratos.module.css --- */
 
 .tableContainer {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
@@ -198,7 +216,7 @@
 .variablesTable {
   width: 100%;
   border-collapse: collapse;
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   margin-top: 12px;
@@ -210,23 +228,20 @@
   text-align: left;
   vertical-align: middle;
   font-size: 15px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 .variablesTable th {
-  background-color: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 .variablesTable tr:not(:last-child) {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 .variablesTable thead {
-  background-color: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
-}
-.variablesTable tr:hover {
-  background-color: var(--color-bg);
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .actions {
@@ -244,7 +259,6 @@
   border: 2px solid var(--error);
   border-radius: 5px;
   margin: 0 4px;
-  transition: 0.3s ease-in-out;
   min-width: 36px;
   min-height: 36px;
   display: inline-flex;
@@ -252,10 +266,9 @@
   justify-content: center;
 }
 .deleteBtn:hover {
-  background-color: var(--error);
-  color: #fff;
-  opacity: 0.9;
-  border-color: var(--error);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-color-error);
+
 }
 
 .editIcon {
@@ -263,11 +276,10 @@
   cursor: pointer;
   font-size: 16px;
   padding: 5px;
-  color: var(--brand-primary);
-  border: 2px solid var(--brand-primary);
+  border: none;
+  color: var(--onity-color-text);
   border-radius: 5px;
   margin: 0 4px;
-  transition: 0.3s ease-in-out;
   min-width: 36px;
   min-height: 36px;
   display: inline-flex;
@@ -275,9 +287,8 @@
   justify-content: center;
 }
 .editIcon:hover {
-  background-color: var(--brand-primary);
-  opacity: 0.7;
-  color: #fff;
+  border: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
 }
 
 @media (max-width: 768px) {
