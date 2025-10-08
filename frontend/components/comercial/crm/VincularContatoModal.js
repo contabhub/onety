@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 
 const VincularContatoModal = ({ leadId, onClose, onSave }) => {
@@ -60,9 +61,9 @@ const VincularContatoModal = ({ leadId, onClose, onSave }) => {
     }
   };
 
-  return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
+  return createPortal(
+    <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+      <div className={styles.modal} role="document">
         <h3>Relacionar contato</h3>
         <input
           type="text"
@@ -98,7 +99,8 @@ const VincularContatoModal = ({ leadId, onClose, onSave }) => {
           <button onClick={onClose}>Cancelar</button>
         </div>
       </div>
-    </div>
+    </div>,
+    typeof document !== 'undefined' ? document.body : (typeof window !== 'undefined' ? window.document.body : null)
   );
 };
 

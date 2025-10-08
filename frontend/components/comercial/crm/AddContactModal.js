@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "../../../styles/comercial/crm/LeadContacts.module.css";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/router";
@@ -55,16 +56,16 @@ const AddContactModal = ({ leadId, onClose, onSave, equipeId }) => {
     }
   };
 
-  return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
+  return createPortal(
+    <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+      <div className={styles.modal} role="document">
         <h3>Adicionar Contato</h3>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSave();
           }}
-          className={styles.modalForm}
+          className={`${styles.modalForm} ${styles.addContactForm}`}
         >
           <div className={styles.modalField}>
             <label>Nome</label>
@@ -113,7 +114,8 @@ const AddContactModal = ({ leadId, onClose, onSave, equipeId }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    typeof document !== 'undefined' ? document.body : (typeof window !== 'undefined' ? window.document.body : null)
   );
 };
 

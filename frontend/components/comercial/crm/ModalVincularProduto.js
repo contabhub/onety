@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaBox } from 'react-icons/fa';
 import styles from '../../../styles/comercial/crm/ModalVincularProduto.module.css'; // Estilos do modal
 import { toast } from 'react-toastify'; // Para notificações (opcional)
@@ -150,8 +151,8 @@ const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {
 
 
 
-    return (
-        <div className={`${styles.modal} ${isOpen ? styles.modalOpen : ''}`}>
+    return createPortal(
+        <div className={`${styles.modal} ${isOpen ? styles.modalOpen : ''}`} role="dialog" aria-modal="true">
             <div className={styles.overlay} onClick={onClose}></div>
 
             <div className={styles.content}>
@@ -259,7 +260,8 @@ const ModalVincularProduto = ({ leadId, isOpen, onClose, onSave }) => {
                     </table>
                 </div>
             </div>
-        </div>
+        </div>,
+        typeof document !== 'undefined' ? document.body : (typeof window !== 'undefined' ? window.document.body : null)
     );
 };
 
