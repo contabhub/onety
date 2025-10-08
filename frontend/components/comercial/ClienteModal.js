@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Loader2, X } from "lucide-react";
 import styles from "../../styles/comercial/crm/ClienteModal.module.css";
 import { toast } from "react-toastify";
@@ -253,7 +254,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
     }
   };
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
       <div className={styles.modal} role="dialog" aria-modal="true">
         <div className={styles.modalHeader}>
@@ -367,7 +368,8 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    typeof document !== 'undefined' ? document.body : (typeof window !== 'undefined' ? window.document.body : null)
   );
 }
 

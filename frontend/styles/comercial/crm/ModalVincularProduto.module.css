@@ -54,12 +54,27 @@
 }
 
 .select{
-  border: none;
-  border-bottom: 1px solid var(--onity-color-border);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 320px;
+  height: 40px;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 
 .select:hover {
-  border-bottom: 1px solid var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.select:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 76, 200, 0.25);
 }
 
 .icon{

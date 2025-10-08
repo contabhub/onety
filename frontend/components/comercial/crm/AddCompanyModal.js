@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "../../../styles/comercial/crm/LeadContacts.module.css"; // Use o mesmo CSS para os modais
 
 const AddCompanyModal = ({ leadId, onClose, onSave }) => {
@@ -40,9 +41,9 @@ const AddCompanyModal = ({ leadId, onClose, onSave }) => {
     }
   };
 
-  return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
+  return createPortal(
+    <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+      <div className={styles.modal} role="document">
         <h3>Adicionar Empresa</h3>
         <form
           onSubmit={(e) => {
@@ -90,7 +91,8 @@ const AddCompanyModal = ({ leadId, onClose, onSave }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    typeof document !== 'undefined' ? document.body : (typeof window !== 'undefined' ? window.document.body : null)
   );
 };
 
