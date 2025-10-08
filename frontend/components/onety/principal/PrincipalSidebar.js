@@ -130,6 +130,24 @@ const MODULE_REGISTRY = {
         route: '/contratual/contratos'
       },
       {
+        id: 'templates',
+        label: 'Templates',
+        icon: <FileText size={18} />,
+        route: '/contratual/templates'
+      },
+      {
+        id: 'signatarios',
+        label: 'Signatários',
+        icon: <UserCheck size={18} />,
+        route: '/contratual/signatarios'
+      },
+      {
+        id: 'contratada',
+        label: 'Contratada',
+        icon: <Building2 size={18} />,
+        route: '/contratual/contratada'
+      },
+      {
         id: 'documentos',
         label: 'Documentos',
         icon: <FileText size={18} />,

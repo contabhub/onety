@@ -1,0 +1,289 @@
+.editorWrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-surface-1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.toolbarButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.toolbarButton:hover {
+  background: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.toolbarButton.active {
+  background: var(--brand-primary);
+  color: white;
+}
+
+.toolbarButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border);
+  margin: 0 4px;
+}
+
+.editor {
+  min-height: 400px;
+  padding: 16px;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+.editorContent {
+  min-height: 400px;
+  outline: none;
+}
+
+/* Estilos do conteúdo do editor */
+.editor :global(.ProseMirror) {
+  outline: none;
+  min-height: 400px;
+  padding: 0;
+}
+
+.editor :global(.ProseMirror:focus) {
+  outline: none;
+}
+
+.editor :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  color: var(--color-text-secondary);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.editor :global(.ProseMirror p) {
+  margin: 0 0 1em 0;
+}
+
+.editor :global(.ProseMirror h1),
+.editor :global(.ProseMirror h2),
+.editor :global(.ProseMirror h3),
+.editor :global(.ProseMirror h4),
+.editor :global(.ProseMirror h5),
+.editor :global(.ProseMirror h6) {
+  margin: 1.5em 0 0.5em 0;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.editor :global(.ProseMirror h1) { font-size: 2em; }
+.editor :global(.ProseMirror h2) { font-size: 1.5em; }
+.editor :global(.ProseMirror h3) { font-size: 1.25em; }
+
+.editor :global(.ProseMirror ul),
+.editor :global(.ProseMirror ol) {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.editor :global(.ProseMirror li) {
+  margin: 0.5em 0;
+}
+
+.editor :global(.ProseMirror blockquote) {
+  border-left: 3px solid var(--color-border);
+  margin: 1em 0;
+  padding-left: 1em;
+  color: var(--color-text-secondary);
+}
+
+.editor :global(.ProseMirror img) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+}
+
+.editor :global(.ProseMirror .editor-image) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.editor :global(.ProseMirror table) {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+}
+
+.editor :global(.ProseMirror th),
+.editor :global(.ProseMirror td) {
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.editor :global(.ProseMirror th) {
+  background: var(--color-bg);
+  font-weight: 600;
+}
+
+/* Estilo para destacar variáveis no editor */
+.editor :global(.ProseMirror) {
+  /* Estilo para variáveis - destaque visual */
+}
+
+.editor :global(.ProseMirror) {
+  /* Substitui temporariamente as variáveis por spans destacados */
+}
+
+/* Classe para variáveis destacadas */
+.variableHighlight {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: white;
+  border: 2px solid var(--brand-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.variableHighlight:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+}
+
+/* Modal de variáveis */
+.variablesModal {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.variablesContent {
+  padding: 16px;
+}
+
+.variablesContent h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.variablesList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.variableButton {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-1);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  transition: all 0.2s ease;
+  color: var(--color-text-secondary);
+}
+
+.variableButton:hover {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.closeButton {
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--brand-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--brand-primary);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 6px 8px;
+    gap: 2px;
+  }
+  
+  .toolbarButton {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .variablesList {
+    grid-template-columns: 1fr;
+  }
+  
+  .editor {
+    padding: 12px;
+    min-height: 300px;
+  }
+  
+  .editorContent {
+    min-height: 300px;
+  }
+  
+  .editor :global(.ProseMirror) {
+    min-height: 300px;
+  }
+} 

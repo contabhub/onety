@@ -1,0 +1,306 @@
+.container {
+  margin: 0 auto;
+  padding: 20px;
+}
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--color-text-primary);
+  }
+  .label {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0 30px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+  
+  .variableList {
+    background-color: var(--color-bg);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .subtitle {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: var(--color-text-primary);
+  }
+  
+  .variableList ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .variableList li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .addButton {
+    margin: 10px 0;
+    padding: 8px 14px;
+    background-color: var(--brand-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in;
+  }
+
+  .addButton:hover {
+    background-color: var(--brand-primary);
+
+  }
+  .cancelButton {
+    margin: 10px 0;
+    padding: 8px 14px;
+    background-color: var(--color-border);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .variableItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .deleteButton {
+    background-color: var(--error);
+    border: none;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    border: 2px solid transparent;
+    transition: background-color 0.2s ease-in, color 0.2s ease-in;
+    display: flex;          
+    align-items: center;      
+    justify-content: center;
+  }
+
+  .deleteButton svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .deleteButton:hover {
+    color: var(--error);
+    background-color: var(--color-surface-1);
+    border: 2px solid var(--error);
+
+  }
+  
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal {
+    background: var(--color-surface-1);
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .form input,
+  .form select {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+  }
+  
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  
+  .modalButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  
+  .backButton {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text-primary);
+    transition: color 0.3s ease;
+  }
+  
+  .backButton:hover {
+    color: var(--brand-primary);
+  }
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .headerRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
+
+.nomeVariavelPreview {
+  font-size: 0.95em;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+/* --- Estilos de tabela inspirados no Contratos.module.css --- */
+
+.tableContainer {
+  background: var(--color-surface-1);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.variablesTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface-1);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-top: 12px;
+  overflow: hidden;
+}
+.variablesTable th,
+.variablesTable td {
+  padding: 16px 24px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+.variablesTable th {
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.variablesTable tr:not(:last-child) {
+  border-bottom: 1px solid var(--color-border);
+}
+.variablesTable thead {
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+.variablesTable tr:hover {
+  background-color: var(--color-bg);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.deleteBtn {
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+  color: var(--error);
+  border: 2px solid var(--error);
+  border-radius: 5px;
+  margin: 0 4px;
+  transition: 0.3s ease-in-out;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.deleteBtn:hover {
+  background-color: var(--error);
+  color: #fff;
+  opacity: 0.9;
+  border-color: var(--error);
+}
+
+.editIcon {
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+  color: var(--brand-primary);
+  border: 2px solid var(--brand-primary);
+  border-radius: 5px;
+  margin: 0 4px;
+  transition: 0.3s ease-in-out;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.editIcon:hover {
+  background-color: var(--brand-primary);
+  opacity: 0.7;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .tableContainer {
+    overflow-x: auto;
+  }
+  .variablesTable th,
+  .variablesTable td {
+    white-space: nowrap;
+    padding: 10px;
+  }
+}
+
+.tableResponsive {
+  overflow-x: auto;
+}
+
+.variableMono {
+  font-family: monospace;
+}
+
+.variablesTableActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
