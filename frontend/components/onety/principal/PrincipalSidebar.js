@@ -72,7 +72,7 @@ const MODULE_REGISTRY = {
     items: [
       {
         id: 'clients',
-        label: 'Clientes',
+        label: 'Pré-Clientes',
         icon: <Users size={18} />,
         route: '/comercial/clients'
       },
