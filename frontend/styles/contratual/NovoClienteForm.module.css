@@ -1,0 +1,120 @@
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  z-index: 10;
+  transition: color 0.18s;
+}
+.closeButton:hover {
+  color: var(--error);
+}
+
+.formContainer {
+  position: relative;
+}
+
+.formContainer {
+    padding: 24px;
+    border-radius: 8px;
+    margin-top: 24px;
+    border: 1px solid var(--color-border);
+  }
+  
+  .radioGroup {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  
+  .radioGroup label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .grid > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    grid-column: 1 / -1;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .grid > div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  
+  .input {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  background-color: var(--color-surface-1);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.input:hover {
+  border-color: var(--color-divider);
+}
+  
+  .button {
+  background: var(--brand-primary);
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background: color-mix(in srgb, var(--brand-primary) 85%, black);
+}
+  
+  .error {
+    color: var(--error);
+    font-size: 14px;
+    margin-top: -8px;
+    margin-bottom: 16px;
+  }
+  
+  .formActions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  

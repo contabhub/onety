@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styles from "../../styles/NovoClienteForm.module.css";
+import styles from "../../styles/contratual/NovoClienteForm.module.css";
 
 export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdate }) {
   const [formData, setFormData] = useState({

@@ -1,7 +1,7 @@
 // components/modal/ProdutoModal.js
 import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
-import styles from "../../styles/CriarContrato.module.css";
+import styles from "../../styles/contratual/CriarContrato.module.css";
 
 export default function ProdutoModal({ produtos, onClose, onAdd }) {
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);

@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Layout from "../components/layout/Layout";
-import styles from "../styles/CriarContrato.module.css";
-import LeadsModal from "../components/modal/LeadsModal";
-import ClienteForm from "../components/assinador/ClienteForm";
-import ProdutoModal from "../components/assinador/ProdutoModal";
-import LeadToClientForm from "../components/assinador/LeadToClientForm";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
+import styles from "../../styles/contratual/CriarContrato.module.css";
+import LeadsModal from "../../components/comercial/modal/LeadsModal";
+import ClienteForm from "../../components/contratual/ClienteForm";
+import ProdutoModal from "../../components/contratual/ProdutoModal";
+import LeadToClientForm from "../../components/contratual/LeadToClientForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faPen, faTrash, faUser, faFileAlt, faBoxOpen, faUserPlus, faInfoCircle, faRocket, faCloudUploadAlt, faCheckCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { fetchClienteById } from "../utils/fetchClienteById";
-import ListaSignatarios from "../components/assinador/ListaSignatarios"; // Importar o componente
+import { fetchClienteById } from "../../utils/fetchClienteById";
+import ListaSignatarios from "../../components/contratual/ListaSignatarios";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ToggleSimNao from "../components/assinador/ToggleSimNao";
-import FullScreenLoader from '../components/FullScreenLoader';
-import meuLottieJson from '../assets/Contract.json';
-import TiptapEditor from "../components/TiptapEditor";
+import ToggleSimNao from "../../components/contratual/ToggleSimNao";
+import TiptapEditor from "../../components/contratual/TiptapEditor";
 
 // Adicione a função utilitária para converter arquivo em base64
 function fileToBase64(file) {
@@ -231,13 +230,13 @@ export default function CriarContratoAutentique() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData");
       if (!userRaw) return;
 
       const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const equipeId = user.EmpresaId;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/equipe-empresa/equipe/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratada/empresa/${equipeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -267,7 +266,7 @@ export default function CriarContratoAutentique() {
       if (!token) return;
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -310,14 +309,14 @@ export default function CriarContratoAutentique() {
     async function loadCustomVariables() {
       try {
         const token = localStorage.getItem("token");
-        const userRaw = localStorage.getItem("user");
+        const userRaw = localStorage.getItem("userData");
         if (!userRaw || !token) return;
 
         const user = JSON.parse(userRaw);
-        const equipeId = user.equipe_id;
+        const equipeId = user.EmpresaId;
         if (!equipeId) return;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-variables/${equipeId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/${equipeId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -343,7 +342,7 @@ export default function CriarContratoAutentique() {
 
   async function fetchTemplates() {
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
 
     if (!token) {
       toast.warning("Token não encontrado.");
@@ -353,12 +352,12 @@ export default function CriarContratoAutentique() {
 
     try {
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/templates`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/templates`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "x-equipe-id": user?.equipe_id,
+          "x-equipe-id": user?.EmpresaId,
 
         },
       });
@@ -384,12 +383,12 @@ export default function CriarContratoAutentique() {
 
   async function fetchClientes() {
     const token = localStorage.getItem("token"); // Obtém o token JWT do localStorage
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = JSON.parse(userRaw);
-    const equipeId = user.equipe_id;
+    const equipeId = user.EmpresaId;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/equipe/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/clients/empresa/${equipeId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,  // Envia o token JWT no cabeçalho
@@ -410,16 +409,16 @@ export default function CriarContratoAutentique() {
 
   const fetchProdutos = async () => {
     try {
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData");
       const token = localStorage.getItem("token");
 
       if (!userRaw || !token) return;
 
       const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const equipeId = user.EmpresaId;
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/produtos/equipe/${equipeId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/produtos/empresa/${equipeId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -435,15 +434,15 @@ export default function CriarContratoAutentique() {
 
   const fetchContatos = async () => {
     try {
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData");
       const token = localStorage.getItem("token");
       
       if (!userRaw || !token) return;
       
       const user = JSON.parse(userRaw);
-      const equipeId = user.equipe_id;
+      const equipeId = user.EmpresaId;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contatos/equipe/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/contatos/empresa/${equipeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -479,10 +478,10 @@ export default function CriarContratoAutentique() {
     if (salvarNaLista) {
       try {
         const token = localStorage.getItem("token");
-        const userRaw = localStorage.getItem("user");
+        const userRaw = localStorage.getItem("userData");
         const user = userRaw ? JSON.parse(userRaw) : {};
-        const equipeId = user.equipe_id;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios`, {
+        const equipeId = user.EmpresaId;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -542,10 +541,10 @@ export default function CriarContratoAutentique() {
     }
     try {
       const token = localStorage.getItem("token");
-      const userRaw = localStorage.getItem("user");
+      const userRaw = localStorage.getItem("userData");
       const user = userRaw ? JSON.parse(userRaw) : {};
-      const equipeId = user.equipe_id;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios`, {
+      const equipeId = user.EmpresaId;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -704,9 +703,9 @@ export default function CriarContratoAutentique() {
     }
 
     // Obter o equipe_id do usuário logado
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = userRaw ? JSON.parse(userRaw) : {};
-    const equipeId = user.equipe_id;  // Obtendo o equipe_id do usuário logado
+    const equipeId = user.EmpresaId;  // Obtendo o EmpresaId do usuário logado
 
     const signatariosToSend = signatarios.map(s => ({
       ...s,
@@ -780,8 +779,8 @@ export default function CriarContratoAutentique() {
           end_at: payload.end_at
         });
         console.log("Primeiros 100 caracteres do base64:", payload.content.substring(0, 100));
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique`);
-        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique`, {
+        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique`);
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -1015,8 +1014,8 @@ export default function CriarContratoAutentique() {
         console.log("Variáveis sendo enviadas:", payload.variables);
         console.log("Cliente selecionado:", cliente?.name);
         console.log("Produtos selecionados:", produtosSelecionados.length);
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique/html`);
-        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique/html`, {
+        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/html`);
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/html`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -1077,7 +1076,7 @@ export default function CriarContratoAutentique() {
     await fetchClientes();
 
     const token = localStorage.getItem("token");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/clients/${clientId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const clienteData = await res.json();
@@ -1094,7 +1093,7 @@ export default function CriarContratoAutentique() {
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${lead_id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${lead_id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -1163,7 +1162,7 @@ export default function CriarContratoAutentique() {
     if (!createdContractId || !token) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique/${createdContractId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/${createdContractId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -1420,11 +1419,24 @@ export default function CriarContratoAutentique() {
   );
 
   return (
-    <Layout>
-      {loading && <FullScreenLoader animationData={meuLottieJson}/>}
-      <button className={styles.backButton} onClick={() => router.back()}>
-        <FontAwesomeIcon icon={faArrowLeft} /> Voltar
-      </button>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
+          <div className={styles.pageContainer}>
+            {loading && (
+              <div className={styles.loadingOverlay}>
+                <SpaceLoader 
+                  size={140} 
+                  label="Criando contrato..." 
+                  showText={true}
+                  minHeight={400}
+                />
+              </div>
+            )}
+            <button className={styles.backButton} onClick={() => router.back()}>
+              <FontAwesomeIcon icon={faArrowLeft} /> Voltar
+            </button>
       <h1 className={styles.title}>Criar Novo Contrato</h1>
       <div className={styles.infoContainer}>
         <FontAwesomeIcon icon={faRocket} className={styles.infoIcon} />
@@ -2470,19 +2482,22 @@ export default function CriarContratoAutentique() {
         />
       )}
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce}
-      />
-    </Layout>
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick={false}
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="colored"
+              transition={Bounce}
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

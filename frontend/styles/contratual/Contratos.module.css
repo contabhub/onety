@@ -1,3 +1,18 @@
+/* Layout lateral com sidebar */
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -14,14 +29,14 @@
 
 .title {
   margin-bottom: 20px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .container {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   margin-top: 20px;
 }
 
@@ -33,8 +48,8 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--color-divider);
-  border-top: 4px solid var(--brand-primary);
+  border: 4px solid var(--onity-color-border);
+  border-top: 4px solid var(--onity-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 10px;
@@ -56,13 +71,13 @@
 
 .loadingText {
   font-size: 16px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-top: 8px;
 }
 
 
 .tableContainer {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 8px;
 }
 
@@ -77,21 +92,21 @@
   text-align: left;
   vertical-align: middle;
   font-size: 15px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .table th {
-  color: var(--brand-primary);
+  color: var(--onity-color-text);
 }
 
 
 .table tr:not(:last-child) {
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .table thead {
-  background-color: var(--color-surface-2);
-  border-bottom: 1px solid var(--color-divider);
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 .pendente,
@@ -120,30 +135,30 @@
 
 
 .reprovado {
-  --bg-color: color-mix(in srgb, var(--error) 12%, transparent);
-  --text-color: var(--error);
+  --bg-color: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  --text-color: var(--onity-color-error);
 }
 
 .pendente {
-  --bg-color: color-mix(in srgb, var(--brand-accent) 12%, transparent);
-  --text-color: var(--brand-accent);
+  --bg-color: color-mix(in srgb, var(--onity-color-warning) 12%, transparent);
+  --text-color: var(--onity-color-warning);
 }
 
 .assinado {
-  --bg-color: color-mix(in srgb, var(--success) 12%, transparent);
-  --text-color: var(--success);
+  --bg-color: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
+  --text-color: var(--onity-color-success);
 }
 
 .expirado {
-  --bg-color: color-mix(in srgb, var(--expired) 12%, transparent);
-  --text-color: var(--expired);
+  --bg-color: color-mix(in srgb, var(--onity-icon-secondary) 12%, transparent);
+  --text-color: var(--onity-icon-secondary);
 }
 
 .button {
-  background-color: var(--brand-primary);
-  color: white;
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
   padding: 12px 20px;
-  border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
@@ -152,7 +167,8 @@
 }
 
 .button:hover {
-  background-color: color-mix(in srgb, var(--brand-primary) 90%, black);
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
 }
 
 
@@ -171,7 +187,7 @@
   align-items: center;
   justify-content: center;
   font-size: 20px; /* Aumentado */
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   transition: color 0.2s ease;
 }
 
@@ -181,8 +197,8 @@
 .linkIcon:hover,
 .cloneIcon:hover,
 .clockIcon:hover {
-  background-color: var(--color-bg);
-  color: var(--brand-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-primary);
 }
 
 .subTitle {
@@ -202,7 +218,7 @@
 
 .loading {
   font-style: italic;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .ul {
@@ -267,8 +283,8 @@
   position: absolute;
   top: 30px;
   left: -250px;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
   border-radius: 6px;
   padding: 6px 0;
@@ -285,7 +301,7 @@
 }
 
 .signatarioItem:hover {
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
 }
 
 
@@ -322,42 +338,42 @@
   margin-bottom: 24px;
   font-weight: 500;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .filtroContainer label {
   font-size: 15px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .filtroContainer select {
   appearance: none;
   /* remove estilo padrão */
   padding: 10px 14px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 18px;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s ease;
   padding-right: 36px;
   min-width: 160px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .filtroContainer select:hover {
-  border-color: var(--brand-primary);
+  border-color: var(--onity-color-primary);
 }
 
 .filtroContainer select:focus {
   outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 25%, transparent);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
 }
 
 .actions {
@@ -367,7 +383,7 @@
 }
 
 .table tr:hover {
-  background-color: var(--color-surface-2);
+  background-color: var(--onity-color-bg);
 }
 
 /* Cards no mobile */
@@ -376,19 +392,19 @@
 }
 
 .card {
-  background-color: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .cardTitle {
   font-weight: bold;
   font-size: 16px;
   margin-bottom: 6px;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .cardInfo {
@@ -414,7 +430,7 @@
 }
 
 .pageButton {
-  background-color: var(--ink-gray);
+  background-color: var(--onity-color-primary);
   color: white;
   padding: 6px 14px;
   border-radius: 6px;
@@ -425,11 +441,11 @@
 }
 
 .pageButton:hover:not(.disabled) {
-  background-color: color-mix(in srgb, var(--ink-gray) 85%, white);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .disabled {
-  background-color: var(--color-divider);
+  background-color: var(--onity-color-border);
   cursor: not-allowed;
 }
 
@@ -453,14 +469,14 @@
 .prolongarDropdown {
   position: absolute;
   z-index: 10;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   padding: 12px;
   top: 36px;
   right: 0;
   min-width: 180px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -469,11 +485,11 @@
   width: 60px;
   padding: 4px;
   border-radius: 4px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   font-size: 15px;
 }
 .prolongarBtn {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -484,11 +500,11 @@
   transition: background 0.2s;
 }
 .prolongarBtn:hover {
-  background: color-mix(in srgb, var(--brand-primary) 90%, black);
+  background: var(--onity-color-primary-hover);
 }
 .prolongarCancelBtn {
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
   border: none;
   border-radius: 4px;
   padding: 4px 10px;
@@ -498,13 +514,13 @@
   transition: background 0.2s;
 }
 .prolongarCancelBtn:hover {
-  background: var(--color-divider);
+  background: var(--onity-color-border);
 }
 
 .pdfFilterBtn {
   background: none;
-  border: 2px solid var(--color-border);
-  color: var(--error);
+  border: 2px solid var(--onity-color-border);
+  color: var(--onity-color-error);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 18px;
@@ -516,20 +532,20 @@
 }
 
 .pdfFilterBtn:hover {
-  border: 2px solid var(--error);
-  background: color-mix(in srgb, var(--error) 12%, transparent);
+  border: 2px solid var(--onity-color-error);
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
 }
 
 .pdfFilterActive {
-  border: 2px solid var(--error);
-  background: color-mix(in srgb, var(--error) 12%, transparent);
-  color: var(--error);
+  border: 2px solid var(--onity-color-error);
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  color: var(--onity-color-error);
 }
 
 .viewToggleBtn {
   background: none;
-  border: 2px solid var(--color-border);
-  color: var(--brand-primary);
+  border: 2px solid var(--onity-color-border);
+  color: var(--onity-color-text);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 18px;
@@ -540,25 +556,24 @@
 }
 
 .viewToggleBtn:hover {
-  border: 2px solid var(--brand-primary);
-  background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+  border: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
 }
 
 .viewToggleActive {
-  border: 2px solid var(--brand-primary);
-  background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
-  color: var(--brand-primary);
+  border: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
 }
 
 .headerSignatario {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
   border-radius: 8px;
   padding: 16px 24px;
   margin-bottom: 18px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .headerSignatarioInfo {
@@ -570,14 +585,14 @@
 .headerSignatarioNome {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   letter-spacing: 0.01em;
 }
 
 .headerSignatarioLogout {
   background: none;
   border: none;
-  color: var(--error);
+  color: var(--onity-color-error);
   font-size: 1rem;
   font-weight: 500;
   display: flex;
@@ -590,7 +605,7 @@
 }
 
 .headerSignatarioLogout:hover {
-  background: color-mix(in srgb, var(--error) 12%, transparent);
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
 }
 
 .headerSignatarioLogo {
@@ -635,11 +650,11 @@
 }
 
 .autentiqueSim {
-  color: var(--success);
+  color: var(--onity-color-success);
   font-weight: bold;
   padding: 6px 10px;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--success) 12%, transparent);
+  background-color: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -647,11 +662,11 @@
 }
 
 .autentiqueNao {
-  color: var(--error);
+  color: var(--onity-color-error);
   font-weight: bold;
   padding: 6px 10px;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--error) 12%, transparent);
+  background-color: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -663,30 +678,30 @@
   display: inline-flex;
   align-items: center;
   margin-left: 12px;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 6px;
   padding: 4px 8px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   transition: all 0.2s ease;
 }
 
 .filtroDataCombinado:hover {
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
 }
 
 .filtroDataCombinado select {
   border: none;
   outline: none;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   background: transparent;
   cursor: pointer;
 }
 
 .filtroDataCombinado select:focus {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 /* Estilos para o dropdown de download do Autentique */
@@ -694,9 +709,9 @@
   position: absolute;
   top: 35px;
   right: 0;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
   border-radius: 8px;
   padding: 8px 0;
   min-width: 180px;
@@ -708,8 +723,8 @@
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-divider);
+  color: var(--onity-icon-secondary);
+  border-bottom: 1px solid var(--onity-color-border);
   margin-bottom: 4px;
 }
 
@@ -722,18 +737,18 @@
   background: transparent;
   cursor: pointer;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   transition: background 0.2s ease;
   text-align: left;
 }
 
 .downloadOption:hover {
-  background: var(--color-surface-2);
-  color: var(--brand-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-primary);
 }
 
 .downloadOption:active {
-  background: color-mix(in srgb, var(--brand-primary) 15%, transparent);
+  background: color-mix(in srgb, var(--onity-color-primary) 15%, transparent);
 }
 
 /* Estilos para o seletor de itens por página */
@@ -748,36 +763,36 @@
 
 .itemsPerPageLabel {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-weight: 500;
 }
 
 .itemsPerPageSelect {
   padding: 6px 10px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 4px;
   font-size: 14px;
-  background-color: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .itemsPerPageSelect:hover {
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
 }
 
 .itemsPerPageSelect:focus {
   outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 2px var(--focus-ring);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary);
 }
 
 /* Estilos para informações adicionais da paginação */
 .paginationInfo {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-left: 16px;
 }
 
@@ -785,13 +800,13 @@
 .singlePageMessage {
   text-align: center;
   padding: 16px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 14px;
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
   border-radius: 6px;
   margin-top: 16px;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
 }
 
 /* Responsividade para mobile */

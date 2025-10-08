@@ -1,3 +1,35 @@
+/* Layout lateral com sidebar */
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
+.pageContainer {
+  position: relative;
+}
+
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
 .tabs {
   display: flex;
   justify-content: space-around;
@@ -14,34 +46,34 @@
   padding: 10px 20px;
   cursor: pointer;
   font-size: 16px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 700;
   transition: all 0.3s;
   border: 2px solid transparent;
 
 }
 
 .tabs button:hover {
-  border: 2px solid var(--brand-primary);
-  color: var(--brand-primary);
+  border: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
   border-radius: 5px;
   transition: all 0.3s;
   background-color: transparent;
 }
 
 .tabs button.active {
-  border: 2px solid var(--brand-primary);
-  color: var(--brand-primary);
+  border: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
   border-radius: 5px;
   background-color: transparent;
 }
 
 .container {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   padding: 20px;
   border-radius: 5px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .header {
@@ -55,37 +87,37 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   font-size: 0.875rem;
 }
 
 .input,
 .textarea {
-  width: 100%;
+  width: 80%;
   padding: 10px;
   margin: 10px 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 5px;
   font-size: 16px;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
 }
 
 .select {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 5px;
   font-size: 16px;
   max-width: 300px;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
 }
 
 .button {
-  background-color: var(--brand-primary);
-  color: white;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
   border: none;
   padding: 10px 15px;
   cursor: pointer;
@@ -95,7 +127,7 @@
 }
 
 .button:hover {
-  background-color: color-mix(in srgb, var(--brand-primary) 85%, black);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .buttons{
@@ -126,7 +158,7 @@
 }
 
 .active {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   border-radius: 5px;
 }
@@ -134,7 +166,7 @@
 .progressBar {
   width: 100%;
   height: 6px;
-  background-color: var(--color-divider);
+  background-color: var(--onity-color-border);
   border-radius: 4px;
   margin-top: 10px;
   margin-bottom: 10px;
@@ -143,7 +175,7 @@
 
 .progressFill {
   height: 100%;
-  background-color: var(--brand-primary);
+  background-color: var(--primary-color, #3b82f6);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -156,7 +188,7 @@
 }
 
 .leftButton {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   padding: 10px 16px;
   border: none;
@@ -166,7 +198,7 @@
 }
 
 .rightButton {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   padding: 10px 16px;
   border: none;
@@ -199,13 +231,13 @@
 
 .tabelaProdutos th,
 .tabelaProdutos td {
-  border: 1px solid var(--color-divider);
+  border: 1px solid var(--onity-color-border);
   padding: 8px;
   text-align: center;
 }
 
 .removeButton {
-  background: var(--error);
+  background: var(--onity-color-error);
   color: white;
   border: none;
   padding: 4px 10px;
@@ -227,7 +259,7 @@
 }
 
 .modal {
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   padding: 2rem;
   border-radius: 8px;
   width: 400px;
@@ -235,7 +267,7 @@
 
 .closeBtn {
   margin-top: 16px;
-  background: var(--error);
+  background: var(--onity-color-error);
   color: white;
   padding: 10px 15px;
   border: none;
@@ -254,7 +286,7 @@
 }
 
 .success {
-  color: var(--success);
+  color: var(--onity-color-success);
   text-align: center;
   margin-top: 10px;
 }
@@ -264,12 +296,12 @@
   border: none;
   cursor: pointer;
   font-size: 18px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .backButton:hover{
   background-color: transparent;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .previewContainer {
@@ -280,12 +312,12 @@
 
 .miniatura {
   display: inline-block;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   overflow: hidden;
   padding: 10px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
   max-height: 400px;
   max-width: 345px;
 }
@@ -314,7 +346,7 @@
 .uploadSection {
   margin-top: 2rem;
   padding: 2rem;
-  background-color: var(--color-surface-2);
+  background-color: var(--onity-color-bg);
   border-radius: 8px;
 }
 
@@ -322,28 +354,28 @@
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   text-align: center;
 }
 
 .dropzone {
-  border: 2px dashed var(--color-divider);
+  border: 2px dashed var(--onity-color-border);
   border-radius: 8px;
   padding: 2rem;
   text-align: center;
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   transition: background-color 0.3s ease;
 }
 
 .dropzone:hover {
-  background-color: var(--color-surface-2);
+  background-color: var(--onity-color-bg);
 }
 
 .uploadButton {
   display: inline-block;
   margin-top: 1rem;
   padding: 0.6rem 1.2rem;
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -355,17 +387,17 @@
 }
 
 .uploadButton:hover {
-  background-color: color-mix(in srgb, var(--brand-primary) 85%, black);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .uploadPreview {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   padding: 2rem;
   border-radius: 8px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
 }
 
 .uploadPreview h3 {
@@ -382,7 +414,7 @@
 }
 
 .uploadPreview .button {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-color-primary);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -393,7 +425,7 @@
 }
 
 .uploadPreview .button:hover {
-  background-color: color-mix(in srgb, var(--brand-primary) 85%, black);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .removeButton {
@@ -493,22 +525,22 @@
 .documentChoiceSection {
   margin-top: 2rem;
   padding: 2rem;
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface);
   border-radius: 12px;
-  border: 1px solid var(--color-divider);
+  border: 1px solid var(--onity-color-border);
 }
 
 .sectionTitle {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0 0 0.5rem 0;
   text-align: center;
 }
 
 .sectionDescription {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin: 0 0 2rem 0;
   font-size: 1rem;
   line-height: 1.5;
@@ -522,8 +554,8 @@
 
 .choiceOption {
   flex: 1;
-  background: var(--color-surface-1);
-  border: 2px solid var(--color-border);
+  background: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
@@ -532,15 +564,15 @@
 }
 
 .choiceOption:hover {
-  border-color: var(--color-divider);
-  box-shadow: var(--shadow-card);
+  border-color: var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
   transform: translateY(-2px);
 }
 
 .choiceOptionActive {
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 20%, transparent);
-  background: var(--color-surface-2);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+  background: var(--onity-color-bg);
 }
 
 .choiceHeader {
@@ -553,7 +585,7 @@
 .choiceIcon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, var(--brand-primary) 0%, color-mix(in srgb, var(--brand-primary) 85%, black) 100%);
+  background: linear-gradient(135deg, var(--onity-color-primary) 0%, var(--onity-color-primary-hover) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -566,12 +598,12 @@
   margin: 0 0 0.25rem 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .choiceTitle p {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -585,18 +617,18 @@
 .templateSelect {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   font-size: 0.875rem;
-  background: var(--color-surface-1);
-  color: var(--color-text-primary);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
   transition: border-color 0.2s ease;
 }
 
 .templateSelect:focus {
   outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
 }
 
 .selectedTemplateInfo {
@@ -623,16 +655,16 @@
 .dividerLine {
   width: 2px;
   height: 40px;
-  background: linear-gradient(to bottom, transparent, var(--color-divider), transparent);
+  background: linear-gradient(to bottom, transparent, var(--onity-color-border), transparent);
 }
 
 .dividerText {
-  background: var(--color-surface-1);
-  color: var(--color-text-secondary);
+  background: var(--onity-color-surface);
+  color: var(--onity-icon-secondary);
   font-weight: 600;
   font-size: 0.875rem;
   padding: 0.5rem 1rem;
-  border: 2px solid var(--color-divider);
+  border: 2px solid var(--onity-color-border);
   border-radius: 20px;
   margin: 0.5rem 0;
   position: relative;
@@ -640,11 +672,11 @@
 }
 
 .uploadArea {
-  border: 2px dashed var(--color-border);
+  border: 2px dashed var(--onity-color-border);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
   transition: all 0.3s ease;
   cursor: pointer;
   min-height: 140px;
@@ -654,17 +686,17 @@
 }
 
 .uploadArea:hover {
-  border-color: var(--color-divider);
-  background: var(--color-surface-1);
+  border-color: var(--onity-color-border);
+  background: var(--onity-color-surface);
 }
 
 .uploadAreaActive {
-  border-color: var(--success);
-  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-color: var(--onity-color-success);
+  background: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
 }
 
 .infoText {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -674,8 +706,8 @@
 }
 
 .infoContainer {
-  background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--brand-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--onity-color-primary) 30%, transparent);
   border-radius: 8px;
   padding: 12px 16px;
   margin-bottom: 20px;
@@ -686,12 +718,12 @@
 }
 
 .infoContainer:hover {
-  background: color-mix(in srgb, var(--brand-primary) 15%, transparent);
-  border-color: color-mix(in srgb, var(--brand-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--onity-color-primary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--onity-color-primary) 40%, transparent);
 }
 
 .infoIcon {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -702,30 +734,30 @@
   align-items: center;
   gap: 0.75rem;
   padding: 2rem;
-  background: var(--color-surface-1);
-  border: 2px dashed var(--color-border);
+  background: var(--onity-color-surface);
+  border: 2px dashed var(--onity-color-border);
   border-radius: 12px;
   transition: all 0.2s ease;
 }
 
 .uploadPlaceholder:hover {
-  border-color: var(--color-divider);
-  background: var(--color-surface-2);
+  border-color: var(--onity-color-border);
+  background: var(--onity-color-bg);
 }
 
 .uploadIcon {
   font-size: 3rem;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin-bottom: 0.5rem;
   transition: color 0.2s ease;
 }
 
 .uploadPlaceholder:hover .uploadIcon {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
 }
 
 .uploadText {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
@@ -733,7 +765,7 @@
 }
 
 .uploadSubtext {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin: 0;
   font-size: 0.875rem;
   text-align: center;
@@ -744,7 +776,7 @@
 }
 
 .uploadButton {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   padding: 1rem 2rem;
   border-radius: 8px;
@@ -755,13 +787,13 @@
   display: inline-block;
   border: none;
   text-decoration: none;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--onity-elev-med);
 }
 
 .uploadButton:hover {
-  background: color-mix(in srgb, var(--brand-primary) 85%, black);
+  background: var(--onity-color-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--brand-primary) 25%, transparent);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
 }
 
 /* Estilos para arquivo carregado */
@@ -770,15 +802,15 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
   border-radius: 8px;
-  border: 1px solid var(--color-divider);
+  border: 1px solid var(--onity-color-border);
   width: 100%;
 }
 
 .uploadedFileInfo .fileIcon {
   font-size: 24px;
-  color: var(--success);
+  color: var(--onity-color-success);
   flex-shrink: 0;
 }
 
@@ -789,20 +821,20 @@
 
 .uploadedFileInfo .fileName {
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   margin: 0 0 4px 0;
   font-size: 14px;
   word-break: break-word;
 }
 
 .uploadedFileInfo .fileSize {
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   margin: 0;
   font-size: 12px;
 }
 
 .uploadedFileInfo .removeFileButton {
-  background: var(--error);
+  background: var(--onity-color-error);
   color: white;
   border: none;
   padding: 8px;
@@ -818,7 +850,8 @@
 }
 
 .uploadedFileInfo .removeFileButton:hover {
-  background: color-mix(in srgb, var(--error) 85%, black);
+  background: var(--onity-color-error);
+  opacity: 0.9;
   transform: scale(1.05);
 }
 
@@ -833,16 +866,16 @@
 
 .uploadedFileInfo .removeFileButton:focus {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 30%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-error) 30%, transparent);
 }
 
 .uploadInfo {
   display: flex;
   align-items: center;
   padding: 0.75rem;
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
   border-radius: 6px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
   font-size: 0.75rem;
   line-height: 1.4;
 }
@@ -852,10 +885,10 @@
   align-items: center;
   margin-top: 1.5rem;
   padding: 1rem;
-  background: color-mix(in srgb, var(--brand-accent) 18%, transparent);
-  border: 1px solid var(--brand-accent);
+  background: color-mix(in srgb, var(--onity-color-warning) 18%, transparent);
+  border: 1px solid var(--onity-color-warning);
   border-radius: 8px;
-  color: color-mix(in srgb, var(--brand-accent) 70%, black);
+  color: color-mix(in srgb, var(--onity-color-warning) 70%, black);
   font-size: 0.875rem;
   line-height: 1.5;
 }
@@ -890,13 +923,13 @@
 .contractValueDisplay {
   margin-top: 16px;
   padding: 16px;
-  background: var(--color-surface-2);
+  background: var(--onity-color-bg);
   border-radius: 8px;
-  border: 1px solid var(--brand-primary);
-  color: var(--color-text-primary);
+  border: 1px solid var(--onity-color-primary);
+  color: var(--onity-color-text);
   font-weight: 500;
 }
 
 .contractValueDisplay strong {
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
