@@ -1,172 +1,310 @@
+.page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.pageContent {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 24px 12px;
+}
+
 .container {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 2rem;
+  padding: 3rem 2rem 2rem;
 }
 
 .title {
-  font-size: 1.6rem;
+  font-size: 20px;
+  margin: 0 auto 20px;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: var(--onity-color-text);
+  max-width: 700px;
+  text-align: center;
 }
 
 .form {
+  background: var(--onity-color-surface);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 30px;
+  max-width: 700px;
 }
 
 .input {
   flex: 1;
-  padding: 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font-size: 0.95rem;
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  font-size: 15px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  min-width: 450px;
+  min-height: 25px;
+}
+
+.input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.input:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(24, 198, 227, 0.15);
 }
 
 .button {
-  padding: 0.75rem 1.5rem;
-  background-color: var(--brand-primary);
+  background-color: var(--onity-icon-secondary);
   color: white;
   border: none;
-  border-radius: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 44px;
   transition: background-color 0.4s ease;
 }
 
 .button:hover {
-  background-color: var(--brand-primary);
+  background-color: color-mix(in srgb, var(--onity-icon-secondary) 85%, black);
 }
 
 .button:disabled {
-  background-color: var(--color-text-secondary);
+  background-color: var(--onity-icon-secondary);
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .list {
-  list-style: none;
+  background: var(--onity-color-surface);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   padding: 0;
+  margin: 0 auto;
+  max-width: 730px;
+  list-style: none;
 }
 
 .listItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.listItem span {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--onity-color-text);
 }
 
 .deleteButton {
-  background-color: transparent;
-  color: var(--error);
+  background: transparent;
   border: none;
+  padding: 6px;
   cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  color: var(--onity-icon-secondary);
+}
+
+.deleteButton:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-error);
 }
 
 /* ----- CAMPO PERSONALIZADO (INTERNO) ----- */
 
 .campoBox {
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-top: 1.5rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 0 auto 30px;
+  max-width: 730px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--onity-color-text);
 }
 
 .camposList {
   list-style: none;
   padding: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .campoItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 0.95rem;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--onity-color-border);
+  font-size: 15px;
+}
+
+.campoItem:last-child {
+  border-bottom: none;
+}
+
+.campoItem span {
+  font-size: 15px;
+  color: var(--onity-color-text);
 }
 
 .excluirCampoBtn {
-  background: none;
+  background: transparent;
   border: none;
-  color: var(--error);
-  font-size: 0.85rem;
+  padding: 6px;
   cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  color: var(--onity-icon-secondary);
+  font-size: 18px;
+}
+
+.excluirCampoBtn:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-error);
 }
 
 .addFieldButton {
-  background-color: var(--brand-primary);
+  background-color: var(--onity-icon-secondary);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 15px;
+  font-weight: 600;
   transition: background-color 0.4s ease;
 }
 
 .addFieldButton:hover {
-  background-color: var(--brand-primary);
+  background-color: color-mix(in srgb, var(--onity-icon-secondary) 85%, black);
 }
 
 .formNovoCampo {
-  margin-top: 1rem;
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 10px;
 }
 
 .formNovoCampo input,
 .formNovoCampo select {
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--color-border);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.formNovoCampo input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.formNovoCampo input:focus,
+.formNovoCampo select:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(24, 198, 227, 0.15);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* botão base para ícones */
+.iconButton {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
   border-radius: 6px;
-  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+/* ícones padrão */
+.icon {
+  font-size: 20px;
+  color: var(--onity-icon-secondary);
+  transition: color 0.2s ease;
+}
+
+/* hover genérico */
+.iconButton:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.iconButton:hover .icon {
+  color: var(--onity-color-primary);
 }
 
 .editCampoBtn,
 .trashCampoBtn {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 1.1rem; /* Tamanho do ícone */
+  padding: 6px;
   cursor: pointer;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 /* Botão de editar */
 .editCampoBtn {
-  color: var(--brand-primary);
+  font-size: 20px;
+  color: var(--onity-color-text);
 }
 
 .editCampoBtn:hover {
-  background-color: var(--color-bg);
-  color: var(--brand-primary);
+  color: var(--onity-color-primary-hover);
 }
 
 /* Botão de excluir */
 .trashCampoBtn {
-  color: var(--error);
+  font-size: 20px;
+  color: var(--onity-color-text);
 }
 
 .trashCampoBtn:hover {
-  background-color: var(--color-bg);
-  color: var(--error);
+  color: var(--onity-color-error);
 }
 
 .backButton {
@@ -177,10 +315,40 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
   transition: color 0.3s ease;
 }
 
 .backButton:hover {
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
+}
+
+.spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--onity-color-border);
+  border-top: 4px solid var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loadingText {
+  font-size: 16px;
+  color: var(--onity-icon-secondary);
+  margin-top: 8px;
 }

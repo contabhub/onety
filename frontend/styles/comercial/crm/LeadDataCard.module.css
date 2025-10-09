@@ -1,5 +1,5 @@
 .card {
-  background-color: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   border-radius: 12px;
   box-shadow: 0 0 8px rgba(0,0,0,0.08);
   padding: 16px;
@@ -20,8 +20,13 @@
 
 .editIcon {
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text);
   margin-left: 10px;
+  transition: color 0.2s ease;
+}
+
+.editIcon:hover {
+  color: var(--onity-color-primary-hover);
 }
 
 .dados {
@@ -43,20 +48,20 @@
 .nome {
   font-weight: 500;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .valor {
   font-size: 13px;
-  color: var(--color-text-secondary);
+  color: var(--onity-icon-secondary);
 }
 
 .categoriaTitulo {
   margin-top: 10px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  border-bottom: 1px solid var(--color-border);
+  color: var(--onity-color-text);
+  border-bottom: 1px solid var(--onity-color-border);
   padding-bottom: 4px;
   margin-bottom: 4px;
 }
@@ -65,7 +70,12 @@
   text-align: center;
   margin-top: 12px;
   cursor: pointer;
-  color: var(--brand-primary);
+  color: var(--onity-color-primary);
+  transition: color 0.2s ease;
+}
+
+.verMais:hover {
+  color: var(--onity-color-primary-hover);
 }
 
 .modalOverlay {
@@ -82,11 +92,19 @@
 }
 
 .modal {
-  background: var(--color-surface-1);
+  background-color: var(--onity-color-surface);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 400px;
   max-width: 95%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.modal h3 {
+  color: var(--onity-color-text);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .modalForm {
@@ -97,42 +115,99 @@
 
 .modalField label {
   font-weight: 500;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   display: block;
+  color: var(--onity-color-text);
+  font-size: 14px;
 }
 
 .modalField input {
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--color-border);
+  width: 90%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modalField input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.modalField input:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(24, 198, 227, 0.15);
 }
 
 .modalButtons {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .modalButtons button {
-  padding: 0.5rem 1rem;
+  padding: 10px 18px;
   border: none;
-  background: var(--color-text-secondary);
-  color: white;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  min-height: 44px;
 }
 
-.modalButtons button:last-child {
-  background: var(--error);
+.modalButtons button[type="submit"] {
+  border: 1px solid var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-hover);
+  background-color: transparent;
+}
+
+.modalButtons button[type="submit"]:hover {
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-text);
+}
+
+.modalButtons button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modalButtons button[type="button"] {
+  background-color: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.modalButtons button[type="button"]:hover {
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-hover);
 }
 
 .inlineInput {
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.9rem;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 15px;
   width: 100%;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inlineInput::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.inlineInput:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(24, 198, 227, 0.15);
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import styles from "../../styles/CategoriasPersonalizadas.module.css";
+import styles from "../../../styles/comercial/crm/CategoriasPersonalizadas.module.css";
 import { FaTrash, FaEdit, FaPlus, FaCheck, FaTimes } from "react-icons/fa";
 
 export default function CategoriaCard({
@@ -25,7 +25,7 @@ export default function CategoriaCard({
   const fetchCampos = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/campos-personalizados/${categoria.id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/campos-personalizados/${categoria.id}`
       );
       const data = await res.json();
       setCampos(data);
@@ -45,7 +45,7 @@ export default function CategoriaCard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/campos-personalizados`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/campos-personalizados`,
         {
           method: "POST",
           headers: {
@@ -77,7 +77,7 @@ export default function CategoriaCard({
   const handleUpdateCampo = async (id) => {
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/campos-personalizados/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/campos-personalizados/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -94,7 +94,7 @@ export default function CategoriaCard({
   const handleUpdateCategoria = async () => {
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/categorias-campos/${categoria.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/categorias-campos/${categoria.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -113,7 +113,7 @@ export default function CategoriaCard({
 
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/campos-personalizados/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comercial/campos-personalizados/${id}`,
         {
           method: "DELETE",
         }

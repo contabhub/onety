@@ -6,7 +6,7 @@
   background-color: var(--onity-color-surface);
   padding: 12px 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   overflow-x: auto;
 }
 
@@ -25,7 +25,9 @@
 }
 
 .stageItem:hover {
-  background-color: var(--onity-color-bg);
+  color: var(--onity-color-primary-hover);
+  border: 1px solid var(--onity-color-primary-hover);
+  background-color: transparent;
 }
 
 .stageName {
@@ -42,25 +44,18 @@
 
 /* Maior especificidade para não ser sobrescrito por .final */
 .stageItem.atual {
-  background-color: var(--onity-color-primary);
-  border: 1px solid var(--onity-color-primary);
-  color: #ffffff; /* Contraste alto para leitura */
-  font-weight: 600;
-  transform: scale(1.06); /* Expande um pouco */
-  padding: 9px 18px; /* Leve aumento do chip ativo */
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(255, 255, 255, 0.06);
+  color: var(--onity-color-primary-hover);
+  border: 2px solid var(--onity-color-primary-hover);
+  background-color: transparent;
+  font-size: 16px;
 }
 
-/* Hover do item selecionado mantém contraste */
-.stageItem.atual:hover {
-  background-color: var(--onity-color-primary);
-  color: #ffffff;
-}
 
 /* Itens não selecionados ficam um pouco mais sutis */
 .stageItem:not(.atual) {
   opacity: 0.78;
 }
+
 .stageItem:not(.atual):hover {
   opacity: 1;
 }

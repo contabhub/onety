@@ -35,8 +35,8 @@ export default function EditLeadDataModal({ open, onClose, categoria, leadId, on
         const isUpdate = campo.valor_id !== undefined && campo.valor_id !== null;
 
         const url = isUpdate
-          ? `${process.env.NEXT_PUBLIC_API_URL}/valores-personalizados/${campo.valor_id}`
-          : `${process.env.NEXT_PUBLIC_API_URL}/valores-personalizados`;
+          ? `${process.env.NEXT_PUBLIC_API_URL}/comercial/valores-personalizados/${campo.valor_id}`
+          : `${process.env.NEXT_PUBLIC_API_URL}/comercial/valores-personalizados`;
 
         const method = isUpdate ? "PUT" : "POST";
 
@@ -86,11 +86,12 @@ export default function EditLeadDataModal({ open, onClose, categoria, leadId, on
 
           ))}
           <div className={styles.modalButtons}>
-            <button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar"}
-            </button>
             <button type="button" onClick={onClose}>
               Cancelar
+            </button>
+
+            <button type="submit" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>

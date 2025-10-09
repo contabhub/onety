@@ -111,6 +111,12 @@ const MODULE_REGISTRY = {
         label: 'Produtos',
         icon: <DollarSign size={18} />,
         route: '/comercial/cadastro-produtos'
+      },
+      {
+        id: 'categorias',
+        label: 'Categorias',
+        icon: <Tag size={18} />,
+        route: '/comercial/categorias'
       }
     ]
   },
