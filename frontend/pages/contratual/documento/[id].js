@@ -452,7 +452,7 @@ export default function Contrato() {
                       return (
                         <li key={signatario.id} className={styles.signatory}>
                           {/* Nome e Email do Signatário */}
-                          <p><strong>Nome do Signatário:</strong> {signatario.nome}</p>
+                          <p><strong>Nome do Signatário:</strong> {signatario.name}</p>
                           <p><strong>Email do Signatário:</strong> {signatario.email}</p>
                           <p><strong>Função do Signatário:</strong> {signatario.funcao_assinatura}</p>
 
@@ -468,7 +468,7 @@ export default function Contrato() {
 
                               </div>
                               <div className={styles.signature}>
-                                <p className={styles.signatureText}>{signatario.nome}</p>
+                                <p className={styles.signatureText}>{signatario.name}</p>
                               </div>
                             </>
                           ) : (

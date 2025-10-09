@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import styles from "../../styles/contratual/CriarContrato.module.css";
+import EditProductModal from "../comercial/crm/EditProductModal";
 
 export default function ProdutoModal({ produtos, onClose, onAdd }) {
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
@@ -9,6 +10,13 @@ export default function ProdutoModal({ produtos, onClose, onAdd }) {
   const [tipo, setTipo] = useState("");
   const [parcelas, setParcelas] = useState(1);
   const [incluir13, setIncluir13] = useState(false);
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [produtosLocal, setProdutosLocal] = useState(produtos);
+
+  // Atualiza produtos locais quando a prop muda
+  useEffect(() => {
+    setProdutosLocal(produtos);
+  }, [produtos]);
 
   // Atualiza o número de parcelas automaticamente ao trocar o tipo ou a checkbox
   useEffect(() => {
@@ -41,33 +49,57 @@ export default function ProdutoModal({ produtos, onClose, onAdd }) {
     }
   }, [produtoSelecionado?.quantidade, produtoSelecionado?.valor_de_venda]);
 
+  // Callback quando um produto é criado
+  const handleProductCreated = (newProduct) => {
+    setProdutosLocal([...produtosLocal, newProduct]);
+    setShowCreateProductModal(false); // Fecha o modal de criação
+    toast.success('Produto criado com sucesso!');
+  };
+
   return (
+    <>
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
         <h3>Adicionar Produto</h3>
 
         <label className={styles.label}>Produto:</label>
-        <select
-          className={styles.select}
-          onChange={(e) => {
-            const p = produtos.find(p => p.id.toString() === e.target.value);
-            if (p) {
-              const valor = parseFloat(p.valor) || 0;
-              setProdutoSelecionado({
-                ...p,
-                quantidade: 1,
-                desconto: 0,
-                valor_de_venda: valor,
-              });
-              setValorTotal(valor);
-            }
-          }}
-        >
-          <option value="">Selecione um produto</option>
-          {produtos.map(p => (
-            <option key={p.id} value={p.id}>{p.nome}</option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <select
+            className={styles.select}
+            style={{ flex: 1 }}
+            onChange={(e) => {
+              const p = produtosLocal.find(p => p.id.toString() === e.target.value);
+              if (p) {
+                const valor = parseFloat(p.valor) || 0;
+                setProdutoSelecionado({
+                  ...p,
+                  quantidade: 1,
+                  desconto: 0,
+                  valor_de_venda: valor,
+                });
+                setValorTotal(valor);
+              }
+            }}
+          >
+            <option value="">Selecione um produto</option>
+            {produtosLocal.map(p => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+          </select>
+          <button 
+            className={styles.button}
+            onClick={() => setShowCreateProductModal(true)}
+            style={{ 
+              background: 'var(--onity-color-success)', 
+              color: 'white',
+              padding: '8px 12px',
+              fontSize: '14px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            + Criar Produto
+          </button>
+        </div>
 
         {produtoSelecionado && (
           <>
@@ -182,5 +214,15 @@ export default function ProdutoModal({ produtos, onClose, onAdd }) {
         </div>
       </div>
     </div>
+
+    {/* Modal de Criar Produto */}
+    <EditProductModal
+      product={null}
+      isOpen={showCreateProductModal}
+      onClose={() => setShowCreateProductModal(false)}
+      onSave={handleProductCreated}
+      mode="create"
+    />
+    </>
   );
 }

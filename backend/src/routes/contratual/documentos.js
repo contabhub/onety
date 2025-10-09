@@ -387,14 +387,14 @@ router.post("/:id/send-email", verifyToken, async (req, res) => {
 
     // 📧 Enviar e-mail para cada signatário com seu link exclusivo
     // Carrega a logo como base64
-    const logoPath = path.join(__dirname, "../assets/logo-contractflow-dark.png");
+    const logoPath = path.join(__dirname, "../../assets/img/Logo-Onety.png");
     const logoBuffer = fs.readFileSync(logoPath);
     const logoBase64 = logoBuffer.toString("base64");
 
     for (const { email, access_token, name } of signatories) {
       // Se for do Autentique, usar o access_token diretamente (que é o link do Autentique)
       // Se não for do Autentique, usar o link do frontend
-      const documentLink = isAutentique ? access_token : `https://frontend-contract-flow.vercel.app/assinar/${access_token}`;
+      const documentLink = isAutentique ? access_token : `https://frontend-contract-flow.vercel.app/contratual/assinar/${access_token}`;
 
       const emailSent = await sendEmail(
         email,
@@ -734,7 +734,7 @@ router.post("/:id/notificar-rejeicao", async (req, res) => {
 
     // 📧 Envia o e-mail de notificação de rejeição
     // Carrega a logo como base64
-    const logoPath = path.join(__dirname, "../assets/logo-contractflow-dark.png");
+    const logoPath = path.join(__dirname, "../../assets/img/Logo-Onety.png");
     const logoBuffer = fs.readFileSync(logoPath);
     const logoBase64 = logoBuffer.toString("base64");
 
@@ -951,7 +951,7 @@ router.post("/:id/send-whatsapp", verifyToken, async (req, res) => {
 
       // Se for do Autentique, usar o access_token diretamente (que é o link do Autentique)
       // Se não for do Autentique, usar o link do frontend
-      const documentLink = isAutentique ? access_token : `https://frontend-contract-flow.vercel.app/assinar/${access_token}`;
+      const documentLink = isAutentique ? access_token : `https://frontend-contract-flow.vercel.app/contratual/assinar/${access_token}`;
       const message = ` *ContractFlow - Documento para Assinatura*
 
 Olá${name ? ` ${name}` : ""}! 
@@ -1333,7 +1333,7 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
 
     // 📧 Envia o e-mail de notificação
     // Carrega a logo como base64
-    const logoPath = path.join(__dirname, "../assets/logo-contractflow-dark.png");
+    const logoPath = path.join(__dirname, "../../assets/img/Logo-Onety.png");
     const logoBuffer = fs.readFileSync(logoPath);
     const logoBase64 = logoBuffer.toString("base64");
 
@@ -1343,7 +1343,7 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
 
     // Enviar email para o criador
     const subjectCriador = " Contrato assinado - ContractFlow";
-    const plainTextCriador = `Olá ${document.creator_name},\n\nO contrato #${document.id} foi assinado por todos os signatários.\n\nLink do contrato: https://frontend-contract-flow.vercel.app/contrato/${document.id}\n\nLinks dos signatários:\n${signatories.map(s => `- ${s.nome}: https://frontend-contract-flow.vercel.app/assinar/${s.token_acesso}`).join('\n')}`;
+    const plainTextCriador = `Olá ${document.creator_name},\n\nO contrato #${document.id} foi assinado por todos os signatários.\n\nLink do contrato: https://frontend-contract-flow.vercel.app/contratual/documento/${document.id}\n\nLinks dos signatários:\n${signatories.map(s => `- ${s.nome}: https://frontend-contract-flow.vercel.app/contratual/assinar/${s.token_acesso}`).join('\n')}`;
     const htmlContentCriador = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -1370,8 +1370,8 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
           ${signatories.map(signatory => `
             <div style="margin-bottom: 15px; padding: 10px; background-color: white; border-radius: 4px; border-left: 3px solid #007bff;">
               <p style="margin: 0 0 8px 0; font-weight: bold; color: #333;">${signatory.name}</p>
-              <a href="https://frontend-contract-flow.vercel.app/assinar/${signatory.access_token}" style="color: #007bff; font-size: 14px; word-break: break-all;">
-                https://frontend-contract-flow.vercel.app/assinar/${signatory.access_token}
+              <a href="https://frontend-contract-flow.vercel.app/contratual/assinar/${signatory.access_token}" style="color: #007bff; font-size: 14px; word-break: break-all;">
+                https://frontend-contract-flow.vercel.app/contratual/assinar/${signatory.access_token}
               </a>
             </div>
           `).join('')}
@@ -1410,7 +1410,7 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
     const subjectSignatario = " Documento assinado com sucesso - ContractFlow";
 
     for (const { email, name, access_token } of signatories) {
-      const plainTextSignatario = `Olá ${name},\n\nO documento que você assinou foi finalizado com sucesso.\n\nContrato #${document.id} - Status: Assinado por todos os participantes.\n\nSeu link de acesso: https://frontend-contract-flow.vercel.app/assinar/${access_token}`;
+      const plainTextSignatario = `Olá ${name},\n\nO documento que você assinou foi finalizado com sucesso.\n\nContrato #${document.id} - Status: Assinado por todos os participantes.\n\nSeu link de acesso: https://frontend-contract-flow.vercel.app/contratual/assinar/${access_token}`;
       const htmlContentSignatario = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -1435,12 +1435,12 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #333; margin-top: 0; margin-bottom: 15px;"> Seu Link de Acesso</h3>
             <div style="text-align: center; margin: 20px 0;">
-              <a href="https://frontend-contract-flow.vercel.app/assinar/${access_token}" style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+              <a href="https://frontend-contract-flow.vercel.app/contratual/assinar/${access_token}" style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                  Acessar Documento
               </a>
             </div>
             <p style="color: #666; font-size: 14px; text-align: center; margin: 0;">
-              <a href="https://frontend-contract-flow.vercel.app/assinar/${access_token}" style="color: #007bff; word-break: break-all;">https://frontend-contract-flow.vercel.app/assinar/${access_token}</a>
+              <a href="https://frontend-contract-flow.vercel.app/contratual/assinar/${access_token}" style="color: #007bff; word-break: break-all;">https://frontend-contract-flow.vercel.app/contratual/assinar/${access_token}</a>
             </p>
           </div>
           
@@ -1482,7 +1482,7 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
     if (admin.length > 0) {
       const adminData = admin[0];
       const subjectAdmin = " Contrato assinado - Admin - ContractFlow";
-      const plainTextAdmin = `Olá ${adminData.nome},\n\nO contrato #${document.id} foi assinado por todos os signatários.\n\nLink do contrato: https://frontend-contract-flow.vercel.app/contrato/${document.id}\n\nLinks dos signatários:\n${signatories.map(s => `- ${s.nome}: https://frontend-contract-flow.vercel.app/assinar/${s.token_acesso}`).join('\n')}`;
+      const plainTextAdmin = `Olá ${adminData.nome},\n\nO contrato #${document.id} foi assinado por todos os signatários.\n\nLink do contrato: https://frontend-contract-flow.vercel.app/contratual/documento/${document.id}\n\nLinks dos signatários:\n${signatories.map(s => `- ${s.nome}: https://frontend-contract-flow.vercel.app/contratual/assinar/${s.token_acesso}`).join('\n')}`;
 
       const htmlContentAdmin = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -1516,12 +1516,12 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #333; margin-top: 0; margin-bottom: 15px;"> Link do Contrato</h3>
             <div style="text-align: center; margin: 20px 0;">
-              <a href="https://frontend-contract-flow.vercel.app/contrato/${document.id}" style="background-color: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+              <a href="https://frontend-contract-flow.vercel.app/contratual/documento/${document.id}" style="background-color: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                  Visualizar Contrato
               </a>
             </div>
             <p style="color: #666; font-size: 14px; text-align: center; margin: 0;">
-              <a href="https://frontend-contract-flow.vercel.app/contrato/${document.id}" style="color: #007bff; word-break: break-all;">https://frontend-contract-flow.vercel.app/contrato/${document.id}</a>
+              <a href="https://frontend-contract-flow.vercel.app/contratual/documento/${document.id}" style="color: #007bff; word-break: break-all;">https://frontend-contract-flow.vercel.app/contratual/documento/${document.id}</a>
             </p>
           </div>
           
@@ -1530,8 +1530,8 @@ router.post("/:id/notificar-assinatura", async (req, res) => {
             ${signatories.map(signatory => `
               <div style="margin-bottom: 15px; padding: 10px; background-color: white; border-radius: 4px; border-left: 3px solid #ffc107;">
                 <p style="margin: 0 0 8px 0; font-weight: bold; color: #333;">${signatory.name}</p>
-                <a href="https://frontend-contract-flow.vercel.app/assinar/${signatory.access_token}" style="color: #007bff; font-size: 14px; word-break: break-all;">
-                  https://frontend-contract-flow.vercel.app/assinar/${signatory.access_token}
+                <a href="https://frontend-contract-flow.vercel.app/contratual/assinar/${signatory.access_token}" style="color: #007bff; font-size: 14px; word-break: break-all;">
+                  https://frontend-contract-flow.vercel.app/contratual/assinar/${signatory.access_token}
                 </a>
               </div>
             `).join('')}
