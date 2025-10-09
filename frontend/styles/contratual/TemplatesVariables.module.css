@@ -64,17 +64,18 @@
   }
   .addButton {
     margin: 10px 0;
-    padding: 8px 14px;
-    background-color: var(--onity-color-primary);
-    color: white;
-    border: none;
+    padding: 12px 20px;
+    background-color: transparent;
+    color: var(--primary-color, #3b82f6);
+    border: 1px solid var(--primary-color, #3b82f6);
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s ease-in;
   }
 
   .addButton:hover {
-    background-color: var(--onity-color-primary-hover);
+    background-color: var(--primary-color, #3b82f6);
+    color: var(--onity-color-text);
   }
   .cancelButton {
     margin: 10px 0;
@@ -85,6 +86,7 @@
     border-radius: 6px;
     cursor: pointer;
   }
+
   
   .variableItem {
     display: flex;
@@ -144,10 +146,34 @@
   .form input,
   .form select {
     width: 100%;
-    padding: 8px;
+    padding: 12px 8px;
     margin: 6px 0;
     border-radius: 6px;
     border: 1px solid var(--onity-color-border);
+    background: transparent;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.4;
+    min-height: 42px;
+  }
+
+  .form input:focus,
+  .form input:not(:placeholder-shown),
+  .form select:focus,
+  .form select:not([value=""]) {
+    background: transparent;
+    border-color: var(--primary-color, #3b82f6);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+    outline: none;
+  }
+
+  /* Estilos específicos para as opções do dropdown */
+  .form select option {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    padding: 8px;
+    font-size: 14px;
   }
   
   .checkbox {
