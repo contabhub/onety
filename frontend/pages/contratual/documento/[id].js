@@ -184,7 +184,7 @@ export default function Contrato() {
       });
 
       setEnviado(true); // <- aqui
-      setTimeout(() => router.push(`/documentos`), 1200);
+      setTimeout(() => router.push(`/contratual/documentos`), 1200);
 
     } catch (error) {
       console.error("Erro ao enviar email:", error);
@@ -200,14 +200,7 @@ export default function Contrato() {
     setDeleting(true);
 
     try {
-      // Verifica se o contrato tem autentique_id para determinar a rota correta
-      const isAutentiqueContract = contrato?.document?.autentique_id;
-      
-      const endpoint = isAutentiqueContract 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/documents-authentique/${id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`;
-
-      console.log(`🗑️ Excluindo contrato via rota: ${isAutentiqueContract ? 'contracts-authentique' : 'contracts'}`);
+      const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`;
 
       const res = await fetch(endpoint, {
         method: "DELETE",
@@ -215,7 +208,7 @@ export default function Contrato() {
       });
 
       if (!res.ok) throw new Error("Erro ao excluir contrato.");
-      router.push("/documentos");
+      router.push("/contratual/documentos");
     } catch (err) {
       console.error("Erro ao excluir contrato:", err);
       setError("Erro ao excluir contrato.");
@@ -259,68 +252,68 @@ export default function Contrato() {
   const rawContentUrl = contrato?.document?.conteudo;
   const isPdfUrl = typeof rawContentUrl === "string" && /^https?:\/\//.test(rawContentUrl);
 
-  if (isPdfUrl) {
-    const iframeSrc = `${rawContentUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width`;
-    return (
-      <>
-        <PrincipalSidebar />
-        <div style={{ maxWidth: 860, margin: "40px auto 0", height: "70vh", overflow: "hidden" }}>
-          <iframe src={iframeSrc} title="Contrato PDF" width="100%" height="100%" scrolling="no" style={{ border: "none", overflow: "hidden", display: "block" }} />
-        </div>
+  // if (isPdfUrl) {
+  //   const iframeSrc = `${rawContentUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width`;
+  //   return (
+  //     <>
+  //       <PrincipalSidebar />
+  //       <div style={{ maxWidth: 860, margin: "40px auto 0", height: "70vh", overflow: "hidden" }}>
+  //         <iframe src={iframeSrc} title="Contrato PDF" width="100%" height="100%" scrolling="no" style={{ border: "none", overflow: "hidden", display: "block" }} />
+  //       </div>
 
-        {true && (
-          <div style={{ background: "#0b1220", color: "#e2e8f0", padding: 16, marginTop: 32 }}>
-            <div style={{ maxWidth: 860, margin: "0 auto" }}>
-              {contrato?.document && (
-                <div style={{ marginBottom: 12 }}>
-                  <span style={{ padding: "6px 10px", borderRadius: 6, background: contrato.document.status === "assinado" ? "#14532d" : contrato.document.status === "reprovado" ? "#7f1d1d" : contrato.document.status === "expirado" ? "#7c2d12" : "#1e3a8a" }}>
-                    Documento {contrato.document.status}
-                  </span>
-                </div>
-              )}
+  //       {true && (
+  //         <div style={{ background: "#0b1220", color: "#e2e8f0", padding: 16, marginTop: 32 }}>
+  //           <div style={{ maxWidth: 860, margin: "0 auto" }}>
+  //             {contrato?.document && (
+  //               <div style={{ marginBottom: 12 }}>
+  //                 <span style={{ padding: "6px 10px", borderRadius: 6, background: contrato.document.status === "assinado" ? "#14532d" : contrato.document.status === "reprovado" ? "#7f1d1d" : contrato.document.status === "expirado" ? "#7c2d12" : "#1e3a8a" }}>
+  //                   Documento {contrato.document.status}
+  //                 </span>
+  //               </div>
+  //             )}
 
-              <p style={{ margin: "8px 0" }}><strong>Assinaturas:</strong> {assinaturas.length} / {signatarios.length}</p>
-              <div style={{ background: "#1f2937", borderRadius: 8, height: 10, overflow: "hidden", marginBottom: 16 }}>
-                <div style={{ height: "100%", width: `${(assinaturas.length / (signatarios.length || 1)) * 100}%`, background: "#22c55e" }} />
-              </div>
+  //             <p style={{ margin: "8px 0" }}><strong>Assinaturas:</strong> {assinaturas.length} / {signatarios.length}</p>
+  //             <div style={{ background: "#1f2937", borderRadius: 8, height: 10, overflow: "hidden", marginBottom: 16 }}>
+  //               <div style={{ height: "100%", width: `${(assinaturas.length / (signatarios.length || 1)) * 100}%`, background: "#22c55e" }} />
+  //             </div>
 
-              <h2 style={{ margin: "8px 0 12px" }}>Signatários</h2>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
-                {signatarios.map((s) => {
-                  const a = assinaturas.find(x => x.signatory_id === s.id);
-                  return (
-                    <li key={s.id} style={{ background: "#111827", borderRadius: 8, padding: 12 }}>
-                      <p><strong>Nome:</strong> {s.name}</p>
-                      <p><strong>Email:</strong> {s.email}</p>
-                      <p><strong>Função:</strong> {s.funcao_assinatura}</p>
-                      {s.token_acesso && (
-                        <button onClick={() => copySignatarioLink(s.token_acesso)} style={{ marginTop: 8, background: "#0ea5e9", border: 0, color: "#fff", padding: "6px 10px", borderRadius: 6, cursor: "pointer" }}>
-                          Copiar link do signatário
-                        </button>
-                      )}
-                      {a ? (
-                        <div style={{ marginTop: 8, fontSize: 14, color: "#94a3b8" }}>
-                          <p><strong>ID do Contrato:</strong> {a.document_id}</p>
-                          <p><strong>IP:</strong> {a.endereco_ip}</p>
-                          <p><strong>Navegador:</strong> {a.navegador_usuario}</p>
-                          <p><strong>Assinado em:</strong> {formatDateBR(a.assinado_em)}</p>
-                        </div>
-                      ) : (
-                        <p style={{ color: "#f59e0b" }}>Aguardando assinatura...</p>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
+  //             <h2 style={{ margin: "8px 0 12px" }}>Signatários</h2>
+  //             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
+  //               {signatarios.map((s) => {
+  //                 const a = assinaturas.find(x => x.signatory_id === s.id);
+  //                 return (
+  //                   <li key={s.id} style={{ background: "#111827", borderRadius: 8, padding: 12 }}>
+  //                     <p><strong>Nome:</strong> {s.name}</p>
+  //                     <p><strong>Email:</strong> {s.email}</p>
+  //                     <p><strong>Função:</strong> {s.funcao_assinatura}</p>
+  //                     {s.token_acesso && (
+  //                       <button onClick={() => copySignatarioLink(s.token_acesso)} style={{ marginTop: 8, background: "#0ea5e9", border: 0, color: "#fff", padding: "6px 10px", borderRadius: 6, cursor: "pointer" }}>
+  //                         Copiar link do signatário
+  //                       </button>
+  //                     )}
+  //                     {a ? (
+  //                       <div style={{ marginTop: 8, fontSize: 14, color: "#94a3b8" }}>
+  //                         <p><strong>ID do Contrato:</strong> {a.document_id}</p>
+  //                         <p><strong>IP:</strong> {a.endereco_ip}</p>
+  //                         <p><strong>Navegador:</strong> {a.navegador_usuario}</p>
+  //                         <p><strong>Assinado em:</strong> {formatDateBR(a.assinado_em)}</p>
+  //                       </div>
+  //                     ) : (
+  //                       <p style={{ color: "#f59e0b" }}>Aguardando assinatura...</p>
+  //                     )}
+  //                   </li>
+  //                 );
+  //               })}
+  //             </ul>
+  //           </div>
+  //         </div>
+  //       )}
+  //     </>
+  //   );
+  // }
 
   return (
-    <>
+    <div className={styles.principalContainer}>
       <PrincipalSidebar />
       {sendingEmail && (
         <div className={styles.overlayLoader}>Enviando...</div>
@@ -410,13 +403,8 @@ export default function Contrato() {
         ) : (
           contrato && (
             <>
-              {/* Cabeçalho com banner */}
-              {/* <div className={styles.header}>
-                <img src="/img/banner.png" alt="Logo da Empresa" className={styles.logo} />
-              </div> */}
 
               <div className={styles.contractBody}>
-                {/* <h2 className={styles.sectionTitle}>Contrato</h2> */}
                 <div className={styles.contractContent}>
                   {(contrato?.document?.conteudo || contrato?.document?.content) ? (
                     (() => {
@@ -464,7 +452,7 @@ export default function Contrato() {
                       return (
                         <li key={signatario.id} className={styles.signatory}>
                           {/* Nome e Email do Signatário */}
-                          <p><strong>Nome do Signatário:</strong> {signatario.name}</p>
+                          <p><strong>Nome do Signatário:</strong> {signatario.nome}</p>
                           <p><strong>Email do Signatário:</strong> {signatario.email}</p>
                           <p><strong>Função do Signatário:</strong> {signatario.funcao_assinatura}</p>
 
@@ -480,7 +468,7 @@ export default function Contrato() {
 
                               </div>
                               <div className={styles.signature}>
-                                <p className={styles.signatureText}>{signatario.name}</p>
+                                <p className={styles.signatureText}>{signatario.nome}</p>
                               </div>
                             </>
                           ) : (
@@ -500,6 +488,6 @@ export default function Contrato() {
           )
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 
 const ITEMS_PER_PAGE = 5;
@@ -163,14 +165,20 @@ export default function SignatariosPage() {
       } else {
         birthDate = "";
       }
-      // Garantir que telefone começa com +55 e já mascarado
+      // Converter telefone para formato internacional
       let telefone = signatario.telefone || "";
       if (telefone) {
-        telefone = telefone.replace(/\D/g, "");
-        if (!telefone.startsWith("55")) telefone = "55" + telefone;
-        telefone = mascararTelefoneComDDI("+" + telefone);
+        // Se não começar com +, adicionar +
+        if (!telefone.startsWith("+")) {
+          telefone = telefone.replace(/\D/g, "");
+          // Só adiciona 55 se for um número brasileiro (11 dígitos) sem código de país
+          if (telefone.length === 11 && !telefone.startsWith("55")) {
+            telefone = "55" + telefone;
+          }
+          telefone = "+" + telefone;
+        }
       } else {
-        telefone = "+55 ";
+        telefone = "";
       }
       // Garantir que CPF já venha formatado
       let cpf = signatario.cpf || "";
@@ -187,7 +195,7 @@ export default function SignatariosPage() {
       });
       setEditId(signatario.id);
     } else {
-      setForm({ ...initialForm, telefone: "+55 " });
+      setForm({ ...initialForm, telefone: "" });
       setEditId(null);
     }
   };
@@ -201,19 +209,16 @@ export default function SignatariosPage() {
 
   const handleChange = e => {
     const { name, value } = e.target;
-    if (name === "telefone") {
-      // Sempre manter o +55 e aplicar máscara
-      let novoValor = value;
-      if (!novoValor.startsWith("+55")) {
-        novoValor = "+55 " + novoValor.replace(/^\+*/, "").replace(/^55*/, "");
-      }
-      novoValor = mascararTelefoneComDDI(novoValor);
-      setForm(f => ({ ...f, telefone: novoValor }));
-    } else if (name === "cpf") {
+    if (name === "cpf") {
       setForm(f => ({ ...f, cpf: mascararCpfInput(value) }));
     } else {
       setForm(f => ({ ...f, [name]: value }));
     }
+  };
+
+  // Handler específico para o telefone (vem do PhoneInput)
+  const handlePhoneChange = (value) => {
+    setForm(f => ({ ...f, telefone: value || "" }));
   };
 
   const handleSubmit = async e => {
@@ -236,10 +241,8 @@ export default function SignatariosPage() {
         const d = new Date(dataToSend.birth_date);
         dataToSend.birth_date = d.toISOString().slice(0, 10);
       }
-      // Limpar tudo que não for número e garantir que começa com 55
-      let telLimpo = (dataToSend.telefone || "").replace(/\D/g, "");
-      if (!telLimpo.startsWith("55")) telLimpo = "55" + telLimpo;
-      dataToSend.telefone = telLimpo;
+      // Limpar tudo que não for número do telefone
+      dataToSend.telefone = (dataToSend.telefone || "").replace(/\D/g, "");
       // Limpar tudo que não for número do CPF
       dataToSend.cpf = (dataToSend.cpf || "").replace(/\D/g, "");
       
@@ -316,61 +319,52 @@ export default function SignatariosPage() {
     return valor;
   }
 
-  // Função para formatar telefone
+  // Função para formatar telefone com máscara
   function formatarTelefone(valor) {
     if (!valor) return "-";
+    
     let apenasNumeros = valor.replace(/\D/g, "");
-    // Se começa com 55 e tem 13 dígitos, remover o DDI e mostrar com +55
-    if (apenasNumeros.length === 13 && apenasNumeros.startsWith("55")) {
-      const semDdi = apenasNumeros.slice(2);
-      if (semDdi.length === 11) {
-        return `+55 (${semDdi.slice(0,2)}) ${semDdi.slice(2,7)}-${semDdi.slice(7)}`;
+    
+    // Se já tem código de país (começa com 55, 43, etc.)
+    if (apenasNumeros.length >= 12) {
+      const codigoPais = apenasNumeros.slice(0, 2);
+      const numero = apenasNumeros.slice(2);
+      
+      // Formatação específica por país
+      if (codigoPais === "55") {
+        // Brasil: +55 (XX) XXXXX-XXXX
+        if (numero.length === 11) {
+          return `+55 (${numero.slice(0,2)}) ${numero.slice(2,7)}-${numero.slice(7)}`;
+        } else if (numero.length === 10) {
+          return `+55 (${numero.slice(0,2)}) ${numero.slice(2,6)}-${numero.slice(6)}`;
+        }
+      } else if (codigoPais === "43") {
+        // Áustria: +43 XXX XXX XXXX
+        if (numero.length >= 10) {
+          return `+43 ${numero.slice(0,3)} ${numero.slice(3,6)} ${numero.slice(6)}`;
+        }
+      } else if (codigoPais === "1") {
+        // EUA/Canadá: +1 (XXX) XXX-XXXX
+        if (numero.length === 10) {
+          return `+1 (${numero.slice(0,3)}) ${numero.slice(3,6)}-${numero.slice(6)}`;
+        }
       }
-      if (semDdi.length === 10) {
-        return `+55 (${semDdi.slice(0,2)}) ${semDdi.slice(2,6)}-${semDdi.slice(6)}`;
-      }
-      return `+55 ${semDdi}`;
+      
+      // Formato genérico para outros países
+      return `+${codigoPais} ${numero}`;
     }
+    
+    // Se é um número brasileiro sem código de país
     if (apenasNumeros.length === 11) {
-      return apenasNumeros.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+      return `+55 (${apenasNumeros.slice(0,2)}) ${apenasNumeros.slice(2,7)}-${apenasNumeros.slice(7)}`;
+    } else if (apenasNumeros.length === 10) {
+      return `+55 (${apenasNumeros.slice(0,2)}) ${apenasNumeros.slice(2,6)}-${apenasNumeros.slice(6)}`;
     }
-    if (apenasNumeros.length === 10) {
-      return apenasNumeros.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
-    }
+    
+    // Se é muito curto, retorna como está
     return valor;
   }
 
-  // Máscara para telefone no input (com +55 fixo)
-  function mascararTelefoneComDDI(valor) {
-    if (!valor) return "+55 ";
-    let apenasNumeros = valor.replace(/\D/g, "");
-    // Remove o 55 se o usuário digitar
-    if (apenasNumeros.startsWith("55")) apenasNumeros = apenasNumeros.slice(2);
-    if (apenasNumeros.length > 11) apenasNumeros = apenasNumeros.slice(0, 11);
-    if (apenasNumeros.length === 11) {
-      return `+55 (${apenasNumeros.slice(0,2)}) ${apenasNumeros.slice(2,7)}-${apenasNumeros.slice(7)}`;
-    }
-    if (apenasNumeros.length >= 7) {
-      return `+55 (${apenasNumeros.slice(0,2)}) ${apenasNumeros.slice(2,7)}-${apenasNumeros.slice(7)}`;
-    }
-    if (apenasNumeros.length >= 3) {
-      return `+55 (${apenasNumeros.slice(0,2)}) ${apenasNumeros.slice(2)}`;
-    }
-    if (apenasNumeros.length > 0) {
-      return `+55 (${apenasNumeros}`;
-    }
-    return "+55 ";
-  }
-
-  // Limpa e garante 55 no início
-  function limparTelefone(valor) {
-    if (!valor) return "";
-    let apenasNumeros = valor.replace(/\D/g, "");
-    if (!apenasNumeros.startsWith("55")) {
-      apenasNumeros = "55" + apenasNumeros;
-    }
-    return apenasNumeros;
-  }
 
   // Máscara para CPF no input
   function mascararCpfInput(valor) {
@@ -524,7 +518,38 @@ export default function SignatariosPage() {
                   </div>
                   <div>
                     <label>Telefone</label>
-                    <input name="telefone" value={form.telefone} onChange={handleChange} className={styles.input} maxLength={20} />
+                    <div style={{
+                      width: '90%',
+                      display: 'flex',
+                      border: '2px solid var(--onity-color-border)',
+                      borderRadius: '12px',
+                      backgroundColor: 'var(--onity-color-surface)',
+                      overflow: 'hidden',
+                      transition: 'all 0.2s ease',
+                      boxShadow: 'var(--onity-elev-low)',
+                      marginBottom: '16px',
+                      padding: '7px 8px'
+                    }}>
+                      <PhoneInput
+                        value={form.telefone}
+                        onChange={handlePhoneChange}
+                        defaultCountry="BR"
+                        placeholder="Digite o telefone"
+                        style={{
+                          '--PhoneInput-color--focus': '#3b82f6',
+                          '--PhoneInputCountryFlag-borderColor--focus': '#3b82f6',
+                          '--PhoneInputCountrySelect-marginRight': '8px',
+                          '--PhoneInputCountrySelectArrow-color': 'var(--onity-color-text)',
+                          '--PhoneInputCountrySelectArrow-opacity': '0.8',
+                          '--PhoneInput-color': 'var(--onity-color-text)',
+                          '--PhoneInput-backgroundColor': 'transparent',
+                          '--PhoneInput-borderColor': 'transparent',
+                          '--PhoneInput-borderRadius': '0px',
+                          '--PhoneInputCountryFlag-borderRadius': '2px',
+                          '--PhoneInputCountrySelectArrow-transform': 'none'
+                        }}
+                      />
+                    </div>
                   </div>
                   <div>
                     <label>Data de Nascimento</label>
