@@ -20,6 +20,11 @@ export default function Templates() {
   const [itemsPerPage, setItemsPerPage] = useState(5); // Convertido para estado
   const [searchTerm, setSearchTerm] = useState("");
   const [globalFilter, setGlobalFilter] = useState("todos"); // "todos" | "globais" | "naoGlobais"
+  const [userRole, setUserRole] = useState(null);
+  const [userPermissions, setUserPermissions] = useState(null);
+  const isSuperAdmin = userRole === 'superadmin';
+  const isAdmin = userPermissions && userPermissions.includes('admin');
+  const isSuperAdminOrAdmin = isSuperAdmin || isAdmin;
 
   // Função para resetar página quando mudar quantidade de itens
   const handleItemsPerPageChange = (newItemsPerPage) => {
@@ -65,6 +70,8 @@ export default function Templates() {
     if (!token) return;
     const user = JSON.parse(userRaw);
     setUser(user);
+    setUserRole(user && user.permissoes?.adm ? String(user.permissoes.adm[0]).toLowerCase() : null);
+    setUserPermissions(user && user.permissoes?.adm ? user.permissoes.adm : null);
 
     // Fetch templates from the API
     const empresaId = user?.EmpresaId;
@@ -161,18 +168,20 @@ export default function Templates() {
             }}
             className={styles.searchInput}
           />
-          <select
-            value={globalFilter}
-            onChange={e => {
-              setGlobalFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            style={{ marginLeft: 16, minWidth: 120 }}
-          >
-            <option value="todos">Todos</option>
-            <option value="globais">Globais</option>
-            <option value="naoGlobais">Não globais</option>
-          </select>
+          {isSuperAdmin && (
+            <select
+              value={globalFilter}
+              onChange={e => {
+                setGlobalFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{ marginLeft: 16, minWidth: 120 }}
+            >
+              <option value="todos">Todos</option>
+              <option value="globais">Globais</option>
+              <option value="naoGlobais">Não globais</option>
+            </select>
+          )}
           
           {/* Seletor de quantidade de itens por página */}
           <div className={styles.itemsPerPageContainer}>
@@ -208,9 +217,9 @@ export default function Templates() {
                   <th>Nome</th>
                   <th>Criado por</th>
                   <th>Criado em</th>
-                  <th>Global</th>
-                  <th>Straton</th>
-                  <th>Funcionário</th>
+                  {isSuperAdmin && <th>Global</th>}
+                  {isSuperAdminOrAdmin && <th>Straton</th>}
+                  {isSuperAdminOrAdmin && <th>Funcionário</th>}
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -226,9 +235,9 @@ export default function Templates() {
                       <td>{templateName}</td>
                       <td>{template.criado_por || '-'}</td>
                       <td>{criadoEm}</td>
-                      <td>{isGlobal ? 'Sim' : 'Não'}</td>
-                      <td>{template.straton ? 'Sim' : 'Não'}</td>
-                      <td>{template.funcionario ? 'Sim' : 'Não'}</td>
+                      {isSuperAdmin && <td>{isGlobal ? 'Sim' : 'Não'}</td>}
+                      {isSuperAdminOrAdmin && <td>{template.straton ? 'Sim' : 'Não'}</td>}
+                      {isSuperAdminOrAdmin && <td>{template.funcionario ? 'Sim' : 'Não'}</td>}
                       <td className={styles.actions}>
                         <button
                           className={styles.viewIcon}
@@ -237,8 +246,7 @@ export default function Templates() {
                         >
                           <FontAwesomeIcon icon={faEye} />
                         </button>
-                        {(!isGlobal || user?.role === "superadmin") && (
-
+                        {(!isGlobal || isSuperAdminOrAdmin) && (
                           <button
                             className={styles.editIcon}
                             onClick={() => handleViewContract(template.id)}
@@ -246,7 +254,7 @@ export default function Templates() {
                             <FontAwesomeIcon icon={faPen} />
                           </button>
                         )}
-                        {(!isGlobal || user?.role === "superadmin") && (
+                        {(!isGlobal || isSuperAdminOrAdmin) && (
                           <button
                             className={styles.deleteBtn}
                             onClick={() => handleDeleteTemplate(template.id)}
@@ -254,14 +262,16 @@ export default function Templates() {
                             <FontAwesomeIcon icon={faTrash} />
                           </button>
                         )}
-
                       </td>
                     </tr>
                   );
                 })}
                 {filteredTemplates.length === 0 && (
                   <tr>
-                    <td colSpan="8" style={{ textAlign: "center", padding: "20px" }}>
+                    <td colSpan={
+                      isSuperAdmin ? 8 : 
+                      isSuperAdminOrAdmin ? 6 : 5
+                    } style={{ textAlign: "center", padding: "20px" }}>
                       Nenhum template encontrado.
                     </td>
                   </tr>

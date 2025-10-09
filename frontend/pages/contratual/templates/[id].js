@@ -1,7 +1,8 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Layout from "../../components/layout/Layout";
-import styles from "../../styles/Documento.module.css";
+import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../../components/onety/menu/SpaceLoader";
+import styles from "../../../styles/contratual/Documento.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
@@ -28,7 +29,7 @@ export default function VisualizarTemplate() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/templates/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -48,47 +49,63 @@ export default function VisualizarTemplate() {
   };
 
   return (
-    <Layout>
-      <button className={styles.backButton} onClick={() => router.back()}>
-        <span className={styles.iconWrapper}>
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </span>
-        Voltar
-      </button>
-      <div className={styles.contractContainer}>
-        {loading ? (
-          <p className={styles.loading}>Carregando template...</p>
-        ) : error ? (
-          <p className={styles.error}>{error}</p>
-        ) : (
-          <>
-            {/* Banner superior */}
-            {/* <div className={styles.header}>
-              <img src="/img/banner.png" alt="Banner da empresa" className={styles.logo} />
-            </div> */}
+    <>
+      <PrincipalSidebar />
+      <div className={styles.pageContent}>
+        <div className={styles.pageContainer}>
+          <button className={styles.backButton} onClick={() => router.back()}>
+            <span className={styles.iconWrapper}>
+              <FontAwesomeIcon icon={faArrowLeft} />
+            </span>
+            Voltar
+          </button>
 
-            {/* Conteúdo principal */}
-            <div className={styles.contractBody}>
-              {/* <h2 className={styles.sectionTitle}>Visualização do Template</h2> */}
-              <div className={styles.contractContent}>
-                {template?.content ? (
-                  <div
-                    className="template-render"
-                    dangerouslySetInnerHTML={{
-                      __html: template.content.replace(/\n/g, "<br/>"),
-                    }}
-                  />
-
+          {loading ? (
+            <SpaceLoader
+              size={140}
+              label="Carregando template..."
+              showText={true}
+              minHeight={400}
+            />
+          ) : error ? (
+            <p className={styles.error}>{error}</p>
+          ) : (
+            <>
+              <div className={styles.contractContainer}>
+                {loading ? (
+                  <p className={styles.loading}>Carregando template...</p>
+                ) : error ? (
+                  <p className={styles.error}>{error}</p>
                 ) : (
-                  <p className={styles.error}>
-                    ⚠️ O conteúdo do template está vazio.
-                  </p>
+                  <>
+
+
+                    {/* Conteúdo principal */}
+                    <div className={styles.contractBody}>
+                      {/* <h2 className={styles.sectionTitle}>Visualização do Template</h2> */}
+                      <div className={styles.contractContent}>
+                        {template?.conteudo ? (
+                          <div
+                            className="template-render"
+                            dangerouslySetInnerHTML={{
+                              __html: template.conteudo.replace(/\n/g, "<br/>"),
+                            }}
+                          />
+
+                        ) : (
+                          <p className={styles.error}>
+                            ⚠️ O conteúdo do template está vazio.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </Layout>
+    </>
   );
 }
