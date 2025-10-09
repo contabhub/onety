@@ -1,4 +1,9 @@
 /* Layout lateral com sidebar */
+.principalContainer {
+  min-height: 100vh;
+  padding: 20px;
+}
+
 .page {
   display: flex;
   flex-direction: row;
@@ -15,7 +20,7 @@
 
 /* Estilos gerais do contrato */
 .contractContainer {
-  max-width: 800px;
+  max-width: 900px;
   margin: auto;
   padding: 20px;
   background: var(--onity-color-surface);
@@ -132,7 +137,7 @@
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
-  border-left: 5px solid var(--onity-color-primary);
+  border-left: 5px solid var(--primary-color, #3b82f6);
 }
 
 .signStatus {
@@ -159,7 +164,6 @@
 .downloadSection {
   justify-content: flex-start;
   text-align: right;
-  margin-top: 20px;
 }
 
 .downloadButton {
@@ -167,18 +171,16 @@
   cursor: pointer;
   font-size: 14px;
   padding: 5px;
-  color: var(--onity-color-text-secondary);
-  border: 2px solid var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
   border-radius: 5px;
   margin: 5px;
   transition: 0.3s ease-in-out;
 }
 
 .downloadButton:hover {
-  background-color: var(--onity-color-primary);
-  opacity: 0.7;
-  color: var(--onity-color-border);
-  opacity: 0.7;
+  background-color: var(--primary-color, #3b82f6);
+  color: var(--onity-color-text);
 }
 
 /* 🔹 Estilização do progresso de assinaturas */
@@ -257,7 +259,7 @@
 }
 
 .primaryActionButton {
-  background-color: var(--onity-color-primary);
+  background-color: var(--onity-color-primary-hover);
   color: white;
   padding: 10px 20px;
   border: none;
@@ -268,7 +270,9 @@
 }
 
 .primaryActionButton:hover {
-  background-color: var(--onity-color-primary-hover);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
 }
 
 .primaryActionButton:disabled {
@@ -292,7 +296,9 @@
 }
 
 .dangerActionButton:hover {
-  background-color: var(--onity-color-error-hover);
+  background-color: transparent;
+  color: var(--onity-color-error);
+  border: 2px solid var(--onity-color-error);
 }
 
 .dangerActionButton:disabled {

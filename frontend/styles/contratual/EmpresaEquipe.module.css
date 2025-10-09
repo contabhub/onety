@@ -31,8 +31,8 @@
   flex-shrink: 0;
 }
 
-.pageHeaderFixed { 
-  display: contents; 
+.pageHeaderFixed {
+  display: contents;
 }
 
 .headerBar {
@@ -129,9 +129,9 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--onity-space-m);
-  }
-  
-  .title {
+}
+
+.title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--onity-color-text);
@@ -194,6 +194,7 @@
 .addButton:hover {
   background-color: var(--onity-color-primary-hover);
   color: var(--onity-color-primary-contrast);
+  border: none;
 }
 
 .addButton:focus {
@@ -201,7 +202,9 @@
   box-shadow: none;
 }
 
-.addButton:active { transform: none; }
+.addButton:active {
+  transform: none;
+}
 
 /* Back button styles */
 .backButton {
@@ -268,8 +271,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Table styles */
@@ -411,9 +419,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-m);
-  }
-  
-  .card {
+}
+
+.card {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
@@ -425,16 +433,16 @@
 .card:hover {
   box-shadow: var(--onity-elev-med);
   transform: translateY(-1px);
-  }
-  
-  .card h2 {
+}
+
+.card h2 {
   margin: 0 0 var(--onity-space-s) 0;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--onity-color-text);
-  }
-  
-  .card p {
+}
+
+.card p {
   margin: var(--onity-space-xs) 0;
   color: var(--onity-color-text-secondary);
   font-size: 0.9rem;
@@ -444,35 +452,32 @@
   display: flex;
   gap: var(--onity-space-s);
   margin-top: var(--onity-space-m);
-  }
-  
-  .editButton {
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-    border: none;
-  border-radius: 10px;
-  padding: var(--onity-space-s) var(--onity-space-m);
-    cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
-  font-weight: 500;
-  box-shadow: var(--onity-elev-low);
-  display: flex;
+}
+
+.editButton {
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+  border: none;
+  color: var(--onity-color-text);
+  border-radius: 5px;
+  margin: 0 4px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
   align-items: center;
-  gap: var(--onity-space-xs);
-  min-width: 80px;
   justify-content: center;
-  }
-  
-  .editButton:hover {
-  background: var(--onity-color-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--onity-elev-med);
+}
+
+.editButton:hover {
+  border: 2px solid var(--primary-color, #3b82f6);
+  color: var(--primary-color, #3b82f6);
 }
 
 .toggleButton {
-  background: var(--onity-color-warning);
-  color: white;
+  background: var(--onity-color-error);
+  color: var(--onity-color-text);
   border: none;
   border-radius: 10px;
   padding: var(--onity-space-xs) var(--onity-space-m);
@@ -484,7 +489,7 @@
 }
 
 .toggleButton:hover {
-  background: #eab308;
+  background: var(--onity-color-error);
   transform: translateY(-2px);
   scale: 1.02;
 }
@@ -494,33 +499,34 @@
 }
 
 .toggleButton.inactive:hover {
-  background: #16a34a;
+  background: var(--onity-color-success);
   transform: translateY(-2px);
   scale: 1.02;
 }
 
 .deleteButtonCard {
-  background: #d11a1a83;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: var(--onity-space-xs) var(--onity-space-m);
+  background: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
-  font-weight: 500;
-  box-shadow: var(--onity-elev-low);
+  font-size: 16px;
+  padding: 5px;
+  color: var(--error);
+  border: 2px solid var(--error);
+  border-radius: 5px;
+  margin: 0 4px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .deleteButtonCard:hover {
-  background: #b91c1c;
-  transform: translateY(-2px);
-  box-shadow: var(--onity-elev-med);
-  filter: brightness(1.2);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-color-error);
 }
 
 /* Form styles */
-  .form {
+.form {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
@@ -537,7 +543,7 @@
 }
 
 .formGrid {
-    display: grid;
+  display: grid;
   grid-template-columns: 1fr;
   gap: var(--onity-space-m);
 }
@@ -552,11 +558,11 @@
   .formGrid {
     grid-template-columns: repeat(3, 1fr);
   }
-  }
-  
-  .formItem {
-    display: flex;
-    flex-direction: column;
+}
+
+.formItem {
+  display: flex;
+  flex-direction: column;
   gap: var(--onity-space-xs);
 }
 
@@ -613,7 +619,7 @@
 }
 
 .saveButton:focus {
-    outline: none;
+  outline: none;
   box-shadow: 0 0 0 3px var(--onity-color-primary-hover);
 }
 
@@ -651,17 +657,17 @@
   padding: var(--onity-space-xs) var(--onity-space-s);
   border-radius: var(--onity-radius-xs);
   font-size: 0.8rem;
-    font-weight: 500;
-  }
-  
+  font-weight: 500;
+}
+
 .status.active {
   background: var(--onity-color-success-bg);
   color: var(--onity-color-success);
 }
 
 .status.inactive {
-  background: var(--onity-color-warning-bg);
-  color: var(--onity-color-warning);
+  background: var(--onity-color-error);
+  color: var(--onity-color-error);
 }
 
 /* Modal styles - igual ao ClienteModal.module.css */
@@ -687,7 +693,7 @@
 }
 
 .modalHeader {
-    display: flex;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px;
@@ -700,11 +706,11 @@
 
 .iconBtn {
   background: transparent;
-    border: none;
+  border: none;
   color: var(--color-text-primary);
   cursor: pointer;
   padding: 6px;
-    border-radius: 6px;
+  border-radius: 6px;
 }
 
 .modalForm {
@@ -757,7 +763,7 @@
 .field select {
   width: 100%;
   padding: 8px 6px;
-    border: none;
+  border: none;
   background: transparent;
   color: var(--color-text-primary);
   outline: none;
@@ -795,10 +801,10 @@
   border: 1px solid var(--onity-color-text);
   padding: 8px 14px;
   border-radius: 10px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -822,7 +828,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 900px) {
@@ -842,34 +850,34 @@
   .pageHeader {
     padding: var(--onity-space-s);
   }
-  
+
   .contentScroll {
     padding: var(--onity-space-s);
   }
-  
+
   .toolbarBox {
     padding: var(--onity-space-s);
   }
-  
+
   .toolbarHeader {
     flex-direction: column;
     gap: var(--onity-space-s);
     align-items: stretch;
   }
-  
+
   .filtersRow {
     flex-direction: column;
     gap: var(--onity-space-s);
   }
-  
+
   .searchInput {
     min-width: auto;
   }
-  
+
   .table {
     font-size: 0.8rem;
   }
-  
+
   .table th,
   .table td {
     padding: var(--onity-space-s);
@@ -878,8 +886,8 @@
   .cardActions {
     flex-direction: column;
   }
-  
+
   .formActions {
     flex-direction: column;
   }
-  }
+}

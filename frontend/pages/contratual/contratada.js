@@ -475,14 +475,12 @@ export default function EmpresaEquipePage() {
                   }}
                 >
                   <FontAwesomeIcon icon={faPen} />
-                  Editar
                 </button>
                 <button
                   className={styles.deleteButtonCard}
                   onClick={() => deletarEmpresa(empresa)}
                 >
                   <FontAwesomeIcon icon={faTrash} />
-                  Excluir
                 </button>
               </div>
             </div>

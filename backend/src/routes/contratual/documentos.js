@@ -346,7 +346,12 @@ router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Primeiro, deletar os signatários associados ao documento
+    await pool.query("DELETE FROM signatarios WHERE documento_id = ?", [id]);
+    
+    // Depois, deletar o documento
     await pool.query("DELETE FROM documentos WHERE id = ?", [id]);
+    
     res.json({ message: "Contrato deletado com sucesso!" });
   } catch (error) {
     console.error(error);

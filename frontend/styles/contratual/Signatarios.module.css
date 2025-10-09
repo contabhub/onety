@@ -696,16 +696,15 @@
 
 .input:hover,
 .selectInput:hover {
-  border-color: var(--onity-color-primary);
+  border-color: var(--onity-color-primary-hover);
   box-shadow: var(--onity-elev-med);
 }
 
 .input:focus,
 .selectInput:focus {
   outline: none;
-  border-color: var(--onity-color-primary);
-  box-shadow: 0 0 0 3px var(--onity-color-primary-hover), var(--onity-elev-med);
-  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-primary-hover);
+  background-color: transparent;
 }
 
 .input::placeholder,
@@ -790,9 +789,9 @@
 }
 
 .saveButton {
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-  border: 2px solid var(--onity-color-primary);
+  background: transparent;
+  color: var(--onity-color-primary-hover);
+  border: 2px solid var(--onity-color-primary-hover);
   border-radius: 12px;
   padding: 12px 24px;
   font-weight: 600;
@@ -807,9 +806,8 @@
 
 .saveButton:hover {
   background: var(--onity-color-primary-hover);
+  color: var(--onity-color-surface);
   border-color: var(--onity-color-primary-hover);
-  box-shadow: var(--onity-elev-med);
-  transform: translateY(-1px);
 }
 
 .saveButton:focus {
@@ -832,9 +830,9 @@
 }
 
 .cancelButton:hover {
-  border-color: var(--onity-color-primary);
-  box-shadow: var(--onity-elev-med);
-  background: var(--onity-color-bg);
+  border: none;
+  background: var(--onity-color-text);
+  color: var(--onity-color-surface);
 }
 
 .cancelButton:focus {
