@@ -100,21 +100,36 @@ export default function ListaVariaveis({ handleInsertVariable, setShowVariaveis 
     async function loadCustomVariables() {
       try {
         const token = localStorage.getItem("token");
-        const userRaw = localStorage.getItem("user");
-        if (!userRaw || !token) return;
+        const userDataRaw = localStorage.getItem("userData");
+        
+        if (!userDataRaw || !token) {
+          return;
+        }
 
-        const user = JSON.parse(userRaw);
-        const equipeId = user.EmpresaId || user.empresa_id;
-        if (!equipeId) return;
+        const user = JSON.parse(userDataRaw);
+        
+        // Usar apenas EmpresaId do userData (definido na seleção da empresa)
+        const empresaId = user.EmpresaId;
+        
+        if (!empresaId) {
+          return;
+        }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/empresa/${equipeId}`, {
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/empresa/${empresaId}`;
+
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        if (!res.ok) {
+          console.error("Erro ao carregar variáveis personalizadas:", res.status, res.statusText);
+          return;
+        }
 
         const data = await res.json();
-        setCustomVariables(data || []);
+        setCustomVariables(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Erro ao carregar variáveis personalizadas:", error);
       }
@@ -194,16 +209,22 @@ export default function ListaVariaveis({ handleInsertVariable, setShowVariaveis 
               </button>
             </div>
             {activeTab === "personalizadas"
-              ? customVariables.map((v) => (
-                <button
-                  type="button"
-                  key={v.variavel}
-                  className={styles.variableItem}
-                  onClick={() => handleInsertVariable(v.variavel)}
-                >
-                  {v.titulo} — <code>{`{{${v.variavel}}}`}</code>
-                </button>
-              ))
+              ? (customVariables.length === 0
+                  ? (
+                      <div className={styles.variableItem}>
+                        Nenhuma variável personalizada encontrada
+                      </div>
+                    )
+                  : customVariables.map((v) => (
+                      <button
+                        type="button"
+                        key={v.variavel}
+                        className={styles.variableItem}
+                        onClick={() => handleInsertVariable(v.variavel)}
+                      >
+                        {v.titulo} — <code>{`{{${v.variavel}}}`}</code>
+                      </button>
+                    )))
               : variaveis[activeTab]?.map((v) => (
                 <button
                   type="button"
