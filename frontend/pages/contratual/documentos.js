@@ -129,7 +129,7 @@ export default function Documentos() {
         const token = localStorage.getItem("token");
 
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${contrato.id}/status`, {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${contrato.id}/status`, {
             method: "PATCH",
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -162,7 +162,7 @@ export default function Documentos() {
 
 
   const handleViewContract = (id) => {
-    router.push(`/documento/${id}`);
+    router.push(`/contratual/documento/${id}`);
   };
 
   // Anos disponíveis nos contratos (useMemo para performance)
@@ -244,14 +244,14 @@ export default function Documentos() {
     const token = localStorage.getItem("token");
 
     // 1. Garante que a folha de assinaturas foi criada/atualizada
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${contratoId}/generate-signatures-base64`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${contratoId}/generate-signatures-base64`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` }
     });
 
     // 2. Só agora faz o download do PDF
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${contratoId}/download`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${contratoId}/download`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -337,7 +337,7 @@ export default function Documentos() {
   const handleEditContract = async (id) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -376,7 +376,7 @@ export default function Documentos() {
   const handleCloneContract = async (id) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -428,8 +428,8 @@ export default function Documentos() {
       if (signatariosDropdown[contratoId].length === 1) {
         const onlySig = signatariosDropdown[contratoId][0];
         const url = isAutentique
-          ? onlySig.access_token
-          : `${window.location.origin}/assinar/${onlySig.access_token}`;
+          ? onlySig.token_acesso
+          : `${window.location.origin}/contratual/assinar/${onlySig.token_acesso}`;
         await navigator.clipboard.writeText(url);
         toast.success("Link copiado com sucesso!");
         setOpenDropdownId(null);
@@ -442,7 +442,7 @@ export default function Documentos() {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/documents/${contratoId}/signatories`,
+        `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${contratoId}/signatories`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -460,8 +460,8 @@ export default function Documentos() {
       // Só abre o dropdown se tiver mais de um
       if (signatarios.length === 1) {
         const url = isAutentique
-          ? signatarios[0].access_token
-          : `${window.location.origin}/assinar/${signatarios[0].access_token}`;
+          ? signatarios[0].token_acesso
+          : `${window.location.origin}/contratual/assinar/${signatarios[0].token_acesso}`;
         await navigator.clipboard.writeText(url);
         toast.success("Link copiado com sucesso!");
         setOpenDropdownId(null);
@@ -476,14 +476,14 @@ export default function Documentos() {
 
 
 
-  const handleCopySignatarioLink = async (access_token, contratoId) => {
+  const handleCopySignatarioLink = async (token_acesso, contratoId) => {
     // Busca o contrato para verificar se é do Autentique
     const contrato = contratos.find(c => c.id === contratoId);
     const isAutentique = contrato?.autentique === 1;
 
     const url = isAutentique
-      ? access_token
-      : `${window.location.origin}/assinar/${access_token}`;
+      ? token_acesso
+      : `${window.location.origin}/contratual/assinar/${token_acesso}`;
     await navigator.clipboard.writeText(url);
     toast.success("Link copiado para a área de transferência!");
     setOpenDropdownId(null); // fecha o dropdown após copiar
@@ -525,7 +525,7 @@ export default function Documentos() {
       const novaData = new Date(base);
       novaData.setDate(novaData.getDate() + Number(diasProlongar));
       const new_expires_at = novaData.toISOString().slice(0, 19).replace('T', ' ');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${contratoId}/prolongar`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${contratoId}/prolongar`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -838,7 +838,7 @@ export default function Documentos() {
                                     <li
                                       key={sig.id}
                                       className={styles.signatarioItem}
-                                      onClick={() => handleCopySignatarioLink(sig.access_token, contrato.id)}
+                                      onClick={() => handleCopySignatarioLink(sig.token_acesso, contrato.id)}
                                     >
                                       <strong>{sig.name || sig.email}</strong> — {sig.email}
                                     </li>
@@ -1020,12 +1020,7 @@ export default function Documentos() {
                 </div>
               )}
               
-              {/* Informação quando há apenas uma página */}
-              {contratosFiltrados.length > 0 && totalPages === 1 && (
-                <div className={styles.singlePageMessage}>
-                  Mostrando todos os {contratosFiltrados.length} documentos
-                </div>
-              )}
+              {/* Removido aviso quando há apenas uma página */}
             </>
           ) : (
             // Kanban
