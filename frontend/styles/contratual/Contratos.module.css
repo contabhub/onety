@@ -177,7 +177,8 @@
 .editIcon,
 .linkIcon,
 .cloneIcon,
-.clockIcon {
+.clockIcon,
+.deleteBtn {
   background: transparent;
   border: none;
   padding: 6px;
@@ -187,7 +188,7 @@
   align-items: center;
   justify-content: center;
   font-size: 20px; /* Aumentado */
-  color: var(--onity-icon-secondary);
+  color: var(--onity-color-text);
   transition: color 0.2s ease;
 }
 
@@ -197,8 +198,13 @@
 .linkIcon:hover,
 .cloneIcon:hover,
 .clockIcon:hover {
-  background-color: var(--onity-color-bg);
-  color: var(--onity-color-primary);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
+}
+
+.deleteBtn:hover {
+  background-color: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  color: var(--onity-color-error);
 }
 
 .subTitle {
@@ -212,7 +218,7 @@
 }
 
 .error {
-  color: red;
+  color: var(--onity-color-error);
   font-weight: bold;
 }
 
@@ -408,9 +414,6 @@
   gap: 8px;
 }
 
-.table tr:hover {
-  background-color: var(--onity-color-bg);
-}
 
 /* Cards no mobile */
 .cardList {

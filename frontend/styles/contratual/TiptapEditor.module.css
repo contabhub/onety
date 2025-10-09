@@ -1,10 +1,10 @@
 .editorWrapper {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--color-surface-1);
+  background: var(--onity-color-surface-primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -12,8 +12,8 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
   flex-wrap: wrap;
   gap: 4px;
 }
@@ -29,17 +29,17 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text-secondary);
   font-size: 14px;
 }
 
 .toolbarButton:hover {
-  background: var(--color-border);
-  color: var(--color-text-primary);
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
 }
 
 .toolbarButton.active {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
 }
 
@@ -51,7 +51,7 @@
 .separator {
   width: 1px;
   height: 24px;
-  background: var(--color-border);
+  background: var(--onity-color-border);
   margin: 0 4px;
 }
 
@@ -62,7 +62,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .editorContent {
@@ -82,7 +82,7 @@
 }
 
 .editor :global(.ProseMirror p.is-editor-empty:first-child::before) {
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text-secondary);
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -119,10 +119,10 @@
 }
 
 .editor :global(.ProseMirror blockquote) {
-  border-left: 3px solid var(--color-border);
+  border-left: 3px solid var(--onity-color-border);
   margin: 1em 0;
   padding-left: 1em;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text-secondary);
 }
 
 .editor :global(.ProseMirror img) {
@@ -149,13 +149,13 @@
 
 .editor :global(.ProseMirror th),
 .editor :global(.ProseMirror td) {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--onity-color-border);
   padding: 8px 12px;
   text-align: left;
 }
 
 .editor :global(.ProseMirror th) {
-  background: var(--color-bg);
+  background: var(--onity-color-bg);
   font-weight: 600;
 }
 
@@ -170,12 +170,12 @@
 
 /* Classe para variáveis destacadas */
 .variableHighlight {
-  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  background: linear-gradient(135deg, var(--onity-color-primary) 0%, var(--onity-color-secondary) 100%);
   padding: 3px 8px;
   border-radius: 6px;
   font-weight: 600;
   color: white;
-  border: 2px solid var(--brand-primary);
+  border: 2px solid var(--onity-color-primary);
   font-family: 'Courier New', monospace;
   font-size: 0.9em;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -187,7 +187,7 @@
 .variableHighlight:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  background: linear-gradient(135deg, var(--onity-color-primary) 0%, var(--onity-color-secondary) 100%);
 }
 
 /* Modal de variáveis */
@@ -196,8 +196,8 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
+  background: var(--onity-color-surface-primary);
+  border: 1px solid var(--onity-color-border);
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   z-index: 1000;
@@ -212,7 +212,7 @@
   margin: 0 0 12px 0;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--onity-color-text);
 }
 
 .variablesList {
@@ -224,26 +224,26 @@
 
 .variableButton {
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-1);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface-primary);
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
   text-align: left;
   transition: all 0.2s ease;
-  color: var(--color-text-secondary);
+  color: var(--onity-color-text-secondary);
 }
 
 .variableButton:hover {
-  background: var(--color-bg);
-  border-color: var(--color-border);
-  color: var(--color-text-primary);
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+  color: var(--onity-color-text);
 }
 
 .closeButton {
   width: 100%;
   padding: 8px 16px;
-  background: var(--brand-primary);
+  background: var(--onity-color-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -254,7 +254,7 @@
 }
 
 .closeButton:hover {
-  background: var(--brand-primary);
+  background: var(--onity-color-primary-hover);
 }
 
 /* Responsividade */
