@@ -129,3 +129,14 @@
 .closeModal:hover {
   color: var(--onity-color-error);
 }
+
+/* Título das seções */
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 20px 0 10px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--onity-color-border);
+  width: 100%;
+}
