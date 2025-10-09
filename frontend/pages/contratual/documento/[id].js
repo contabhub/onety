@@ -1,13 +1,11 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Layout from "../../components/layout/Layout";
-import styles from "../../styles/Documento.module.css";
-import { useAuthRedirect } from "../../utils/auth";
+import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar";
+import styles from "../../../styles/contratual/Documento.module.css";
+import { useAuthRedirect } from "../../../utils/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faArrowLeft, faPaperPlane, faTrash } from "@fortawesome/free-solid-svg-icons";
-import PDFViewer from "../../components/assinador/PDFViewer";
-import FullScreenLoader from '../../components/FullScreenLoader';
-import meuLottieJson from '../../assets/sendContract.json';
+import PDFViewer from "../../../components/contratual/PDFViewer";
 
 export default function Contrato() {
   const router = useRouter();
@@ -21,6 +19,7 @@ export default function Contrato() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  const [mostrarDetalhes, setMostrarDetalhes] = useState(true);
 
   useAuthRedirect();
 
@@ -38,7 +37,7 @@ export default function Contrato() {
 
       try {
         // Buscar contrato
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         });
 
@@ -65,12 +64,12 @@ export default function Contrato() {
       const token = localStorage.getItem("token");
 
       // Garante que a folha de assinaturas está gerada (ESSA É A LINHA NOVA!)
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}/generate-signatures-base64`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}/generate-signatures-base64`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}/download`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -120,7 +119,7 @@ export default function Contrato() {
 
       try {
         // Buscar contrato
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         });
 
@@ -129,7 +128,7 @@ export default function Contrato() {
         setContrato(data);
 
         // Buscar signatários do contrato
-        const resSignatarios = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}/signatories`, {
+        const resSignatarios = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}/signatories`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -137,7 +136,7 @@ export default function Contrato() {
         setSignatarios(signatariosData);
 
         // Buscar detalhes das assinaturas
-        const resAssinaturas = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}/signatures`, {
+        const resAssinaturas = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}/signatures`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -162,7 +161,7 @@ export default function Contrato() {
     setSendingEmail(true);
 
     try {
-      const emailRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}/send-email`, {
+      const emailRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}/send-email`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -176,7 +175,7 @@ export default function Contrato() {
       if (!emailRes.ok) throw new Error("Erro ao enviar e-mails.");
 
       // Enviar WhatsApp só para quem tem telefone
-      const whatsappRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${id}/send-whatsapp`, {
+      const whatsappRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}/send-whatsapp`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -206,7 +205,7 @@ export default function Contrato() {
       
       const endpoint = isAutentiqueContract 
         ? `${process.env.NEXT_PUBLIC_API_URL}/documents-authentique/${id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/documents/${id}`;
+        : `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos/${id}`;
 
       console.log(`🗑️ Excluindo contrato via rota: ${isAutentiqueContract ? 'contracts-authentique' : 'contracts'}`);
 
@@ -241,9 +240,91 @@ export default function Contrato() {
 
 
 
+  // Copiar link de assinatura do signatário sem fazer fetch
+  const copySignatarioLink = async (tokenAcesso) => {
+    try {
+      const isFullUrl = typeof tokenAcesso === "string" && /^https?:\/\//.test(tokenAcesso);
+      const link = isFullUrl
+        ? tokenAcesso
+        : `${window.location.origin}/contratual/assinar/${tokenAcesso}`;
+      await navigator.clipboard.writeText(link);
+      alert("Link copiado!");
+    } catch (e) {
+      console.error("Erro ao copiar link", e);
+      alert("Não foi possível copiar o link.");
+    }
+  };
+
+  // Quando o conteúdo for um PDF hospedado (URL do Cloudinary), renderiza só o PDF
+  const rawContentUrl = contrato?.document?.conteudo;
+  const isPdfUrl = typeof rawContentUrl === "string" && /^https?:\/\//.test(rawContentUrl);
+
+  if (isPdfUrl) {
+    const iframeSrc = `${rawContentUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width`;
+    return (
+      <>
+        <PrincipalSidebar />
+        <div style={{ maxWidth: 860, margin: "40px auto 0", height: "70vh", overflow: "hidden" }}>
+          <iframe src={iframeSrc} title="Contrato PDF" width="100%" height="100%" scrolling="no" style={{ border: "none", overflow: "hidden", display: "block" }} />
+        </div>
+
+        {true && (
+          <div style={{ background: "#0b1220", color: "#e2e8f0", padding: 16, marginTop: 32 }}>
+            <div style={{ maxWidth: 860, margin: "0 auto" }}>
+              {contrato?.document && (
+                <div style={{ marginBottom: 12 }}>
+                  <span style={{ padding: "6px 10px", borderRadius: 6, background: contrato.document.status === "assinado" ? "#14532d" : contrato.document.status === "reprovado" ? "#7f1d1d" : contrato.document.status === "expirado" ? "#7c2d12" : "#1e3a8a" }}>
+                    Documento {contrato.document.status}
+                  </span>
+                </div>
+              )}
+
+              <p style={{ margin: "8px 0" }}><strong>Assinaturas:</strong> {assinaturas.length} / {signatarios.length}</p>
+              <div style={{ background: "#1f2937", borderRadius: 8, height: 10, overflow: "hidden", marginBottom: 16 }}>
+                <div style={{ height: "100%", width: `${(assinaturas.length / (signatarios.length || 1)) * 100}%`, background: "#22c55e" }} />
+              </div>
+
+              <h2 style={{ margin: "8px 0 12px" }}>Signatários</h2>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
+                {signatarios.map((s) => {
+                  const a = assinaturas.find(x => x.signatory_id === s.id);
+                  return (
+                    <li key={s.id} style={{ background: "#111827", borderRadius: 8, padding: 12 }}>
+                      <p><strong>Nome:</strong> {s.name}</p>
+                      <p><strong>Email:</strong> {s.email}</p>
+                      <p><strong>Função:</strong> {s.funcao_assinatura}</p>
+                      {s.token_acesso && (
+                        <button onClick={() => copySignatarioLink(s.token_acesso)} style={{ marginTop: 8, background: "#0ea5e9", border: 0, color: "#fff", padding: "6px 10px", borderRadius: 6, cursor: "pointer" }}>
+                          Copiar link do signatário
+                        </button>
+                      )}
+                      {a ? (
+                        <div style={{ marginTop: 8, fontSize: 14, color: "#94a3b8" }}>
+                          <p><strong>ID do Contrato:</strong> {a.document_id}</p>
+                          <p><strong>IP:</strong> {a.endereco_ip}</p>
+                          <p><strong>Navegador:</strong> {a.navegador_usuario}</p>
+                          <p><strong>Assinado em:</strong> {formatDateBR(a.assinado_em)}</p>
+                        </div>
+                      ) : (
+                        <p style={{ color: "#f59e0b" }}>Aguardando assinatura...</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
-    <Layout>
-      {sendingEmail && <FullScreenLoader animationData={meuLottieJson} />}
+    <>
+      <PrincipalSidebar />
+      {sendingEmail && (
+        <div className={styles.overlayLoader}>Enviando...</div>
+      )}
       <button className={styles.backButton} onClick={() => router.back()}>
         <FontAwesomeIcon icon={faArrowLeft} /> Voltar
       </button>
@@ -337,18 +418,33 @@ export default function Contrato() {
               <div className={styles.contractBody}>
                 {/* <h2 className={styles.sectionTitle}>Contrato</h2> */}
                 <div className={styles.contractContent}>
-                  {contrato?.document?.content ? (
-                    // Se o conteúdo começar com "JVBERi0" (o prefixo de um arquivo PDF em base64), renderiza como PDF
-                    contrato.document.content.startsWith("JVBERi0") ? (
-                      <PDFViewer base64={contrato.document.content} />
-
-                    ) : (
+                  {(contrato?.document?.conteudo || contrato?.document?.content) ? (
+                    (() => {
+                      const rawContent = contrato?.document?.conteudo || contrato?.document?.content;
+                      // Se for URL (Cloudinary), renderiza em iframe
+                      if (typeof rawContent === "string" && /^https?:\/\//.test(rawContent)) {
+                        return (
+                          <iframe
+                            src={rawContent}
+                            title="Contrato PDF"
+                            width="100%"
+                            height="1000px"
+                            style={{ border: "none" }}
+                          />
+                        );
+                      }
+                      // Se começar com base64 de PDF
+                      if (typeof rawContent === "string" && rawContent.startsWith("JVBERi0")) {
+                        return <PDFViewer base64={rawContent} />;
+                      }
                       // Caso contrário, trata como HTML
-                      <div
-                        className="template-render"
-                        dangerouslySetInnerHTML={{ __html: contrato.document.content.replace(/\n/g, "<br/>") }}
-                      />
-                    )
+                      return (
+                        <div
+                          className="template-render"
+                          dangerouslySetInnerHTML={{ __html: String(rawContent).replace(/\n/g, "<br/>") }}
+                        />
+                      );
+                    })()
                   ) : (
                     <p className={styles.error}>⚠️ O conteúdo do contrato não foi encontrado.</p>
                   )}
@@ -378,9 +474,9 @@ export default function Contrato() {
 
                               <div className={styles.signatoryDetails}>
                                 <p><strong>ID do Contrato:</strong> {assinatura.document_id}</p>
-                                <p><strong>IP do Signatário:</strong> {assinatura.ip_address}</p>
-                                <p><strong>Navegador:</strong> {assinatura.user_agent}</p>
-                                <p><strong>Data da Assinatura:</strong> {formatDateBR(assinatura.signed_at)}</p>
+                                <p><strong>IP do Signatário:</strong> {assinatura.endereco_ip}</p>
+                                <p><strong>Navegador:</strong> {assinatura.navegador_usuario}</p>
+                                <p><strong>Data da Assinatura:</strong> {formatDateBR(assinatura.assinado_em)}</p>
 
                               </div>
                               <div className={styles.signature}>
@@ -404,6 +500,6 @@ export default function Contrato() {
           )
         )}
       </div>
-    </Layout>
+    </>
   );
 }

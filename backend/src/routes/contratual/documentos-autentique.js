@@ -7,6 +7,9 @@ const htmlToPdfmake = require("html-to-pdfmake");
 const { JSDOM } = require("jsdom");
 const crypto = require("crypto");
 const axios = require("axios");
+const cloudinary = require("../../config/cloudinary");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 const router = express.Router();
@@ -110,6 +113,12 @@ router.post("/html", verifyToken, async (req, res) => {
       try {
         const pdfBuffer = Buffer.concat(chunks);
         const pdfBase64 = pdfBuffer.toString('base64');
+        // 🔼 Envia o PDF para o Cloudinary e usa a URL como conteudo
+        const base64DataUri = `data:application/pdf;base64,${pdfBase64}`;
+        const cloudUpload = await cloudinary.uploader.upload(base64DataUri, {
+          folder: "onety/contratual/documentos",
+          resource_type: "auto",
+        });
 
         // 4️⃣ Criar documento no Autentique com PDF convertido
         const doc = await createDocumentAutentique(
@@ -122,9 +131,9 @@ router.post("/html", verifyToken, async (req, res) => {
         );
 
         // 5️⃣ Criar o contrato no banco (mesma estrutura do documentos.js)
-        const [documentResult] = await db.query(
+         const [documentResult] = await db.query(
           "INSERT INTO documentos (modelos_contrato_id, conteudo, status, criado_por, pre_cliente_id, expirado_em, comeca_em, termina_em, empresa_id, autentique, autentique_id) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?)",
-          [template_id, filledContent, createdBy, client_id, expires_at, start_at, end_at, empresa_id, 1, doc.id,]
+           [template_id, cloudUpload.secure_url, createdBy, client_id, expires_at, start_at, end_at, empresa_id, 1, doc.id,]
         );
 
         const document_id = documentResult.insertId;
@@ -186,24 +195,44 @@ router.post("/html", verifyToken, async (req, res) => {
 /**
  * 📌 2️⃣ Rota para PDF direto (mantém a funcionalidade existente)
  */
-router.post("/", verifyToken, async (req, res) => {
+// Aceita JSON (content base64) ou multipart (arquivo PDF em req.file)
+router.post("/", verifyToken, upload.single("arquivo"), async (req, res) => {
   try {
     const { 
       name, 
       content, 
-      signatories, 
+      signatories: signatoriesRaw, 
       empresa_id, 
       created_by, 
       client_id,
-      start_at,       // ⬅️ novo
-      end_at,         // ⬅️ novo
-      expires_at      // ⬅️ novo
+      start_at,
+      end_at,
+      expires_at
     } = req.body;
+
+    // signatories pode vir como string JSON quando multipart
+    const signatories = typeof signatoriesRaw === "string" ? JSON.parse(signatoriesRaw) : (signatoriesRaw || []);
+
+    // Se vier arquivo PDF via multipart, converte para base64 data-less
+    let pdfBase64 = content;
+    if (!pdfBase64 && req.file) {
+      pdfBase64 = req.file.buffer.toString("base64");
+    }
+
+    // 🔼 Envia o PDF ao Cloudinary para termos uma URL pública
+    if (!pdfBase64 && !req.file) {
+      return res.status(400).json({ error: "Arquivo PDF ou conteúdo base64 é obrigatório." });
+    }
+    const dataUri = pdfBase64 ? `data:application/pdf;base64,${pdfBase64}` : `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    const cloudUpload = await cloudinary.uploader.upload(dataUri, {
+      folder: "onety/contratual/documentos",
+      resource_type: "auto",
+    });
 
     // 1️⃣ Cria documento no Autentique
     const doc = await createDocumentAutentique(
       name,
-      content,
+      pdfBase64 || req.file.buffer.toString("base64"),
       signatories.map(sig => ({
         name: sig.name,
         cpf: sig.cpf || null
@@ -230,10 +259,10 @@ router.post("/", verifyToken, async (req, res) => {
         1,                          // autentique
         doc.id,                    // autentique_id
         "pendente",                // status
-        content,                   // conteudo
+        cloudUpload.secure_url,     // conteudo (URL do Cloudinary)
         empresa_id,                // empresa_id
         client_id,                 // pre_cliente_id
-        created_by,                // criado_por
+         (created_by || req.user?.id || null), // criado_por
         start_at || null,          // comeca_em
         end_at || null,            // termina_em
         expires_at || null         // expirado_em
@@ -245,7 +274,7 @@ router.post("/", verifyToken, async (req, res) => {
     // 3️⃣ Filtra os signatários válidos
     const validSignatures = doc.signatures.filter(sig => sig.action);
 
-    // 4️⃣ Salva os signatários no banco
+    // 4️⃣ Salva os signatários no banco (com empresa_id)
     for (let i = 0; i < validSignatures.length; i++) {
       const sig = validSignatures[i];
       const inputData = signatories[i];
@@ -258,9 +287,10 @@ router.post("/", verifyToken, async (req, res) => {
            public_id, 
            token_acesso, 
            cpf, 
-           telefone
+           telefone,
+           empresa_id
          )
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           documentId,
           sig.name || "",
@@ -268,7 +298,8 @@ router.post("/", verifyToken, async (req, res) => {
           sig.public_id,
           sig.link?.short_link || null,
           inputData.cpf || null,
-          inputData.phone || null
+          inputData.phone || null,
+          empresa_id || null
         ]
       );
     }
@@ -422,7 +453,7 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
     const hash = crypto.createHash("sha256").update(hashBase).digest("hex");
 
     await connection.query(
-      `INSERT INTO assinaturas (documento_id, signatario_id, cpf, assinado_em, endereco_ip, user_agent, hash)
+      `INSERT INTO assinaturas (documento_id, signatario_id, cpf, assinado_em, endereco_ip, navegador_usuario, hash)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [documentId, signatoryId, cpf, signedAt, ip, userAgent, hash]
     );

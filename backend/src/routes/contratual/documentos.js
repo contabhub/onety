@@ -291,7 +291,7 @@ router.get("/:id", verifyToken, async (req, res) => {
 
     // 3️⃣ Buscar assinaturas do contrato
     const [signatures] = await pool.query(
-      `SELECT s.id, s.cpf, s.assinado_em, s.endereco_ip, s.user_agent, s.hash, si.nome as signatory_name
+      `SELECT s.id, s.cpf, s.assinado_em, s.endereco_ip, s.navegador_usuario, s.hash, si.nome as signatory_name
        FROM assinaturas s
        JOIN signatarios si ON s.signatario_id = si.id
        WHERE s.documento_id = ?`,
@@ -522,7 +522,7 @@ router.get("/:id/signatures", async (req, res) => {
   const { id } = req.params;
   try {
     const [signatures] = await pool.query(
-      `SELECT s.id, s.documento_id, s.cpf, s.assinado_em, s.endereco_ip, s.user_agent, s.hash, 
+      `SELECT s.id, s.documento_id, s.cpf, s.assinado_em, s.endereco_ip, s.navegador_usuario, s.hash, 
               si.id AS signatory_id, si.nome, si.email
        FROM assinaturas s
        JOIN signatarios si ON s.signatario_id = si.id
@@ -530,11 +530,8 @@ router.get("/:id/signatures", async (req, res) => {
       [id]
     );
 
-    if (signatures.length === 0) {
-      return res.status(404).json({ error: "Nenhuma assinatura encontrada para este contrato." });
-    }
-
-    res.json(signatures);
+    // Quando não houver assinaturas ainda, retornar array vazio com 200
+    res.json(signatures || []);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erro ao buscar assinaturas." });
@@ -1060,7 +1057,7 @@ router.post("/:id/generate-signatures-base64", async (req, res) => {
                 <b>Função:</b> ${signatario.funcao_assinatura}<br>
                 <b>ID Contrato:</b> ${assinatura.documento_id}<br>
                 <b>IP:</b> ${assinatura.endereco_ip}<br>
-                <b>Navegador:</b> ${assinatura.user_agent}<br>
+                <b>Navegador:</b> ${assinatura.navegador_usuario}<br>
                 <b>Data da Assinatura:</b> ${new Date(assinatura.assinado_em).toLocaleString()}<br>
                 <div style="margin-top: 20px; border-top: 1px solid #333; text-align: right;">
                     <span style="font-family: Helvetica; font-size: 18px; font-style: italic;">${signatario.nome}</span>
@@ -1171,7 +1168,7 @@ router.patch("/:access_token/update-signature-base64", async (req, res) => {
                 <b>Função:</b> ${signatario.funcao_assinatura}<br>
                 <b>ID Contrato:</b> ${assinatura.documento_id}<br>
                 <b>IP:</b> ${assinatura.endereco_ip}<br>
-                <b>Navegador:</b> ${assinatura.user_agent}<br>
+                <b>Navegador:</b> ${assinatura.navegador_usuario}<br>
                 <b>Data da Assinatura:</b> ${new Date(assinatura.assinado_em).toLocaleString()}<br>
                 <div style="margin-top: 20px; border-top: 1px solid #333; text-align: right;">
                     <span style="font-family: Helvetica; font-size: 18px; font-style: italic;">${signatario.nome}</span>
@@ -1272,7 +1269,7 @@ router.get("/token/:access_token/signatures", async (req, res) => {
 
     // Busca todas as assinaturas desse contrato
     const [assinaturas] = await pool.query(
-      `SELECT s.id, s.documento_id, s.cpf, s.assinado_em, s.endereco_ip, s.user_agent, s.hash, 
+      `SELECT s.id, s.documento_id, s.cpf, s.assinado_em, s.endereco_ip, s.navegador_usuario, s.hash, 
               si.id AS signatory_id, si.nome, si.email
        FROM assinaturas s
        JOIN signatarios si ON s.signatario_id = si.id

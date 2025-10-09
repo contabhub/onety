@@ -370,7 +370,7 @@ export default function CriarDocumentoAutentique() {
 
     // Encontra o template correspondente e preenche o conteúdo
     const selected = templates.find((template) => template.id.toString() === templateId);
-    setContent(selected ? selected.content : "");
+    setContent(selected ? (selected.conteudo || selected.content || "") : "");
   };
 
 
@@ -654,7 +654,8 @@ export default function CriarDocumentoAutentique() {
     }
 
     // Verificação do nome do documento
-    if (!nomeDocumento.trim() && !cliente.name) {
+    // Aceita quando houver nome manual OU quando houver cliente selecionado válido
+    if (!nomeDocumento.trim() && !clienteSelecionado) {
       toast.warning("Por favor, informe o nome do documento ou selecione um cliente.");
       setLoading(false);
       return;
@@ -713,10 +714,13 @@ export default function CriarDocumentoAutentique() {
       return;
     }
 
-    // Obter o equipe_id do usuário logado
+    // Obter empresaId do usuário logado (prioriza userData.EmpresaId)
     const userRaw = localStorage.getItem("user");
+    const userDataRaw = localStorage.getItem("userData");
     const user = userRaw ? JSON.parse(userRaw) : {};
-    const equipeId = user.equipe_id;  // Obtendo o equipe_id do usuário logado
+    const userData = userDataRaw ? JSON.parse(userDataRaw) : {};
+    const equipeId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+    const createdById = userData?.id || user?.id || "";
 
     const signatariosToSend = signatarios.map(s => ({
       ...s,
@@ -733,11 +737,18 @@ export default function CriarDocumentoAutentique() {
 
     const nomeFinal = nomeDocumento || `${cliente.name} - Contrato`;
 
-    // Validação de conteúdo ou arquivo
+    // Validação de conteúdo ou arquivo (com fallback ao template selecionado)
     if (!uploadedFile && (!content || content.trim() === '')) {
-      toast.warning("Por favor, adicione conteúdo ao documento ou faça upload de um arquivo PDF antes de criar o contrato.");
-      setLoading(false);
-      return;
+      const selectedTemplateObj = templates.find((t) => t.id.toString() === selectedTemplate);
+      if (selectedTemplateObj?.conteudo) {
+        setContent(selectedTemplateObj.conteudo);
+      } else if (selectedTemplateObj?.content) {
+        setContent(selectedTemplateObj.content);
+      } else {
+        toast.warning("Por favor, adicione conteúdo ao documento ou faça upload de um arquivo PDF antes de criar o contrato.");
+        setLoading(false);
+        return;
+      }
     }
 
     // Se há arquivo upado, validar o arquivo e enviar como base64
@@ -756,45 +767,40 @@ export default function CriarDocumentoAutentique() {
           setLoading(false);
           return;
         }
-        // Converter PDF para base64
-        const base64 = await fileToBase64(uploadedFile);
-        const payload = {
+        // Enviar como multipart/form-data, sem base64
+        const formData = new FormData();
+        formData.append("arquivo", uploadedFile);
+        formData.append("name", nomeFinal);
+        formData.append("empresa_id", equipeId);
+        formData.append("created_by", createdById);
+        formData.append("client_id", clienteSelecionado);
+        formData.append("expires_at", validade);
+        formData.append("start_at", vigenciaInicio);
+        formData.append("end_at", vigenciaFim);
+        formData.append("signatories", JSON.stringify(signatariosToSend.map(sig => ({
+          name: sig.name,
+          cpf: sig.cpf || null,
+          email: sig.email || null,
+          phone: sig.telefone || null
+        }))));
+
+        console.log("Enviando FormData com PDF:", {
           name: nomeFinal,
-          content: base64, // PDF em base64
-          signatories: signatariosToSend.map(sig => ({
-            name: sig.name,
-            cpf: sig.cpf || null,
-            email: sig.email || null,
-            phone: sig.telefone || null
-          })),
-          equipe_id: equipeId,
+          empresa_id: equipeId,
           created_by: user.id,
           client_id: clienteSelecionado,
           expires_at: validade,
           start_at: vigenciaInicio,
-          end_at: vigenciaFim
-        };
-        
-        console.log("Enviando payload com PDF base64:", {
-          name: payload.name,
-          contentLength: payload.content.length,
-          signatoriesCount: payload.signatories.length,
-          equipe_id: payload.equipe_id,
-          created_by: payload.created_by,
-          client_id: payload.client_id,
-          expires_at: payload.expires_at,
-          start_at: payload.start_at,
-          end_at: payload.end_at
+          end_at: vigenciaFim,
+          signatoriesCount: signatariosToSend.length
         });
-        console.log("Primeiros 100 caracteres do base64:", payload.content.substring(0, 100));
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/documents-authentique`);
-        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents-authentique`, {
+        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique`);
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
+        body: formData,
         });
       } else {
         // Verifica se o conteúdo tem pelo menos algum texto significativo (não apenas tags HTML)
@@ -990,7 +996,7 @@ export default function CriarDocumentoAutentique() {
           client_id: clienteSelecionado,
           signatories: signatariosToSend,
           variables: variables,
-          equipe_id: equipeId,
+          empresa_id: equipeId,
           expires_at: validade,
           start_at: vigenciaInicio,
           end_at: vigenciaFim
@@ -1001,7 +1007,7 @@ export default function CriarDocumentoAutentique() {
           client_id: payload.client_id,
           signatoriesCount: payload.signatories.length,
           variablesCount: payload.variables.length,
-          equipe_id: payload.equipe_id,
+          empresa_id: payload.empresa_id,
           expires_at: payload.expires_at,
           start_at: payload.start_at,
           end_at: payload.end_at
@@ -1009,8 +1015,8 @@ export default function CriarDocumentoAutentique() {
         console.log("Variáveis sendo enviadas:", payload.variables);
         console.log("Cliente selecionado:", cliente?.name);
         console.log("Produtos selecionados:", produtosSelecionados.length);
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/documents-authentique/html`);
-        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents-authentique/html`, {
+        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique/html`);
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique/html`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -1057,7 +1063,7 @@ export default function CriarDocumentoAutentique() {
         toast.success("Contrato HTML criado, convertido para PDF e enviado para Autentique!");
       }
       
-      setTimeout(() => router.push(`/documento/${responseData.document_id}`), 1200);
+      setTimeout(() => router.push(`/contratual/documento/${responseData.document_id}`), 1200);
     } catch (err) {
       toast.error("Erro ao criar contrato.");
       console.error(err);
@@ -1183,7 +1189,7 @@ export default function CriarDocumentoAutentique() {
     if (!createdContractId || !token) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents-authentique/${createdContractId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique/${createdContractId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -1604,7 +1610,7 @@ export default function CriarDocumentoAutentique() {
                     >
                       <option value="">Selecione um modelo...</option>
                       {templates.map((t) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
+                        <option key={t.id} value={t.id}>{t.nome || t.name}</option>
                       ))}
                     </select>
                     
