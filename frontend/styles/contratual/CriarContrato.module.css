@@ -290,7 +290,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 10050;
 }
 
 .modal {
@@ -298,6 +298,8 @@
   padding: 2rem;
   border-radius: 8px;
   width: 400px;
+  position: relative;
+  z-index: 10051;
 }
 
 .closeBtn {

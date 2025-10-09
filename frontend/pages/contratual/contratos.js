@@ -161,7 +161,7 @@ export default function Contratos() {
 
 
   const handleViewContract = (id) => {
-    router.push(`/contrato/${id}`);
+    router.push(`/contratual/contrato/${id}`);
   };
 
   // Anos disponíveis nos contratos (useMemo para performance)
@@ -360,7 +360,7 @@ export default function Contratos() {
         return; // NÃO navega
       }
       // Se não for PDF, navega normalmente
-      router.push(`/editar-contrato?id=${id}`);
+      router.push(`/contratual/editar-contrato?id=${id}`);
     } catch (err) {
       toast.error("Erro ao abrir o contrato para edição!");
     }
@@ -388,7 +388,7 @@ export default function Contratos() {
       // Salva os dados no localStorage
       localStorage.setItem("cloneContratoData", JSON.stringify(data.contract));
       // Redireciona para a tela de criação com flag de clone
-      router.push("/criar-contrato-autentique?clone=1");
+      router.push("/contratual/criar-contrato-autentique?clone=1");
     } catch (err) {
       toast.error("Erro ao clonar contrato!");
     }
@@ -411,8 +411,8 @@ export default function Contratos() {
       if (signatariosDropdown[contratoId].length === 1) {
         const onlySig = signatariosDropdown[contratoId][0];
         const url = isAutentique
-          ? onlySig.access_token
-          : `${window.location.origin}/assinar/${onlySig.access_token}`;
+          ? onlySig.token_acesso
+          : `${window.location.origin}/contratual/assinar/${onlySig.token_acesso}`;
         await navigator.clipboard.writeText(url);
         toast.success("Link copiado com sucesso!");
         setOpenDropdownId(null);
@@ -443,8 +443,8 @@ export default function Contratos() {
       // Só abre o dropdown se tiver mais de um
       if (signatarios.length === 1) {
         const url = isAutentique
-          ? signatarios[0].access_token
-          : `${window.location.origin}/assinar/${signatarios[0].access_token}`;
+          ? signatarios[0].token_acesso
+          : `${window.location.origin}/contratual/assinar/${signatarios[0].token_acesso}`;
         await navigator.clipboard.writeText(url);
         toast.success("Link copiado com sucesso!");
         setOpenDropdownId(null);
@@ -459,14 +459,14 @@ export default function Contratos() {
 
 
 
-  const handleCopySignatarioLink = async (access_token, contratoId) => {
+  const handleCopySignatarioLink = async (token_acesso, contratoId) => {
     // Busca o contrato para verificar se é do Autentique
     const contrato = contratos.find(c => c.id === contratoId);
     const isAutentique = contrato?.autentique === 1;
 
     const url = isAutentique
-      ? access_token
-      : `${window.location.origin}/assinar/${access_token}`;
+      ? token_acesso
+      : `${window.location.origin}/contratual/assinar/${token_acesso}`;
     await navigator.clipboard.writeText(url);
     toast.success("Link copiado para a área de transferência!");
     setOpenDropdownId(null); // fecha o dropdown após copiar
@@ -828,9 +828,9 @@ export default function Contratos() {
                                     <li
                                       key={sig.id}
                                       className={styles.signatarioItem}
-                                      onClick={() => handleCopySignatarioLink(sig.access_token, contrato.id)}
+                                      onClick={() => handleCopySignatarioLink(sig.token_acesso, contrato.id)}
                                     >
-                                      <strong>{sig.name || sig.email}</strong> — {sig.email}
+                                      <strong>{sig.nome || sig.email}</strong> — {sig.email}
                                     </li>
                                   ))}
                                 </ul>

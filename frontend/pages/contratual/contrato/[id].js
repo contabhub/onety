@@ -1,13 +1,11 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Layout from "../../components/layout/Layout";
-import styles from "../../styles/Documento.module.css";
-import { useAuthRedirect } from "../../utils/auth";
+import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar";
+import styles from "../../../styles/contratual/Documento.module.css";
+import { useAuthRedirect } from "../../../utils/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faArrowLeft, faPaperPlane, faTrash } from "@fortawesome/free-solid-svg-icons";
-import PDFViewer from "../../components/assinador/PDFViewer";
-import FullScreenLoader from '../../components/FullScreenLoader';
-import meuLottieJson from '../../assets/sendContract.json';
+import PDFViewer from "../../../components/contratual/PDFViewer";
 
 export default function Contrato() {
   const router = useRouter();
@@ -24,40 +22,6 @@ export default function Contrato() {
 
   useAuthRedirect();
 
-  useEffect(() => {
-    if (!id) return;
-
-    async function fetchContrato() {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("Você precisa estar logado para acessar este contrato.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Buscar contrato
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}`, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        });
-
-        if (!res.ok) throw new Error("Erro ao buscar contrato.");
-        const data = await res.json();
-
-        console.log("📄 Dados do contrato:", data); // <-- Verifica se `content` está presente
-        setContrato(data);
-
-      } catch (error) {
-        setError("Erro ao carregar o contrato.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchContrato();
-  }, [id]);
-
 
 
   const downloadPDFBackend = async () => {
@@ -65,12 +29,12 @@ export default function Contrato() {
       const token = localStorage.getItem("token");
 
       // Garante que a folha de assinaturas está gerada (ESSA É A LINHA NOVA!)
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}/generate-signatures-base64`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}/generate-signatures-base64`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}/download`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -120,16 +84,18 @@ export default function Contrato() {
 
       try {
         // Buscar contrato
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}`, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         });
 
         if (!res.ok) throw new Error("Erro ao buscar contrato.");
         const data = await res.json();
+
+        console.log("📄 Dados do contrato:", data); // <-- Verifica se `content` está presente
         setContrato(data);
 
         // Buscar signatários do contrato
-        const resSignatarios = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}/signatories`, {
+        const resSignatarios = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}/signatories`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -137,7 +103,7 @@ export default function Contrato() {
         setSignatarios(signatariosData);
 
         // Buscar detalhes das assinaturas
-        const resAssinaturas = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}/signatures`, {
+        const resAssinaturas = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}/signatures`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -162,7 +128,7 @@ export default function Contrato() {
     setSendingEmail(true);
 
     try {
-      const emailRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}/send-email`, {
+      const emailRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}/send-email`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -176,7 +142,7 @@ export default function Contrato() {
       if (!emailRes.ok) throw new Error("Erro ao enviar e-mails.");
 
       // Enviar WhatsApp (Evolution)
-      const whatsappRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}/send-whatsapp-evolution`, {
+      const whatsappRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}/send-whatsapp-evolution`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -185,7 +151,7 @@ export default function Contrato() {
       });
 
       setEnviado(true); // <- aqui
-      setTimeout(() => router.push(`/contratos`), 1200);
+      setTimeout(() => router.push(`/contratual/contratos`), 1200);
 
     } catch (error) {
       console.error("Erro ao enviar email:", error);
@@ -206,7 +172,7 @@ export default function Contrato() {
       
       const endpoint = isAutentiqueContract 
         ? `${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique/${id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/contracts/${id}`;
+        : `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}`;
 
       console.log(`🗑️ Excluindo contrato via rota: ${isAutentiqueContract ? 'contracts-authentique' : 'contracts'}`);
 
@@ -216,7 +182,7 @@ export default function Contrato() {
       });
 
       if (!res.ok) throw new Error("Erro ao excluir contrato.");
-      router.push("/contratos");
+      router.push("/contratual/contratos");
     } catch (err) {
       console.error("Erro ao excluir contrato:", err);
       setError("Erro ao excluir contrato.");
@@ -242,8 +208,11 @@ export default function Contrato() {
 
 
   return (
-    <Layout>
-      {sendingEmail && <FullScreenLoader animationData={meuLottieJson} />}
+    <div className={styles.principalContainer}>
+      <PrincipalSidebar />
+      {sendingEmail && (
+        <div className={styles.overlayLoader}>Enviando...</div>
+      )}
       <button className={styles.backButton} onClick={() => router.back()}>
         <FontAwesomeIcon icon={faArrowLeft} /> Voltar
       </button>
@@ -329,26 +298,36 @@ export default function Contrato() {
         ) : (
           contrato && (
             <>
-              {/* Cabeçalho com banner */}
-              {/* <div className={styles.header}>
-                <img src="/img/banner.png" alt="Logo da Empresa" className={styles.logo} />
-              </div> */}
 
               <div className={styles.contractBody}>
-                {/* <h2 className={styles.sectionTitle}>Contrato</h2> */}
                 <div className={styles.contractContent}>
-                  {contrato?.contract?.content ? (
-                    // Se o conteúdo começar com "JVBERi0" (o prefixo de um arquivo PDF em base64), renderiza como PDF
-                    contrato.contract.content.startsWith("JVBERi0") ? (
-                      <PDFViewer base64={contrato.contract.content} />
-
-                    ) : (
+                  {(contrato?.contract?.conteudo || contrato?.contract?.content) ? (
+                    (() => {
+                      const rawContent = contrato?.contract?.conteudo || contrato?.contract?.content;
+                      // Se for URL (Cloudinary), renderiza em iframe
+                      if (typeof rawContent === "string" && /^https?:\/\//.test(rawContent)) {
+                        return (
+                          <iframe
+                            src={rawContent}
+                            title="Contrato PDF"
+                            width="100%"
+                            height="1000px"
+                            style={{ border: "none" }}
+                          />
+                        );
+                      }
+                      // Se começar com base64 de PDF
+                      if (typeof rawContent === "string" && rawContent.startsWith("JVBERi0")) {
+                        return <PDFViewer base64={rawContent} />;
+                      }
                       // Caso contrário, trata como HTML
-                      <div
-                        className="template-render"
-                        dangerouslySetInnerHTML={{ __html: contrato.contract.content.replace(/\n/g, "<br/>") }}
-                      />
-                    )
+                      return (
+                        <div
+                          className="template-render"
+                          dangerouslySetInnerHTML={{ __html: String(rawContent).replace(/\n/g, "<br/>") }}
+                        />
+                      );
+                    })()
                   ) : (
                     <p className={styles.error}>⚠️ O conteúdo do contrato não foi encontrado.</p>
                   )}
@@ -368,7 +347,7 @@ export default function Contrato() {
                       return (
                         <li key={signatario.id} className={styles.signatory}>
                           {/* Nome e Email do Signatário */}
-                          <p><strong>Nome do Signatário:</strong> {signatario.name}</p>
+                          <p><strong>Nome do Signatário:</strong> {signatario.nome}</p>
                           <p><strong>Email do Signatário:</strong> {signatario.email}</p>
                           <p><strong>CPF do Signatário:</strong> {signatario.cpf}</p>
                           <p><strong>Função do Signatário:</strong> {signatario.funcao_assinatura}</p>
@@ -379,13 +358,13 @@ export default function Contrato() {
 
                               <div className={styles.signatoryDetails}>
                                 <p><strong>ID do Contrato:</strong> {assinatura.contract_id}</p>
-                                <p><strong>IP do Signatário:</strong> {assinatura.ip_address}</p>
-                                <p><strong>Navegador:</strong> {assinatura.user_agent}</p>
-                                <p><strong>Data da Assinatura:</strong> {formatDateBR(assinatura.signed_at)}</p>
+                                <p><strong>IP do Signatário:</strong> {assinatura.endereco_ip}</p>
+                                <p><strong>Navegador:</strong> {assinatura.navegador_usuario}</p>
+                                <p><strong>Data da Assinatura:</strong> {formatDateBR(assinatura.assinado_em)}</p>
 
                               </div>
                               <div className={styles.signature}>
-                                <p className={styles.signatureText}>{signatario.name}</p>
+                                <p className={styles.signatureText}>{signatario.nome}</p>
                               </div>
                             </>
                           ) : (
@@ -405,6 +384,6 @@ export default function Contrato() {
           )
         )}
       </div>
-    </Layout>
+    </div>
   );
 }
