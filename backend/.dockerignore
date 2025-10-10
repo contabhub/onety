@@ -1,0 +1,55 @@
+# Dependências
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Arquivos de ambiente (não incluir em produção)
+.env
+.env.local
+.env.*.local
+
+# Arquivos do Git
+.git
+.gitignore
+
+# Arquivos de IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Arquivos temporários
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Uploads locais (devem ser montados como volume)
+uploads/*
+
+# Documentação
+README.md
+*.md
+
+# Arquivos de teste
+test
+tests
+*.test.js
+*.spec.js
+
+# Arquivos de CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Vercel
+.vercel
+vercel.json
+

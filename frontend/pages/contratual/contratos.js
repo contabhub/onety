@@ -1093,28 +1093,28 @@ function KanbanView({ contratos, statusFiltro, isSuperAdmin }) {
     return contrato.status.toLowerCase() === statusFiltro;
   });
   return (
-    <div style={{ display: 'flex', gap: 24, overflowX: 'auto', marginTop: 24 }}>
+    <div className={styles.kanbanContainer}>
       {statusList.map((status) => (
-        <div key={status.key} style={{ minWidth: 260, background: '#f8f9ff', borderRadius: 8, padding: 12, boxShadow: '0 1px 4px #0001' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>{status.label}</div>
+        <div key={status.key} className={styles.kanbanColumn}>
+          <div className={styles.kanbanColumnHeader}>{status.label}</div>
           {contratosFiltrados.filter(c => c.status.toLowerCase() === status.key).length === 0 ? (
-            <div style={{ color: '#888', fontSize: 14 }}>Nenhum contrato</div>
+            <div className={styles.kanbanEmpty}>Nenhum contrato</div>
           ) : (
             contratosFiltrados.filter(c => c.status.toLowerCase() === status.key).map((contrato) => (
-              <div key={contrato.id} style={{ background: '#fff', border: '1px solid #dee4ff', borderRadius: 6, marginBottom: 10, padding: 10 }}>
-                <div style={{ fontWeight: 'bold', color: '#2563eb', fontSize: 15 }}>{contrato.client_name || 'Contrato sem cliente'}</div>
-                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>ID: {contrato.id}</div>
-                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Responsável: {contrato.created_by}</div>
-                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Expira: {contrato.expirado_em ? contrato.expirado_em.slice(0, 10).split('-').reverse().join('/') : ''}</div>
+              <div key={contrato.id} className={styles.kanbanCard}>
+                <div className={styles.kanbanCardTitle}>{contrato.client_name || 'Contrato sem cliente'}</div>
+                <div className={styles.kanbanCardInfo}>ID: {contrato.id}</div>
+                <div className={styles.kanbanCardInfo}>Responsável: {contrato.created_by}</div>
+                <div className={styles.kanbanCardInfo}>Expira: {contrato.expirado_em ? contrato.expirado_em.slice(0, 10).split('-').reverse().join('/') : ''}</div>
                 {isSuperAdmin && (
-                  <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>
+                  <div className={styles.kanbanCardAutentique}>
                     Autentique: <span
-                      style={{ color: contrato.autentique === 1 ? '#22c55e' : '#ef4444', fontWeight: 'bold' }}
+                      className={contrato.autentique === 1 ? styles.kanbanAutentiqueYes : styles.kanbanAutentiqueNo}
                       title={contrato.autentique === 1 ? "Contrato autenticado - Passou por processo de validação legal" : "Contrato não autenticado - Ainda não passou por processo de validação legal"}
                     >
                       <FontAwesomeIcon
                         icon={contrato.autentique === 1 ? faCheck : faTimes}
-                        style={{ fontSize: '12px', marginLeft: '4px' }}
+                        className={styles.kanbanAutentiqueIcon}
                       />
                     </span>
                   </div>
