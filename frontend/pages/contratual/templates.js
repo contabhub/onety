@@ -55,6 +55,16 @@ export default function Templates() {
     currentPage * itemsPerPage
   );
 
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
+
   // useEffect para ajustar página atual quando mudar filtros ou quantidade de itens
   useEffect(() => {
     const maxPage = Math.ceil(filteredTemplates.length / itemsPerPage);
@@ -142,63 +152,57 @@ export default function Templates() {
     <div className={styles.page}>
       <PrincipalSidebar />
       <div className={styles.pageContent}>
-        <div className={styles.pageContainer}>
-          <div className={styles.header}>
-            <h1 className={styles.title}>Modelos de Contrato</h1>
-            <div className={styles.userButtonContainer}>
-              <button
-                className={styles.button}
-                onClick={() => router.push("/contratual/criar-template")}
-              >
-                Criar Template
-              </button>
+        <div className={styles.pageHeader}>
+          <div className={styles.toolbarBox}>
+            <div className={styles.toolbarHeader}>
+              <span className={styles.title}>Modelos de Contrato</span>
+              <div className={styles.headerActions}>
+                <button
+                  className={styles.button}
+                  onClick={() => router.push("/contratual/criar-template")}
+                >
+                  Criar Template
+                </button>
+              </div>
+            </div>
+
+            {/* Filtros */}
+            <div className={styles.filtersRow}>
+              <div className={styles.filtersRowBox}>
+                <input
+                  id="searchInput"
+                  type="text"
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={e => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className={styles.searchInput}
+                />
+              </div>
+              
+              {isSuperAdmin && (
+                <div className={styles.filtersRowBox}>
+                  <select
+                    value={globalFilter}
+                    onChange={e => {
+                      setGlobalFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className={styles.filterSelect}
+                  >
+                    <option value="todos">Todos</option>
+                    <option value="globais">Globais</option>
+                    <option value="naoGlobais">Não globais</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
-        {/* Campo de busca */}
-        <div className={styles.filtroContainer}>
-          <label htmlFor="searchInput">Buscar:</label>
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="Buscar por nome..."
-            value={searchTerm}
-            onChange={e => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className={styles.searchInput}
-          />
-          {isSuperAdmin && (
-            <select
-              value={globalFilter}
-              onChange={e => {
-                setGlobalFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              style={{ marginLeft: 16, minWidth: 120 }}
-            >
-              <option value="todos">Todos</option>
-              <option value="globais">Globais</option>
-              <option value="naoGlobais">Não globais</option>
-            </select>
-          )}
-          
-          {/* Seletor de quantidade de itens por página */}
-          <div className={styles.itemsPerPageContainer}>
-            <select
-              id="itemsPerPage"
-              value={itemsPerPage}
-              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-              className={styles.itemsPerPageSelect}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
         </div>
+
+        <div className={styles.contentScroll}>
 
         {isLoading ? (
           <SpaceLoader 
@@ -279,40 +283,75 @@ export default function Templates() {
               </tbody>
             </table>
           </div>
-          {filteredTemplates.length > 0 && totalPages > 1 && (
+
+          {filteredTemplates.length > 0 && (
             <div className={styles.pagination}>
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
-              >
-                Anterior
-              </button>
-
-              <span className={styles.pageInfo}>
-                Página {currentPage} de {totalPages}
+              <span className={styles.paginationInfo}>
+                Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                {" - "}
+                {Math.min(currentPage * itemsPerPage, filteredTemplates.length)} de {filteredTemplates.length}
               </span>
-
-
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-              >
-                Próxima
-              </button>
-
-            </div>
-          )}
-          
-          {/* Informação quando há apenas uma página */}
-          {filteredTemplates.length > 0 && totalPages === 1 && (
-            <div className={styles.singlePageMessage}>
-              Mostrando todos os {filteredTemplates.length} templates
+              <div className={styles.paginationButtons}>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                  className={styles.paginationSelect}
+                  style={{ marginRight: 16 }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <button
+                  className={styles.paginationArrow}
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  aria-label="Primeira página"
+                >
+                  {"<<"}
+                </button>
+                <button
+                  className={styles.paginationArrow}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Página anterior"
+                >
+                  {"<"}
+                </button>
+                {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  className={styles.paginationArrow}
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  aria-label="Próxima página"
+                >
+                  {">"}
+                </button>
+                <button
+                  className={styles.paginationArrow}
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Última página"
+                >
+                  {">>"}
+                </button>
+              </div>
             </div>
           )}
         </>
         )}
+
+        </div>
 
         <ToastContainer
           position="top-right"
@@ -327,7 +366,6 @@ export default function Templates() {
           theme="colored"
           transition={Bounce}
         />
-        </div>
       </div>
     </div>
   );

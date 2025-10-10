@@ -7,8 +7,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPen, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
 
 
 const ITEMS_PER_PAGE = 5;
@@ -165,18 +163,11 @@ export default function SignatariosPage() {
       } else {
         birthDate = "";
       }
-      // Converter telefone para formato internacional
+      // Converter telefone para formato do input
       let telefone = signatario.telefone || "";
       if (telefone) {
-        // Se não começar com +, adicionar +
-        if (!telefone.startsWith("+")) {
-          telefone = telefone.replace(/\D/g, "");
-          // Só adiciona 55 se for um número brasileiro (11 dígitos) sem código de país
-          if (telefone.length === 11 && !telefone.startsWith("55")) {
-            telefone = "55" + telefone;
-          }
-          telefone = "+" + telefone;
-        }
+        // Remove formatação existente e aplica a máscara brasileira
+        telefone = mascararTelefoneInput(telefone);
       } else {
         telefone = "";
       }
@@ -216,9 +207,11 @@ export default function SignatariosPage() {
     }
   };
 
-  // Handler específico para o telefone (vem do PhoneInput)
-  const handlePhoneChange = (value) => {
-    setForm(f => ({ ...f, telefone: value || "" }));
+  // Handler específico para o telefone
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    const maskedValue = mascararTelefoneInput(value);
+    setForm(f => ({ ...f, telefone: maskedValue }));
   };
 
   const handleSubmit = async e => {
@@ -241,9 +234,9 @@ export default function SignatariosPage() {
         const d = new Date(dataToSend.birth_date);
         dataToSend.birth_date = d.toISOString().slice(0, 10);
       }
-      // Limpar tudo que não for número do telefone
+      // Limpar tudo que não for número do telefone (remove máscara)
       dataToSend.telefone = (dataToSend.telefone || "").replace(/\D/g, "");
-      // Limpar tudo que não for número do CPF
+      // Limpar tudo que não for número do CPF (remove máscara)
       dataToSend.cpf = (dataToSend.cpf || "").replace(/\D/g, "");
       
       // Converter campos para compatibilidade com backend
@@ -386,6 +379,28 @@ export default function SignatariosPage() {
     return apenasNumeros;
   }
 
+  // Máscara para telefone no input
+  function mascararTelefoneInput(valor) {
+    if (!valor) return "";
+    let apenasNumeros = valor.replace(/\D/g, "");
+    
+    // Limita a 11 dígitos para telefone brasileiro
+    if (apenasNumeros.length > 11) apenasNumeros = apenasNumeros.slice(0, 11);
+    
+    if (apenasNumeros.length === 11) {
+      // Celular: (XX) XXXXX-XXXX
+      return apenasNumeros.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    } else if (apenasNumeros.length === 10) {
+      // Fixo: (XX) XXXX-XXXX
+      return apenasNumeros.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    } else if (apenasNumeros.length > 6) {
+      return apenasNumeros.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+    } else if (apenasNumeros.length > 2) {
+      return apenasNumeros.replace(/(\d{2})(\d{0,4})/, "($1) $2");
+    }
+    return apenasNumeros;
+  }
+
   return (
     <div className={styles.page}>
       <PrincipalSidebar />
@@ -518,38 +533,14 @@ export default function SignatariosPage() {
                   </div>
                   <div>
                     <label>Telefone</label>
-                    <div style={{
-                      width: '90%',
-                      display: 'flex',
-                      border: '2px solid var(--onity-color-border)',
-                      borderRadius: '12px',
-                      backgroundColor: 'var(--onity-color-surface)',
-                      overflow: 'hidden',
-                      transition: 'all 0.2s ease',
-                      boxShadow: 'var(--onity-elev-low)',
-                      marginBottom: '16px',
-                      padding: '7px 8px'
-                    }}>
-                      <PhoneInput
-                        value={form.telefone}
-                        onChange={handlePhoneChange}
-                        defaultCountry="BR"
-                        placeholder="Digite o telefone"
-                        style={{
-                          '--PhoneInput-color--focus': '#3b82f6',
-                          '--PhoneInputCountryFlag-borderColor--focus': '#3b82f6',
-                          '--PhoneInputCountrySelect-marginRight': '8px',
-                          '--PhoneInputCountrySelectArrow-color': 'var(--onity-color-text)',
-                          '--PhoneInputCountrySelectArrow-opacity': '0.8',
-                          '--PhoneInput-color': 'var(--onity-color-text)',
-                          '--PhoneInput-backgroundColor': 'transparent',
-                          '--PhoneInput-borderColor': 'transparent',
-                          '--PhoneInput-borderRadius': '0px',
-                          '--PhoneInputCountryFlag-borderRadius': '2px',
-                          '--PhoneInputCountrySelectArrow-transform': 'none'
-                        }}
-                      />
-                    </div>
+                    <input 
+                      name="telefone" 
+                      value={form.telefone} 
+                      onChange={handlePhoneChange} 
+                      placeholder="(XX) XXXXX-XXXX"
+                      className={styles.input} 
+                      maxLength={15}
+                    />
                   </div>
                   <div>
                     <label>Data de Nascimento</label>

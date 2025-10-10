@@ -4,7 +4,7 @@ import SpaceLoader from "../../components/onety/menu/SpaceLoader";
 import styles from "../../styles/contratual/Contratos.module.css";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt, faFilter } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -33,6 +33,7 @@ export default function Contratos() {
   const [autentiqueFiltro, setAutentiqueFiltro] = useState("todos"); // Filtro autentique
   const [downloadDropdownId, setDownloadDropdownId] = useState(null); // ID do contrato com dropdown de download aberto
   const [userRole, setUserRole] = useState(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const isSuperAdmin = userRole === 'superadmin';
 
   const handleOpenModal = () => {
@@ -115,7 +116,8 @@ export default function Contratos() {
         (contrato) =>
           contrato.status !== "expirado" &&
           contrato.status !== "assinado" && // Exclui contratos assinados
-          new Date(contrato.expires_at) < agora
+          contrato.expirado_em &&
+          new Date(contrato.expirado_em) < agora
       );
 
       if (pendentes.length === 0) {
@@ -168,8 +170,8 @@ export default function Contratos() {
   const anosDisponiveis = useMemo(() => {
     const anos = new Set();
     contratos.forEach(c => {
-      if (c.expires_at) {
-        anos.add(c.expires_at.slice(0, 4));
+      if (c.expirado_em) {
+        anos.add(c.expirado_em.slice(0, 4));
       }
     });
     // Garante que o ano atual sempre aparece
@@ -207,16 +209,16 @@ export default function Contratos() {
     // Filtro de ano e mês
     let dataOk = true;
     if (anoFiltro) {
-      const anoContrato = contrato.expires_at ? contrato.expires_at.slice(0, 4) : "";
+      const anoContrato = contrato.expirado_em ? contrato.expirado_em.slice(0, 4) : "";
       dataOk = anoContrato === anoFiltro;
     }
     if (mesFiltro) {
-      const mesContrato = contrato.expires_at ? contrato.expires_at.slice(5, 7) : "";
+      const mesContrato = contrato.expirado_em ? contrato.expirado_em.slice(5, 7) : "";
       dataOk = dataOk && mesContrato === mesFiltro;
     }
 
     // Se não tem data de expiração, não aplica filtro de data
-    if (!contrato.expires_at) {
+    if (!contrato.expirado_em) {
       dataOk = true;
     }
 
@@ -230,6 +232,16 @@ export default function Contratos() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
 
   // useEffect para ajustar página atual quando mudar filtros ou quantidade de itens
   useEffect(() => {
@@ -502,7 +514,7 @@ export default function Contratos() {
     try {
       // Busca o contrato para pegar a data atual de expiração
       const contrato = contratos.find(c => c.id === contratoId);
-      const dataBase = contrato?.expires_at ? new Date(contrato.expires_at) : new Date();
+      const dataBase = contrato?.expirado_em ? new Date(contrato.expirado_em) : new Date();
       // Se já expirou, começa do hoje
       const base = (contrato?.status === "expirado" && dataBase < new Date()) ? new Date() : dataBase;
       const novaData = new Date(base);
@@ -532,138 +544,127 @@ export default function Contratos() {
       <div className={styles.page}>
         <PrincipalSidebar />
         <div className={styles.pageContent}>
-      <div className={styles.pageContainer}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Contratos</h1>
-          <div className={styles.userButtonContainer}>
-            <button className={styles.button} onClick={handleOpenModal}>
-              Novo Contrato
-            </button>
+        <div className={styles.pageHeader}>
+          <div className={styles.toolbarBox}>
+            <div className={styles.toolbarHeader}>
+              <span className={styles.title}>Contratos</span>
+              <div className={styles.headerActions}>
+                {/* Botão de filtros avançados */}
+                <button
+                  type="button"
+                  className={`${styles.filterToggleBtn} ${showAdvancedFilters ? styles.filterToggleActive : ''}`}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  title="Filtros avançados"
+                >
+                  <FontAwesomeIcon icon={faFilter} />
+                  <span>Filtros</span>
+                </button>
+                
+                {/* Botões de alternância de visualização */}
+                <button
+                  type="button"
+                  className={`${styles.viewToggleBtn} ${viewMode === 'table' ? styles.viewToggleActive : ''}`}
+                  onClick={() => { setViewMode('table'); setPdfOnly(false); }}
+                  title="Visualização em lista"
+                >
+                  <FontAwesomeIcon icon={faList} />
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.viewToggleBtn} ${viewMode === 'kanban' ? styles.viewToggleActive : ''}`}
+                  onClick={() => { setViewMode('kanban'); setPdfOnly(false); }}
+                  title="Visualização Kanban"
+                >
+                  <FontAwesomeIcon icon={faThLarge} />
+                </button>
+                <button className={styles.button} onClick={handleOpenModal}>
+                  Novo Contrato
+                </button>
+              </div>
+            </div>
+
+            {/* Filtros avançados - só aparecem quando showAdvancedFilters é true */}
+            {showAdvancedFilters && (
+              <div className={styles.filtersRow}>
+                <div className={styles.filtersRowBox}>
+                  <select
+                    id="statusFiltro"
+                    className={styles.filterSelect}
+                    value={statusFiltro}
+                    onChange={(e) => setStatusFiltro(e.target.value)}
+                  >
+                    <option value="todos">Todos os status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="assinado">Assinado</option>
+                    <option value="expirado">Expirado</option>
+                    <option value="reprovado">Reprovado</option>
+                  </select>
+                </div>
+
+                <div className={styles.filtersRowBox}>
+                  <select
+                    id="mesFiltro"
+                    className={styles.filterSelect}
+                    value={mesFiltro}
+                    onChange={e => setMesFiltro(e.target.value)}
+                    title="Filtrar por mês de expiração"
+                  >
+                    {meses.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.filtersRowBox}>
+                  <select
+                    id="anoFiltro"
+                    className={styles.filterSelect}
+                    value={anoFiltro}
+                    onChange={e => setAnoFiltro(e.target.value)}
+                    title="Filtrar por ano de expiração"
+                  >
+                    {anosDisponiveis.map(ano => (
+                      <option key={ano} value={ano}>{ano}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Filtro autentique - apenas superadmin */}
+                {isSuperAdmin && (
+                  <div className={styles.filtersRowBox}>
+                    <select
+                      id="autentiqueFiltro"
+                      className={styles.filterSelect}
+                      value={autentiqueFiltro}
+                      onChange={e => setAutentiqueFiltro(e.target.value)}
+                      title="Filtrar contratos por status de autenticação"
+                    >
+                      <option value="todos">Autentique: Todos</option>
+                      <option value="sim">Autentique: Sim</option>
+                      <option value="nao">Autentique: Não</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Ícone PDF toggle só no modo tabela */}
+                {viewMode === "table" && (
+                  <div className={styles.filtersRowBox}>
+                    <button
+                      type="button"
+                      className={`${styles.pdfFilterBtn} ${pdfOnly ? styles.pdfFilterActive : ''}`}
+                      onClick={() => setPdfOnly((prev) => !prev)}
+                      title={pdfOnly ? "Mostrar todos os contratos" : "Mostrar apenas contratos em PDF"}
+                    >
+                      <FontAwesomeIcon icon={faFilePdf} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* {isModalOpen && <ModalCriarContrato onClose={handleCloseModal} />} */}
-
-
-        {/* Filtro e alternância de visualização */}
-        <div className={styles.filtroContainer}>
-        <label htmlFor="statusFiltro">Filtrar por status:</label>
-        <select
-          id="statusFiltro"
-          value={statusFiltro}
-          onChange={(e) => setStatusFiltro(e.target.value)}
-        >
-          <option value="todos">Todos</option>
-          <option value="pendente">Pendente</option>
-          <option value="assinado">Assinado</option>
-          <option value="expirado">Expirado</option>
-          <option value="reprovado">Reprovado</option>
-        </select>
-        {/* Filtro de data combinado */}
-        <div
-          className={styles.filtroDataCombinado}
-          title="Filtrar contratos por mês e ano de expiração"
-        >
-          <label htmlFor="mesFiltro" style={{ fontSize: '14px', color: '#555', marginRight: '4px' }}>Data:</label>
-          <select
-            id="mesFiltro"
-            value={mesFiltro}
-            onChange={e => setMesFiltro(e.target.value)}
-            className={styles.filtroDataCombinado}
-            style={{
-              marginRight: '8px',
-              minWidth: '80px'
-            }}
-          >
-            {meses.map(m => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </select>
-          <span style={{ color: '#999', marginRight: '8px' }}>/</span>
-          <select
-            id="anoFiltro"
-            value={anoFiltro}
-            onChange={e => setAnoFiltro(e.target.value)}
-            className={styles.filtroDataCombinado}
-            style={{
-              minWidth: '70px'
-            }}
-          >
-            {anosDisponiveis.map(ano => (
-              <option key={ano} value={ano}>{ano}</option>
-            ))}
-          </select>
-        </div>
-        {/* Filtro autentique - apenas superadmin */}
-        {isSuperAdmin && (
-          <>
-            <label
-              htmlFor="autentiqueFiltro"
-              style={{ marginLeft: 12 }}
-              title="Filtrar contratos por status de autenticação. Contratos autenticados são aqueles que passaram por processo de validação legal."
-            >
-              Autentique:
-            </label>
-            <select
-              id="autentiqueFiltro"
-              value={autentiqueFiltro}
-              onChange={e => setAutentiqueFiltro(e.target.value)}
-              style={{ marginLeft: 4, marginRight: 8 }}
-              title="Filtrar contratos por status de autenticação. Contratos autenticados são aqueles que passaram por processo de validação legal."
-            >
-              <option value="todos">Todos</option>
-              <option value="sim">Sim</option>
-              <option value="nao">Não</option>
-            </select>
-          </>
-        )}
-        {/* Ícone PDF toggle só no modo tabela */}
-        {viewMode === "table" && (
-          <button
-            type="button"
-            className={`${styles.pdfFilterBtn} ${pdfOnly ? styles.pdfFilterActive : ''}`}
-            onClick={() => setPdfOnly((prev) => !prev)}
-            title={pdfOnly ? "Mostrar todos os contratos" : "Mostrar apenas contratos em PDF"}
-          >
-            <FontAwesomeIcon icon={faFilePdf} />
-          </button>
-        )}
-        {/* Botões de alternância de visualização */}
-        <button
-          type="button"
-          className={`${styles.viewToggleBtn} ${viewMode === 'table' ? styles.viewToggleActive : ''}`}
-          onClick={() => { setViewMode('table'); setPdfOnly(false); }}
-          title="Visualização em lista"
-        >
-          <FontAwesomeIcon icon={faList} />
-        </button>
-        <button
-          type="button"
-          className={`${styles.viewToggleBtn} ${viewMode === 'kanban' ? styles.viewToggleActive : ''}`}
-          onClick={() => { setViewMode('kanban'); setPdfOnly(false); }}
-          title="Visualização Kanban"
-        >
-          <FontAwesomeIcon icon={faThLarge} />
-        </button>
-        
-        {/* Seletor de quantidade de itens por página */}
-        {viewMode === 'table' && (
-          <div className={styles.itemsPerPageContainer}>
-            <select
-              id="itemsPerPage"
-              value={itemsPerPage}
-              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-              className={styles.itemsPerPageSelect}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-        )}
-      </div>
+        <div className={styles.contentScroll}>
 
         {error && <p className={styles.error}>{error}</p>}
         {isLoading ? (
@@ -708,9 +709,9 @@ export default function Contratos() {
                             </span>
                           </td>
 
-                          <td>{contrato.expires_at?.slice(0, 10).split('-').reverse().join('/')}</td>
-                          <td>{contrato.valor !== undefined && contrato.valor !== null ? `R$ ${Number(contrato.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}</td>
-                          <td>{contrato.valor_recorrente !== undefined && contrato.valor_recorrente !== null ? `R$ ${Number(contrato.valor_recorrente).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}</td>
+                          <td>{contrato.expirado_em ? contrato.expirado_em.slice(0, 10).split('-').reverse().join('/') : ''}</td>
+                          <td>{contrato.valor !== undefined && contrato.valor !== null ? `R$ ${Number(contrato.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}</td>
+                          <td>{contrato.valor_recorrente !== undefined && contrato.valor_recorrente !== null ? `R$ ${Number(contrato.valor_recorrente).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}</td>
                           {/* {isSuperAdmin && (
                             <td>
                               <span
@@ -898,7 +899,7 @@ export default function Contratos() {
                       <span className={styles[contrato.status.toLowerCase()]}>
                         {contrato.status}
                       </span>
-                      <span>{new Date(contrato.expires_at).toLocaleDateString()}</span>
+                      <span>{contrato.expirado_em ? new Date(contrato.expirado_em).toLocaleDateString('pt-BR') : ''}</span>
                     </div>
                     <div className={styles.cardActions}>
 
@@ -986,35 +987,68 @@ export default function Contratos() {
                 ))}
               </div>
 
-              {contratosFiltrados.length > 0 && totalPages > 1 && (
+              {contratosFiltrados.length > 0 && (
                 <div className={styles.pagination}>
-                  <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
-                  >
-                    Anterior
-                  </button>
-
-                  <span className={styles.pageInfo}>
-                    Página {currentPage} de {totalPages}
+                  <span className={styles.paginationInfo}>
+                    Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                    {" - "}
+                    {Math.min(currentPage * itemsPerPage, contratosFiltrados.length)} de {contratosFiltrados.length}
                   </span>
-
-
-                  <button
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-                  >
-                    Próxima
-                  </button>
-                </div>
-              )}
-              
-              {/* Informação quando há apenas uma página */}
-              {contratosFiltrados.length > 0 && totalPages === 1 && (
-                <div className={styles.singlePageMessage}>
-                  Mostrando todos os {contratosFiltrados.length} contratos
+                  <div className={styles.paginationButtons}>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      className={styles.paginationSelect}
+                      style={{ marginRight: 16 }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      aria-label="Primeira página"
+                    >
+                      {"<<"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Página anterior"
+                    >
+                      {"<"}
+                    </button>
+                    {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Próxima página"
+                    >
+                      {">"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Última página"
+                    >
+                      {">>"}
+                    </button>
+                  </div>
                 </div>
               )}
             </>
@@ -1024,6 +1058,8 @@ export default function Contratos() {
           )}
           </>
         )}
+
+        </div>
 
         <ToastContainer
           position="top-right"
@@ -1038,7 +1074,6 @@ export default function Contratos() {
           theme="colored"
           transition={Bounce}
         />
-      </div>
         </div>
       </div>
     </>
@@ -1070,7 +1105,7 @@ function KanbanView({ contratos, statusFiltro, isSuperAdmin }) {
                 <div style={{ fontWeight: 'bold', color: '#2563eb', fontSize: 15 }}>{contrato.client_name || 'Contrato sem cliente'}</div>
                 <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>ID: {contrato.id}</div>
                 <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Responsável: {contrato.created_by}</div>
-                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Expira: {contrato.expires_at?.slice(0, 10).split('-').reverse().join('/')}</div>
+                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Expira: {contrato.expirado_em ? contrato.expirado_em.slice(0, 10).split('-').reverse().join('/') : ''}</div>
                 {isSuperAdmin && (
                   <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>
                     Autentique: <span
