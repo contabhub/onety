@@ -36,7 +36,7 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
         email: cliente.email || "",
         telefone: cliente.telefone || "",
         endereco: cliente.endereco || "",
-        equipe_id: cliente.equipe_id || "",
+        equipe_id: cliente.equipe_id || cliente.empresa_id || "", // Mapear empresa_id também
         rg: cliente.rg || "",
         estado_civil: cliente.estado_civil || "",
         profissao: cliente.profissao || "",
@@ -55,11 +55,14 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
       setFormData(clienteData);
     } else {
       const userRaw = localStorage.getItem("user");
-      if (userRaw) {
-        const { equipe_id } = JSON.parse(userRaw);
-        if (equipe_id) {
-          setFormData((prev) => ({ ...prev, equipe_id }));
-        }
+      const userDataRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      
+      // Tentar pegar empresa_id de diferentes fontes
+      const empresaId = user?.equipe_id || userData?.EmpresaId || user?.EmpresaId || userData?.equipe_id;
+      if (empresaId) {
+        setFormData((prev) => ({ ...prev, equipe_id: empresaId }));
       }
     }
   }, [cliente]);
@@ -71,8 +74,8 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
     const url = cliente
-      ? `${process.env.NEXT_PUBLIC_API_URL}/clients/${cliente.id}`
-      : `${process.env.NEXT_PUBLIC_API_URL}/clients`;
+      ? `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${cliente.id}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes`;
 
     const method = cliente ? "PUT" : "POST";
 
@@ -80,7 +83,22 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
     const dataToSend = {
       ...formData,
       email: formData.email.toLowerCase(),
-      cpf_cnpj: formData.cpf_cnpj.replace(/\D/g, "") // Remove caracteres não numéricos
+      cpf_cnpj: formData.cpf_cnpj.replace(/\D/g, ""), // Remove caracteres não numéricos
+      empresa_id: formData.equipe_id || cliente?.empresa_id || cliente?.equipe_id, // Mapeia equipe_id para empresa_id
+      // Garantir que campos obrigatórios não sejam nulos
+      tipo: formData.type || "pessoa_fisica",
+      nome: formData.name || "",
+      // Remover campos vazios para evitar problemas no backend
+      ...Object.fromEntries(
+        Object.entries(formData).filter(([key, value]) => {
+          // Manter campos obrigatórios mesmo se vazios
+          if (['type', 'name', 'cpf_cnpj', 'email', 'equipe_id'].includes(key)) {
+            return true;
+          }
+          // Remover campos vazios dos opcionais
+          return value !== null && value !== undefined && value !== "";
+        })
+      )
     };
 
     try {
