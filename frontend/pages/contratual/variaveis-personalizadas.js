@@ -50,7 +50,7 @@ export default function CustomVariables() {
 
   const loadVariables = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/empresa/${equipeId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/${equipeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
