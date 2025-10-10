@@ -7,7 +7,18 @@ router.get('/empresa/:empresa_id', verifyToken, async (req, res) => {
   const { empresa_id } = req.params;
   try {
     const [rows] = await db.query(
-      'SELECT * FROM lista_signatarios WHERE empresa_id = ? ORDER BY nome',
+      `SELECT 
+        id,
+        nome as name,
+        email,
+        cpf,
+        data_nascimento as birth_date,
+        telefone,
+        funcao_assinatura,
+        empresa_id
+      FROM lista_signatarios 
+      WHERE empresa_id = ? 
+      ORDER BY nome`,
       [empresa_id]
     );
     res.json(rows);

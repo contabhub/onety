@@ -325,7 +325,7 @@ export default function CRM() {
 
         setTimeout(() => {
           router.push({
-            pathname: "/criar-contrato-autentique",
+            pathname: "/contratual/criar-contrato-autentique",
             query: {
               nome: leadSelecionado.name,
               email: leadSelecionado.email,

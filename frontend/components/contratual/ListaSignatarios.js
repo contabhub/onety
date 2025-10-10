@@ -18,13 +18,22 @@ const ListaSignatarios = ({ onSelectSignatario, onClose }) => {  // onClose obri
     const fetchSignatarios = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // Buscar empresa_id do localStorage (mesmo padrão dos outros componentes)
+        const userDataRaw = localStorage.getItem("userData");
         const userRaw = localStorage.getItem("user");
-        if (!userRaw || !token) return;
+        const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
 
-        const user = JSON.parse(userRaw);
-        const equipeId = user.equipe_id;
+        if (!empresaId) {
+          setError("Empresa não encontrada.");
+          setLoading(false);
+          return;
+        }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios/equipe/${equipeId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios/empresa/${empresaId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

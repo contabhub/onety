@@ -29,8 +29,8 @@
 
 /* Banner de status do contrato */
 .bannerSuccess {
-  background-color: var(--onity-color-success);
-  color: var(--onity-color-text);
+  background-color: color-mix(in srgb, var(--onity-color-success) 40%, transparent);
+  color: var(--onity-color-success);
   padding: 10px;
   text-align: center;
   font-weight: bold;
@@ -49,8 +49,8 @@
 }
 
 .bannerRejected {
-  background-color: var(--onity-color-error);
-  color: white;
+  background-color: color-mix(in srgb, var(--onity-color-error) 40%, transparent);
+  color: var(--onity-color-error);
   border: 1px solid var(--onity-color-border);
   padding: 10px 20px;
   border-radius: 5px;
@@ -61,8 +61,8 @@
 
 
 .bannerWarning {
-  background-color: var(--onity-color-warning);
-  color: black;
+  background-color: color-mix(in srgb, var(--onity-color-warning) 40%, transparent);
+  color: var(--onity-color-warning);
   padding: 10px;
   text-align: center;
   font-weight: bold;
