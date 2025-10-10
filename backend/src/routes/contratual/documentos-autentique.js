@@ -349,7 +349,20 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
       `SELECT id FROM documentos WHERE autentique_id = ?`,
       [autentiqueId]
     );
-    console.log("🔍 Busca contrato:", { autentiqueId, documentFound: !!document });
+    console.log("🔍 Busca documento:", { 
+      autentiqueId, 
+      documentFound: !!document, 
+      documentId: document?.id 
+    });
+
+    // Debug: verificar se existe algum documento com autentique_id similar
+    if (!document) {
+      const [debugDocumentos] = await connection.query(
+        `SELECT id, autentique_id FROM documentos WHERE autentique_id LIKE ? OR autentique_id LIKE ?`,
+        [`%${autentiqueId.substring(0, 10)}%`, `%${autentiqueId.substring(-10)}%`]
+      );
+      console.log("🔍 Debug - Documentos similares:", debugDocumentos);
+    }
 
     if (!document) {
       await connection.rollback();

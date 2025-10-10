@@ -10,7 +10,23 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  padding: 12px 12px 24px 12px;
+  min-width: 0;
+}
+
+.pageHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 16px;
+  border-bottom: none;
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
+.contentScroll {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 24px 24px;
 }
 
 .header {
@@ -28,7 +44,79 @@
 }
 
 .title {
-  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+/* Toolbar retangular contendo título, botão e filtros */
+.toolbarBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--onity-elev-med);
+}
+
+.toolbarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.toolbarHeader .filtersRowBox {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s, 8px);
+}
+
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Retângulo que envolve especificamente a linha de filtros */
+.filtersRowBox {
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: none;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterSelect:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--onity-color-primary);
+}
+
+.filterSelect option {
+  background-color: var(--onity-color-surface);
   color: var(--onity-color-text);
 }
 
@@ -79,6 +167,9 @@
 .tableContainer {
   background: var(--onity-color-surface);
   border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+  overflow: hidden;
 }
 
 .table {
@@ -107,6 +198,24 @@
 .table thead {
   background-color: var(--onity-color-bg);
   border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
+}
+
+.table thead th {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+}
+
+.table thead th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.table thead th:last-child {
+  border-radius: 0 8px 0 0;
 }
 
 .pendente,
@@ -155,20 +264,34 @@
 }
 
 .button {
-  background-color: transparent;
-  color: var(--primary-color, #3b82f6);
-  border: 2px solid var(--primary-color, #3b82f6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s, 8px);
   padding: 12px 20px;
-  border-radius: 6px;
+  min-height: 40px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s;
+  margin-left: 12px;
 }
 
 .button:hover {
-  background-color: var(--primary-color, #3b82f6);
-  color: var(--onity-color-text);
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.button:active { 
+  transform: none; 
 }
 
 
@@ -187,7 +310,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px; /* Aumentado */
+  font-size: 16px;
   color: var(--onity-color-text);
   transition: color 0.2s ease;
 }
@@ -337,50 +460,6 @@
   vertical-align: middle;
 }
 
-.filtroContainer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--onity-color-text);
-}
-
-.filtroContainer label {
-  font-size: 15px;
-  color: var(--onity-color-text);
-}
-
-.filtroContainer select {
-  appearance: none;
-  /* remove estilo padrão */
-  padding: 10px 14px;
-  border: 1px solid var(--onity-color-border);
-  border-radius: 8px;
-  background-color: var(--onity-color-surface);
-  background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 18px;
-  font-size: 14px;
-  color: var(--onity-color-text);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding-right: 36px;
-  min-width: 160px;
-  box-shadow: var(--onity-elev-med);
-}
-
-.filtroContainer select:hover {
-  border-color: var(--onity-color-primary);
-}
-
-.filtroContainer select:focus {
-  outline: none;
-  border-color: var(--onity-color-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
-}
 
 .searchInput {
   padding: 10px 14px;
@@ -451,35 +530,83 @@
 
 
 .pagination {
+  margin-top: var(--onity-space-l, 24px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--onity-space-m, 16px);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  color: var(--onity-color-text);
+  box-shadow: var(--onity-elev-med);
+}
+
+.paginationSelect {
+  padding: var(--onity-space-xs, 4px) var(--onity-space-s, 8px);
+  border-radius: var(--onity-radius-xs, 4px);
+  border: 1px solid var(--onity-color-border);
+  font-size: 12px;
+  height: 28px;
+  min-width: 28px;
+  box-sizing: border-box;
+  margin: 0;
+  line-height: 1.1;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: all 0.2s ease;
+  font-family: var(--onity-font-family-sans);
+}
+
+.paginationSelect:focus {
+  border-color: var(--onity-color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 4px);
+}
+
+.paginationArrow,
+.paginationButtonActive {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  border-radius: var(--onity-radius-xs, 4px);
+  min-width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--onity-font-family-sans);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-top: 20px;
 }
 
-.pageButton {
-  background-color: var(--onity-color-primary);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.pageButton:hover:not(.disabled) {
-  background-color: var(--onity-color-primary-hover);
-}
-
-.disabled {
-  background-color: var(--onity-color-border);
+.paginationArrow:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pageInfo {
-  font-weight: 500;
+.paginationArrow:hover:not(:disabled) {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent), 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.paginationButtonActive {
+  background: color-mix(in srgb, var(--onity-color-primary) 18%, transparent);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  border: 1px solid var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
+  transform: scale(1.02);
 }
 
 
@@ -493,6 +620,60 @@
     display: block;
   }
 
+  .toolbarBox {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .toolbarHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .filtersRow {
+    gap: 8px;
+  }
+
+  .filtersRowBox {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .filterSelect {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbarHeader {
+    gap: 8px;
+  }
+
+  .headerActions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .filtersRow {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filtersRowBox {
+    width: 100%;
+  }
 }
 
 .prolongarDropdown {
@@ -592,6 +773,40 @@
 .viewToggleActive {
   border: 2px solid var(--primary-color, #3b82f6);
   color: var(--primary-color, #3b82f6);
+}
+
+.filterToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 4px);
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: var(--onity-font-family-sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterToggleBtn:hover {
+  background: color-mix(in srgb, var(--onity-color-text) 8%, transparent);
+  border-color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filterToggleActive {
+  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+}
+
+.filterToggleActive:hover {
+  background: color-mix(in srgb, var(--onity-color-primary) 18%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .headerSignatario {
@@ -702,36 +917,6 @@
   min-width: 32px;
 }
 
-/* Estilos para o filtro de data combinado */
-.filtroDataCombinado {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 12px;
-  background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
-  border-radius: 6px;
-  padding: 4px 8px;
-  box-shadow: var(--onity-elev-med);
-  transition: all 0.2s ease;
-}
-
-.filtroDataCombinado:hover {
-  border-color: var(--onity-color-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
-}
-
-.filtroDataCombinado select {
-  border: none;
-  outline: none;
-  font-size: 14px;
-  color: var(--onity-color-text);
-  background: transparent;
-  cursor: pointer;
-}
-
-.filtroDataCombinado select:focus {
-  color: var(--onity-color-primary);
-}
 
 /* Estilos para o dropdown de download do Autentique */
 .downloadDropdown {
@@ -820,22 +1005,9 @@
 
 /* Estilos para informações adicionais da paginação */
 .paginationInfo {
-  font-size: 12px;
-  color: var(--onity-icon-secondary);
-  margin-left: 16px;
-}
-
-/* Estilos para mensagem quando há apenas uma página */
-.singlePageMessage {
-  text-align: center;
-  padding: 16px;
-  color: var(--onity-icon-secondary);
   font-size: 14px;
-  background: var(--onity-color-bg);
-  border-radius: 6px;
-  margin-top: 16px;
-  border: 1px solid var(--onity-color-border);
-  box-shadow: var(--onity-elev-med);
+  color: var(--onity-color-text);
+  font-weight: 500;
 }
 
 /* Responsividade para mobile */
@@ -860,10 +1032,44 @@
   .itemsPerPageSelect {
     min-width: 80px;
   }
+
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .paginationButtons {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .paginationSelect {
+    margin-right: 8px !important;
+  }
 }
 
 @media (max-width: 480px) {
   .pageContainer {
     padding: 12px 16px;
+  }
+
+  .paginationArrow,
+  .paginationButtonActive {
+    min-width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .paginationSelect {
+    font-size: 11px;
+    height: 24px;
+    min-width: 24px;
   }
 }

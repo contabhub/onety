@@ -277,43 +277,38 @@
 }
 
 .deleteBtn {
-  background: none;
+  background: transparent;
+  border: none;
+  padding: 6px;
   cursor: pointer;
-  font-size: 16px;
-  padding: 5px;
-  color: var(--error);
-  border: 2px solid var(--error);
-  border-radius: 5px;
-  margin: 0 4px;
-  min-width: 36px;
-  min-height: 36px;
-  display: inline-flex;
+  border-radius: 6px;
+  display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  color: var(--onity-color-text);
+  transition: color 0.2s ease;
 }
 .deleteBtn:hover {
+  background-color: transparent;
   color: var(--onity-color-error);
-  border: 1px solid var(--onity-color-error);
-
 }
 
 .editIcon {
-  background: none;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 5px;
+  background: transparent;
   border: none;
-  color: var(--onity-color-text);
-  border-radius: 5px;
-  margin: 0 4px;
-  min-width: 36px;
-  min-height: 36px;
-  display: inline-flex;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  color: var(--onity-color-text);
+  transition: color 0.2s ease;
 }
 .editIcon:hover {
-  border: 2px solid var(--primary-color, #3b82f6);
+  background-color: transparent;
   color: var(--primary-color, #3b82f6);
 }
 

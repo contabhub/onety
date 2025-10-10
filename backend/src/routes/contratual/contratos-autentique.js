@@ -329,11 +329,23 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
       [autentiqueId]
     );
 
+    console.log("🔍 Busca contrato:", { 
+      autentiqueId, 
+      contratosFound: !!c, 
+      contratoId: c?.id 
+    });
+
     if (c) {
       scope.id = c.id;
     } else {
+      // Debug: verificar se existe algum contrato com autentique_id similar
+      const [debugContratos] = await connection.query(
+        `SELECT id, autentique_id FROM contratos WHERE autentique_id LIKE ? OR autentique_id LIKE ?`,
+        [`%${autentiqueId.substring(0, 10)}%`, `%${autentiqueId.substring(-10)}%`]
+      );
+      console.log("🔍 Debug - Contratos similares:", debugContratos);
       const [[d]] = await connection.query(
-        `SELECT id FROM documents WHERE autentique_id = ?`,
+        `SELECT id FROM documentos WHERE autentique_id = ?`,
         [autentiqueId]
       );
       if (!d) {
@@ -342,7 +354,7 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
           .status(404)
           .json({ error: "Contrato/Documento não encontrado no sistema." });
       }
-      scope = { table: "documents", fk: "document_id", id: d.id };
+      scope = { table: "documentos", fk: "documento_id", id: d.id };
     }
 
     const recordId = scope.id;
@@ -489,7 +501,7 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
     const hash = crypto.createHash("sha256").update(hashBase).digest("hex");
 
     await connection.query(
-      `INSERT INTO assinaturas (${scope.fk}, signatario_id, cpf, assinado_em, endereco_ip, user_agent, hash)
+      `INSERT INTO assinaturas (${scope.fk}, signatario_id, cpf, assinado_em, endereco_ip, navegador_usuario, hash)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [recordId, signatoryId, cpf, signedAt, ip, userAgent, hash]
     );
@@ -564,7 +576,7 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
         console.log("📧 Contrato completamente assinado, enviando notificações...");
         
         // Fazer requisição para a rota de notificação
-        const baseUrl = process.env.API_BASE_URL;
+        const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
         const notificationResponse = await fetch(`${baseUrl}/contratos/${recordId}/notificar-assinatura`, {
           method: 'POST',
           headers: {

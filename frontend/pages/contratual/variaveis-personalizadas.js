@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
-import styles from "../../styles/contratual/TemplatesVariables.module.css";
+import styles from "../../styles/contratual/Contratos.module.css";
+import stylesVar from "../../styles/contratual/TemplatesVariables.module.css";
 import { faArrowLeft, faPencilAlt, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/router";
@@ -154,54 +155,63 @@ export default function CustomVariables() {
       <div className={styles.page}>
         <PrincipalSidebar />
         <div className={styles.pageContent}>
-          <div className={styles.pageContainer}>
-            <button className={styles.backButton} onClick={() => router.back()}>
-              <span className={styles.iconWrapper}>
-                <FontAwesomeIcon icon={faArrowLeft} />
-              </span>
-              Voltar
-            </button>
-            <div className={styles.headerRow}>
-              <h1 className={styles.title}>Variáveis Personalizadas</h1>
-              <button className={styles.addButton} onClick={() => setShowModal(true)}>
-                + Nova Variável
-              </button>
+          <div className={styles.pageHeader}>
+            <div className={styles.toolbarBox}>
+              <div className={styles.toolbarHeader}>
+                <span className={styles.title}>Variáveis Personalizadas</span>
+                <div className={styles.headerActions}>
+                  <button className={styles.button} onClick={() => setShowModal(true)}>
+                    Nova Variável
+                  </button>
+                </div>
+              </div>
+
+              {/* Filtros */}
+              <div className={styles.filtersRow}>
+                <div className={styles.filtersRowBox} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="filtroGlobal"
+                      value="todas"
+                      checked={filtroGlobal === "todas"}
+                      onChange={() => setFiltroGlobal("todas")}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>Todas</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="filtroGlobal"
+                      value="globais"
+                      checked={filtroGlobal === "globais"}
+                      onChange={() => setFiltroGlobal("globais")}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>Globais</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="filtroGlobal"
+                      value="locais"
+                      checked={filtroGlobal === "locais"}
+                      onChange={() => setFiltroGlobal("locais")}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>Locais</span>
+                  </label>
+                </div>
+              </div>
             </div>
+          </div>
 
-        {/* Filtro de globais/locais */}
-        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
-          <label>
-            <input
-              type="radio"
-              name="filtroGlobal"
-              value="todas"
-              checked={filtroGlobal === "todas"}
-              onChange={() => setFiltroGlobal("todas")}
-            /> Todas
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="filtroGlobal"
-              value="globais"
-              checked={filtroGlobal === "globais"}
-              onChange={() => setFiltroGlobal("globais")}
-            /> Globais
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="filtroGlobal"
-              value="locais"
-              checked={filtroGlobal === "locais"}
-              onChange={() => setFiltroGlobal("locais")}
-            /> Locais
-          </label>
-        </div>
+          <div className={styles.contentScroll}>
 
-        {variablesFiltradas.length > 0 && (
+        {variablesFiltradas.length > 0 ? (
           <div className={styles.tableContainer}>
-            <table className={styles.variablesTable}>
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th>Nome do Campo</th>
@@ -210,11 +220,10 @@ export default function CustomVariables() {
                 </tr>
               </thead>
               <tbody>
-                
                 {variablesFiltradas.map((v) => (
                   <tr key={v.id}>
                     <td>{v.titulo}</td>
-                    <td><span style={{ fontFamily: 'monospace' }}>{v.variavel}</span></td>
+                    <td><span style={{ fontFamily: 'monospace', color: 'var(--onity-color-text)' }}>{v.variavel}</span></td>
                     <td>
                       <div className={styles.actions}>
                         {/* Mostrar botões de edição para variáveis locais OU se for superadmin */}
@@ -237,72 +246,77 @@ export default function CustomVariables() {
               </tbody>
             </table>
           </div>
+        ) : (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--onity-icon-secondary)' }}>
+            Nenhuma variável encontrada.
+          </div>
         )}
 
-            {/* Modal de criação */}
-            {showModal && (
-              <div className={styles.modalOverlay}>
-                <div className={styles.modal}>
-                  <h3 className={styles.subtitle}>{editingVariable ? 'Editar Variável Personalizada' : 'Nova Variável Personalizada'}</h3>
-                  <form onSubmit={handleCreateOrUpdateVariable} className={styles.form}>
-                    {/* Apenas campo de rótulo */}
-                    <label htmlFor="label" style={{ fontWeight: 500, marginBottom: 4, display: 'block' }}>Nome do Campo</label>
-                    <input
-                      type="text"
-                      id="label"
-                      name="label"
-                      placeholder="Nome do Campo"
-                      required
-                      value={formData.label}
-                      onChange={handleInputChange}
-                    />
-                    {/* Exibe o nome gerado em tempo real */}
-                    {formData.label && (
-                      <div className={styles.nomeVariavelPreview}>
-                        Nome da variável: <span>{nomeVariavelGerado}</span>
-                      </div>
-                    )}
-
-                    {/* Checkbox Global apenas para superadmin */}
-                    {userRole === "superadmin" && (
-                      <label style={{ display: "block", margin: "10px 0" }}>
-                        Tipo da Variável:
-                        <select
-                          value={formData.global}
-                          onChange={e => setFormData(prev => ({ ...prev, global: Number(e.target.value) }))}
-                          style={{ marginLeft: 8 }}
-                        >
-                          <option value={0}>Local</option>
-                          <option value={1}>Global</option>
-                        </select>
-                      </label>
-                    )}
-
-                    <div className={styles.modalButtons}>
-                      <button type="button" className={styles.cancelButton} onClick={closeModal}>Cancelar</button>
-                      <button type="submit" className={styles.addButton}>{editingVariable ? 'Salvar Alterações' : 'Salvar'}</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick={false}
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="colored"
-              transition={Bounce}
-            />
           </div>
+
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick={false}
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="colored"
+            transition={Bounce}
+          />
         </div>
       </div>
+
+      {/* Modal de criação */}
+      {showModal && (
+        <div className={stylesVar.modalOverlay}>
+          <div className={stylesVar.modal}>
+            <h3 className={stylesVar.subtitle}>{editingVariable ? 'Editar Variável Personalizada' : 'Nova Variável Personalizada'}</h3>
+            <form onSubmit={handleCreateOrUpdateVariable} className={stylesVar.form}>
+              {/* Apenas campo de rótulo */}
+              <label htmlFor="label" style={{ fontWeight: 500, marginBottom: 4, display: 'block' }}>Nome do Campo</label>
+              <input
+                type="text"
+                id="label"
+                name="label"
+                placeholder="Nome do Campo"
+                required
+                value={formData.label}
+                onChange={handleInputChange}
+              />
+              {/* Exibe o nome gerado em tempo real */}
+              {formData.label && (
+                <div className={stylesVar.nomeVariavelPreview}>
+                  Nome da variável: <span>{nomeVariavelGerado}</span>
+                </div>
+              )}
+
+              {/* Checkbox Global apenas para superadmin */}
+              {userRole === "superadmin" && (
+                <label style={{ display: "block", margin: "10px 0" }}>
+                  Tipo da Variável:
+                  <select
+                    value={formData.global}
+                    onChange={e => setFormData(prev => ({ ...prev, global: Number(e.target.value) }))}
+                    style={{ marginLeft: 8 }}
+                  >
+                    <option value={0}>Local</option>
+                    <option value={1}>Global</option>
+                  </select>
+                </label>
+              )}
+
+              <div className={stylesVar.modalButtons}>
+                <button type="button" className={stylesVar.cancelButton} onClick={closeModal}>Cancelar</button>
+                <button type="submit" className={stylesVar.addButton}>{editingVariable ? 'Salvar Alterações' : 'Salvar'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

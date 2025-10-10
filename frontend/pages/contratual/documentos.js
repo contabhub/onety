@@ -4,7 +4,7 @@ import styles from "../../styles/contratual/Contratos.module.css";
 import { useAuthRedirect } from "../../utils/auth";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt, faFilter } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
@@ -34,6 +34,7 @@ export default function Documentos() {
   const [autentiqueFiltro, setAutentiqueFiltro] = useState("todos"); // Filtro autentique
   const [downloadDropdownId, setDownloadDropdownId] = useState(null); // ID do contrato com dropdown de download aberto
   const [userRole, setUserRole] = useState(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const isSuperAdmin = userRole === 'superadmin';
 
   const handleOpenModal = () => {
@@ -231,6 +232,16 @@ export default function Documentos() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
 
   // useEffect para ajustar página atual quando mudar filtros ou quantidade de itens
   useEffect(() => {
@@ -545,139 +556,131 @@ export default function Documentos() {
   };
 
   return (
-    <div className={styles.page}>
-      <PrincipalSidebar />
-      <div className={styles.pageContent}>
-        <div className={styles.header}>
-        <h1 className={styles.title}>Documentos</h1>
-        <div className={styles.userButtonContainer}>
-          <button className={styles.button} onClick={handleOpenModal}>
-            Novo Documento
-          </button>
-        </div>
-      </div>
+    <>
+      <div className={styles.page}>
+        <PrincipalSidebar />
+        <div className={styles.pageContent}>
+        <div className={styles.pageHeader}>
+          <div className={styles.toolbarBox}>
+            <div className={styles.toolbarHeader}>
+              <span className={styles.title}>Documentos</span>
+              <div className={styles.headerActions}>
+                {/* Botão de filtros avançados */}
+                <button
+                  type="button"
+                  className={`${styles.filterToggleBtn} ${showAdvancedFilters ? styles.filterToggleActive : ''}`}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  title="Filtros avançados"
+                >
+                  <FontAwesomeIcon icon={faFilter} />
+                  <span>Filtros</span>
+                </button>
+                
+                {/* Botões de alternância de visualização */}
+                <button
+                  type="button"
+                  className={`${styles.viewToggleBtn} ${viewMode === 'table' ? styles.viewToggleActive : ''}`}
+                  onClick={() => { setViewMode('table'); setPdfOnly(false); }}
+                  title="Visualização em lista"
+                >
+                  <FontAwesomeIcon icon={faList} />
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.viewToggleBtn} ${viewMode === 'kanban' ? styles.viewToggleActive : ''}`}
+                  onClick={() => { setViewMode('kanban'); setPdfOnly(false); }}
+                  title="Visualização Kanban"
+                >
+                  <FontAwesomeIcon icon={faThLarge} />
+                </button>
+                <button className={styles.button} onClick={handleOpenModal}>
+                  Novo Documento
+                </button>
+              </div>
+            </div>
 
+            {/* Filtros avançados - só aparecem quando showAdvancedFilters é true */}
+            {showAdvancedFilters && (
+              <div className={styles.filtersRow}>
+                <div className={styles.filtersRowBox}>
+                  <select
+                    id="statusFiltro"
+                    className={styles.filterSelect}
+                    value={statusFiltro}
+                    onChange={(e) => setStatusFiltro(e.target.value)}
+                  >
+                    <option value="todos">Todos os status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="assinado">Assinado</option>
+                    <option value="expirado">Expirado</option>
+                    <option value="reprovado">Reprovado</option>
+                  </select>
+                </div>
 
+                <div className={styles.filtersRowBox}>
+                  <select
+                    id="mesFiltro"
+                    className={styles.filterSelect}
+                    value={mesFiltro}
+                    onChange={e => setMesFiltro(e.target.value)}
+                    title="Filtrar por mês de expiração"
+                  >
+                    {meses.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                </div>
 
-      {/* Filtro e alternância de visualização */}
-      <div className={styles.filtroContainer}>
-        <label htmlFor="statusFiltro">Filtrar por status:</label>
-        <select
-          id="statusFiltro"
-          value={statusFiltro}
-          onChange={(e) => setStatusFiltro(e.target.value)}
-        >
-          <option value="todos">Todos</option>
-          <option value="pendente">Pendente</option>
-          <option value="assinado">Assinado</option>
-          <option value="expirado">Expirado</option>
-          <option value="reprovado">Reprovado</option>
-        </select>
-        {/* Filtro de data combinado */}
-        <div
-          className={styles.filtroDataCombinado}
-          title="Filtrar contratos por mês e ano de expiração"
-        >
-          <label htmlFor="mesFiltro" style={{ fontSize: '14px', color: '#555', marginRight: '4px' }}>Data:</label>
-          <select
-            id="mesFiltro"
-            value={mesFiltro}
-            onChange={e => setMesFiltro(e.target.value)}
-            className={styles.filtroDataCombinado}
-            style={{
-              marginRight: '8px',
-              minWidth: '80px'
-            }}
-          >
-            {meses.map(m => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </select>
-          <span style={{ color: '#999', marginRight: '8px' }}>/</span>
-          <select
-            id="anoFiltro"
-            value={anoFiltro}
-            onChange={e => setAnoFiltro(e.target.value)}
-            className={styles.filtroDataCombinado}
-            style={{
-              minWidth: '70px'
-            }}
-          >
-            {anosDisponiveis.map(ano => (
-              <option key={ano} value={ano}>{ano}</option>
-            ))}
-          </select>
-        </div>
-        {/* Filtro autentique - apenas superadmin */}
-        {isSuperAdmin && (
-          <>
-            <label
-              htmlFor="autentiqueFiltro"
-              style={{ marginLeft: 12 }}
-              title="Filtrar contratos por status de autenticação. Contratos autenticados são aqueles que passaram por processo de validação legal."
-            >
-              Autentique:
-            </label>
-            <select
-              id="autentiqueFiltro"
-              value={autentiqueFiltro}
-              onChange={e => setAutentiqueFiltro(e.target.value)}
-              style={{ marginLeft: 4, marginRight: 8 }}
-              title="Filtrar contratos por status de autenticação. Contratos autenticados são aqueles que passaram por processo de validação legal."
-            >
-              <option value="todos">Todos</option>
-              <option value="sim">Sim</option>
-              <option value="nao">Não</option>
-            </select>
-          </>
-        )}
-        {/* Ícone PDF toggle só no modo tabela */}
-        {viewMode === "table" && (
-          <button
-            type="button"
-            className={`${styles.pdfFilterBtn} ${pdfOnly ? styles.pdfFilterActive : ''}`}
-            onClick={() => setPdfOnly((prev) => !prev)}
-            title={pdfOnly ? "Mostrar todos os contratos" : "Mostrar apenas contratos em PDF"}
-          >
-            <FontAwesomeIcon icon={faFilePdf} />
-          </button>
-        )}
-        {/* Botões de alternância de visualização */}
-        <button
-          type="button"
-          className={`${styles.viewToggleBtn} ${viewMode === 'table' ? styles.viewToggleActive : ''}`}
-          onClick={() => { setViewMode('table'); setPdfOnly(false); }}
-          title="Visualização em lista"
-        >
-          <FontAwesomeIcon icon={faList} />
-        </button>
-        <button
-          type="button"
-          className={`${styles.viewToggleBtn} ${viewMode === 'kanban' ? styles.viewToggleActive : ''}`}
-          onClick={() => { setViewMode('kanban'); setPdfOnly(false); }}
-          title="Visualização Kanban"
-        >
-          <FontAwesomeIcon icon={faThLarge} />
-        </button>
-        
-        {/* Seletor de quantidade de itens por página */}
-        {viewMode === 'table' && (
-          <div className={styles.itemsPerPageContainer}>
-            <select
-              id="itemsPerPage"
-              value={itemsPerPage}
-              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-              className={styles.itemsPerPageSelect}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
+                <div className={styles.filtersRowBox}>
+                  <select
+                    id="anoFiltro"
+                    className={styles.filterSelect}
+                    value={anoFiltro}
+                    onChange={e => setAnoFiltro(e.target.value)}
+                    title="Filtrar por ano de expiração"
+                  >
+                    {anosDisponiveis.map(ano => (
+                      <option key={ano} value={ano}>{ano}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Filtro autentique - apenas superadmin */}
+                {isSuperAdmin && (
+                  <div className={styles.filtersRowBox}>
+                    <select
+                      id="autentiqueFiltro"
+                      className={styles.filterSelect}
+                      value={autentiqueFiltro}
+                      onChange={e => setAutentiqueFiltro(e.target.value)}
+                      title="Filtrar contratos por status de autenticação"
+                    >
+                      <option value="todos">Autentique: Todos</option>
+                      <option value="sim">Autentique: Sim</option>
+                      <option value="nao">Autentique: Não</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Ícone PDF toggle só no modo tabela */}
+                {viewMode === "table" && (
+                  <div className={styles.filtersRowBox}>
+                    <button
+                      type="button"
+                      className={`${styles.pdfFilterBtn} ${pdfOnly ? styles.pdfFilterActive : ''}`}
+                      onClick={() => setPdfOnly((prev) => !prev)}
+                      title={pdfOnly ? "Mostrar todos os contratos" : "Mostrar apenas contratos em PDF"}
+                    >
+                      <FontAwesomeIcon icon={faFilePdf} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+
+        <div className={styles.contentScroll}>
 
       {error && <p className={styles.error}>{error}</p>}
       {isLoading ? (
@@ -996,27 +999,68 @@ export default function Documentos() {
                 ))}
               </div>
 
-              {contratosFiltrados.length > 0 && totalPages > 1 && (
+              {contratosFiltrados.length > 0 && (
                 <div className={styles.pagination}>
-                  <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
-                  >
-                    Anterior
-                  </button>
-
-                  <span className={styles.pageInfo}>
-                    Página {currentPage} de {totalPages}
+                  <span className={styles.paginationInfo}>
+                    Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                    {" - "}
+                    {Math.min(currentPage * itemsPerPage, contratosFiltrados.length)} de {contratosFiltrados.length}
                   </span>
-
-                  <button
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-                  >
-                    Próxima
-                  </button>
+                  <div className={styles.paginationButtons}>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      className={styles.paginationSelect}
+                      style={{ marginRight: 16 }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      aria-label="Primeira página"
+                    >
+                      {"<<"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Página anterior"
+                    >
+                      {"<"}
+                    </button>
+                    {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Próxima página"
+                    >
+                      {">"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Última página"
+                    >
+                      {">>"}
+                    </button>
+                  </div>
                 </div>
               )}
               
@@ -1026,24 +1070,27 @@ export default function Documentos() {
             // Kanban
             <KanbanView contratos={contratos} statusFiltro={statusFiltro} isSuperAdmin={isSuperAdmin} />
           )}
-        </>
-      )}
+          </>
+        )}
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce}
-      />
+        </div>
+
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+          transition={Bounce}
+        />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
