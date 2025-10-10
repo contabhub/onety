@@ -73,10 +73,28 @@ router.put("/:id", verifyToken, async (req, res) => {
         estado = ?, representante = ?, funcao = ?
        WHERE id = ?`,
       [
-        tipo, nome, cpf_cnpj, email, telefone, endereco,
-        empresa_id, lead_id || null, rg, estado_civil, profissao, sexo,
-        nacionalidade, cep, numero, complemento, bairro, cidade,
-        estado, representante, funcao, id
+        tipo || "pessoa_fisica", 
+        nome || "", 
+        cpf_cnpj || "", 
+        email || "", 
+        telefone || null, 
+        endereco || null,
+        empresa_id || clienteExistente[0].empresa_id, // Usar empresa_id existente se não fornecido
+        lead_id || null, 
+        rg || null, 
+        estado_civil || null, 
+        profissao || null, 
+        sexo || null,
+        nacionalidade || null, 
+        cep || null, 
+        numero || null, 
+        complemento || null, 
+        bairro || null, 
+        cidade || null,
+        estado || null, 
+        representante || null, 
+        funcao || null, 
+        id
       ]
     );
 
