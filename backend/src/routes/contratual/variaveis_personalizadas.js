@@ -38,13 +38,13 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar variáveis por empresa (incluindo globais)
-router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+// 🔹 Listar variáveis por empresa (incluindo globais) - DEVE VIR ANTES DE /:id
+router.get("/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
     const [variables] = await db.query(
-      `SELECT id, variavel, titulo, empresa_id, global, criado_em
+      `SELECT id, variavel, variavel AS variable, titulo, titulo AS label, empresa_id, global, criado_em
        FROM variaveis_personalizadas 
        WHERE empresa_id = ? OR global = 1
        ORDER BY global DESC, id DESC`,
@@ -54,29 +54,6 @@ router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Erro ao listar variáveis da empresa:", error);
     res.status(500).json({ error: "Erro ao buscar variáveis da empresa." });
-  }
-});
-
-// 🔹 Buscar variável por ID
-router.get("/:id", verifyToken, async (req, res) => {
-  const { id } = req.params;
-  
-  try {
-    const [rows] = await db.query(
-      `SELECT id, variavel, titulo, empresa_id, global, criado_em
-       FROM variaveis_personalizadas 
-       WHERE id = ?`,
-      [id]
-    );
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Variável não encontrada." });
-    }
-    
-    res.json(rows[0]);
-  } catch (error) {
-    console.error("Erro ao buscar variável:", error);
-    res.status(500).json({ error: "Erro ao buscar variável personalizada." });
   }
 });
 

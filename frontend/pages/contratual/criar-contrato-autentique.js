@@ -318,6 +318,7 @@ export default function CriarContratoAutentique() {
         });
 
         const data = await res.json();
+        console.log("🔍 [DEBUG] Variáveis personalizadas carregadas:", data);
         setCustomVariables(data || []);
       } catch (error) {
         console.error("Erro ao carregar variáveis personalizadas:", error);
@@ -628,8 +629,9 @@ export default function CriarContratoAutentique() {
     if (selectedTemplate && !uploadedFile) {
       const selectedTemplateObj = templates.find(t => t.id.toString() === selectedTemplate);
       if (selectedTemplateObj && Array.isArray(customVariables)) {
+        const templateContent = selectedTemplateObj.content || selectedTemplateObj.conteudo || "";
         const customVarsInTemplate = customVariables.filter(v => 
-          selectedTemplateObj.content.includes(`{{${v.variable}}}`)
+          templateContent.includes(`{{${v.variable}}}`)
         );
         
         const unfilledVars = customVarsInTemplate.filter(v => 
@@ -1377,6 +1379,30 @@ export default function CriarContratoAutentique() {
       return;
     }
     
+    // Validação para aba "cliente" - não pode avançar sem selecionar cliente
+    if (activeTab === "cliente" && !clienteSelecionado) {
+      toast.warning("Selecione um cliente antes de continuar.");
+      return;
+    }
+    
+    // Validação para aba "documento" - não pode avançar sem selecionar modelo ou fazer upload
+    if (activeTab === "documento" && !selectedTemplate && !uploadedFile) {
+      toast.warning("Selecione um modelo de contrato ou faça upload de um arquivo PDF antes de continuar.");
+      return;
+    }
+    
+    // Validação para aba "servicos" - não pode avançar sem produtos
+    if (tab === "signatarios" && activeTab === "servicos" && produtosSelecionados.length === 0) {
+      toast.warning("Adicione pelo menos um produto/serviço antes de continuar para os signatários.");
+      return;
+    }
+    
+    // Validação para aba "signatarios" - não pode avançar sem signatários
+    if (activeTab === "signatarios" && signatarios.length === 0) {
+      toast.warning("Adicione pelo menos um signatário antes de continuar.");
+      return;
+    }
+    
     setActiveTab(tab);
     setShowClienteModal(false);
     setShowClienteFormModal(false);
@@ -1386,6 +1412,31 @@ export default function CriarContratoAutentique() {
   const nextTab = () => {
     const currentIndex = etapasVisiveis.indexOf(activeTab);
     const nextTab = etapasVisiveis[currentIndex + 1];
+    
+    // Validação para aba "cliente" - não pode avançar sem selecionar cliente
+    if (activeTab === "cliente" && !clienteSelecionado) {
+      toast.warning("Selecione um cliente antes de continuar.");
+      return;
+    }
+    
+    // Validação para aba "documento" - não pode avançar sem selecionar modelo ou fazer upload
+    if (activeTab === "documento" && !selectedTemplate && !uploadedFile) {
+      toast.warning("Selecione um modelo de contrato ou faça upload de um arquivo PDF antes de continuar.");
+      return;
+    }
+    
+    // Validação para aba "servicos" - não pode avançar sem produtos
+    if (activeTab === "servicos" && nextTab === "signatarios" && produtosSelecionados.length === 0) {
+      toast.warning("Adicione pelo menos um produto/serviço antes de continuar para os signatários.");
+      return;
+    }
+    
+    // Validação para aba "signatarios" - não pode avançar sem signatários
+    if (activeTab === "signatarios" && signatarios.length === 0) {
+      toast.warning("Adicione pelo menos um signatário antes de continuar.");
+      return;
+    }
+    
     if (nextTab) {
       setActiveTab(nextTab);
     }
@@ -2392,83 +2443,79 @@ export default function CriarContratoAutentique() {
         <div>
           <h2 className={styles.tituloComIcone}><FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: 8, color: '#2563eb' }} />Outras Informações</h2>
           
-          {/* Aviso sobre variáveis obrigatórias */}
-          <div className={styles.infoContainer}>
-            <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
-            <span className={styles.infoText}>
-              <strong>Variáveis Personalizadas:</strong> Preencha todos os campos abaixo antes de criar o contrato.
-            </span>
-          </div>
-
           {(() => {
             // Recupera o template selecionado (caso o usuário tenha escolhido)
             const selectedTemplateObj = templates.find(
               (t) => t.id.toString() === selectedTemplate
             );
+            
+            const templateContent = selectedTemplateObj?.content || selectedTemplateObj?.conteudo || "";
+            
+            console.log("🔍 [DEBUG] Template selecionado:", selectedTemplateObj);
+            console.log("🔍 [DEBUG] Conteúdo do template (primeiros 200 chars):", templateContent.substring(0, 200));
+            console.log("🔍 [DEBUG] Variáveis customizadas disponíveis:", customVariables);
+            
             // Função para filtrar variáveis presentes no conteúdo do template
             function getCustomVariablesInTemplate(content, customVariables) {
-              if (!content || !customVariables || !Array.isArray(customVariables)) return [];
-              return customVariables.filter((v) =>
-                content.includes(`{{${v.variable}}}`)
-              );
+              if (!content || !customVariables || !Array.isArray(customVariables)) {
+                console.log("🔍 [DEBUG] Retornando vazio - content ou customVariables inválidos");
+                return [];
+              }
+              const vars = customVariables.filter((v) => {
+                const found = content.includes(`{{${v.variable}}}`);
+                console.log(`🔍 [DEBUG] Procurando {{${v.variable}}} no template:`, found);
+                return found;
+              });
+              console.log("🔍 [DEBUG] Variáveis encontradas no template:", vars);
+              return vars;
             }
             // Filtra as variáveis personalizadas presentes no template selecionado
             const customVarsToShow = getCustomVariablesInTemplate(
-              selectedTemplateObj?.content,
+              templateContent,
               customVariables
+            );
+
+            // Verifica quais variáveis estão preenchidas
+            const unfilledVars = customVarsToShow.filter(v => 
+              !customValues[v.variable] || customValues[v.variable].trim() === ''
             );
 
             // Caso não tenha selecionado template ou não tenha variável no template
             if (!selectedTemplateObj)
               return (
-                <p style={{ marginTop: "1rem" }}>
-                  Selecione um modelo de contrato para exibir as variáveis personalizadas.
-                </p>
+                <>
+                  <div className={styles.infoContainer}>
+                    <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
+                    <span className={styles.infoText}>
+                      <strong>Variáveis Personalizadas:</strong> Selecione um modelo de contrato para exibir as variáveis personalizadas.
+                    </span>
+                  </div>
+                </>
               );
             if (customVarsToShow.length === 0)
               return (
-                <p style={{ marginTop: "1rem" }}>
-                  Nenhuma variável personalizada presente neste modelo de contrato.
-                </p>
+                <>
+                  <div className={styles.infoContainer}>
+                    <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
+                    <span className={styles.infoText}>
+                      <strong>Variáveis Personalizadas:</strong> Nenhuma variável personalizada presente neste modelo de contrato.
+                    </span>
+                  </div>
+                </>
               );
-
-            // Verifica quais variáveis estão preenchidas
-            const filledVars = customVarsToShow.filter(v => 
-              customValues[v.variable] && customValues[v.variable].trim() !== ''
-            );
-            const unfilledVars = customVarsToShow.filter(v => 
-              !customValues[v.variable] || customValues[v.variable].trim() === ''
-            );
 
             // Renderiza apenas as variáveis personalizadas realmente utilizadas no template
             return (
               <div>
-                {/* Status das variáveis */}
-                <div style={{ 
-                  marginBottom: '20px', 
-                  padding: '16px', 
-                  background: unfilledVars.length > 0 ? '#fff3cd' : '#d4edda', 
-                  border: `1px solid ${unfilledVars.length > 0 ? '#ffeaa7' : '#c3e6cb'}`, 
-                  borderRadius: '8px',
-                  color: unfilledVars.length > 0 ? '#856404' : '#155724'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <FontAwesomeIcon 
-                      icon={unfilledVars.length > 0 ? faInfoCircle : faInfoCircle} 
-                      style={{ color: unfilledVars.length > 0 ? '#856404' : '#155724' }} 
-                    />
-                    <strong>
-                      {unfilledVars.length > 0 
-                        ? `${unfilledVars.length} variável(is) não preenchida(s)` 
-                        : 'Todas as variáveis estão preenchidas! ✅'
-                      }
-                    </strong>
-                  </div>
-                  {unfilledVars.length > 0 && (
-                    <p style={{ margin: 0, fontSize: '14px' }}>
-                      Preencha as seguintes variáveis: <strong>{unfilledVars.map(v => v.label || v.variable).join(', ')}</strong>
-                    </p>
-                  )}
+                {/* Aviso sobre variáveis obrigatórias com contador */}
+                <div className={styles.infoContainer}>
+                  <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
+                  <span className={styles.infoText}>
+                    <strong>Variáveis Personalizadas:</strong> {unfilledVars.length > 0 
+                      ? `${unfilledVars.length} variável(is) não preenchida(s). Preencha todos os campos abaixo antes de criar o contrato.` 
+                      : 'Todas as variáveis estão preenchidas! ✅'
+                    }
+                  </span>
                 </div>
 
                 {/* Campos das variáveis */}
