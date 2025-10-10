@@ -1,0 +1,73 @@
+# ===========================================
+# Docker Compose para Backend Onety
+# ===========================================
+# Este arquivo facilita a execução do backend com Docker
+# Para usar: docker-compose up -d
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onety-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      # Adicione outras variáveis de ambiente necessárias aqui
+      # ou use um arquivo .env (não commitado)
+    volumes:
+      # Persistir uploads entre reinicializações
+      - ./uploads:/app/uploads
+      # Se precisar de logs persistentes
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - onety-network
+    # Dependências (descomente e configure se usar banco local)
+    # depends_on:
+    #   - postgres
+    #   - mysql
+
+  # Exemplo de serviço PostgreSQL (descomente se necessário)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: onety-postgres
+  #   environment:
+  #     POSTGRES_DB: onety_db
+  #     POSTGRES_USER: onety_user
+  #     POSTGRES_PASSWORD: sua_senha_segura
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - onety-network
+
+  # Exemplo de serviço MySQL (descomente se necessário)
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: onety-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root_password
+  #     MYSQL_DATABASE: onety_db
+  #     MYSQL_USER: onety_user
+  #     MYSQL_PASSWORD: sua_senha_segura
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   networks:
+  #     - onety-network
+
+networks:
+  onety-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:
+#   mysql_data:
+
