@@ -798,15 +798,15 @@
 }
 
 .filterToggleActive {
-  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
-  border-color: var(--onity-color-primary);
-  color: var(--onity-color-primary);
+  background: transparent;
+  border-color: var(--onity-color-border);
+  color: var(--onity-color-text);
 }
 
 .filterToggleActive:hover {
-  background: color-mix(in srgb, var(--onity-color-primary) 18%, transparent);
+  color: var(--onity-color-primary-hover);
+  border: 1px solid var(--onity-color-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .headerSignatario {

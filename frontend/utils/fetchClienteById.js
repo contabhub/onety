@@ -4,7 +4,7 @@ export async function fetchClienteById(clientId) {
     throw new Error("Token não encontrado");
   }
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${clientId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

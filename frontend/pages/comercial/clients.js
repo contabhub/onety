@@ -369,12 +369,12 @@ export default function ClientsPage() {
         <div className={styles.pageHeader}>
           <div className={styles.toolbarBox}>
             <div className={styles.toolbarHeader}>
-              <span className={styles.title}>Clientes</span>
+              <span className={styles.title}>Pré-Clientes</span>
               <div className={styles.filtersRowBox}>
                 <button onClick={handleNovoCliente} className={styles.addButton}>
                   <span style={{display:'inline-flex',gap:'8px',alignItems:'center'}}>
                     <Plus className="h-4 w-4" />
-                    Novo Cliente
+                    Novo Pré-Cliente
                   </span>
                 </button>
               </div>
@@ -425,6 +425,7 @@ export default function ClientsPage() {
                       <th>CPF/CNPJ</th>
                       <th>Email</th>
                       <th>Telefone</th>
+                      <th>Lead</th>
                       {isAdmin && <th>Ações</th>}
                     </tr>
                   </thead>
@@ -436,6 +437,7 @@ export default function ClientsPage() {
                         <td>{formatarCpfCnpj(c.cpf_cnpj)}</td>
                         <td>{c.email}</td>
                         <td>{c.telefone}</td>
+                        <td>{c.lead_id ? "Sim" : "Não"}</td>
                         {isAdmin && (
                           <td>
                             <button

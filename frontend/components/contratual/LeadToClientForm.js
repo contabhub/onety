@@ -3,13 +3,13 @@ import styles from "../../styles/contratual/NovoClienteForm.module.css";
 
 export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
   const [formData, setFormData] = useState({
-    type: "pessoa_fisica",
-    name: "",
+    tipo: "pessoa_fisica",
+    nome: "",
     cpf_cnpj: "",
     email: "",
     telefone: "",
     endereco: "",
-    equipe_id: "",
+    empresa_id: "",
     rg: "",
     estado_civil: "",
     profissao: "",
@@ -27,24 +27,41 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
   });
 
   useEffect(() => {
+    // Buscar empresa_id do localStorage
+    const userDataRaw = localStorage.getItem("userData");
+    const userRaw = localStorage.getItem("user");
+    const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+    const user = userRaw ? JSON.parse(userRaw) : null;
+    const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+
     if (lead) {
-      const userRaw = localStorage.getItem("user");
-      const user = userRaw ? JSON.parse(userRaw) : null;
-      const equipeId = user?.equipe_id;
-  
       setFormData((prev) => ({
         ...prev,
-        ...lead,
+        tipo: lead.tipo || lead.type || "pessoa_fisica",
+        nome: lead.nome || lead.name || "",
+        cpf_cnpj: lead.cpf_cnpj || "",
+        email: lead.email || "",
+        telefone: lead.telefone || "",
+        endereco: lead.endereco || "",
+        rg: lead.rg || "",
+        estado_civil: lead.estado_civil || "",
+        profissao: lead.profissao || "",
+        sexo: lead.sexo || "",
+        nacionalidade: lead.nacionalidade || "",
+        cep: lead.cep || "",
+        numero: lead.numero || "",
+        complemento: lead.complemento || "",
+        bairro: lead.bairro || "",
+        cidade: lead.cidade || "",
+        estado: lead.estado || "",
+        representante: lead.representante || "",
+        funcao: lead.funcao || "",
         lead_id: lead.id,
-        equipe_id: equipeId || prev.equipe_id,
+        empresa_id: empresaId || prev.empresa_id,
       }));
     } else {
-      const userRaw = localStorage.getItem("user");
-      if (userRaw) {
-        const { equipe_id } = JSON.parse(userRaw);
-        if (equipe_id) {
-          setFormData((prev) => ({ ...prev, equipe_id }));
-        }
+      if (empresaId) {
+        setFormData((prev) => ({ ...prev, empresa_id: empresaId }));
       }
     }
   }, [lead]);
@@ -61,15 +78,36 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
       return;
     }
 
+    // Limpar dados antes de enviar
+    const dadosLimpos = {
+      ...formData,
+      // Converter valores vazios, "Selecione" ou undefined para null
+      rg: formData.rg || null,
+      estado_civil: (formData.estado_civil && formData.estado_civil !== "") ? formData.estado_civil : null,
+      profissao: formData.profissao || null,
+      sexo: (formData.sexo && formData.sexo !== "") ? formData.sexo : null,
+      nacionalidade: formData.nacionalidade || null,
+      cep: formData.cep || null,
+      numero: formData.numero || null,
+      complemento: formData.complemento || null,
+      bairro: formData.bairro || null,
+      cidade: formData.cidade || null,
+      estado: (formData.estado && formData.estado !== "" && formData.estado !== "Selecione") ? formData.estado : null,
+      representante: formData.representante || null,
+      funcao: formData.funcao || null,
+      // Limpar CPF/CNPJ removendo caracteres não numéricos
+      cpf_cnpj: formData.cpf_cnpj ? formData.cpf_cnpj.replace(/\D/g, "") : "",
+    };
+
     try {
-      console.log("Dados que serão enviados:", formData);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
+      console.log("Dados que serão enviados:", dadosLimpos);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dadosLimpos),
       });
 
       const data = await res.json();
@@ -110,7 +148,7 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
     if (data.razao_social) {
       setFormData((prev) => ({
         ...prev,
-        name: data.razao_social,
+        nome: data.razao_social,
         telefone: data.estabelecimento?.telefone1
           ? `(${data.estabelecimento.ddd1}) ${data.estabelecimento.telefone1}`
           : prev.telefone,
@@ -132,8 +170,8 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
             type="radio"
             name="tipo"
             value="pessoa_fisica"
-            checked={formData.type === "pessoa_fisica"}
-            onChange={(e) => handleChange("type", e.target.value)}
+            checked={formData.tipo === "pessoa_fisica"}
+            onChange={(e) => handleChange("tipo", e.target.value)}
           />
           Pessoa Física
         </label>
@@ -142,18 +180,18 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
             type="radio"
             name="tipo"
             value="empresa"
-            checked={formData.type === "empresa"}
-            onChange={(e) => handleChange("type", e.target.value)}
+            checked={formData.tipo === "empresa"}
+            onChange={(e) => handleChange("tipo", e.target.value)}
           />
           Empresa
         </label>
       </div>
 
-      {formData.type === "pessoa_fisica" && (
+      {formData.tipo === "pessoa_fisica" && (
         <>
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Dados do Cliente</h3>
-            <div><label>Nome</label><input className={styles.input} value={formData.name} onChange={(e) => handleChange("name", e.target.value)} /></div>
+            <div><label>Nome</label><input className={styles.input} value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} /></div>
             <div><label>Email</label><input className={styles.input} value={formData.email} onChange={(e) => handleChange("email", e.target.value)} /></div>
             <div><label>CPF</label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => handleChange("cpf_cnpj", e.target.value)} /></div>
             <div><label>RG</label><input className={styles.input} value={formData.rg} onChange={(e) => handleChange("rg", e.target.value)} /></div>
@@ -177,7 +215,7 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
         </>
       )}
 
-      {formData.type === "empresa" && (
+      {formData.tipo === "empresa" && (
         <>
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Representante Legal</h3>
@@ -188,7 +226,7 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
 
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Dados da Empresa</h3>
-            <div><label>Razão Social</label><input className={styles.input} value={formData.name} onChange={(e) => handleChange("name", e.target.value)} /></div>
+            <div><label>Razão Social</label><input className={styles.input} value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} /></div>
             <div><label>CNPJ</label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => { handleChange("cpf_cnpj", e.target.value); handleBuscarCNPJ(e.target.value); }} /></div>
             <div><label>Telefone</label><input className={styles.input} value={formData.telefone} onChange={(e) => handleChange("telefone", e.target.value)} /></div>
           </div>

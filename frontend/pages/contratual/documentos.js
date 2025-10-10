@@ -117,7 +117,7 @@ export default function Documentos() {
         (contrato) =>
           contrato.status !== "expirado" &&
           contrato.status !== "assinado" && // Exclui contratos assinados
-          new Date(contrato.expires_at) < agora
+          new Date(contrato.expirado_em) < agora
       );
 
       if (pendentes.length === 0) {
@@ -170,8 +170,8 @@ export default function Documentos() {
   const anosDisponiveis = useMemo(() => {
     const anos = new Set();
     contratos.forEach(c => {
-      if (c.expires_at) {
-        anos.add(c.expires_at.slice(0, 4));
+      if (c.expirado_em) {
+        anos.add(c.expirado_em.slice(0, 4));
       }
     });
     // Garante que o ano atual sempre aparece
@@ -209,16 +209,16 @@ export default function Documentos() {
     // Filtro de ano e mês
     let dataOk = true;
     if (anoFiltro) {
-      const anoContrato = contrato.expires_at ? contrato.expires_at.slice(0, 4) : "";
+      const anoContrato = contrato.expirado_em ? contrato.expirado_em.slice(0, 4) : "";
       dataOk = anoContrato === anoFiltro;
     }
     if (mesFiltro) {
-      const mesContrato = contrato.expires_at ? contrato.expires_at.slice(5, 7) : "";
+      const mesContrato = contrato.expirado_em ? contrato.expirado_em.slice(5, 7) : "";
       dataOk = dataOk && mesContrato === mesFiltro;
     }
 
     // Se não tem data de expiração, não aplica filtro de data
-    if (!contrato.expires_at) {
+    if (!contrato.expirado_em) {
       dataOk = true;
     }
 
@@ -530,7 +530,7 @@ export default function Documentos() {
     try {
       // Busca o contrato para pegar a data atual de expiração
       const contrato = contratos.find(c => c.id === contratoId);
-      const dataBase = contrato?.expires_at ? new Date(contrato.expires_at) : new Date();
+      const dataBase = contrato?.expirado_em ? new Date(contrato.expirado_em) : new Date();
       // Se já expirou, começa do hoje
       const base = (contrato?.status === "expirado" && dataBase < new Date()) ? new Date() : dataBase;
       const novaData = new Date(base);
@@ -723,7 +723,7 @@ export default function Documentos() {
                             </span>
                           </td>
 
-                          <td>{contrato.expires_at?.slice(0, 10).split('-').reverse().join('/')}</td>
+                          <td>{contrato.expirado_em?.slice(0, 10).split('-').reverse().join('/')}</td>
                           {isSuperAdmin && (
                             <td>
                               <span
@@ -911,7 +911,7 @@ export default function Documentos() {
                       <span className={styles[contrato.status.toLowerCase()]}>
                         {contrato.status}
                       </span>
-                      <span>{new Date(contrato.expires_at).toLocaleDateString()}</span>
+                      <span>{new Date(contrato.expirado_em).toLocaleDateString()}</span>
                     </div>
                     <div className={styles.cardActions}>
 
@@ -1119,7 +1119,7 @@ function KanbanView({ contratos, statusFiltro, isSuperAdmin }) {
                 <div style={{ fontWeight: 'bold', color: '#2563eb', fontSize: 15 }}>{contrato.client_name || 'Contrato sem cliente'}</div>
                 <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>ID: {contrato.id}</div>
                 <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Responsável: {contrato.created_by}</div>
-                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Expira: {contrato.expires_at?.slice(0, 10).split('-').reverse().join('/')}</div>
+                <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>Expira: {contrato.expirado_em?.slice(0, 10).split('-').reverse().join('/')}</div>
                 {isSuperAdmin && (
                   <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>
                     Autentique: <span
