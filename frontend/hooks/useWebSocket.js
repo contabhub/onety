@@ -35,14 +35,12 @@ export function useWebSocket() {
     
     const newSocket = io(wsUrl, {
       auth: { token: `Bearer ${token}` , companyId },
-      transports: ['websocket', 'polling'],
-      path: '/socket.io',
+      transports: ['websocket'], // força conexão direta por WebSocket (evita polling via proxy/ngrok)
+      path: '/socket.io', // garante path padrão explícito para proxies como ngrok
       reconnection: false,
       timeout: 20000,
       forceNew: true,
-      withCredentials: true,
-      transports: ['websocket'], // força conexão direta por WebSocket (evita polling via proxy)
-      path: '/socket.io' // garante path padrão explícito para proxies como ngrok
+      withCredentials: true
     });
 
     // Eventos de conexão
