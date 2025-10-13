@@ -289,7 +289,50 @@ export default function PrincipalSidebar() {
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [ajustesExpanded, setAjustesExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
+
+  // Carrega o estado da sidebar do localStorage na inicialização
+  useEffect(() => {
+    try {
+      const savedPinned = localStorage.getItem('sidebarPinned');
+      const savedCollapsed = localStorage.getItem('sidebarCollapsed');
+      
+      if (savedPinned !== null) {
+        const isPinned = savedPinned === 'true';
+        setPinned(isPinned);
+        setCollapsed(!isPinned);
+      } else if (savedCollapsed !== null) {
+        setCollapsed(savedCollapsed === 'true');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estado da sidebar:', error);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  // Salva o estado pinned no localStorage quando mudar
+  useEffect(() => {
+    if (isInitialized) {
+      try {
+        localStorage.setItem('sidebarPinned', pinned.toString());
+      } catch (error) {
+        console.error('Erro ao salvar estado pinned:', error);
+      }
+    }
+  }, [pinned, isInitialized]);
+
+  // Salva o estado collapsed no localStorage quando mudar (apenas se não estiver pinned)
+  useEffect(() => {
+    if (isInitialized && !pinned) {
+      try {
+        localStorage.setItem('sidebarCollapsed', collapsed.toString());
+      } catch (error) {
+        console.error('Erro ao salvar estado collapsed:', error);
+      }
+    }
+  }, [collapsed, pinned, isInitialized]);
 
   // Configurações de animação do Framer Motion - SPRING SUAVE
   const container = {
