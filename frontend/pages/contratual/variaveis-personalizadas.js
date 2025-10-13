@@ -59,7 +59,8 @@ export default function CustomVariables() {
       console.error("Erro ao buscar variáveis personalizadas:", err);
     }
   };
-
+  
+  
   const handleDeleteVariable = async (id) => {
     if (!confirm("Deseja realmente excluir essa variável?")) return;
 
