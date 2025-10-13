@@ -1,11 +1,11 @@
 .crmContainer {
   display: flex;
   flex-direction: row;
-  gap: 16px;
-  padding: 20px;
-  overflow-x: auto;
+  gap: 4px;
+  padding: 16px;
   background: var(--onity-color-bg);
   min-height: calc(100vh - 100px);
+  overflow-x: hidden;
 }
 
 /* Layout da página com sidebar ao lado */
@@ -27,9 +27,69 @@
 }
 
 
+.pageHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 16px;
+  border-bottom: none;
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
 .title {
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--onity-color-text);
-  padding-left: 20px;
+  margin: 0;
+}
+
+/* Toolbar retangular contendo título, botão e filtros */
+.toolbarBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--onity-elev-med);
+}
+
+.toolbarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.toolbarHeader .filtersRowBox {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s, 8px);
+}
+
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Retângulo que envolve especificamente a linha de filtros */
+.filtersRowBox {
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: none;
 }
 
 .headerRow {
@@ -131,20 +191,21 @@
 }
 
 .column {
-  min-width: 300px;
+  flex: 1;
+  min-width: 180px;
   height: 80vh;
   background-color: var(--onity-color-bg);
   border-radius: 12px;
-  padding: 12px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 
 .columnHeader {
   font-weight: 600;
-  font-size: 18px;
-  margin-bottom: 8px;
+  font-size: 16px;
+  margin-bottom: 6px;
   color: var(--onity-color-text);
   display: flex;
   flex-direction: column;
@@ -257,7 +318,7 @@
   background: rgba(0, 0, 0, 0.35);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  z-index: 100;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -832,6 +893,33 @@
   flex: 1 0 auto;
 }
 
+.filterToggleBtn {
+  border: 2px solid var(--onity-color-border);
+  background: transparent;
+  color: var(--onity-color-border);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filterToggleBtn:hover {
+  color: var(--primary-color, #3b82f6);
+  border: 2px solid var(--primary-color, #3b82f6);
+}
+
+.filterToggleActive {
+  background-color: var(--primary-color, #3b82f6);
+  color: white;
+  border-color: var(--primary-color, #3b82f6);
+}
+
 .toolsToggleBtn {
   border: 2px solid var(--onity-color-border);
   background: transparent;
@@ -916,6 +1004,24 @@
 }
 
 @media (max-width: 700px) {
+  .page { 
+    flex-direction: column;
+  }
+  .pageHeader { 
+    padding: 12px 10px; 
+  }
+  .toolbarBox { 
+    padding: 12px; 
+    gap: 10px; 
+  }
+  .toolbarHeader { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 10px; 
+  }
+  .headerActions {
+    flex-wrap: wrap;
+  }
   .headerRow {
     flex-direction: column;
     align-items: stretch;
@@ -925,6 +1031,18 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+  .crmContainer {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+  .column {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+    height: auto;
+    min-height: 300px;
   }
   .exportContainer {
     justify-content: flex-end;

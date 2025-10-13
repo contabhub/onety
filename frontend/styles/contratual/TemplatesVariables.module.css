@@ -68,7 +68,7 @@
     background-color: transparent;
     color: var(--primary-color, #3b82f6);
     border: 1px solid var(--primary-color, #3b82f6);
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.2s ease-in;
   }
@@ -83,7 +83,7 @@
     background-color: var(--onity-color-border);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
   }
 
@@ -133,6 +133,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 9999;
   }
   
   .modal {
@@ -148,7 +149,7 @@
     width: 100%;
     padding: 12px 8px;
     margin: 6px 0;
-    border-radius: 6px;
+    border-radius: 10px;
     border: 1px solid var(--onity-color-border);
     background: transparent;
     transition: all 0.3s ease;

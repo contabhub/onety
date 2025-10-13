@@ -519,13 +519,27 @@
   overflow: hidden;
 }
 
-.table thead th {
-  background: var(--onity-color-surface);
-  color: var(--onity-color-text);
-  font-weight: 700;
-  text-align: left;
-  padding: 14px 18px;
+.table thead {
+  background-color: var(--onity-color-bg);
   border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
+}
+
+.table thead th {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  text-align: left;
+}
+
+.table thead th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.table thead th:last-child {
+  border-radius: 0 8px 0 0;
 }
 
 .table tbody td, .table tbody tr.tableCardRow td {

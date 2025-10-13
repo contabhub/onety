@@ -39,6 +39,7 @@
   background-size: 200px 100px;
   animation: sparkle 20s linear infinite;
   z-index: 0;
+  pointer-events: none;
 }
 
 /* Sparkle mais escuro para tema escuro - mais estrelas */
@@ -103,6 +104,7 @@
   background-size: 80px 80px;
   animation: neural 15s linear infinite;
   z-index: 0;
+  pointer-events: none;
 }
 
 /* Linhas mais aparentes para tema escuro */
@@ -294,6 +296,8 @@
   gap: var(--onity-space-m);
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .single {
@@ -872,7 +876,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   padding: var(--onity-space-m);
 }
 
