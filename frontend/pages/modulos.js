@@ -245,6 +245,13 @@ export default function Modulos() {
 
   const handleAccessModulo = (modulo) => {
     if (!modulo) return
+    
+    // Se o módulo está em andamento, redireciona para onboarding
+    if (modulo.status === 'em_andamento') {
+      router.push(`/onboarding/${modulo.id}`)
+      return
+    }
+    
     // Persistir módulo selecionado para a sidebar principal
     try {
       const slug = normalize(modulo.nome || modulo.name)
@@ -704,7 +711,7 @@ export default function Modulos() {
                                   handleAccessModulo(m)
                                 }}
                               >
-                                Acessar
+                                {m.status === 'em_andamento' ? 'Continuar' : 'Acessar'}
                               </button>
                               )}
                             </div>
@@ -771,7 +778,7 @@ export default function Modulos() {
                                   handleAccessModulo(m)
                                 }}
                               >
-                                {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
+                                {m.status === 'em_andamento' ? 'Continuar' : 'Acessar'}
                               </button>
                             )}
                           </div>
@@ -866,7 +873,7 @@ export default function Modulos() {
                                   handleAccessModulo(m)
                                 }}
                       >
-                        {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
+                        {m.status === 'em_andamento' ? 'Continuar' : 'Acessar'}
                       </button>
                     )}
                   </div>
@@ -881,7 +888,8 @@ export default function Modulos() {
                                   e.preventDefault()
                                   e.stopPropagation()
                                   handleAccessModulo(m)
-                                }}>
+                                }}
+                                style={{ cursor: 'pointer' }}>
                     <div className={styles.moduleIcon}>{getModuleLogo(m)}</div>
                     <div className={styles.listTexts}>
                       <div className={styles.title}>{m.nome || m.name}</div>
@@ -933,7 +941,7 @@ export default function Modulos() {
                                   handleAccessModulo(m)
                                 }}
                       >
-                        {m.status === 'em_andamento' ? 'Acessar' : 'Acessar'}
+                        {m.status === 'em_andamento' ? 'Continuar' : 'Acessar'}
                       </button>
                     )}
                   </div>

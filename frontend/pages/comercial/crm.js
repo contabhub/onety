@@ -26,7 +26,7 @@ import ImportFromAtendimentoModal from "../../components/comercial/crm/ImportFro
 import { registrarHistorico } from "../../utils/registrarHistorico";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faSearch, faFileCsv, faThLarge, faList, faPencilAlt, faSnowflake, faFire, faInfoCircle, faThumbsUp, faThumbsDown, faBriefcase, faChevronDown, faChevronUp, faPlus, faBars, faCalendar
+  faSearch, faFileCsv, faThLarge, faList, faPencilAlt, faSnowflake, faFire, faInfoCircle, faThumbsUp, faThumbsDown, faBriefcase, faChevronDown, faChevronUp, faPlus, faBars, faCalendar, faFilter
 } from "@fortawesome/free-solid-svg-icons";
 
 
@@ -55,6 +55,7 @@ export default function CRM() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportFromAtModal, setShowImportFromAtModal] = useState(false);
   const [showToolsDrawer, setShowToolsDrawer] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const [membrosEquipe, setMembrosEquipe] = useState([]);
   const [fasesDoFunil, setFasesDoFunil] = useState([]);
@@ -492,127 +493,147 @@ export default function CRM() {
       ) : (
         <>
           <div className={styles.pageContent}>
-          <div className={styles.headerRow}>
-            <h1 className={styles.title}>CRM</h1>
-
-            {/* Filtro de responsáveis como dropdown */}
-            <div className={styles.responsavelDropdownWrapper} ref={dropdownRef}>
-              <button
-                className={styles.responsavelDropdownBtn}
-                type="button"
-                onClick={() => setDropdownAberto((prev) => !prev)}
-              >
-                <span className={styles.responsavelLabel}>Responsável</span>
-                <span className={styles.responsavelDropdownIcon}>
-                  <FontAwesomeIcon icon={dropdownAberto ? faChevronUp : faChevronDown} />
-                </span>
-              </button>
-              {dropdownAberto && (
-                <div className={styles.responsavelDropdownMenu}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={responsaveisSelecionados.includes('todos')}
-                      onChange={() => handleResponsavelChange('todos')}
-                    />
-                    Todos
-                  </label>
-                  {membrosEquipe.map((m) => {
-                    const memberIdRaw = m.usuario_id ?? m.user_id ?? m.usuarioId;
-                    if (!memberIdRaw) return null;
-                    const memberId = memberIdRaw.toString();
-                    const memberName = m.full_name || m.nome || m.name || m.email || `Usuário ${memberId}`;
-                    return (
-                      <label key={memberId}>
-                        <input
-                          type="checkbox"
-                          checked={responsaveisSelecionados.includes(memberId)}
-                          onChange={() => handleResponsavelChange(memberId)}
-                        />
-                        {memberName}
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            <div className={styles.responsavelDropdownWrapper} ref={dropdownFunilRef}>
-              <button
-                className={styles.responsavelDropdownBtn}
-                type="button"
-                onClick={() => setDropdownFunilAberto((prev) => !prev)}
-              >
-                <span className={styles.funilLabel}>Funil</span>
-                <span className={styles.funilNome}>
-                  {funis.find(f => f.id === funilSelecionado)?.nome || 'Selecionar'}
-                </span>
-                <span className={styles.responsavelDropdownIcon}>
-                  <FontAwesomeIcon icon={dropdownFunilAberto ? faChevronUp : faChevronDown} />
-                </span>
-              </button>
-              {dropdownFunilAberto && (
-                <div className={styles.responsavelDropdownMenu + ' ' + styles.funilDropdownMenu}>
-                  {funis.map((f) => (
+            <div className={styles.pageHeader}>
+              <div className={styles.toolbarBox}>
+                <div className={styles.toolbarHeader}>
+                  <span className={styles.title}>CRM</span>
+                  <div className={styles.headerActions}>
+                    {/* Botão de filtros avançados */}
                     <button
-                      key={f.id}
-                      className={
-                        (f.id === funilSelecionado ? styles.activeTab : '') + ' ' +
-                        (f.id === funilSelecionado ? styles.funilTabActive : styles.funilTab)
-                      }
-                      onClick={() => {
-                        setFunilSelecionado(f.id);
-                        setDropdownFunilAberto(false);
-                      }}
+                      type="button"
+                      className={`${styles.filterToggleBtn} ${showAdvancedFilters ? styles.filterToggleActive : ''}`}
+                      onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                      title="Filtros avançados"
                     >
-                      {f.nome}
+                      <FontAwesomeIcon icon={faFilter} />
+                      <span>Filtros</span>
                     </button>
-                  ))}
+
+                    {/* Botões de alternância de visualização */}
+                    <div className={styles.viewToggleContainer}>
+                      <button
+                        type="button"
+                        className={`${styles.viewToggleBtn} ${viewMode === 'crm' ? styles.viewToggleActive : ''}`}
+                        onClick={() => setViewMode('crm')}
+                        title="Visualização Kanban"
+                      >
+                        <FontAwesomeIcon icon={faThLarge} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.viewToggleBtn} ${viewMode === 'lista' ? styles.viewToggleActive : ''}`}
+                        onClick={() => setViewMode('lista')}
+                        title="Visualização em lista"
+                      >
+                        <FontAwesomeIcon icon={faList} />
+                      </button>
+                    </div>
+
+                    <button
+                      className={styles.toolsToggleBtn}
+                      type="button"
+                      title="Ferramentas"
+                      onClick={() => setShowToolsDrawer(true)}
+                    >
+                      <FontAwesomeIcon icon={faBars} />
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
+                
+                {/* Filtros avançados - só aparecem quando showAdvancedFilters é true */}
+                {showAdvancedFilters && (
+                  <div className={styles.filtersRow}>
+                    {/* Filtro de responsáveis como dropdown */}
+                    <div className={styles.responsavelDropdownWrapper} ref={dropdownRef}>
+                      <button
+                        className={styles.responsavelDropdownBtn}
+                        type="button"
+                        onClick={() => setDropdownAberto((prev) => !prev)}
+                      >
+                        <span className={styles.responsavelLabel}>Responsável</span>
+                        <span className={styles.responsavelDropdownIcon}>
+                          <FontAwesomeIcon icon={dropdownAberto ? faChevronUp : faChevronDown} />
+                        </span>
+                      </button>
+                      {dropdownAberto && (
+                        <div className={styles.responsavelDropdownMenu}>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={responsaveisSelecionados.includes('todos')}
+                              onChange={() => handleResponsavelChange('todos')}
+                            />
+                            Todos
+                          </label>
+                          {membrosEquipe.map((m) => {
+                            const memberIdRaw = m.usuario_id ?? m.user_id ?? m.usuarioId;
+                            if (!memberIdRaw) return null;
+                            const memberId = memberIdRaw.toString();
+                            const memberName = m.full_name || m.nome || m.name || m.email || `Usuário ${memberId}`;
+                            return (
+                              <label key={memberId}>
+                                <input
+                                  type="checkbox"
+                                  checked={responsaveisSelecionados.includes(memberId)}
+                                  onChange={() => handleResponsavelChange(memberId)}
+                                />
+                                {memberName}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
 
-            <div className={styles.searchContainer}>
-              <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Buscar por nome..."
-                className={styles.searchInput}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+                    <div className={styles.responsavelDropdownWrapper} ref={dropdownFunilRef}>
+                      <button
+                        className={styles.responsavelDropdownBtn}
+                        type="button"
+                        onClick={() => setDropdownFunilAberto((prev) => !prev)}
+                      >
+                        <span className={styles.funilLabel}>Funil</span>
+                        <span className={styles.funilNome}>
+                          {funis.find(f => f.id === funilSelecionado)?.nome || 'Selecionar'}
+                        </span>
+                        <span className={styles.responsavelDropdownIcon}>
+                          <FontAwesomeIcon icon={dropdownFunilAberto ? faChevronUp : faChevronDown} />
+                        </span>
+                      </button>
+                      {dropdownFunilAberto && (
+                        <div className={styles.responsavelDropdownMenu + ' ' + styles.funilDropdownMenu}>
+                          {funis.map((f) => (
+                            <button
+                              key={f.id}
+                              className={
+                                (f.id === funilSelecionado ? styles.activeTab : '') + ' ' +
+                                (f.id === funilSelecionado ? styles.funilTabActive : styles.funilTab)
+                              }
+                              onClick={() => {
+                                setFunilSelecionado(f.id);
+                                setDropdownFunilAberto(false);
+                              }}
+                            >
+                              {f.nome}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-            <div className={styles.exportContainer}>
-              <button
-                className={styles.toolsToggleBtn}
-                type="button"
-                title="Ferramentas"
-                onClick={() => setShowToolsDrawer(true)}
-              >
-                <FontAwesomeIcon icon={faBars} />
-              </button>
+                    <div className={styles.searchContainer}>
+                      <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por nome..."
+                        className={styles.searchInput}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-
-            {/* Botões de alternância de visualização */}
-            <div className={styles.viewToggleContainer}>
-              <button
-                type="button"
-                className={`${styles.viewToggleBtn} ${viewMode === 'crm' ? styles.viewToggleActive : ''}`}
-                onClick={() => setViewMode('crm')}
-                title="Visualização Kanban"
-              >
-                <FontAwesomeIcon icon={faThLarge} />
-              </button>
-              <button
-                type="button"
-                className={`${styles.viewToggleBtn} ${viewMode === 'lista' ? styles.viewToggleActive : ''}`}
-                onClick={() => setViewMode('lista')}
-                title="Visualização em lista"
-              >
-                <FontAwesomeIcon icon={faList} />
-              </button>
-            </div>
-          </div>
 
 
 
