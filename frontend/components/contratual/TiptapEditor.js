@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import TextAlign from '@tiptap/extension-text-align'
+import Underline from '@tiptap/extension-underline'
 import { 
   FaBold, 
   FaItalic, 
@@ -82,6 +83,7 @@ const TiptapEditor = ({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Underline,
       Image.configure({
         allowBase64: true,
       }),
@@ -98,6 +100,56 @@ const TiptapEditor = ({
       attributes: {
         class: styles.editorContent,
         'data-placeholder': placeholder,
+      },
+      // Limpa formatação excessiva ao colar texto de outros lugares
+      transformPastedHTML(html) {
+        // Remove estilos inline excessivos, mantendo apenas formatação básica
+        let cleanHtml = html
+          // Remove classes CSS
+          .replace(/\sclass="[^"]*"/gi, '')
+          // Remove IDs
+          .replace(/\sid="[^"]*"/gi, '')
+          // Remove data attributes
+          .replace(/\sdata-[a-z-]*="[^"]*"/gi, '')
+          // Remove estilos inline complexos, mas preserva formatação básica
+          .replace(/\sstyle="([^"]*)"/gi, (match, styleContent) => {
+            // Preserva apenas estilos de formatação de texto básicos
+            const allowedStyles = []
+            if (styleContent.includes('font-weight: bold') || styleContent.includes('font-weight:bold')) {
+              allowedStyles.push('font-weight: bold')
+            }
+            if (styleContent.includes('font-style: italic') || styleContent.includes('font-style:italic')) {
+              allowedStyles.push('font-style: italic')
+            }
+            if (styleContent.includes('text-decoration: underline') || styleContent.includes('text-decoration:underline')) {
+              allowedStyles.push('text-decoration: underline')
+            }
+            if (styleContent.includes('text-align:')) {
+              const alignMatch = styleContent.match(/text-align:\s*(left|center|right|justify)/i)
+              if (alignMatch) {
+                allowedStyles.push(`text-align: ${alignMatch[1]}`)
+              }
+            }
+            return allowedStyles.length > 0 ? ` style="${allowedStyles.join('; ')}"` : ''
+          })
+          // Remove tags span vazias ou sem propósito
+          .replace(/<span[^>]*>\s*<\/span>/gi, '')
+          // Remove quebras de linha duplas desnecessárias
+          .replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '<br>')
+          // Remove espaços excessivos entre tags
+          .replace(/>\s+</g, '><')
+          // Remove espaços excessivos antes e depois de variáveis
+          .replace(/\s*(\{\{[^}]+\}\})\s*/g, ' $1 ')
+          // Remove comentários HTML
+          .replace(/<!--[\s\S]*?-->/g, '')
+          // Remove tags meta, link, style
+          .replace(/<(meta|link|style)[^>]*>.*?<\/\1>/gi, '')
+          .replace(/<(meta|link)[^>]*>/gi, '')
+        
+        console.log('HTML original colado:', html.substring(0, 200) + '...')
+        console.log('HTML limpo após transformação:', cleanHtml.substring(0, 200) + '...')
+        
+        return cleanHtml
       },
     },
     immediatelyRender: false,
@@ -153,6 +205,11 @@ const TiptapEditor = ({
             return
           }
         }
+        
+        // Log para debug: mostra quando texto formatado é colado
+        if (html && html.length > 0) {
+          console.log('Texto formatado colado - será limpo automaticamente pelo transformPastedHTML')
+        }
       }
     }
 
@@ -161,7 +218,7 @@ const TiptapEditor = ({
     return () => {
       editor.view.dom.removeEventListener('paste', handlePaste)
     }
-  }, [editor])
+  }, [editor, onImageUrlWarning])
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0]

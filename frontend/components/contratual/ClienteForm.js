@@ -28,10 +28,12 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
 
   useEffect(() => {
     if (cliente) {
+      console.log("🔍 [DEBUG] ClienteForm recebeu cliente:", cliente);
+      console.log("🔍 [DEBUG] ClienteForm - nome do cliente:", cliente.nome);
       // Garantir que todos os valores sejam strings para evitar undefined
       const clienteData = {
         type: cliente.type || "pessoa_fisica",
-        name: cliente.name || "",
+        name: cliente.nome || cliente.name || "",
         cpf_cnpj: cliente.cpf_cnpj || "",
         email: cliente.email || "",
         telefone: cliente.telefone || "",
@@ -52,6 +54,7 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
         funcao: cliente.funcao || "",
         lead_id: cliente.lead_id || null,
       };
+      console.log("🔍 [DEBUG] ClienteForm - dados aplicados:", clienteData);
       setFormData(clienteData);
     } else {
       const userRaw = localStorage.getItem("user");
