@@ -300,6 +300,19 @@ export default function CriarContratoAutentique() {
     setValidade(isoDate);
   }, []);
 
+  // Sincroniza os dados do cliente quando clienteSelecionado mudar
+  useEffect(() => {
+    if (clienteSelecionado && clientes.length > 0) {
+      const clienteEncontrado = clientes.find(c => c.id.toString() === clienteSelecionado);
+      if (clienteEncontrado) {
+        setCliente(clienteEncontrado);
+        console.log("🔍 [DEBUG] Cliente sincronizado:", clienteEncontrado);
+        console.log("🔍 [DEBUG] Nome sincronizado:", clienteEncontrado.nome);
+        console.log("🔍 [DEBUG] CEP sincronizado:", clienteEncontrado.cep);
+      }
+    }
+  }, [clienteSelecionado, clientes]);
+
   useEffect(() => {
     async function loadCustomVariables() {
       try {
@@ -647,11 +660,8 @@ export default function CriarContratoAutentique() {
       }
     }
 
-    // Buscar os dados do cliente selecionado primeiro
-    const cliente = clientes.find((cliente) => cliente.id.toString() === clienteSelecionado);
-
-    // Garantir que o cliente foi encontrado
-    if (!cliente) {
+    // Usar o estado do cliente que já foi sincronizado
+    if (!cliente || Object.keys(cliente).length === 0) {
       toast.warning("Cliente não encontrado. Por favor, selecione um cliente válido.");
       setLoading(false);
       return;
@@ -735,7 +745,7 @@ export default function CriarContratoAutentique() {
         return total + quantidade * valorUnitario;
       }, 0);
 
-    const nomeFinal = nomeDocumento || `${cliente.name} - Contrato`;
+    const nomeFinal = nomeDocumento || `${cliente.nome} - Contrato`;
 
     // Validação de conteúdo ou arquivo
     if (!uploadedFile && !selectedTemplate && (!content || content.trim() === '')) {
@@ -824,14 +834,14 @@ export default function CriarContratoAutentique() {
           }
         }
         
-        // Buscar dados do cliente selecionado
-        const cliente = clientes.find((c) => c.id.toString() === clienteSelecionado);
+        // Usar o estado do cliente que já foi sincronizado
+        // O cliente já está disponível no estado
         
         // Criar array de variáveis incluindo dados do cliente e contrato
         const variables = [
           // Variáveis do cliente
           { variable_name: "client.type", value: cliente?.type || "" },
-          { variable_name: "client.name", value: cliente?.name || "" },
+          { variable_name: "client.name", value: cliente?.nome || "" },
           { variable_name: "client.cpf_cnpj", value: cliente?.cpf_cnpj || "" },
           { variable_name: "client.email", value: cliente?.email || "" },
           { variable_name: "client.telefone", value: cliente?.telefone || "" },
@@ -1039,8 +1049,12 @@ export default function CriarContratoAutentique() {
           end_at: payload.end_at
         });
         console.log("Variáveis sendo enviadas:", payload.variables);
-        console.log("Cliente selecionado:", cliente?.name);
-        console.log("Produtos selecionados:", produtosSelecionados.length);
+        console.log("🔍 [DEBUG] Cliente selecionado:", cliente?.nome);
+        console.log("🔍 [DEBUG] Cliente completo:", cliente);
+        console.log("🔍 [DEBUG] CEP do cliente:", cliente?.cep);
+        console.log("🔍 [DEBUG] Email do cliente:", cliente?.email);
+        console.log("🔍 [DEBUG] Endereço do cliente:", cliente?.endereco);
+        console.log("🔍 [DEBUG] Produtos selecionados:", produtosSelecionados.length);
         console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/html`);
         res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/html`, {
           method: "POST",
@@ -1619,9 +1633,12 @@ export default function CriarContratoAutentique() {
                 const clienteEncontrado = clientes.find(c => c.id.toString() === clienteId);
                 setClienteSelecionado(clienteId);
                 
-                // Se cliente existe, abre formulário normal; se não, abre modal
+                // Se cliente existe, define os dados do cliente
                 if (clienteEncontrado) {
                   setCliente(clienteEncontrado);
+                  console.log("🔍 [DEBUG] Cliente selecionado:", clienteEncontrado);
+                  console.log("🔍 [DEBUG] Nome do cliente:", clienteEncontrado.nome);
+                  console.log("🔍 [DEBUG] CEP do cliente:", clienteEncontrado.cep);
                   setShowClienteFormModal(true);
                 } else {
                   setCliente({}); // Objeto vazio para evitar undefined
@@ -1638,7 +1655,7 @@ export default function CriarContratoAutentique() {
                 clientes.map((c) => {
                   // Debug: verificar campos disponíveis
                   console.log("🔍 [DEBUG] Renderizando cliente:", c);
-                  const nomeCliente = c.name || c.nome || c.razao_social || `Cliente ${c.id}`;
+                  const nomeCliente = c.nome || c.name || c.razao_social || `Cliente ${c.id}`;
                   return (
                     <option key={c.id} value={c.id}>
                       {nomeCliente}
@@ -1812,13 +1829,13 @@ export default function CriarContratoAutentique() {
                   <input
                     className={styles.input}
                     type="text"
-                    placeholder={`${cliente?.name || 'Cliente'} - Contrato`}
+                    placeholder={`${cliente?.nome || 'Cliente'} - Contrato`}
                     value={nomeDocumento || ""}
                     onChange={(e) => setNomeDocumento(e.target.value)}
                     style={{ width: '100%' }}
                   />
                   <small style={{ color: '#666', fontSize: '12px' }}>
-                    Deixe em branco para usar o nome padrão: "{cliente?.name || 'Cliente'} - Contrato"
+                    Deixe em branco para usar o nome padrão: "{cliente?.nome || 'Cliente'} - Contrato"
                   </small>
                 </div>
 
@@ -2352,7 +2369,7 @@ export default function CriarContratoAutentique() {
                 }
                 setNovoSignatario((prev) => ({
                   ...prev,
-                  name: (cliente.name || ""),
+                  name: (cliente.nome || ""),
                   email: (cliente.email || "").toLowerCase(),
                   cpf: cleanCpf(cliente.cpf_cnpj || ""),
                   telefone: maskPhoneBR(cliente.telefone || ""),

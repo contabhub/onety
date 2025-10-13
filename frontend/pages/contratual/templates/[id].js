@@ -88,7 +88,24 @@ export default function VisualizarTemplate() {
                           <div
                             className="template-render"
                             dangerouslySetInnerHTML={{
-                              __html: template.conteudo.replace(/\n/g, "<br/>"),
+                              __html: template.conteudo
+                                // Remove quebras de linha desnecessárias entre variáveis
+                                .replace(/\s*\n\s*/g, ' ')
+                                // Remove espaços múltiplos
+                                .replace(/\s{2,}/g, ' ')
+                                // Preserva quebras de linha intencionais (quando há quebra dupla)
+                                .replace(/\n\n/g, '<br/><br/>')
+                                // Converte quebras de linha simples restantes em espaços
+                                .replace(/\n/g, ' ')
+                                // Remove espaços antes e depois de tags HTML
+                                .replace(/\s+<\/?(p|div|br|h[1-6]|ul|ol|li|strong|em|u|span)[^>]*>\s*/gi, (match) => {
+                                  return match.trim()
+                                })
+                                // Remove espaços entre variáveis e pontuação
+                                .replace(/(\{\{[^}]+\}\})\s*([,.;:!?])/g, '$1$2')
+                                // Remove espaços antes de variáveis quando seguem pontuação
+                                .replace(/([,.;:!?])\s*(\{\{[^}]+\}\})/g, '$1$2')
+                                .trim()
                             }}
                           />
 
