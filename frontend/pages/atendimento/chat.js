@@ -78,7 +78,6 @@ export default function Chat({ auth }) {
     return <BillingStatusBanner status={companyStatus} supportUrl={supportUrl} />;
   };
 
-
   if (loading) {
     console.log('⏳ Chat - Carregando...');
     return (
@@ -92,6 +91,7 @@ export default function Chat({ auth }) {
     console.log('❌ Chat - Sem usuário, renderizando null');
     return null;
   }
+  
 
   return (
     <div className={styles.chatContainer}>

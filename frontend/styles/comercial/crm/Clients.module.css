@@ -457,7 +457,7 @@
 
 .filterSelect {
   padding: 8px 12px;
-  border: 1px solid var(--onity-color-text);
+  border: none;
   border-radius: 10px;
   font-size: 0.95rem;
   background-color: var(--onity-color-surface);
