@@ -13,6 +13,19 @@ export default function App({ Component, pageProps }) {
   const auth = useAuth()
   const toastTheme = useToastTheme()
 
+  // Inicializa o tema do localStorage ao carregar a aplicação
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('theme')
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      const theme = saved || (prefersDark ? 'dark' : 'light')
+      document.documentElement.setAttribute('data-theme', theme)
+    } catch (error) {
+      // Fallback para tema dark em caso de erro
+      document.documentElement.setAttribute('data-theme', 'dark')
+    }
+  }, [])
+
   return (
     <div className={inter.className}>
       <Head>
