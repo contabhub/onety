@@ -22,11 +22,13 @@ export default function CanaisAtendimento() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [permissoes, setPermissoes] = useState({});
 
+
   const hasPerm = (area, perm) => {
     if (isAdmin) return true;
     const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
     return areaPerms.includes(perm);
   };
+
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
@@ -40,9 +42,12 @@ export default function CanaisAtendimento() {
       const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('admin') || permsAdm.includes('administrador');
       setIsAdmin(Boolean(adminMatch));
       setPermissoes(userData?.permissoes || {});
+ 
+ 
     } catch {
       setIsAdmin(false);
       setPermissoes({});
+  
     }
     
     if (!token) {

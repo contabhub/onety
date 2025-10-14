@@ -69,13 +69,13 @@ const MODULE_REGISTRY = {
       light: '/img/Comercial preto.png',
       dark: '/img/Comercial branco.png'
     },
-    items: [
-      {
-        id: 'clients',
-        label: 'Pré-Clientes',
-        icon: <Users size={18} />,
-        route: '/comercial/clients'
-      },
+   items: [
+      // {
+       //  id: 'clients',
+        //label: 'Pré-Clientes',
+        //icon: <Users size={18} />,
+        //route: '/comercial/clients'
+      //},
       {
         id: 'crm',
         label: 'CRM',

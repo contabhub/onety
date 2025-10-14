@@ -1666,13 +1666,6 @@ export default function CriarContratoAutentique() {
                 !loadingClientes && <option value="" disabled>Nenhum cliente encontrado</option>
               )}
             </select>
-
-            <button className={styles.button} onClick={() => {
-              setCliente({}); // Objeto vazio ao invés de null
-              setShowClienteModal(true);
-            }}>
-              Criar Cliente
-            </button>
           </div>
         </div>
       )}
