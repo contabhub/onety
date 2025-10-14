@@ -42,9 +42,12 @@ export default function CanaisAtendimento() {
       const adminMatch = roleCandidates.includes('superadmin') || roleCandidates.includes('administrador') || roleCandidates.includes('admin') || permsAdm.includes('superadmin') || permsAdm.includes('admin') || permsAdm.includes('administrador');
       setIsAdmin(Boolean(adminMatch));
       setPermissoes(userData?.permissoes || {});
+ 
+ 
     } catch {
       setIsAdmin(false);
       setPermissoes({});
+  
     }
     
     if (!token) {
