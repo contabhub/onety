@@ -33,15 +33,33 @@ export function useWebSocket() {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000';
     console.log('🔗 URL do WebSocket:', wsUrl);
     
-    const newSocket = io(wsUrl, {
-      auth: { token: `Bearer ${token}` , companyId },
-      transports: ['websocket'], // força conexão direta por WebSocket (evita polling via proxy/ngrok)
-      path: '/socket.io', // garante path padrão explícito para proxies como ngrok
+    // Configuração específica para Ngrok - usa polling primeiro, depois upgrade para websocket
+    const isNgrokUrl = wsUrl.includes('ngrok');
+    const socketConfig = {
+      auth: { token: `Bearer ${token}`, companyId },
       reconnection: false,
       timeout: 20000,
       forceNew: true,
-      withCredentials: true
-    });
+      withCredentials: true,
+      path: '/socket.io'
+    };
+
+    if (isNgrokUrl) {
+      // Para Ngrok: usa polling primeiro (que funciona), depois faz upgrade para websocket
+      socketConfig.transports = ['polling', 'websocket'];
+      socketConfig.upgrade = true;
+      // Header para pular página de aviso do Ngrok
+      socketConfig.extraHeaders = {
+        'ngrok-skip-browser-warning': 'true'
+      };
+      console.log('🔄 Usando configuração Ngrok: polling → websocket upgrade');
+    } else {
+      // Para localhost/produção: websocket direto
+      socketConfig.transports = ['websocket'];
+      console.log('⚡ Usando configuração direta: websocket');
+    }
+
+    const newSocket = io(wsUrl, socketConfig);
 
     // Eventos de conexão
     newSocket.on('connect', () => {
