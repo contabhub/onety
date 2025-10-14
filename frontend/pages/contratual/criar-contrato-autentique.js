@@ -306,6 +306,8 @@ export default function CriarContratoAutentique() {
       const clienteEncontrado = clientes.find(c => c.id.toString() === clienteSelecionado);
       if (clienteEncontrado) {
         setCliente(clienteEncontrado);
+        // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Contrato"
+        setNomeDocumento(`${clienteEncontrado.nome || 'Cliente'} - Contrato`);
         console.log("🔍 [DEBUG] Cliente sincronizado:", clienteEncontrado);
         console.log("🔍 [DEBUG] Nome sincronizado:", clienteEncontrado.nome);
         console.log("🔍 [DEBUG] CEP sincronizado:", clienteEncontrado.cep);
@@ -1150,6 +1152,8 @@ export default function CriarContratoAutentique() {
 
     setCliente(clienteData);
     setClienteSelecionado(clientIdStr);
+    // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Contrato"
+    setNomeDocumento(`${clienteData.nome || 'Cliente'} - Contrato`);
     setShowClienteModal(false);
     setShowClienteFormModal(false);
     setActiveTab("documento");
@@ -1636,6 +1640,8 @@ export default function CriarContratoAutentique() {
                 // Se cliente existe, define os dados do cliente
                 if (clienteEncontrado) {
                   setCliente(clienteEncontrado);
+                  // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Contrato"
+                  setNomeDocumento(`${clienteEncontrado.nome || clienteEncontrado.name || clienteEncontrado.razao_social || 'Cliente'} - Contrato`);
                   console.log("🔍 [DEBUG] Cliente selecionado:", clienteEncontrado);
                   console.log("🔍 [DEBUG] Nome do cliente:", clienteEncontrado.nome);
                   console.log("🔍 [DEBUG] CEP do cliente:", clienteEncontrado.cep);
@@ -2608,6 +2614,8 @@ export default function CriarContratoAutentique() {
               const clienteData = await fetchClienteById(clientId);  // <-- Passa o clientId e espera resposta
               setCliente(clienteData);
               setClienteSelecionado(clientId.toString());
+              // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Contrato"
+              setNomeDocumento(`${clienteData.nome || 'Cliente'} - Contrato`);
               setActiveTab("documento");
             } catch (error) {
               console.error("Erro ao buscar cliente criado:", error);
