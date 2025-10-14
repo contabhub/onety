@@ -22,11 +22,13 @@ export default function CanaisAtendimento() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [permissoes, setPermissoes] = useState({});
 
+
   const hasPerm = (area, perm) => {
     if (isAdmin) return true;
     const areaPerms = Array.isArray(permissoes?.[area]) ? permissoes[area] : [];
     return areaPerms.includes(perm);
   };
+
 
   // Verificar se os dados necessários estão disponíveis
   useEffect(() => {
