@@ -298,24 +298,41 @@ export default function CriarDocumentoAutentique() {
     setValidade(isoDate);
   }, []);
 
+  // Sincroniza os dados do cliente quando clienteSelecionado mudar
+  useEffect(() => {
+    if (clienteSelecionado && clientes.length > 0) {
+      const clienteEncontrado = clientes.find(c => c.id.toString() === clienteSelecionado);
+      if (clienteEncontrado) {
+        setCliente(clienteEncontrado);
+        // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
+        setNomeDocumento(`${clienteEncontrado.name || clienteEncontrado.nome || 'Cliente'} - Documento`);
+        console.log("🔍 [DEBUG] Cliente sincronizado:", clienteEncontrado);
+        console.log("🔍 [DEBUG] Nome sincronizado:", clienteEncontrado.name || clienteEncontrado.nome);
+      }
+    }
+  }, [clienteSelecionado, clientes]);
+
   useEffect(() => {
     async function loadCustomVariables() {
       try {
         const token = localStorage.getItem("token");
+        const userDataRaw = localStorage.getItem("userData");
         const userRaw = localStorage.getItem("user");
-        if (!userRaw || !token) return;
+        if (!token) return;
 
-        const user = JSON.parse(userRaw);
-        const equipeId = user.equipe_id;
+        const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        const equipeId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
         if (!equipeId) return;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-variables/${equipeId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/variaveis-personalizadas/${equipeId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         const data = await res.json();
+        console.log("🔍 [DEBUG] Variáveis personalizadas carregadas:", data);
         setCustomVariables(data || []);
       } catch (error) {
         console.error("Erro ao carregar variáveis personalizadas:", error);
@@ -494,10 +511,12 @@ export default function CriarDocumentoAutentique() {
     if (salvarNaLista) {
       try {
         const token = localStorage.getItem("token");
+        const userDataRaw = localStorage.getItem("userData");
         const userRaw = localStorage.getItem("user");
-        const user = userRaw ? JSON.parse(userRaw) : {};
-        const equipeId = user.equipe_id;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios`, {
+        const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        const equipeId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -505,7 +524,7 @@ export default function CriarDocumentoAutentique() {
           },
           body: JSON.stringify({
             ...novoSignatario,
-            equipe_id: equipeId,
+            empresa_id: equipeId,
           }),
         });
         if (!res.ok) throw new Error("Erro ao salvar signatário na lista global.");
@@ -557,10 +576,12 @@ export default function CriarDocumentoAutentique() {
     }
     try {
       const token = localStorage.getItem("token");
+      const userDataRaw = localStorage.getItem("userData");
       const userRaw = localStorage.getItem("user");
-      const user = userRaw ? JSON.parse(userRaw) : {};
-      const equipeId = user.equipe_id;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lista-signatarios`, {
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const equipeId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -568,7 +589,7 @@ export default function CriarDocumentoAutentique() {
         },
         body: JSON.stringify({
           ...novoSignatario,
-          equipe_id: equipeId,
+          empresa_id: equipeId,
         }),
       });
       if (!res.ok) throw new Error("Erro ao salvar signatário na lista global.");
@@ -626,8 +647,9 @@ export default function CriarDocumentoAutentique() {
     if (selectedTemplate && !uploadedFile) {
       const selectedTemplateObj = templates.find(t => t.id.toString() === selectedTemplate);
       if (selectedTemplateObj) {
+        const templateContent = selectedTemplateObj.content || selectedTemplateObj.conteudo || "";
         const customVarsInTemplate = customVariables.filter(v => 
-          selectedTemplateObj.content.includes(`{{${v.variable}}}`)
+          templateContent.includes(`{{${v.variable}}}`)
         );
         
         const unfilledVars = customVarsInTemplate.filter(v => 
@@ -1109,6 +1131,8 @@ export default function CriarDocumentoAutentique() {
 
     setCliente(clienteData);
     setClienteSelecionado(clientIdStr);
+    // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
+    setNomeDocumento(`${clienteData.name || clienteData.nome || 'Cliente'} - Documento`);
     setShowClienteModal(false);
     setShowClienteFormModal(false);
     setActiveTab("documento");
@@ -1120,7 +1144,7 @@ export default function CriarDocumentoAutentique() {
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${lead_id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${lead_id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -1541,6 +1565,8 @@ export default function CriarDocumentoAutentique() {
                 // Se cliente existe, abre formulário normal; se não, abre modal
                 if (clienteEncontrado) {
                   setCliente(clienteEncontrado);
+                  // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
+                  setNomeDocumento(`${clienteEncontrado.name || clienteEncontrado.nome || clienteEncontrado.razao_social || 'Cliente'} - Documento`);
                   setShowClienteFormModal(true);
                 } else {
                   setCliente({}); // Objeto vazio para evitar undefined
@@ -2067,14 +2093,27 @@ export default function CriarDocumentoAutentique() {
             );
             // Função para filtrar variáveis presentes no conteúdo do template
             function getCustomVariablesInTemplate(content, customVariables) {
-              if (!content || !customVariables) return [];
-              return customVariables.filter((v) =>
-                content.includes(`{{${v.variable}}}`)
-              );
+              if (!content || !customVariables || !Array.isArray(customVariables)) {
+                console.log("🔍 [DEBUG] Retornando vazio - content ou customVariables inválidos");
+                return [];
+              }
+              const vars = customVariables.filter((v) => {
+                const found = content.includes(`{{${v.variable}}}`);
+                console.log(`🔍 [DEBUG] Procurando {{${v.variable}}} no template:`, found);
+                return found;
+              });
+              console.log("🔍 [DEBUG] Variáveis encontradas no template:", vars);
+              return vars;
             }
             // Filtra as variáveis personalizadas presentes no template selecionado
+            const templateContent = selectedTemplateObj?.content || selectedTemplateObj?.conteudo || "";
+            
+            console.log("🔍 [DEBUG] Template selecionado:", selectedTemplateObj);
+            console.log("🔍 [DEBUG] Conteúdo do template (primeiros 200 chars):", templateContent.substring(0, 200));
+            console.log("🔍 [DEBUG] Variáveis customizadas disponíveis:", customVariables);
+            
             const customVarsToShow = getCustomVariablesInTemplate(
-              selectedTemplateObj?.content,
+              templateContent,
               customVariables
             );
 
@@ -2211,6 +2250,8 @@ export default function CriarDocumentoAutentique() {
               const clienteData = await fetchClienteById(clientId);  // <-- Passa o clientId e espera resposta
               setCliente(clienteData);
               setClienteSelecionado(clientId.toString());
+              // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
+              setNomeDocumento(`${clienteData.name || clienteData.nome || 'Cliente'} - Documento`);
               setActiveTab("documento");
             } catch (error) {
               console.error("Erro ao buscar cliente criado:", error);
