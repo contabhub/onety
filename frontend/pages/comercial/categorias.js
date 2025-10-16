@@ -92,12 +92,6 @@ export default function CategoriasPersonalizadas() {
     <div style={{ display: 'flex', height: '100vh' }}>
       <PrincipalSidebar />
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <button className={styles.backButton} onClick={() => router.back()}>
-          <span className={styles.iconWrapper}>
-            <FontAwesomeIcon icon={faArrowLeft} />
-          </span>
-          Voltar
-        </button>
         <div className={styles.container}>
           <h2 className={styles.title}>Cadastro de Categorias Personalizadas</h2>
 

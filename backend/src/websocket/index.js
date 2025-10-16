@@ -17,11 +17,16 @@ class WebSocketManager {
     
     this.io = new Server(server, {
       cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        origin: [
+          process.env.FRONTEND_URL || "http://localhost:3000",
+          "https://onety-front-onety.hdolfr.easypanel.host",
+          "http://localhost:3000"
+        ],
         methods: ["GET", "POST"],
         credentials: true
       },
-      transports: ['websocket', 'polling']
+      transports: ['polling', 'websocket'],
+      allowEIO3: true
     });
 
     console.log('🔧 Configurando middleware...');
