@@ -398,16 +398,30 @@ export default function Contratos() {
         return;
       }
       const data = await res.json();
-      // Checa se é base64 PDF
-      if (data.contract.content && data.contract.content.startsWith("JVBERi0")) {
+      
+      console.log("🔍 [DEBUG] Dados recebidos para clonagem:", data);
+      
+      // Checa se é base64 PDF (único bloqueio válido)
+      if (data.contract.conteudo && data.contract.conteudo.startsWith("JVBERi0")) {
         toast.warning("Não é possível clonar contratos enviados como PDF.");
         return;
       }
+      
+      // Prepara os dados para clonagem (incluindo signatários)
+      const cloneData = {
+        ...data.contract,
+        signatories: data.signatories || []
+      };
+      
+      console.log("✅ [DEBUG] Dados preparados para clonagem:", cloneData);
+      
       // Salva os dados no localStorage
-      localStorage.setItem("cloneContratoData", JSON.stringify(data.contract));
+      localStorage.setItem("cloneContratoData", JSON.stringify(cloneData));
       // Redireciona para a tela de criação com flag de clone
       router.push("/contratual/criar-contrato-autentique?clone=1");
+      toast.info("Redirecionando para criar contrato baseado no modelo...");
     } catch (err) {
+      console.error("❌ [DEBUG] Erro ao clonar contrato:", err);
       toast.error("Erro ao clonar contrato!");
     }
   };

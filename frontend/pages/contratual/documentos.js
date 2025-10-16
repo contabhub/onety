@@ -394,31 +394,37 @@ export default function Documentos() {
         },
       });
       if (!res.ok) {
-        toast.error("Erro ao buscar contrato para clonar!");
+        toast.error("Erro ao buscar documento para clonar!");
         return;
       }
       const data = await res.json();
       
-      // Verifica a estrutura dos dados retornados
-      console.log("📋 [DEBUG] Estrutura completa dos dados retornados:", data);
-      console.log("📋 [DEBUG] Chaves disponíveis:", Object.keys(data));
+      console.log("🔍 [DEBUG] Dados recebidos para clonagem:", data);
       
-      // Checa se é base64 PDF - ajusta para a nova estrutura
-      const content = data.document?.content || data.contract?.content || data.content;
+      // Checa se é base64 PDF - único bloqueio válido
+      const content = data.document?.conteudo || data.document?.content || data.contract?.conteudo || data.contract?.content || data.conteudo || data.content;
       if (content && content.startsWith("JVBERi0")) {
-        toast.warning("Não é possível clonar contratos enviados como PDF.");
+        toast.warning("Não é possível clonar documentos enviados como PDF.");
         return;
       }
       
-      // Salva os dados no localStorage - ajusta para a nova estrutura
-      const contractData = data.document || data.contract || data;
-      console.log("💾 [DEBUG] Salvando dados para clonagem:", contractData);
-      localStorage.setItem("clonedocumentoData", JSON.stringify(contractData));
+      // Prepara os dados para clonagem (incluindo signatários)
+      const documentData = data.document || data.contract || data;
+      const cloneData = {
+        ...documentData,
+        signatories: data.signatories || []
+      };
       
+      console.log("✅ [DEBUG] Dados preparados para clonagem:", cloneData);
+      
+      // Salva os dados no localStorage
+      localStorage.setItem("clonedocumentoData", JSON.stringify(cloneData));
       // Redireciona para a tela de criação com flag de clone
       router.push("/contratual/criar-documento-autentique?clone=1");
+      toast.info("Redirecionando para criar documento baseado no modelo...");
     } catch (err) {
-      toast.error("Erro ao clonar contrato!");
+      console.error("❌ [DEBUG] Erro ao clonar documento:", err);
+      toast.error("Erro ao clonar documento!");
     }
   };
 
