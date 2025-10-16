@@ -1,76 +1,56 @@
-# Dockerfile para o projeto Front-Aura8 (Next.js)
-# Baseado no Node.js 18 Alpine para otimização de tamanho
-FROM node:18-alpine AS base
+# Multi-stage build para otimizar a imagem final
+FROM node:20-alpine AS base
 
-# Instalar dependências necessárias para o Alpine
+# Instalar dependências apenas quando necessário
+FROM base AS deps
 RUN apk add --no-cache libc6-compat
-
-# Definir diretório de trabalho
 WORKDIR /app
 
-# ===========================================
-# STAGE 1: Dependencies
-# ===========================================
-FROM base AS deps
-
-# Copiar arquivos de dependências
+# Copiar arquivos de dependência
 COPY package.json package-lock.json* ./
+RUN npm ci --only=production --ignore-scripts
 
-# Instalar todas as dependências (incluindo devDependencies para o build)
-RUN npm ci --ignore-scripts && npm cache clean --force
-
-# ===========================================
-# STAGE 2: Builder
-# ===========================================
+# Builder: reconstruir o código quando necessário
 FROM base AS builder
-
-# Copiar dependências instaladas
+WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-
-# Copiar código fonte
 COPY . .
 
-# Garantir que o diretório public existe e tem conteúdo
-RUN mkdir -p ./public && \
-    if [ ! -f "./public/.gitkeep" ]; then touch ./public/.gitkeep; fi
-
-# Configurar variáveis de ambiente para build
+# Variáveis de ambiente necessárias para o build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Build da aplicação
+# Build do Next.js
 RUN npm run build
 
-# ===========================================
-# STAGE 3: Runner
-# ===========================================
+# Imagem de produção: copiar todos os arquivos e executar next
 FROM base AS runner
+WORKDIR /app
 
-# Configurar ambiente de produção
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Criar usuário não-root para segurança
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copiar arquivos públicos
-RUN mkdir -p ./public
 COPY --from=builder /app/public ./public
 
-# Copiar build standalone do Next.js
+# Copiar arquivos de build
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Copiar arquivos necessários do builder
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Mudar para usuário não-root
 USER nextjs
 
-# Expor porta
 EXPOSE 3000
 
-# Configurar variáveis de ambiente
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Comando para iniciar a aplicação
+# Executar o servidor Next.js
 CMD ["node", "server.js"]
+

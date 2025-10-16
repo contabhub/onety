@@ -1,53 +1,48 @@
 version: '3.8'
 
 services:
-  # Aplicação Next.js
-  front-aura8:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: front-aura8-app
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
-    restart: unless-stopped
-    networks:
-      - front-aura8-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Serviço para desenvolvimento (opcional)
-  front-aura8-dev:
+  frontend-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: front-aura8-dev
+    container_name: onety-frontend-dev
     ports:
-      - "3001:3000"
+      - "3000:3000"
+    volumes:
+      # Montar código fonte para hot reload
+      - .:/app
+      # Evitar sobrescrever node_modules
+      - /app/node_modules
+      - /app/.next
     environment:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-    command: npm run dev
+      # Adicione outras variáveis de ambiente aqui
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000}
     networks:
-      - front-aura8-network
+      - onety-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  frontend-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onety-frontend-prod
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+    networks:
+      - onety-network
+    restart: unless-stopped
     profiles:
-      - dev
+      - production
 
 networks:
-  front-aura8-network:
+  onety-network:
     driver: bridge
 
-# Volumes para persistência (se necessário)
-volumes:
-  node_modules:
-  next_cache:

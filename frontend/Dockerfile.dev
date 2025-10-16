@@ -1,27 +1,28 @@
 # Dockerfile para desenvolvimento
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Instalar dependências necessárias para o Alpine
+# Instalar dependências do sistema
 RUN apk add --no-cache libc6-compat
 
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de dependências
+# Copiar arquivos de dependência
 COPY package.json package-lock.json* ./
 
-# Instalar todas as dependências (incluindo devDependencies)
+# Instalar dependências (incluindo dev)
 RUN npm ci
 
-# Copiar código fonte
+# Copiar o restante do código
 COPY . .
 
-# Configurar variáveis de ambiente para desenvolvimento
-ENV NODE_ENV development
-ENV NEXT_TELEMETRY_DISABLED 1
-
-# Expor porta
+# Expor porta do Next.js
 EXPOSE 3000
 
-# Comando para desenvolvimento com hot reload
+# Variáveis de ambiente
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Executar em modo desenvolvimento com hot reload
 CMD ["npm", "run", "dev"]
+
