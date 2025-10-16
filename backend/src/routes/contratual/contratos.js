@@ -348,6 +348,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Deletar registros relacionados ANTES do contrato (respeitar foreign keys)
+    // Ordem: assinaturas -> signatarios -> contratos
+    await pool.query("DELETE FROM signatarios WHERE contrato_id = ?", [id]);
     await pool.query("DELETE FROM contratos WHERE id = ?", [id]);
     res.json({ message: "Contrato deletado com sucesso!" });
   } catch (error) {

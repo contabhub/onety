@@ -553,6 +553,12 @@ router.delete("/:documentId", verifyToken, async (req, res) => {
     }
 
     const autentiqueId = document.autentique_id;
+    
+    // 1.5) Deletar registros relacionados ANTES do documento (respeitar foreign keys)
+    // Ordem: assinaturas -> signatarios -> documentos
+    await connection.query(`DELETE FROM assinaturas WHERE documento_id = ?`, [documentId]);
+    await connection.query(`DELETE FROM signatarios WHERE documento_id = ?`, [documentId]);
+    
     if (!autentiqueId) {
       // Se não houver autentique_id, só remove local
       await connection.query(`DELETE FROM documentos WHERE id = ?`, [documentId]);
@@ -562,7 +568,7 @@ router.delete("/:documentId", verifyToken, async (req, res) => {
 
     // 2) Remove no Autentique (doc: deleteDocument)
     // Obs: se tiver assinaturas, o Autentique "move para lixeira" em vez de deletar de vez.
-    // Isso é o comportamento esperado da API. :contentReference[oaicite:3]{index=3}
+    // Isso é o comportamento esperado da API.
     await deleteDocumentAutentique(autentiqueId);
 
     // 3) Remove/arquiva localmente (escolha: delete físico ou soft delete)

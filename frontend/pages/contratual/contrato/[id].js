@@ -171,7 +171,7 @@ export default function Contrato() {
       const isAutentiqueContract = contrato?.contract?.autentique_id;
       
       const endpoint = isAutentiqueContract 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/contracts-authentique/${id}`
+        ? `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/${id}`
         : `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/${id}`;
 
       console.log(`🗑️ Excluindo contrato via rota: ${isAutentiqueContract ? 'contracts-authentique' : 'contracts'}`);

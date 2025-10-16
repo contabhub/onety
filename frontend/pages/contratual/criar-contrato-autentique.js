@@ -1739,56 +1739,77 @@ export default function CriarContratoAutentique() {
       if (cloneDataRaw) {
         try {
           const cloneData = JSON.parse(cloneDataRaw);
+          console.log("✅ [DEBUG] Dados clonados recebidos:", cloneData);
           
-          // Preenche os campos principais, se ainda não preenchidos
-          if (!clienteSelecionado && cloneData.client_id) {
-            console.log("🔍 [DEBUG] Definindo cliente:", cloneData.client_id);
-            setClienteSelecionado(cloneData.client_id.toString());
+          // Preenche os campos principais usando os nomes CORRETOS da API
+          if (!clienteSelecionado && cloneData.pre_cliente_id) {
+            console.log("🔍 [DEBUG] Definindo cliente:", cloneData.pre_cliente_id);
+            setClienteSelecionado(cloneData.pre_cliente_id.toString());
           }
-          if (!selectedTemplate && cloneData.template_id) {
-            console.log("🔍 [DEBUG] Definindo template:", cloneData.template_id);
-            setSelectedTemplate(cloneData.template_id.toString());
+          
+          if (!selectedTemplate && cloneData.modelos_contrato_id) {
+            console.log("🔍 [DEBUG] Definindo template:", cloneData.modelos_contrato_id);
+            setSelectedTemplate(cloneData.modelos_contrato_id.toString());
           }
-          if (!content && cloneData.content) {
+          
+          if (!content && cloneData.conteudo) {
             console.log("🔍 [DEBUG] Definindo conteúdo");
-            setContent(cloneData.content);
-          }
-          if (!validade && cloneData.expires_at) {
-            console.log("🔍 [DEBUG] Definindo validade:", cloneData.expires_at);
-            setValidade(cloneData.expires_at);
-          }
-          if (!vigenciaInicio && cloneData.start_at) {
-            console.log("🔍 [DEBUG] Definindo vigência início:", cloneData.start_at);
-            setVigenciaInicio(cloneData.start_at);
-          }
-          if (!vigenciaFim && cloneData.end_at) {
-            console.log("🔍 [DEBUG] Definindo vigência fim:", cloneData.end_at);
-            setVigenciaFim(cloneData.end_at);
-          }
-          if (!produtosSelecionados.length && cloneData.produtos) {
-            console.log("🔍 [DEBUG] Definindo produtos");
-            setProdutosSelecionados(cloneData.produtos);
-          }
-          if (!signatarios.length && cloneData.signatories) {
-            console.log("🔍 [DEBUG] Definindo signatários");
-            setSignatarios(cloneData.signatories);
-          }
-          if (!customValues || Object.keys(customValues).length === 0) {
-            if (cloneData.variables) {
-              console.log("🔍 [DEBUG] Definindo variáveis personalizadas");
-              const customVars = {};
-              cloneData.variables.forEach(v => {
-                if (v.variable_name && v.value) customVars[v.variable_name] = v.value;
-              });
-              setCustomValues(customVars);
-            }
+            setContent(cloneData.conteudo);
           }
           
-          console.log("🔍 [DEBUG] Clonagem concluída com sucesso!");
+          if (cloneData.expirado_em) {
+            const dataFormatada = formatDateToInput(cloneData.expirado_em);
+            console.log("🔍 [DEBUG] Definindo validade:", dataFormatada);
+            setValidade(dataFormatada);
+          }
+          
+          if (cloneData.comeca_em) {
+            const dataFormatada = formatDateToInput(cloneData.comeca_em);
+            console.log("🔍 [DEBUG] Definindo vigência início:", dataFormatada);
+            setVigenciaInicio(dataFormatada);
+          }
+          
+          if (cloneData.termina_em) {
+            const dataFormatada = formatDateToInput(cloneData.termina_em);
+            console.log("🔍 [DEBUG] Definindo vigência fim:", dataFormatada);
+            setVigenciaFim(dataFormatada);
+          }
+          
+          // Clone valor do contrato se existir
+          if (cloneData.valor) {
+            console.log("🔍 [DEBUG] Definindo valor do contrato:", cloneData.valor);
+            setValorContrato(cloneData.valor.toString());
+          }
+          
+          // Clone valor recorrente se existir
+          if (cloneData.valor_recorrente) {
+            console.log("🔍 [DEBUG] Definindo MRR:", cloneData.valor_recorrente);
+            setValorRecorrente(cloneData.valor_recorrente.toString());
+          }
+          
+          // Clona signatários (transforma de signatarios para o formato esperado)
+          if (!signatarios.length && cloneData.signatories && cloneData.signatories.length > 0) {
+            console.log("🔍 [DEBUG] Definindo signatários:", cloneData.signatories.length);
+            // Remove campos desnecessários e ajusta formato
+            const signatoriesCloned = cloneData.signatories.map(sig => ({
+              name: sig.nome,
+              email: sig.email,
+              cpf: sig.cpf || '',
+              birth_date: sig.data_nascimento || '',
+              telefone: sig.telefone || '',
+              funcao_assinatura: sig.funcao_assinatura || ''
+            }));
+            setSignatarios(signatoriesCloned);
+          }
+          
+          console.log("✅ [DEBUG] Clonagem concluída com sucesso!");
+          toast.success("Contrato carregado! Revise os dados antes de salvar.");
+          
           // Limpa o localStorage após uso
           localStorage.removeItem("cloneContratoData");
         } catch (e) {
           console.error("❌ [DEBUG] Erro ao processar dados clonados:", e);
+          toast.error("Erro ao processar dados do contrato clonado.");
           // Se der erro, limpa para não travar futuras criações
           localStorage.removeItem("cloneContratoData");
         }
@@ -1863,7 +1884,6 @@ export default function CriarContratoAutentique() {
     <div className={styles.page}>
       <PrincipalSidebar />
       <div className={styles.pageContent}>
-        {loading && <SpaceLoader size={120} label="Criando contrato..." showText={true} minHeight={300} />}
         <div className={styles.headerLine}>
           <h1 className={styles.title}>Criar Novo Contrato</h1>
           <div className={styles.headerActions}>
@@ -3047,6 +3067,24 @@ export default function CriarContratoAutentique() {
         transition={Bounce}
       />
       </div>
+      
+      {/* Overlay de Loading sobre toda a página */}
+      {loading && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <SpaceLoader size={120} label="Criando contrato..." showText={true} minHeight={300} />
+        </div>
+      )}
     </div>
   );
 }
