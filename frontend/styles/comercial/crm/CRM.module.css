@@ -1,11 +1,12 @@
 .crmContainer {
   display: flex;
   flex-direction: row;
-  gap: 4px;
-  padding: 16px;
+  flex-wrap: nowrap; /* mantém em uma linha */
+  gap: 8px;
+  padding: 12px;
   background: var(--onity-color-bg);
   min-height: calc(100vh - 100px);
-  overflow-x: hidden;
+  overflow-x: hidden; /* evita scroll horizontal */
 }
 
 /* Layout da página com sidebar ao lado */
@@ -191,15 +192,14 @@
 }
 
 .column {
-  flex: 1;
-  min-width: 180px;
+  flex: 1 1 0; /* divide espaço igualmente */
+  min-width: 140px; /* permite comprimir bastante */
   height: 80vh;
   background-color: var(--onity-color-bg);
   border-radius: 12px;
   padding: 6px;
   display: flex;
   flex-direction: column;
-  flex-shrink: 1;
 }
 
 .columnHeader {
@@ -223,8 +223,8 @@
 .crmCard {
   background-color: var(--onity-color-surface);
   border-radius: 10px;
-  padding: 10px;
-  margin: 10px;
+  padding: 8px;
+  margin: 8px;
   display: flex;
   flex-direction: column;
 }

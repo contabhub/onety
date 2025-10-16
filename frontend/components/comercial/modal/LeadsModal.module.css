@@ -1,10 +1,5 @@
 .modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    /* Layout adicional ao overlay global (cores já vêm do globals.css) */
     z-index: 9999;
     display: flex;
     justify-content: center;
@@ -15,36 +10,25 @@
 }
 
 .modal {
-    background: var(--color-surface-1);
+    /* Complementa o container global */
     padding: 24px;
-    border-radius: 12px;
     width: 600px; /* mais confortável */
     max-height: 85vh; /* melhora o respiro inferior */
     overflow-y: auto;
-    box-shadow: var(--shadow-card);
     position: relative; /* permite posicionar o X */
 }
 
 .searchInput {
-    width: 100%;
-    padding: 8px;
+    width: 94%;
+    min-width: 260px;
     margin-bottom: 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    background-color: var(--color-surface-1);
-    color: var(--color-text-primary);
 }
 
 /* Select do funil */
 .select {
     width: 100%;
-    padding: 8px;
     margin-top: 6px;
     margin-bottom: 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    background-color: var(--color-surface-1);
-    color: var(--color-text-primary);
 }
 
 .leadList {
@@ -66,18 +50,7 @@
 
 .leadItem button {
     margin-top: 6px;
-    background: var(--brand-primary);
-    color: white;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
     margin-left: auto; /* alinha o botão à direita */
-}
-
-.leadItem button:hover {
-    background-color: color-mix(in srgb, var(--brand-primary) 85%, black);
 }
 
 .closeBtn {
@@ -107,9 +80,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-2);
-    color: var(--color-text-primary);
+    border: 1px solid var(--onity-color-border);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
     cursor: pointer;
     transition: background-color 0.2s ease, opacity 0.2s ease;
 }
@@ -129,15 +102,22 @@
 
 .leadName {
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--onity-color-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.leadEmail {
+.leadMeta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: #94a3b8;
     font-size: 12px;
-    color: var(--color-text-secondary, #94a3b8);
+}
+
+.leadEmail, .leadPhone, .leadValue {
+    max-width: 240px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -155,13 +135,13 @@
 }
 
 .confirmModal {
-    background: var(--color-surface-1);
-    border: 1px solid var(--color-border);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
     border-radius: 12px;
     padding: 20px;
     width: 420px;
     max-width: calc(100% - 40px);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--onity-elev-high);
 }
 
 .confirmTitle {
@@ -170,7 +150,7 @@
 }
 
 .confirmText {
-    color: var(--color-text-primary);
+    color: var(--onity-color-text);
     margin-bottom: 16px;
 }
 
@@ -181,18 +161,15 @@
 }
 
 .confirmCancel {
-    background: var(--color-surface-2);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--onity-color-primary);
+    border: 1px solid var(--onity-color-primary);
     padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
 }
 
 .confirmOk {
-    background: var(--brand-primary);
-    color: #fff;
-    border: none;
     padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -203,7 +180,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 0;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--onity-color-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
 }
 
 .phaseTitle {
@@ -218,6 +201,20 @@
     width: 10px;
     height: 10px;
     border-radius: 9999px;
+}
+
+.phaseCard {
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.chevron {
+    opacity: 0.7;
+}
+
+.emptyPhase {
+    color: #888;
+    padding: 10px 2px;
 }
 
 .proposta { background: #f59e0b; }

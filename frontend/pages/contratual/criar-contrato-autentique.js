@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import SpaceLoader from "../../components/onety/menu/SpaceLoader";
@@ -9,7 +9,7 @@ import ClienteForm from "../../components/contratual/ClienteForm";
 import ProdutoModal from "../../components/contratual/ProdutoModal";
 import LeadToClientForm from "../../components/contratual/LeadToClientForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faPen, faTrash, faUser, faFileAlt, faBoxOpen, faUserPlus, faInfoCircle, faRocket, faCloudUploadAlt, faCheckCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faPen, faTrash, faUser, faFileAlt, faBoxOpen, faUserPlus, faInfoCircle, faRocket, faCloudUploadAlt, faCheckCircle, faExclamationTriangle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { fetchClienteById } from "../../utils/fetchClienteById";
 import ListaSignatarios from "../../components/contratual/ListaSignatarios";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
@@ -89,12 +89,246 @@ export default function CriarContratoAutentique() {
   const [uploadProgress, setUploadProgress] = useState(0); // Progresso do upload
   const [valorContrato, setValorContrato] = useState(""); // Valor do contrato (TCV) - NOVO
   const [valorRecorrente, setValorRecorrente] = useState(""); // MRR manual para upload
+  const [rascunhoId, setRascunhoId] = useState(null); // ID do rascunho se existir
+  const [salvandoRascunho, setSalvandoRascunho] = useState(false); // Estado de salvamento do rascunho
+  const [showExitModal, setShowExitModal] = useState(false); // Modal de confirmação para sair
+  const [rascunhoCarregado, setRascunhoCarregado] = useState(false); // Evita carregar rascunho múltiplas vezes
 
 
-  const handleLeadSelecionado = (lead) => {
+  const handleLeadSelecionado = (payload) => {
+    // payload pode ser { lead, clientId }
+    const lead = payload?.lead || payload;
+    const createdClientId = payload?.clientId || null;
     setLeadSelecionado(lead);
     setShowLeadsModal(false);
-    setShowLeadToClientForm(true); // mostrar o formulário de conversão
+
+    if (createdClientId) {
+      // Se já criamos o pré-cliente, buscar dados completos e selecionar automaticamente
+      const idStr = String(createdClientId);
+      setClienteSelecionado(idStr);
+      (async () => {
+        try {
+          const clienteData = await fetchClienteById(createdClientId);
+          setCliente(clienteData);
+        } catch {
+          // fallback: preenche com dados do lead
+          setCliente({
+            id: createdClientId,
+            nome: lead?.name || lead?.nome || '',
+            email: lead?.email || '',
+            telefone: lead?.telefone || ''
+          });
+        }
+      })();
+      setShowLeadToClientForm(false);
+    } else {
+      // Caso contrário, abre conversão manual
+      setShowLeadToClientForm(true);
+    }
+  };
+
+  // Função para salvar rascunho
+  const salvarRascunho = async (silencioso = false) => {
+    // Só salva se tem dados mínimos
+    if (!clienteSelecionado && !selectedTemplate && !uploadedFile && signatarios.length === 0) {
+      return;
+    }
+
+    setSalvandoRascunho(true);
+    
+    try {
+      const token = localStorage.getItem("token");
+      const userRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : {};
+      const equipeId = user.EmpresaId;
+
+      if (!token || !equipeId) {
+        if (!silencioso) toast.warning("Erro de autenticação ao salvar rascunho.");
+        return;
+      }
+
+      console.log(`🔍 [DEBUG] Signatários a serem enviados:`, signatarios);
+
+      const dadosRascunho = {
+        client_id: clienteSelecionado || null,
+        template_id: selectedTemplate || null,
+        content: content || "",
+        signatories: signatarios,
+        empresa_id: equipeId,
+        produto_id: produtosSelecionados.length > 0 ? produtosSelecionados[0].id : null, // Mantém para compatibilidade
+        produtos_dados: produtosSelecionados, // Array completo de produtos como JSON
+        valor: produtosSelecionados.reduce((total, p) => {
+          const quantidade = parseFloat(p.quantidade) || 0;
+          const valorUnitario = parseFloat(p.valor_de_venda) || 0;
+          return total + quantidade * valorUnitario;
+        }, 0),
+        valor_recorrente: (() => {
+          const produtosMensais = produtosSelecionados.filter(p => p.tipo === 'mensal');
+          if (produtosMensais.length === 0) return 0;
+          const mrr = produtosMensais.reduce((total, p) => {
+            const quantidade = parseFloat(p.quantidade) || 0;
+            const valorUnitario = parseFloat(p.valor_de_venda) || 0;
+            const parcelas = parseInt(p.parcelas) || 1;
+            return total + ((quantidade * valorUnitario) / parcelas);
+          }, 0);
+          return Number(mrr.toFixed(2));
+        })(),
+        expires_at: validade ? new Date(validade).toISOString() : null,
+        start_at: vigenciaInicio ? new Date(vigenciaInicio).toISOString() : null,
+        end_at: vigenciaFim ? new Date(vigenciaFim).toISOString() : null
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/rascunhos`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dadosRascunho),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao salvar rascunho");
+      }
+
+      const data = await response.json();
+      setRascunhoId(data.contract_id);
+      
+      if (!silencioso) {
+        toast.success(data.is_update ? "Rascunho atualizado!" : "Rascunho salvo!");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar rascunho:", error);
+      if (!silencioso) {
+        toast.error("Erro ao salvar rascunho.");
+      }
+    } finally {
+      setSalvandoRascunho(false);
+    }
+  };
+
+  // Função para verificar se há mudanças não salvas
+  const verificarMudancas = useCallback(() => {
+    return (
+      clienteSelecionado || 
+      selectedTemplate || 
+      uploadedFile || 
+      signatarios.length > 0 || 
+      content.trim() || 
+      produtosSelecionados.length > 0 ||
+      Object.keys(customValues).length > 0 ||
+      nomeDocumento.trim() ||
+      valorContrato.trim() ||
+      valorRecorrente.trim()
+    );
+  }, [clienteSelecionado, selectedTemplate, uploadedFile, signatarios, content, produtosSelecionados, customValues, nomeDocumento, valorContrato, valorRecorrente]);
+
+  // Função para lidar com tentativa de sair da página
+  const handleExitAttempt = () => {
+    if (verificarMudancas()) {
+      setShowExitModal(true);
+    } else {
+      router.push('/contratual/contratos');
+    }
+  };
+
+  // Função para cancelar saída (chamada pelo modal)
+  const cancelExit = () => {
+    setShowExitModal(false);
+  };
+
+  // Função para sair da página (chamada pelo modal)
+  const confirmExit = async (saveBeforeExit = false) => {
+    setShowExitModal(false);
+    
+    if (saveBeforeExit) {
+      try {
+        await salvarRascunho(false);
+        toast.success("Rascunho salvo com sucesso!");
+      } catch (error) {
+        toast.error("Erro ao salvar rascunho. Tente novamente.");
+        return; // Não sai da página se der erro
+      }
+    }
+    
+    // Sempre navegar para contratos
+    router.push('/contratual/contratos');
+  };
+
+  // Função para carregar rascunho
+  const carregarRascunho = async (contractId) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/rascunhos/${contractId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao carregar rascunho");
+      }
+
+      const data = await response.json();
+      const { contract, signatories } = data;
+
+      // Preenche os estados com os dados do rascunho - apenas campos que existem na tabela
+      if (contract.client_id) setClienteSelecionado(contract.client_id.toString());
+      if (contract.template_id) setSelectedTemplate(contract.template_id.toString());
+      if (contract.content) setContent(contract.content);
+      if (contract.produtos_dados && Array.isArray(contract.produtos_dados)) {
+        console.log(`🔍 [DEBUG] Produtos carregados no frontend:`, contract.produtos_dados);
+        setProdutosSelecionados(contract.produtos_dados);
+      }
+      if (contract.valor) setValorContrato(contract.valor.toString());
+      if (contract.valor_recorrente) setValorRecorrente(contract.valor_recorrente.toString());
+      
+      // Carregar e formatar datas
+      console.log("🔍 [DEBUG] Datas do backend:", {
+        expires_at: contract.expires_at,
+        start_at: contract.start_at,
+        end_at: contract.end_at
+      });
+      
+      if (contract.expires_at) {
+        const formattedExpires = formatDateTimeToInput(contract.expires_at);
+        console.log("🔍 [DEBUG] Data de expiração formatada:", formattedExpires);
+        setValidade(formattedExpires);
+      }
+      if (contract.start_at) {
+        const formattedStart = formatDateToInput(contract.start_at);
+        console.log("🔍 [DEBUG] Data de início formatada:", formattedStart);
+        setVigenciaInicio(formattedStart);
+      }
+      if (contract.end_at) {
+        const formattedEnd = formatDateToInput(contract.end_at);
+        console.log("🔍 [DEBUG] Data final formatada:", formattedEnd);
+        setVigenciaFim(formattedEnd);
+      }
+      
+      if (signatories && Array.isArray(signatories)) {
+        console.log(`🔍 [DEBUG] Signatários carregados do backend:`, signatories);
+        const mappedSignatories = signatories.map(s => ({
+          name: s.name,  // Backend já retorna como 'name'
+          email: s.email,
+          cpf: s.cpf,
+          birth_date: s.birth_date,
+          telefone: s.telefone,
+          funcao_assinatura: s.funcao_assinatura
+        }));
+        console.log(`🔍 [DEBUG] Signatários mapeados para frontend:`, mappedSignatories);
+        setSignatarios(mappedSignatories);
+      }
+
+      setRascunhoId(contractId);
+      
+      // Não mostra toast para carregamento automático
+      console.log("✅ [DEBUG] Rascunho carregado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao carregar rascunho:", error);
+      toast.error("Erro ao carregar rascunho.");
+    }
   };
 
   // Função para lidar com upload de arquivo
@@ -508,16 +742,29 @@ export default function CriarContratoAutentique() {
         const userRaw = localStorage.getItem("userData");
         const user = userRaw ? JSON.parse(userRaw) : {};
         const equipeId = user.EmpresaId;
+        
+        // Mapear campos do frontend para o backend
+        const dadosParaBackend = {
+          nome: novoSignatario.name,
+          email: novoSignatario.email,
+          cpf: novoSignatario.cpf,
+          data_nascimento: novoSignatario.birth_date,
+          telefone: novoSignatario.telefone,
+          funcao_assinatura: novoSignatario.funcao_assinatura,
+          empresa_id: equipeId,
+        };
+        
+        console.log("🔍 [DEBUG] Dados do signatário a serem enviados:", dadosParaBackend);
+        console.log("🔍 [DEBUG] User data:", user);
+        console.log("🔍 [DEBUG] EquipeId:", equipeId);
+        
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            ...novoSignatario,
-            empresa_id: equipeId,
-          }),
+          body: JSON.stringify(dadosParaBackend),
         });
         if (!res.ok) throw new Error("Erro ao salvar signatário na lista global.");
         toast.success("Signatário salvo na lista com sucesso!");
@@ -571,16 +818,29 @@ export default function CriarContratoAutentique() {
       const userRaw = localStorage.getItem("userData");
       const user = userRaw ? JSON.parse(userRaw) : {};
       const equipeId = user.EmpresaId;
+      
+      // Mapear campos do frontend para o backend
+      const dadosParaBackend = {
+        nome: novoSignatario.name,
+        email: novoSignatario.email,
+        cpf: novoSignatario.cpf,
+        data_nascimento: novoSignatario.birth_date,
+        telefone: novoSignatario.telefone,
+        funcao_assinatura: novoSignatario.funcao_assinatura,
+        empresa_id: equipeId,
+      };
+      
+      console.log("🔍 [DEBUG] Dados do signatário a serem enviados (função 2):", dadosParaBackend);
+      console.log("🔍 [DEBUG] User data (função 2):", user);
+      console.log("🔍 [DEBUG] EquipeId (função 2):", equipeId);
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...novoSignatario,
-          empresa_id: equipeId,
-        }),
+        body: JSON.stringify(dadosParaBackend),
       });
       if (!res.ok) throw new Error("Erro ao salvar signatário na lista global.");
       toast.success("Signatário salvo na lista com sucesso!");
@@ -1532,7 +1792,16 @@ export default function CriarContratoAutentique() {
         console.log("❌ [DEBUG] Nenhum dado encontrado no localStorage para clonagem");
       }
     }
-  }, [router.query.clone, router.isReady, clienteSelecionado, selectedTemplate, content, validade, vigenciaInicio, vigenciaFim, produtosSelecionados, signatarios, customValues]);
+    // Detecta se é carregamento de rascunho
+    else if (router.query.rascunho && !rascunhoCarregado) {
+      console.log("🔍 [DEBUG] Detectado carregamento de rascunho:", router.query.rascunho);
+      setRascunhoCarregado(true); // Marca como carregado para evitar múltiplas chamadas
+      carregarRascunho(router.query.rascunho);
+    }
+  }, [router.query.clone, router.query.rascunho, router.isReady, rascunhoCarregado]);
+
+
+  // Remover interceptação de rotas - usar apenas botão Voltar
 
   // Adicionar função utilitária para formatar datas
   function formatDateToInput(dateStr) {
@@ -1545,6 +1814,22 @@ export default function CriarContratoAutentique() {
     // Se está no formato dd/MM/yyyy
     const parts = dateStr.split("/");
     if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+    return "";
+  }
+
+  function formatDateTimeToInput(dateStr) {
+    if (!dateStr) return "";
+    // Se está no formato ISO com hora
+    const d = new Date(dateStr);
+    if (!isNaN(d)) {
+      // Formatar para datetime-local (YYYY-MM-DDTHH:MM)
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
     return "";
   }
   function formatDateToBR(dateStr) {
@@ -1575,13 +1860,58 @@ export default function CriarContratoAutentique() {
       <PrincipalSidebar />
       <div className={styles.pageContent}>
         {loading && <SpaceLoader size={120} label="Criando contrato..." showText={true} minHeight={300} />}
-        <h1 className={styles.title}>Criar Novo Contrato</h1>
-      <div className={styles.infoContainer}>
-        <FontAwesomeIcon icon={faRocket} className={styles.infoIcon} />
-        <span className={styles.infoText}>
-          <strong>Contrato Autentique:</strong> Este contrato será criado diretamente no Autentique.
-        </span>
-      </div>
+        <div className={styles.headerLine}>
+          <h1 className={styles.title}>Criar Novo Contrato</h1>
+          <div className={styles.headerActions}>
+            {/* Botão de voltar */}
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                if (verificarMudancas()) {
+                  setShowExitModal(true);
+                } else {
+                  router.push('/contratual/contratos');
+                }
+              }}
+              style={{ 
+                background: "#6b7280", 
+                marginRight: "10px"
+              }}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '6px' }} />
+              Voltar
+            </button>
+            
+            {/* Botão de salvar rascunho */}
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => salvarRascunho(false)}
+              disabled={salvandoRascunho}
+              style={{ 
+                background: "#10b981", 
+                marginRight: "10px",
+                opacity: salvandoRascunho ? 0.6 : 1 
+              }}
+            >
+              <FontAwesomeIcon icon={faCheckCircle} style={{ marginRight: '6px' }} />
+              {salvandoRascunho ? "Salvando..." : "Salvar Rascunho"}
+            </button>
+          </div>
+        </div>
+        
+
+        {/* Indicador de mudanças não salvas */}
+        {verificarMudancas() && !rascunhoId && (
+          <div className={styles.infoContainer} style={{ background: '#fef3c7', border: '1px solid #f59e0b' }}>
+            <FontAwesomeIcon icon={faExclamationTriangle} className={styles.infoIcon} style={{ color: '#f59e0b' }} />
+            <span className={styles.infoText} style={{ color: '#92400e' }}>
+              <strong>Alterações não salvas:</strong> Você tem alterações que ainda não foram salvas. Use o botão "Salvar Rascunho" para salvar seu progresso.
+            </span>
+          </div>
+        )}
+        
       {error && <p className={styles.error}>{error}</p>}
       {successMessage && <p className={styles.success}>{successMessage}</p>}
 
@@ -2643,6 +2973,56 @@ export default function CriarContratoAutentique() {
           onClose={() => setShowProdutoModal(false)}
           onAdd={(produto) => setProdutosSelecionados([...produtosSelecionados, produto])}
         />
+      )}
+
+      {/* Modal de confirmação para sair */}
+      {showExitModal && (
+        <div className={styles.modalOverlay} onClick={cancelExit}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>
+                <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '8px', color: '#f59e0b' }} />
+                Você tem alterações não salvas
+              </h3>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <p className={styles.modalText}>
+                Você fez alterações no contrato que ainda não foram salvas. 
+                O que gostaria de fazer?
+              </p>
+            </div>
+            
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.modalButton}
+                onClick={() => confirmExit(true)}
+                style={{ background: '#10b981', color: 'white' }}
+              >
+                <FontAwesomeIcon icon={faCheckCircle} style={{ marginRight: '6px' }} />
+                Salvar e Sair
+              </button>
+              
+              <button
+                className={styles.modalButton}
+                onClick={() => confirmExit(false)}
+                style={{ background: '#6b7280', color: 'white' }}
+              >
+                <FontAwesomeIcon icon={faTimes} style={{ marginRight: '6px' }} />
+                Sair sem Salvar
+              </button>
+              
+              <button
+                className={styles.modalButton}
+                onClick={cancelExit}
+                style={{ background: '#e5e7eb', color: '#374151' }}
+              >
+                <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '6px' }} />
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <ToastContainer

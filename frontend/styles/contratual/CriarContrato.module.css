@@ -247,6 +247,20 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  margin-left: 20px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--onity-color-text);
 }
 
 .clientSelection {
@@ -256,6 +270,103 @@
   /* Espaçamento entre os elementos */
   align-items: center;
   /* Alinha os itens no centro verticalmente */
+  margin-left: 20px;
+}
+
+/* Modal de confirmação para sair */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalHeader {
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid var(--onity-color-border);
+  margin-bottom: 20px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  display: flex;
+  align-items: center;
+}
+
+.modalBody {
+  padding: 0 24px 20px 24px;
+}
+
+.modalText {
+  margin: 0;
+  color: var(--onity-color-text);
+  opacity: 0.8;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.modalFooter {
+  padding: 20px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-bg);
+}
+
+.modalButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.modalButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modalButton:active {
+  transform: translateY(0);
 }
 
 .tabelaProdutos {
