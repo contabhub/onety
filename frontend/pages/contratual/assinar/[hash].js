@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import styles from "../../styles/Assinar.module.css";
+import styles from "../../styles/contratual/Assinar.module.css";
 import { faDownload } from "@fortawesome/free-solid-svg-icons"; // certifique-se que está importado
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { notificarRejeicao } from "../../utils/notificarRejeicao";
-import PDFViewer from "../../components/assinador/PDFViewer";
-import meuLottieJson from '../../assets/Loading.json';
-import Lottie from 'lottie-react';
+import PDFViewer from "../../components/contratual/PDFViewer";
 
 
 export default function AssinarContrato() {
@@ -293,11 +291,6 @@ export default function AssinarContrato() {
 
   if (loading) return (
     <div className={styles.loadingContainer}>
-      <Lottie
-        animationData={meuLottieJson}
-        loop={true}
-        style={{ width: 200, height: 200 }}
-      />
       <p className={styles.loadingText}>Carregando contratos...</p>
     </div>
   );

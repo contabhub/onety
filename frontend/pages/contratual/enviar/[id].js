@@ -1,7 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Layout from "../../components/layout/Layout";
-import styles from "../../styles/Documento.module.css";
+import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar";
+import SpaceLoader from "../../../components/onety/menu/SpaceLoader";
+import PDFViewer from "../../../components/contratual/PDFViewer";
+import styles from "../../../styles/contratual/Documento.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faPaperPlane, faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -16,6 +18,7 @@ export default function VisualizarContrato() {
     const [successMessage, setSuccessMessage] = useState(null);
     const [signatarios, setSignatarios] = useState([]);
     const [enviado, setEnviado] = useState(false);
+    const [loading, setLoading] = useState(true);
 
 
     useEffect(() => {
@@ -50,8 +53,13 @@ export default function VisualizarContrato() {
             }
         };
 
-        fetchContrato();
-        fetchSignatarios();
+        const loadData = async () => {
+            setLoading(true);
+            await Promise.all([fetchContrato(), fetchSignatarios()]);
+            setLoading(false);
+        };
+
+        loadData();
     }, [id]);
 
     const handleEnviarEmail = async () => {
@@ -105,52 +113,63 @@ export default function VisualizarContrato() {
     };
 
     return (
-        <Layout>
-            <button className={styles.backButton} onClick={() => router.back()}>
-                <FontAwesomeIcon icon={faArrowLeft} /> Voltar
-            </button>
-
-            {error && <p className={styles.error}>{error}</p>}
-            {successMessage && <p className={styles.success}>{successMessage}</p>}
-
-            <div className={styles.buttonGroupWrapper}>
-
-                <button
-                    className={`${styles.dangerActionButton}`}
-                    onClick={handleExcluirContrato}
-                    disabled={deleting}
-                >
-                    <FontAwesomeIcon icon={faTrash} />{" "}
-                    {deleting ? "Excluindo..." : "Excluir Contrato"}
-                </button>
-
-                <button
-                    className={`${styles.primaryActionButton} ${enviado ? styles.emailSuccess : ""}`}
-                    onClick={handleEnviarEmail}
-                    disabled={sendingEmail || enviado}
-                >
-                    <FontAwesomeIcon icon={faPaperPlane} />{" "}
-                    {sendingEmail ? "Enviando..." : enviado ? "Enviado ✅" : "Enviar Documento"}
-                </button>
-
-            </div>
-
-
-            <div className={styles.contractContainer}>
-                {contratoHtml ? (
-                    contratoHtml.startsWith("JVBERi0") ? (
-                        <PDFViewer base64={contratoHtml} />
-                    ) : (
-                        <div
-                            className={styles.contractBody}
-                            dangerouslySetInnerHTML={{ __html: contratoHtml.replace(/\n/g, "<br/>") }}
-                        />
-                    )
+        <div className={styles.pageContainer}>
+            <PrincipalSidebar />
+            
+            <main className={styles.mainContent}>
+                {loading ? (
+                    <SpaceLoader 
+                        size={120} 
+                        label="Carregando contrato..." 
+                        showText={true}
+                        minHeight={400}
+                    />
                 ) : (
-                    <p className={styles.loading}>Carregando contrato...</p>
-                )}
-            </div>
+                    <>
+                        <button className={styles.backButton} onClick={() => router.back()}>
+                            <FontAwesomeIcon icon={faArrowLeft} /> Voltar
+                        </button>
 
-        </Layout>
+                        {error && <p className={styles.error}>{error}</p>}
+                        {successMessage && <p className={styles.success}>{successMessage}</p>}
+
+                        <div className={styles.buttonGroupWrapper}>
+                            <button
+                                className={`${styles.dangerActionButton}`}
+                                onClick={handleExcluirContrato}
+                                disabled={deleting}
+                            >
+                                <FontAwesomeIcon icon={faTrash} />{" "}
+                                {deleting ? "Excluindo..." : "Excluir Contrato"}
+                            </button>
+
+                            <button
+                                className={`${styles.primaryActionButton} ${enviado ? styles.emailSuccess : ""}`}
+                                onClick={handleEnviarEmail}
+                                disabled={sendingEmail || enviado}
+                            >
+                                <FontAwesomeIcon icon={faPaperPlane} />{" "}
+                                {sendingEmail ? "Enviando..." : enviado ? "Enviado ✅" : "Enviar Documento"}
+                            </button>
+                        </div>
+
+                        <div className={styles.contractContainer}>
+                            {contratoHtml ? (
+                                contratoHtml.startsWith("JVBERi0") ? (
+                                    <PDFViewer base64={contratoHtml} />
+                                ) : (
+                                    <div
+                                        className={styles.contractBody}
+                                        dangerouslySetInnerHTML={{ __html: contratoHtml.replace(/\n/g, "<br/>") }}
+                                    />
+                                )
+                            ) : (
+                                <p className={styles.loading}>Carregando contrato...</p>
+                            )}
+                        </div>
+                    </>
+                )}
+            </main>
+        </div>
     );
 }
