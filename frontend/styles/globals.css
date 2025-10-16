@@ -30,23 +30,24 @@
   /* Font family */
   --onity-font-family-sans: Inter, "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
 
-  /* Light palette (reference) */
-  --onity-light-primary-deep: #0308423c;
-  --onity-light-primary-light: #2E4AFF;
-  --onity-light-bg: #F5F7FA;
+  /* Light palette (nova) */
+  --onity-light-primary-deep: #445464;
+  --onity-light-primary-light: #6B8299;
+  --onity-light-bg: #F7F9FC;
   --onity-light-surface: #FFFFFF;
-  --onity-light-text: #030842;
-  --onity-light-border: #E1E4F2;
+  --onity-light-text: #2A3541;
+  --onity-light-border: #E2E8F0;
 
-  /* Dark palette (reference) */
-  --onity-dark-primary-deep: #030842;
-  --onity-dark-primary-light: #3B6EFF;
-  --onity-dark-bg: #030842;
-  --onity-dark-surface: #1a1f3d;
-  --onity-dark-text: #E1E4F2;
-  --onity-dark-border: #303651;
+  /* Dark palette (nova) */
+  --onity-dark-primary-deep: #1E2A36;
+  --onity-dark-primary-light: #4A6583;
+  --onity-dark-bg: #4A6583;
+  --onity-dark-bg: #121920;
+  --onity-dark-surface: #1E2A36;
+  --onity-dark-text: #E5EAF0;
+  --onity-dark-border: #2D3A47;
 
-  /* Accents & Feedback (static) */
+  /* Accents & Feedback (mantidas) */
   --onity-color-success: #28C76F;
   --onity-color-warning: #FF9F43;
   --onity-color-error: #EA5455;
@@ -65,14 +66,14 @@
   --onity-icon-primary: var(--onity-color-text);
   --onity-icon-secondary: var(--onity-light-primary-deep);
 
-  /* Spacing & layout */
+  /* Spacing & layout (mantidos) */
   --onity-space-xs: 4px;
   --onity-space-s: 8px;
   --onity-space-m: 16px;
   --onity-space-l: 24px;
   --onity-space-xl: 32px;
 
-  /* Typography scale */
+  /* Typography scale (mantidos) */
   --onity-type-h1-size: 48px;
   --onity-type-h1-line: 56px;
   --onity-type-h1-weight: 600;
@@ -93,19 +94,19 @@
   --onity-type-caption-line: 16px;
   --onity-type-caption-weight: 400;
 
-  /* Elevation & shadows */
-  --onity-elev-low: 0px 1px 3px rgba(3, 8, 66, 0.12);
-  --onity-elev-med: 0px 4px 12px rgba(3, 8, 66, 0.15);
-  --onity-elev-high: 0px 8px 24px rgba(3, 8, 66, 0.20);
+  /* Elevation & shadows (atualizados) */
+  --onity-elev-low: 0px 1px 3px rgba(42, 53, 65, 0.12);
+  --onity-elev-med: 0px 4px 12px rgba(42, 53, 65, 0.15);
+  --onity-elev-high: 0px 8px 24px rgba(42, 53, 65, 0.20);
 
-  /* Radii & iconography */
-  --onity-radius-xs: 4px;   /* for container shapes */
-  --onity-radius-m: 8px;    /* cards */
-  --onity-radius-l: 16px;   /* modals */
-  --onity-icon-stroke: 2px; /* icon stroke thickness */
+  /* Radii & iconography (mantidos) */
+  --onity-radius-xs: 4px;
+  --onity-radius-m: 8px;
+  --onity-radius-l: 16px;
+  --onity-icon-stroke: 2px;
 }
 
-/* Explicit light theme mapping (optional but explicit) */
+/* Explicit light theme mapping */
 [data-theme="light"] {
   --onity-color-primary: var(--onity-light-primary-deep);
   --onity-color-primary-hover: var(--onity-light-primary-light);

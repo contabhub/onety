@@ -13,13 +13,30 @@ router.post("/", verifyToken, async (req, res) => {
       representante, funcao
     } = req.body;
 
-    if (!tipo || !nome || !cpf_cnpj || !email || !empresa_id) {
-      return res.status(400).json({ error: "Preencha todos os campos obrigatórios (incluindo empresa_id)." });
+    if (!tipo || !nome || !email || !empresa_id) {
+      return res.status(400).json({ error: "Preencha todos os campos obrigatórios (tipo, nome, email, empresa_id)." });
     }
 
-    const [existingClient] = await db.query("SELECT id FROM pre_clientes WHERE cpf_cnpj = ?", [cpf_cnpj]);
-    if (existingClient.length > 0) {
-      return res.status(400).json({ error: "Cliente já cadastrado com este CPF/CNPJ." });
+    // Se vier lead_id, garantir que não exista duplicidade para a mesma empresa
+    if (lead_id) {
+      const [existingByLead] = await db.query(
+        "SELECT id FROM pre_clientes WHERE lead_id = ? AND empresa_id = ? LIMIT 1",
+        [lead_id, empresa_id]
+      );
+      if (existingByLead.length > 0) {
+        return res.status(200).json({
+          message: "Cliente já existe para este lead.",
+          clientId: existingByLead[0].id,
+          existed: true
+        });
+      }
+    }
+
+    if (cpf_cnpj) {
+      const [existingClient] = await db.query("SELECT id FROM pre_clientes WHERE cpf_cnpj = ?", [cpf_cnpj]);
+      if (existingClient.length > 0) {
+        return res.status(400).json({ error: "Cliente já cadastrado com este CPF/CNPJ." });
+      }
     }
 
     const [result] = await db.query(
@@ -32,14 +49,14 @@ router.post("/", verifyToken, async (req, res) => {
        ) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id || null,
+        tipo, nome, cpf_cnpj || null, email, telefone || null, endereco || null, empresa_id, lead_id || null,
         rg || null, estado_civil || null, profissao || null, sexo || null, nacionalidade || null,
         cep || null, numero || null, complemento || null, bairro || null, cidade || null, estado || null,
         representante || null, funcao || null
       ]
     );
 
-    return res.status(201).json({ message: "Cliente criado com sucesso!", clientId: result.insertId });
+    return res.status(201).json({ message: "Cliente criado com sucesso!", clientId: result.insertId, existed: false });
   } catch (error) {
     console.error("Erro ao criar cliente:", error);
     return res.status(500).json({ error: "Erro ao criar cliente." });

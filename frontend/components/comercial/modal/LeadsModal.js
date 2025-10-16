@@ -9,21 +9,24 @@ export default function LeadsModal({ onClose, onSelect }) {
   const [loadingFunis, setLoadingFunis] = useState(false);
   const [loadingBoard, setLoadingBoard] = useState(false);
   const [leadParaConfirmar, setLeadParaConfirmar] = useState(null);
+  const [authError, setAuthError] = useState("");
+  const [expanded, setExpanded] = useState({});
   // Sem paginação
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = userRaw ? JSON.parse(userRaw) : null;
-    const equipeId = user?.equipe_id;
+    const empresaId = user?.EmpresaId;
 
-    if (!token || !equipeId) {
-      alert("Você precisa estar logado para acessar o CRM.");
+    if (!token || !empresaId) {
+      setAuthError("Você precisa estar logado para acessar o CRM.");
       return;
     }
 
+    setAuthError("");
     setLoadingFunis(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/funis/${equipeId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/${empresaId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -40,20 +43,20 @@ export default function LeadsModal({ onClose, onSelect }) {
         const def = (data || []).find((f) => f.is_default);
         if (def) setSelectedFunilId(String(def.id));
       })
-      .catch(() => alert("Erro ao buscar funis"))
+      .catch(() => setAuthError("Erro ao buscar funis"))
       .finally(() => setLoadingFunis(false));
   }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userRaw = localStorage.getItem("user");
+    const userRaw = localStorage.getItem("userData");
     const user = userRaw ? JSON.parse(userRaw) : null;
-    const equipeId = user?.equipe_id;
+    const empresaId = user?.EmpresaId;
 
-    if (!token || !equipeId || !selectedFunilId) return;
+    if (!token || !empresaId || !selectedFunilId) return;
 
     setLoadingBoard(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/crm/${equipeId}/${selectedFunilId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/crm/${empresaId}/${selectedFunilId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -67,8 +70,12 @@ export default function LeadsModal({ onClose, onSelect }) {
       .then((data) => {
         const fasesApi = Array.isArray(data?.fases) ? data.fases : [];
         setFases(fasesApi);
+        // Expande por padrão fases com leads
+        const initial = {};
+        fasesApi.forEach(f => { initial[f.id] = Array.isArray(f.leads) && f.leads.length > 0; });
+        setExpanded(initial);
       })
-      .catch(() => alert("Erro ao carregar fases e leads do funil"))
+      .catch(() => setAuthError("Erro ao carregar fases e leads do funil"))
       .finally(() => setLoadingBoard(false));
   }, [selectedFunilId]);
 
@@ -96,9 +103,42 @@ export default function LeadsModal({ onClose, onSelect }) {
     setLeadParaConfirmar(lead);
   };
 
-  const handleConfirmSelect = () => {
+  const handleConfirmSelect = async () => {
     if (!leadParaConfirmar) return;
-    onSelect(leadParaConfirmar);
+    try {
+      const token = localStorage.getItem('token');
+      const userRaw = localStorage.getItem('userData');
+      const user = userRaw ? JSON.parse(userRaw) : {};
+      const empresaId = user?.EmpresaId;
+
+      // Cria (ou garante) o pré-cliente a partir do lead selecionado
+      const body = {
+        tipo: 'pessoa_fisica',
+        nome: leadParaConfirmar.name || leadParaConfirmar.nome || 'Cliente',
+        email: leadParaConfirmar.email || 'sem-email@onety.local',
+        telefone: leadParaConfirmar.telefone || null,
+        endereco: null,
+        empresa_id: empresaId,
+        lead_id: leadParaConfirmar.id,
+      };
+
+      const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      }).catch(() => null);
+
+      // Opcional: se a API retornar clientId, podemos enviar para o onSelect
+      if (resp && resp.ok) {
+        const data = await resp.json();
+        onSelect({ lead: leadParaConfirmar, clientId: data?.clientId || null });
+        onClose();
+        return;
+      }
+
+    } catch {}
+
+    onSelect({ lead: leadParaConfirmar, clientId: null });
     onClose();
   };
 
@@ -107,10 +147,23 @@ export default function LeadsModal({ onClose, onSelect }) {
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
+    <div className={`${styles.modalOverlay} modal__overlay`}>
+      <div className={`${styles.modal} modal__container`}>
         <button className={styles.closeIcon} onClick={onClose} aria-label="Fechar">×</button>
         <h2>Buscar no CRM</h2>
+
+        {authError && (
+          <div style={{
+            background: 'var(--warning-700, #3e2c00)',
+            color: 'var(--warning-200, #ffd27a)',
+            padding: 10,
+            borderRadius: 6,
+            marginBottom: 12,
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            {authError}
+          </div>
+        )}
 
         {/* Seleção de Funil */}
         <div style={{ marginBottom: 12 }}>
@@ -122,7 +175,7 @@ export default function LeadsModal({ onClose, onSelect }) {
               id="funilSelect"
               value={selectedFunilId}
               onChange={(e) => setSelectedFunilId(e.target.value)}
-              className={styles.select}
+              className={`input ${styles.select}`}
             >
               <option value="">Selecione um funil</option>
               {funis.map((f) => (
@@ -140,7 +193,7 @@ export default function LeadsModal({ onClose, onSelect }) {
           placeholder="Buscar por nome..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
+          className={`input ${styles.searchInput}`}
           disabled={!selectedFunilId || loadingBoard}
         />
 
@@ -154,30 +207,50 @@ export default function LeadsModal({ onClose, onSelect }) {
           {!loadingBoard && filteredFases.map((fase) => {
             const total = (fase.leads || []).length;
             const phaseClass = getPhaseClass(fase.nome);
+            const isOpen = !!expanded[fase.id];
             return (
-              <div key={fase.id} style={{ border: "1px solid #eee", padding: 8, borderRadius: 6, marginBottom: 12 }}>
-                <div className={styles.phaseHeader}>
+              <div key={fase.id} className={styles.phaseCard}>
+                <button
+                  type="button"
+                  className={styles.phaseHeader}
+                  onClick={() => setExpanded(prev => ({ ...prev, [fase.id]: !prev[fase.id] }))}
+                  aria-expanded={isOpen}
+                >
                   <div className={styles.phaseTitle}>
                     <span className={`${styles.phaseDot} ${phaseClass}`} />
                     <strong>{fase.nome}</strong>
-                    <small>({total} leads)</small>
+                    <small>({total} {total === 1 ? 'lead' : 'leads'})</small>
                   </div>
-                </div>
+                  <span className={styles.chevron}>{isOpen ? '▾' : '▸'}</span>
+                </button>
 
-                <div className={styles.leadList}>
-                  {(fase.leads || []).map((lead) => (
-                    <div key={lead.id} className={styles.leadItem}>
-                      <div className={styles.leadInfo}>
-                        <div className={styles.leadName}>{lead.name}</div>
-                        <div className={styles.leadEmail}>{lead.email}</div>
-                      </div>
-                      <button onClick={() => handleSelectClick(lead)}>Selecionar</button>
-                    </div>
-                  ))}
-                  {(!fase.leads || fase.leads.length === 0) && (
-                    <div style={{ color: "#888" }}>Sem leads nesta fase.</div>
-                  )}
-                </div>
+                {isOpen && (
+                  <div className={styles.leadList}>
+                    {(fase.leads || []).map((lead) => {
+                      const telefone = lead.telefone || lead.phone || "";
+                      const valorNum = lead.valor != null ? Number(lead.valor) : null;
+                      const valorFmt = valorNum != null && !Number.isNaN(valorNum)
+                        ? `R$ ${valorNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                        : null;
+                      return (
+                        <div key={lead.id} className={styles.leadItem}>
+                          <div className={styles.leadInfo}>
+                            <div className={styles.leadName}>{lead.name}</div>
+                            <div className={styles.leadMeta}>
+                              {lead.email && <span className={styles.leadEmail}>{lead.email}</span>}
+                              {telefone && <span className={styles.leadPhone}>{telefone}</span>}
+                              {valorFmt && <span className={styles.leadValue}>{valorFmt}</span>}
+                            </div>
+                          </div>
+                          <button className="btn btn--primary" onClick={() => handleSelectClick(lead)}>Selecionar</button>
+                        </div>
+                      );
+                    })}
+                    {(!fase.leads || fase.leads.length === 0) && (
+                      <div className={styles.emptyPhase}>Sem leads nesta fase.</div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -192,8 +265,8 @@ export default function LeadsModal({ onClose, onSelect }) {
                 Deseja transformar <strong>{leadParaConfirmar.name}</strong> em cliente?
               </div>
               <div className={styles.confirmActions}>
-                <button className={styles.confirmCancel} onClick={handleCancelSelect}>Cancelar</button>
-                <button className={styles.confirmOk} onClick={handleConfirmSelect}>Confirmar</button>
+                <button className={`btn ${styles.confirmCancel}`} onClick={handleCancelSelect}>Cancelar</button>
+                <button className={`btn btn--primary ${styles.confirmOk}`} onClick={handleConfirmSelect}>Confirmar</button>
               </div>
             </div>
           </div>
