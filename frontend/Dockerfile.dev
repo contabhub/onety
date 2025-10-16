@@ -23,6 +23,12 @@ EXPOSE 3000
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Receber argumentos de build (opcional em dev, mas mantém consistência)
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+
 # Executar em modo desenvolvimento com hot reload
 CMD ["npm", "run", "dev"]
 
