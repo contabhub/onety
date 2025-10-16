@@ -33,8 +33,10 @@ export function useWebSocket() {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000';
     console.log('🔗 URL do WebSocket:', wsUrl);
     
-    // Configuração específica para Ngrok - usa polling primeiro, depois upgrade para websocket
+    // Configuração específica para diferentes ambientes
     const isNgrokUrl = wsUrl.includes('ngrok');
+    const isProductionUrl = wsUrl.includes('easypanel.host') || wsUrl.includes('onety');
+    
     const socketConfig = {
       auth: { token: `Bearer ${token}`, companyId },
       reconnection: false,
@@ -53,10 +55,15 @@ export function useWebSocket() {
         'ngrok-skip-browser-warning': 'true'
       };
       console.log('🔄 Usando configuração Ngrok: polling → websocket upgrade');
+    } else if (isProductionUrl) {
+      // Para produção: usa polling primeiro para evitar problemas de WSS
+      socketConfig.transports = ['polling', 'websocket'];
+      socketConfig.upgrade = true;
+      console.log('🌐 Usando configuração produção: polling → websocket upgrade');
     } else {
-      // Para localhost/produção: websocket direto
+      // Para localhost: websocket direto
       socketConfig.transports = ['websocket'];
-      console.log('⚡ Usando configuração direta: websocket');
+      console.log('⚡ Usando configuração localhost: websocket direto');
     }
 
     const newSocket = io(wsUrl, socketConfig);
