@@ -35,7 +35,16 @@ export function useWebSocket() {
     
     // Configuração específica para diferentes ambientes
     const isNgrokUrl = wsUrl.includes('ngrok');
-    const isProductionUrl = wsUrl.includes('easypanel.host') || wsUrl.includes('onety');
+    const isLocalhost = wsUrl.includes('localhost') || wsUrl.includes('127.0.0.1');
+    const isProduction = !isLocalhost && !isNgrokUrl;
+    
+    console.log('🔍 Debug de detecção de ambiente:', {
+      wsUrl,
+      isNgrokUrl,
+      isLocalhost,
+      isProduction,
+      startsWithHttps: wsUrl.startsWith('https://')
+    });
     
     const socketConfig = {
       auth: { token: `Bearer ${token}`, companyId },
@@ -55,8 +64,8 @@ export function useWebSocket() {
         'ngrok-skip-browser-warning': 'true'
       };
       console.log('🔄 Usando configuração Ngrok: polling → websocket upgrade');
-    } else if (isProductionUrl) {
-      // Para produção: usa polling primeiro para evitar problemas de WSS
+    } else if (isProduction) {
+      // Para produção: SEMPRE usa polling primeiro para evitar problemas de WSS
       socketConfig.transports = ['polling', 'websocket'];
       socketConfig.upgrade = true;
       console.log('🌐 Usando configuração produção: polling → websocket upgrade');
