@@ -44,10 +44,10 @@ export default function Console() {
 
   const apiKey = WEBSOCKET_RELAY_URL
     ? ''
-    : localStorage.getItem('tmp::voice_api_key') ||
-      prompt('OpenAI API Key') ||
+    : (typeof window !== 'undefined' ? localStorage.getItem('tmp::voice_api_key') : '') ||
+      (typeof window !== 'undefined' ? prompt('OpenAI API Key') : '') ||
       '';
-  if (apiKey !== '') {
+  if (apiKey !== '' && typeof window !== 'undefined') {
     localStorage.setItem('tmp::voice_api_key', apiKey);
   }
 
@@ -102,6 +102,7 @@ export default function Console() {
   }, []);
 
   const resetAPIKey = useCallback(() => {
+    if (typeof window === 'undefined') return;
     const apiKey = prompt('OpenAI API Key');
     if (apiKey !== null) {
       localStorage.clear();
