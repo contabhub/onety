@@ -427,18 +427,24 @@ export default function CriarDocumentoAutentique() {
 
       const rascunho = await response.json();
       
+      console.log("🔍 [DEBUG] Dados do rascunho carregado:", rascunho);
+        console.log("🔍 [DEBUG] Template ID:", rascunho.template_id);
+        console.log("🔍 [DEBUG] Cliente ID:", rascunho.cliente_id);
+        console.log("🔍 [DEBUG] Content:", rascunho.content);
+        console.log("🔍 [DEBUG] Signatários:", rascunho.signatarios);
+      
       // Preenche os campos com os dados do rascunho
       setRascunhoId(rascunho.id);
       setSelectedTemplate(rascunho.template_id || "");
       setClienteSelecionado(rascunho.cliente_id || "");
       setContent(rascunho.content || "");
       setSignatarios(rascunho.signatarios || []);
-      setValidade(rascunho.expira_em || "");
-      setVigenciaInicio(rascunho.vigencia_inicio || "");
-      setVigenciaFim(rascunho.vigencia_fim || "");
-      setVigenciaMeses(rascunho.vigencia_meses || 12);
-      setExpiraEmDias(rascunho.expira_em_dias || 15);
-      setValorContrato(rascunho.valor || "");
+      setValidade(rascunho.expires_at || "");
+      setVigenciaInicio(rascunho.start_at || "");
+      setVigenciaFim(rascunho.end_at || "");
+      setVigenciaMeses(12); // Default para documentos
+      setExpiraEmDias(15); // Default para documentos
+      setValorContrato(""); // Documentos não têm valor
       setNomeDocumento(rascunho.nome_documento || "");
       setIsFuncionarioTemplate(rascunho.funcionario === 1);
       setFuncionarioData(rascunho.funcionario_data || {

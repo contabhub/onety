@@ -98,21 +98,24 @@ router.get('/:id', verifyToken, async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'Rascunho não encontrado' });
     if (String(doc.criado_por) !== String(userId)) return res.status(403).json({ error: 'Acesso negado' });
 
+    console.log("🔍 [DEBUG] Documento encontrado:", doc);
+
     const [signatarios] = await db.query(`SELECT * FROM signatarios WHERE documento_id = ?`, [id]);
+    console.log("🔍 [DEBUG] Signatários encontrados:", signatarios);
 
     return res.json({
-      document: {
-        id: doc.id,
-        client_id: doc.pre_cliente_id,
-        template_id: doc.modelos_contrato_id,
-        content: doc.conteudo,
-        empresa_id: doc.empresa_id,
-        expires_at: doc.expirado_em,
-        start_at: doc.comeca_em,
-        end_at: doc.termina_em,
-        nome_documento: doc.nome_documento || null
-      },
-      signatories: signatarios.map(s => ({
+      id: doc.id,
+      cliente_id: doc.pre_cliente_id,
+      template_id: doc.modelos_contrato_id,
+      content: doc.conteudo,
+      empresa_id: doc.empresa_id,
+      expires_at: doc.expirado_em,
+      start_at: doc.comeca_em,
+      end_at: doc.termina_em,
+      nome_documento: doc.nome_documento || null,
+      funcionario: doc.funcionario,
+      funcionario_data: doc.funcionario_data ? JSON.parse(doc.funcionario_data) : null,
+      signatarios: signatarios.map(s => ({
         name: s.nome, email: s.email, cpf: s.cpf, birth_date: s.data_nascimento, telefone: s.telefone, funcao_assinatura: s.funcao_assinatura
       }))
     });

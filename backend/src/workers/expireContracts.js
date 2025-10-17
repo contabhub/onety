@@ -21,9 +21,31 @@ const expireContracts = async () => {
   }
 };
 
+const expireDocuments = async () => {
+  console.log("🔄 Iniciando verificação de documentos expirados...");
+
+  try {
+    // IMPORTANTE: Ignora rascunhos (status = 'rascunho')
+    const [expiredDocuments] = await pool.query(
+      "UPDATE documentos SET status = 'expirado' WHERE status = 'pendente' AND expirado_em <= NOW() AND status != 'rascunho'"
+    );
+
+    console.log("📊 Query executada, verificando documentos...");
+
+    if (expiredDocuments.affectedRows > 0) {
+      console.log(`✅ ${expiredDocuments.affectedRows} documentos expirados.`);
+    } else {
+      console.log("ℹ️ Nenhum documento expirado encontrado.");
+    }
+  } catch (error) {
+    console.error("❌ Erro ao expirar documentos:", error);
+  }
+};
+
 // Se estiver rodando diretamente via terminal
 if (require.main === module) {
   expireContracts();
+  expireDocuments();
 }
 
-module.exports = expireContracts;
+module.exports = { expireContracts, expireDocuments };
