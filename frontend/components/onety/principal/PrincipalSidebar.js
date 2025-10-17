@@ -561,22 +561,19 @@ export default function PrincipalSidebar() {
   const handleModuleChange = (moduleId) => {
     const module = modules.find(m => m.id === moduleId);
     if (module && module.id !== currentModule?.id) {
-      console.log('Mudando módulo para:', moduleId);
-      console.log('Iniciando animação...');
+    
       
       // Inicia a animação
       setIsAnimating(true);
       
       // Muda o módulo após um pequeno delay para permitir a animação de saída
       setTimeout(() => {
-        console.log('Mudando módulo...');
         setCurrentModule(module);
         localStorage.setItem('activeModuleId', moduleId);
         setActiveItem(null);
         
         // Finaliza a animação após um delay maior
         setTimeout(() => {
-          console.log('Finalizando animação...');
           setIsAnimating(false);
         }, 1200);
       }, 300);
