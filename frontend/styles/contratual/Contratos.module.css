@@ -265,8 +265,8 @@
 }
 
 .rascunho {
-  --bg-color: color-mix(in srgb, #6b7280 12%, transparent);
-  --text-color: #6b7280;
+  --bg-color: color-mix(in srgb, #042affe8 12%, transparent);
+  --text-color: #1534e4;
 }
 
 .button {
