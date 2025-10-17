@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "../../styles/contratual/NovoClienteForm.module.css";
 
-export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdate }) {
+export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdate, isFuncionario = false }) {
   const [formData, setFormData] = useState({
     type: "pessoa_fisica",
     name: "",
@@ -24,7 +24,14 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
     representante: "",
     funcao: "",
     lead_id: null,
+    // funcionário
+    departamento_id: "",
+    cargo_id: "",
   });
+  const [departamentos, setDepartamentos] = useState([]);
+  const [cargos, setCargos] = useState([]);
+  const [loadingDepartamentos, setLoadingDepartamentos] = useState(false);
+  const [loadingCargos, setLoadingCargos] = useState(false);
 
   useEffect(() => {
     if (cliente) {
@@ -32,7 +39,7 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
       console.log("🔍 [DEBUG] ClienteForm - nome do cliente:", cliente.nome);
       // Garantir que todos os valores sejam strings para evitar undefined
       const clienteData = {
-        type: cliente.type || "pessoa_fisica",
+        type: isFuncionario ? "pessoa_fisica" : (cliente.type || "pessoa_fisica"),
         name: cliente.nome || cliente.name || "",
         cpf_cnpj: cliente.cpf_cnpj || "",
         email: cliente.email || "",
@@ -53,6 +60,8 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
         representante: cliente.representante || "",
         funcao: cliente.funcao || "",
         lead_id: cliente.lead_id || null,
+        departamento_id: cliente.departamento_id || "",
+        cargo_id: cliente.cargo_id || "",
       };
       console.log("🔍 [DEBUG] ClienteForm - dados aplicados:", clienteData);
       setFormData(clienteData);
@@ -65,10 +74,85 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
       // Tentar pegar empresa_id de diferentes fontes
       const empresaId = user?.equipe_id || userData?.EmpresaId || user?.EmpresaId || userData?.equipe_id;
       if (empresaId) {
-        setFormData((prev) => ({ ...prev, equipe_id: empresaId }));
+        setFormData((prev) => ({ 
+          ...prev, 
+          equipe_id: empresaId,
+          type: isFuncionario ? "pessoa_fisica" : prev.type
+        }));
+      } else if (isFuncionario) {
+        setFormData((prev) => ({ ...prev, type: "pessoa_fisica" }));
       }
     }
-  }, [cliente]);
+  }, [cliente, isFuncionario]);
+
+  // Buscar departamentos e cargos quando for funcionário
+  useEffect(() => {
+    if (isFuncionario) {
+      fetchDepartamentos();
+      fetchCargos();
+    }
+  }, [isFuncionario]);
+
+  const fetchDepartamentos = async () => {
+    setLoadingDepartamentos(true);
+    try {
+      const token = localStorage.getItem("token");
+      const userRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = user?.EmpresaId || user?.empresa?.id || user?.Empresa?.id || user?.companyId || user?.empresa_id || user?.empresaId;
+      
+      if (!empresaId) {
+        console.error("Empresa ID não encontrado");
+        return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/departamentos/empresa/${empresaId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setDepartamentos(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar departamentos:", error);
+    } finally {
+      setLoadingDepartamentos(false);
+    }
+  };
+
+  const fetchCargos = async () => {
+    setLoadingCargos(true);
+    try {
+      const token = localStorage.getItem("token");
+      const userRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = user?.EmpresaId || user?.empresa?.id || user?.Empresa?.id || user?.companyId || user?.empresa_id || user?.empresaId;
+      
+      if (!empresaId) {
+        console.error("Empresa ID não encontrado");
+        return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cargos`, {
+        method: 'GET',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'x-empresa-id': empresaId
+        }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setCargos(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar cargos:", error);
+    } finally {
+      setLoadingCargos(false);
+    }
+  };
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -176,35 +260,39 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
       >
         ×
       </button>
-      <h3 className={styles.subtitle}>Tipo de Cliente</h3>
-      <div className={styles.radioGroup}>
-        <label>
-          <input
-            type="radio"
-            name="tipo"
-            value="pessoa_fisica"
-            checked={formData.type === "pessoa_fisica"}
-            onChange={(e) => handleChange("type", e.target.value)}
-          />
-          Pessoa Física
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="tipo"
-            value="empresa"
-            checked={formData.type === "empresa"}
-            onChange={(e) => handleChange("type", e.target.value)}
-          />
-          Empresa
-        </label>
-      </div>
+      {!isFuncionario && (
+        <>
+          <h3 className={styles.subtitle}>Tipo de Cliente</h3>
+          <div className={styles.radioGroup}>
+            <label>
+              <input
+                type="radio"
+                name="tipo"
+                value="pessoa_fisica"
+                checked={formData.type === "pessoa_fisica"}
+                onChange={(e) => handleChange("type", e.target.value)}
+              />
+              Pessoa Física
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="tipo"
+                value="empresa"
+                checked={formData.type === "empresa"}
+                onChange={(e) => handleChange("type", e.target.value)}
+              />
+              Empresa
+            </label>
+          </div>
+        </>
+      )}
 
       {/* Campos da Pessoa Física */}
       {formData.type === "pessoa_fisica" && (
         <>
           <div className={styles.grid}>
-            <h3 className={styles.subtitle}>Dados do Cliente</h3>
+            <h3 className={styles.subtitle}>{isFuncionario ? "Dados do Funcionário" : "Dados do Cliente"}</h3>
             <div><label>Nome <span style={{color: 'red'}}>*</span></label><input className={styles.input} value={formData.name} onChange={(e) => handleChange("name", e.target.value)} /></div>
             <div><label>Email <span style={{color: 'red'}}>*</span></label><input className={styles.input} value={formData.email} onChange={(e) => handleChange("email", e.target.value)} /></div>
             <div><label>CPF <span style={{color: 'red'}}>*</span></label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => handleChange("cpf_cnpj", e.target.value)} /></div>
@@ -215,6 +303,41 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
             <div><label>Nacionalidade</label><input className={styles.input} value={formData.nacionalidade} onChange={(e) => handleChange("nacionalidade", e.target.value)} /></div>
             <div><label>Telefone</label><input className={styles.input} value={formData.telefone} onChange={(e) => handleChange("telefone", e.target.value)} /></div>
           </div>
+
+          {/* Campos específicos para funcionários */}
+          {isFuncionario && (
+            <div className={styles.grid}>
+              <h3 className={styles.subtitle}>Dados Profissionais</h3>
+              <div>
+                <label>Departamento <span style={{color: 'red'}}>*</span></label>
+                <select 
+                  className={styles.input} 
+                  value={formData.departamento_id} 
+                  onChange={(e) => handleChange("departamento_id", e.target.value)}
+                  disabled={loadingDepartamentos}
+                >
+                  <option value="">{loadingDepartamentos ? "Carregando..." : "Selecione um departamento"}</option>
+                  {departamentos.map(dept => (
+                    <option key={dept.id} value={dept.id}>{dept.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label>Cargo <span style={{color: 'red'}}>*</span></label>
+                <select 
+                  className={styles.input} 
+                  value={formData.cargo_id} 
+                  onChange={(e) => handleChange("cargo_id", e.target.value)}
+                  disabled={loadingCargos}
+                >
+                  <option value="">{loadingCargos ? "Carregando..." : "Selecione um cargo"}</option>
+                  {cargos.map(cargo => (
+                    <option key={cargo.id} value={cargo.id}>{cargo.nome}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Endereço</h3>
@@ -261,7 +384,7 @@ export default function ClienteForm({ cliente = null, onClose, onCreate, onUpdat
 
       <div className={styles.formActions}>
         <button className={styles.button} onClick={handleSubmit}>
-          {cliente ? "Salvar Alterações" : "Criar Cliente"}
+          {cliente ? "Salvar Alterações" : (isFuncionario ? "Criar Funcionário" : "Criar Cliente")}
         </button>
       </div>
     </div>

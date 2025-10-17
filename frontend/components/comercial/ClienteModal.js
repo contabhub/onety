@@ -4,9 +4,9 @@ import { Loader2, X } from "lucide-react";
 import styles from "../../styles/comercial/crm/ClienteModal.module.css";
 import { toast } from "react-toastify";
 
-export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
+export default function ClienteModal({ cliente, onClose, onCreate, onUpdate, isFuncionario = false }) {
   const [formData, setFormData] = useState({
-    tipo: cliente?.tipo || "pessoa_fisica",
+    tipo: isFuncionario ? "pessoa_fisica" : (cliente?.tipo || "pessoa_fisica"),
     nome: cliente?.nome || "",
     email: cliente?.email || "",
     cpf: cliente?.cpf || "",
@@ -29,14 +29,97 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
     bairro: cliente?.bairro || "",
     cidade: cliente?.cidade || "",
     estado: cliente?.estado || "",
+    // funcionário
+    departamento_id: cliente?.departamento_id || "",
+    cargo_id: cliente?.cargo_id || "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [cargos, setCargos] = useState([]);
+  const [loadingDepartamentos, setLoadingDepartamentos] = useState(false);
+  const [loadingCargos, setLoadingCargos] = useState(false);
 
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose?.(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
+
+  // Força tipo pessoa física quando for funcionário
+  useEffect(() => {
+    if (isFuncionario && formData.tipo !== 'pessoa_fisica') {
+      setFormData(prev => ({ ...prev, tipo: 'pessoa_fisica' }));
+    }
+  }, [isFuncionario]);
+
+  // Buscar departamentos e cargos quando for funcionário
+  useEffect(() => {
+    if (isFuncionario) {
+      fetchDepartamentos();
+      fetchCargos();
+    }
+  }, [isFuncionario]);
+
+  const fetchDepartamentos = async () => {
+    setLoadingDepartamentos(true);
+    try {
+      const token = localStorage.getItem("token");
+      const userRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = user?.EmpresaId || user?.empresa?.id || user?.Empresa?.id || user?.companyId || user?.empresa_id || user?.empresaId;
+      
+      if (!empresaId) {
+        console.error("Empresa ID não encontrado");
+        return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/departamentos/empresa/${empresaId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setDepartamentos(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar departamentos:", error);
+    } finally {
+      setLoadingDepartamentos(false);
+    }
+  };
+
+  const fetchCargos = async () => {
+    setLoadingCargos(true);
+    try {
+      const token = localStorage.getItem("token");
+      const userRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = user?.EmpresaId || user?.empresa?.id || user?.Empresa?.id || user?.companyId || user?.empresa_id || user?.empresaId;
+      
+      if (!empresaId) {
+        console.error("Empresa ID não encontrado");
+        return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cargos`, {
+        method: 'GET',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'x-empresa-id': empresaId
+        }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setCargos(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar cargos:", error);
+    } finally {
+      setLoadingCargos(false);
+    }
+  };
 
   const formatCpf = (raw) => {
     const digits = String(raw || '').replace(/\D/g, '').slice(0, 11);
@@ -209,6 +292,9 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
         cidade: formData.cidade,
         estado: formData.estado,
         empresa_id: empresaId,
+        funcionario: isFuncionario ? 1 : 0, // Adiciona campo funcionário
+        departamento_id: isFuncionario ? (formData.departamento_id || null) : null,
+        cargo_id: isFuncionario ? (formData.cargo_id || null) : null,
       };
       const payload = formData.tipo === 'empresa'
         ? {
@@ -233,6 +319,8 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
           };
 
       console.log('[ClienteModal] Enviando payload:', payload);
+      console.log('[ClienteModal] isFuncionario:', isFuncionario);
+      console.log('[ClienteModal] funcionario field:', payload.funcionario);
       const res = await fetch(url, {
         method,
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -248,7 +336,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
       
       const responseData = await res.json();
       console.log("🔍 [DEBUG] Resposta da API ClienteModal:", responseData);
-      toast.success("Cliente salvo com sucesso");
+      toast.success(isFuncionario ? "Funcionário salvo com sucesso" : "Cliente salvo com sucesso");
       
       if (cliente) {
         onUpdate?.(responseData);
@@ -277,24 +365,26 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
     <div className={styles.modalOverlay} onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
       <div className={styles.modal} role="dialog" aria-modal="true">
         <div className={styles.modalHeader}>
-          <h3>{cliente ? "Editar Cliente" : "Novo Cliente"}</h3>
+          <h3>{cliente ? (isFuncionario ? "Editar Funcionário" : "Editar Cliente") : (isFuncionario ? "Novo Funcionário" : "Novo Cliente")}</h3>
           <button className={styles.iconBtn} onClick={onClose} aria-label="Fechar">
             <X size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.section}>
-            <div className={styles.sectionTitle}>Tipo de Cliente</div>
-            <div className={styles.row}>
-              <label className={styles.radio}><input type="radio" name="tipo" value="pessoa_fisica" checked={formData.tipo === 'pessoa_fisica'} onChange={handleChange} /> Pessoa Física</label>
-              <label className={styles.radio}><input type="radio" name="tipo" value="empresa" checked={formData.tipo === 'empresa'} onChange={handleChange} /> Empresa</label>
+          {!isFuncionario && (
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>Tipo de Cliente</div>
+              <div className={styles.row}>
+                <label className={styles.radio}><input type="radio" name="tipo" value="pessoa_fisica" checked={formData.tipo === 'pessoa_fisica'} onChange={handleChange} /> Pessoa Física</label>
+                <label className={styles.radio}><input type="radio" name="tipo" value="empresa" checked={formData.tipo === 'empresa'} onChange={handleChange} /> Empresa</label>
+              </div>
             </div>
-          </div>
+          )}
 
           {formData.tipo === 'pessoa_fisica' && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>Dados do Cliente</div>
+                <div className={styles.sectionTitle}>{isFuncionario ? "Dados do Funcionário" : "Dados do Cliente"}</div>
                 <div className={styles.grid}>
                   <div className={styles.field}><label>Nome *</label><div className={styles.inputBox}><input name="nome" value={formData.nome} onChange={handleChange} required /></div></div>
                   <div className={styles.field}><label>Email *</label><div className={styles.inputBox}><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div></div>
@@ -327,6 +417,49 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
                   <div className={styles.field}><label>Telefone</label><div className={styles.inputBox}><input name="telefone" value={formData.telefone} onChange={handleChange} /></div></div>
                 </div>
               </div>
+
+              {/* Campos específicos para funcionários */}
+              {isFuncionario && (
+                <div className={styles.section}>
+                  <div className={styles.sectionTitle}>Dados Profissionais</div>
+                  <div className={styles.grid}>
+                    <div className={styles.field}>
+                      <label>Departamento *</label>
+                      <div className={styles.inputBox}>
+                        <select 
+                          name="departamento_id" 
+                          value={formData.departamento_id} 
+                          onChange={handleChange}
+                          required
+                          disabled={loadingDepartamentos}
+                        >
+                          <option value="">{loadingDepartamentos ? "Carregando..." : "Selecione um departamento"}</option>
+                          {departamentos.map(dept => (
+                            <option key={dept.id} value={dept.id}>{dept.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className={styles.field}>
+                      <label>Cargo *</label>
+                      <div className={styles.inputBox}>
+                        <select 
+                          name="cargo_id" 
+                          value={formData.cargo_id} 
+                          onChange={handleChange}
+                          required
+                          disabled={loadingCargos}
+                        >
+                          <option value="">{loadingCargos ? "Carregando..." : "Selecione um cargo"}</option>
+                          {cargos.map(cargo => (
+                            <option key={cargo.id} value={cargo.id}>{cargo.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>Endereço</div>
@@ -382,7 +515,7 @@ export default function ClienteModal({ cliente, onClose, onCreate, onUpdate }) {
             <button type="button" className={styles.secondaryBtn} onClick={onClose}>Cancelar</button>
             <button type="submit" className={styles.primaryBtn} disabled={submitting}>
               {submitting && <Loader2 className={styles.spinnerIcon} />}
-              {cliente ? 'Salvar' : 'Criar Cliente'}
+              {cliente ? 'Salvar' : (isFuncionario ? 'Criar Funcionário' : 'Criar Cliente')}
             </button>
           </div>
         </form>

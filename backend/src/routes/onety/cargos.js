@@ -63,7 +63,7 @@ router.get(
       `SELECT id, nome, descricao, empresa_id, permissoes, permissoes_modulos,
               criado_em, atualizado_em
        FROM cargos
-       WHERE empresa_id = ?`,
+       WHERE empresa_id = ? AND nome != 'Superadmin'`,
       [empresa_id]
     );
 
@@ -96,7 +96,7 @@ router.get(
       if (!empresa_id) return res.status(400).json({ error: "Informe empresa_id (no body)." });
 
       const [rows] = await pool.query(
-        `SELECT * FROM cargos WHERE id = ? AND empresa_id = ? LIMIT 1`,
+        `SELECT * FROM cargos WHERE id = ? AND empresa_id = ? AND nome != 'Superadmin' LIMIT 1`,
         [id, empresa_id]
       );
       if (!rows.length) return res.status(404).json({ error: "Cargo não encontrado." });
@@ -165,7 +165,7 @@ router.patch(
       const sql = `UPDATE cargos SET ${fields.join(", ")} WHERE id = ? AND empresa_id = ?`;
       await pool.query(sql, [...values, id, empresa_id]);
 
-      const [updated] = await pool.query("SELECT * FROM cargos WHERE id = ? AND empresa_id = ?", [id, empresa_id]);
+      const [updated] = await pool.query("SELECT * FROM cargos WHERE id = ? AND empresa_id = ? AND nome != 'Superadmin'", [id, empresa_id]);
       if (updated.length === 0) return res.status(404).json({ error: "Cargo não encontrado." });
 
       const c = updated[0];
@@ -211,7 +211,7 @@ router.delete(
       );
       if (rel.length) return res.status(400).json({ error: "Existem usuários vinculados a este cargo." });
 
-      await pool.query(`DELETE FROM cargos WHERE id = ? AND empresa_id = ?`, [id, empresa_id]);
+      await pool.query(`DELETE FROM cargos WHERE id = ? AND empresa_id = ? AND nome != 'Superadmin'`, [id, empresa_id]);
       res.json({ message: "Cargo deletado com sucesso." });
     } catch (error) {
       console.error(error);

@@ -4,8 +4,8 @@ import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar"
 import styles from "../../styles/contratual/CriarContrato.module.css";
 import LeadsModal from "../../components/comercial/modal/LeadsModal";
 import ClienteModal from "../../components/comercial/ClienteModal";
-import ClienteForm from "../../components/contratual/ClienteForm";
 import ProdutoModal from "../../components/contratual/ProdutoModal";
+import ClienteForm from "../../components/contratual/ClienteForm";
 import LeadToClientForm from "../../components/contratual/LeadToClientForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faPen, faTrash, faUser, faFileAlt, faBoxOpen, faUserPlus, faInfoCircle, faRocket, faCloudUploadAlt, faCheckCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
@@ -50,6 +50,12 @@ export default function CriarDocumentoAutentique() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  
+  // Estados para rascunho
+  const [rascunhoId, setRascunhoId] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
   const [showLeadsModal, setShowLeadsModal] = useState(false);
   const [showNovoClienteModal, setShowNovoClienteModal] = useState(false);
   const [usuario, setUsuario] = useState({ full_name: "", email: "" });
@@ -70,8 +76,8 @@ export default function CriarDocumentoAutentique() {
   const [empresasAtivas, setEmpresasAtivas] = useState([]); // Novo estado para múltiplas empresas
   const [customVariables, setCustomVariables] = useState([]);
   const [customValues, setCustomValues] = useState({});
-  const [showClienteModal, setShowClienteModal] = useState(false); // Para criar novo cliente
-  const [showClienteFormModal, setShowClienteFormModal] = useState(false); // Para editar cliente existente
+  const [showClienteModal, setShowClienteModal] = useState(false); // Para criar cliente
+
   const [leadSelecionado, setLeadSelecionado] = useState({});
   const [showLeadToClientForm, setShowLeadToClientForm] = useState(false);
   const [createdContractId, setCreatedContractId] = useState("");
@@ -89,12 +95,114 @@ export default function CriarDocumentoAutentique() {
   const [uploadProgress, setUploadProgress] = useState(0); // Progresso do upload
   const [valorContrato, setValorContrato] = useState(""); // Valor do contrato (TCV) - NOVO
   const [loadingClientes, setLoadingClientes] = useState(false); // Estado de carregamento dos clientes
+  
+  // Estados para funcionário
+  const [isFuncionarioTemplate, setIsFuncionarioTemplate] = useState(false);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [cargos, setCargos] = useState([]);
+  const [funcionarioData, setFuncionarioData] = useState({
+    nome: "",
+    email: "",
+    departamento_id: "",
+    cargo_id: ""
+  });
 
 
   const handleLeadSelecionado = (lead) => {
     setLeadSelecionado(lead);
     setShowLeadsModal(false);
     setShowLeadToClientForm(true); // mostrar o formulário de conversão
+  };
+
+  // Função para salvar rascunho
+  const salvarRascunho = async (silencioso = false) => {
+    try {
+      const token = localStorage.getItem("token");
+      const userRaw = localStorage.getItem("userData");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = user?.EmpresaId ?? user?.empresa?.id;
+
+      if (!token || !empresaId) {
+        if (!silencioso) toast.error("Erro de autenticação");
+        return;
+      }
+
+      const rascunhoData = {
+        empresa_id: empresaId,
+        template_id: selectedTemplate,
+        cliente_id: clienteSelecionado,
+        content: content,
+        signatarios: signatarios,
+        // Para rascunho, não enviamos expiracao para não mudar status
+        // expira_em: validade,
+        // vigencia_inicio: vigenciaInicio,
+        // vigencia_fim: vigenciaFim,
+        // vigencia_meses: vigenciaMeses,
+        // expira_em_dias: expiraEmDias,
+        // Documento não possui valor/valor_recorrente no front
+        nome_documento: nomeDocumento,
+        funcionario: isFuncionarioTemplate ? 1 : 0,
+        funcionario_data: isFuncionarioTemplate ? funcionarioData : null
+      };
+
+      const url = rascunhoId 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/contratual/rascunhos-documentos/${rascunhoId}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/contratual/rascunhos-documentos`;
+      
+      const method = rascunhoId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(rascunhoData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao salvar rascunho: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (!rascunhoId) {
+        setRascunhoId(result.id);
+      }
+      
+      setHasUnsavedChanges(false);
+      setLastSaved(new Date());
+      
+      if (!silencioso) {
+        toast.success("Rascunho salvo com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar rascunho:", error);
+      if (!silencioso) {
+        toast.error("Erro ao salvar rascunho");
+      }
+    }
+  };
+
+  // Função para lidar com tentativa de saída
+  const handleExitAttempt = () => {
+    if (hasUnsavedChanges) {
+      setShowExitModal(true);
+    } else {
+      router.back();
+    }
+  };
+
+  const cancelExit = () => {
+    setShowExitModal(false);
+  };
+
+  const confirmExit = async (saveBeforeExit = false) => {
+    if (saveBeforeExit) {
+      await salvarRascunho(true);
+    }
+    setShowExitModal(false);
+    router.back();
   };
 
   // Função para lidar com upload de arquivo
@@ -290,6 +398,8 @@ export default function CriarDocumentoAutentique() {
     fetchProdutos();
     fetchEmpresaEquipe();
     fetchContatos();
+    fetchDepartamentos();
+    fetchCargos();
 
     // Inicializa validade com base nos 15 dias
     const hoje = new Date();
@@ -297,6 +407,78 @@ export default function CriarDocumentoAutentique() {
     const isoDate = hoje.toISOString().slice(0, 16);
     setValidade(isoDate);
   }, []);
+
+  // Função para carregar rascunho existente
+  const carregarRascunho = async (contractId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/rascunhos-documentos/${contractId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao carregar rascunho: ${response.status}`);
+      }
+
+      const rascunho = await response.json();
+      
+      // Preenche os campos com os dados do rascunho
+      setRascunhoId(rascunho.id);
+      setSelectedTemplate(rascunho.template_id || "");
+      setClienteSelecionado(rascunho.cliente_id || "");
+      setContent(rascunho.content || "");
+      setSignatarios(rascunho.signatarios || []);
+      setValidade(rascunho.expira_em || "");
+      setVigenciaInicio(rascunho.vigencia_inicio || "");
+      setVigenciaFim(rascunho.vigencia_fim || "");
+      setVigenciaMeses(rascunho.vigencia_meses || 12);
+      setExpiraEmDias(rascunho.expira_em_dias || 15);
+      setValorContrato(rascunho.valor || "");
+      setNomeDocumento(rascunho.nome_documento || "");
+      setIsFuncionarioTemplate(rascunho.funcionario === 1);
+      setFuncionarioData(rascunho.funcionario_data || {
+        nome: "",
+        email: "",
+        departamento_id: "",
+        cargo_id: ""
+      });
+      
+      setHasUnsavedChanges(false);
+      setLastSaved(new Date());
+      
+      toast.success("Rascunho carregado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao carregar rascunho:", error);
+      toast.error("Erro ao carregar rascunho");
+    }
+  };
+
+  // Carrega rascunho se houver ID na URL
+  useEffect(() => {
+    const { rascunho } = router.query;
+    if (rascunho && typeof rascunho === 'string') {
+      carregarRascunho(rascunho);
+    }
+  }, [router.query]);
+
+  // Removido autosave: agora só salva ao clicar no botão ou ao confirmar saída
+
+  // Detecta mudanças nos campos para marcar como não salvo
+  useEffect(() => {
+    setHasUnsavedChanges(true);
+  }, [selectedTemplate, clienteSelecionado, content, signatarios, validade, vigenciaInicio, vigenciaFim, vigenciaMeses, expiraEmDias, valorContrato, nomeDocumento, isFuncionarioTemplate, funcionarioData]);
+
+  // Recarrega clientes quando o tipo de template mudar
+  useEffect(() => {
+    if (isFuncionarioTemplate !== undefined) {
+      fetchClientes();
+    }
+  }, [isFuncionarioTemplate]);
 
   // Sincroniza os dados do cliente quando clienteSelecionado mudar
   useEffect(() => {
@@ -308,9 +490,20 @@ export default function CriarDocumentoAutentique() {
         setNomeDocumento(`${clienteEncontrado.name || clienteEncontrado.nome || 'Cliente'} - Documento`);
         console.log("🔍 [DEBUG] Cliente sincronizado:", clienteEncontrado);
         console.log("🔍 [DEBUG] Nome sincronizado:", clienteEncontrado.name || clienteEncontrado.nome);
+        
+        // Se for template de funcionário, preenche automaticamente os dados do funcionário
+        if (isFuncionarioTemplate && (clienteEncontrado.name || clienteEncontrado.nome)) {
+          setFuncionarioData(prev => ({
+            ...prev,
+            nome: clienteEncontrado.name || clienteEncontrado.nome || "",
+            email: clienteEncontrado.email || "",
+            departamento_id: clienteEncontrado.departamento_id || "",
+            cargo_id: clienteEncontrado.cargo_id || ""
+          }));
+        }
       }
     }
-  }, [clienteSelecionado, clientes]);
+  }, [clienteSelecionado, clientes, isFuncionarioTemplate]);
 
   useEffect(() => {
     async function loadCustomVariables() {
@@ -388,6 +581,28 @@ export default function CriarDocumentoAutentique() {
     // Encontra o template correspondente e preenche o conteúdo
     const selected = templates.find((template) => template.id.toString() === templateId);
     setContent(selected ? (selected.conteudo || selected.content || "") : "");
+
+    // Verifica se é um template de funcionário
+    const isFuncionario = selected ? Boolean(selected.funcionario) : false;
+    setIsFuncionarioTemplate(isFuncionario);
+
+    // Se for template de funcionário e houver cliente selecionado, preenche automaticamente
+    if (isFuncionario && cliente && (cliente.name || cliente.nome)) {
+      setFuncionarioData({
+        nome: cliente.name || cliente.nome || "",
+        email: cliente.email || "",
+        departamento_id: "",
+        cargo_id: ""
+      });
+    } else if (!isFuncionario) {
+      // Limpa dados do funcionário se não for template de funcionário
+      setFuncionarioData({
+        nome: "",
+        email: "",
+        departamento_id: "",
+        cargo_id: ""
+      });
+    }
   };
 
 
@@ -421,7 +636,18 @@ export default function CriarDocumentoAutentique() {
       console.log("🔍 [DEBUG] Clientes carregados:", data);
       console.log("🔍 [DEBUG] Primeiro cliente:", data[0]);
       console.log("🔍 [DEBUG] Campos do primeiro cliente:", data[0] ? Object.keys(data[0]) : "Nenhum cliente");
-      setClientes(data);
+      
+      // Se for template de funcionário, filtrar apenas funcionários (funcionario = 1)
+      if (isFuncionarioTemplate) {
+        const funcionarios = data.filter(cliente => cliente.funcionario === 1);
+        console.log("🔍 [DEBUG] Funcionários filtrados:", funcionarios);
+        setClientes(funcionarios);
+      } else {
+        // Se for template normal, filtrar apenas clientes (funcionario = 0 ou null)
+        const clientesNormais = data.filter(cliente => !cliente.funcionario || cliente.funcionario === 0);
+        console.log("🔍 [DEBUG] Clientes normais filtrados:", clientesNormais);
+        setClientes(clientesNormais);
+      }
     } catch (err) {
       console.error("Erro ao carregar clientes:", err);
       toast.error("Erro ao carregar lista de clientes!");
@@ -486,6 +712,81 @@ export default function CriarDocumentoAutentique() {
     } catch (error) {
       console.error("Erro ao carregar contatos:", error);
       setContatos([]);
+    }
+  };
+
+  // Função para buscar departamentos da empresa
+  const fetchDepartamentos = async () => {
+    try {
+      const userDataRaw = localStorage.getItem("userData");
+      const userRaw = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+      
+      if (!token) return;
+      
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+
+      if (!empresaId) return;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/departamentos/empresa/${empresaId}?status=ativo`, {
+        method: "GET",
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Erro ao buscar departamentos:", res.status, errorText);
+        throw new Error(`Erro ao buscar departamentos: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setDepartamentos(data);
+    } catch (error) {
+      console.error("Erro ao carregar departamentos:", error);
+      setDepartamentos([]);
+    }
+  };
+
+  // Função para buscar cargos da empresa
+  const fetchCargos = async () => {
+    try {
+      const userDataRaw = localStorage.getItem("userData");
+      const userRaw = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+      
+      if (!token) return;
+      
+      const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
+
+      if (!empresaId) return;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cargos`, {
+        method: "GET",
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "x-empresa-id": empresaId.toString()
+        }
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Erro ao buscar cargos:", res.status, errorText);
+        throw new Error(`Erro ao buscar cargos: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setCargos(data);
+    } catch (error) {
+      console.error("Erro ao carregar cargos:", error);
+      setCargos([]);
     }
   };
 
@@ -615,7 +916,7 @@ export default function CriarDocumentoAutentique() {
 
     // NOVA VALIDAÇÃO: Não permitir criar contrato sem cliente selecionado
     if (!clienteSelecionado) {
-      toast.warning("Selecione um cliente antes de criar o contrato.");
+      toast.warning(`Selecione um ${isFuncionarioTemplate ? 'funcionário' : 'cliente'} antes de criar o contrato.`);
       setLoading(false);
       return;
     }
@@ -665,12 +966,21 @@ export default function CriarDocumentoAutentique() {
       }
     }
 
+    // NOVA VALIDAÇÃO: Verificar campos de funcionário se template for de funcionário
+    if (isFuncionarioTemplate) {
+      if (!funcionarioData.nome.trim() || !funcionarioData.email.trim() || !funcionarioData.departamento_id || !funcionarioData.cargo_id) {
+        toast.warning("Preencha todos os campos de funcionário: nome, email, departamento e cargo.");
+        setLoading(false);
+        return;
+      }
+    }
+
     // Buscar os dados do cliente selecionado primeiro
     const cliente = clientes.find((cliente) => cliente.id.toString() === clienteSelecionado);
 
     // Garantir que o cliente foi encontrado
     if (!cliente) {
-      toast.warning("Cliente não encontrado. Por favor, selecione um cliente válido.");
+      toast.warning(`${isFuncionarioTemplate ? 'Funcionário' : 'Cliente'} não encontrado. Por favor, selecione um ${isFuncionarioTemplate ? 'funcionário' : 'cliente'} válido.`);
       setLoading(false);
       return;
     }
@@ -678,7 +988,7 @@ export default function CriarDocumentoAutentique() {
     // Verificação do nome do documento
     // Aceita quando houver nome manual OU quando houver cliente selecionado válido
     if (!nomeDocumento.trim() && !clienteSelecionado) {
-      toast.warning("Por favor, informe o nome do documento ou selecione um cliente.");
+      toast.warning(`Por favor, informe o nome do documento ou selecione um ${isFuncionarioTemplate ? 'funcionário' : 'cliente'}.`);
       setLoading(false);
       return;
     }
@@ -1012,6 +1322,19 @@ export default function CriarDocumentoAutentique() {
           variables.push({ variable_name: key, value });
         });
 
+        // Variáveis de funcionário (se template for de funcionário)
+        if (isFuncionarioTemplate) {
+          const departamentoSelecionado = departamentos.find(d => d.id.toString() === funcionarioData.departamento_id);
+          const cargoSelecionado = cargos.find(c => c.id.toString() === funcionarioData.cargo_id);
+          
+          variables.push(
+            { variable_name: "funcionario.nome", value: funcionarioData.nome },
+            { variable_name: "funcionario.email", value: funcionarioData.email },
+            { variable_name: "funcionario.departamento", value: departamentoSelecionado?.nome || "" },
+            { variable_name: "funcionario.cargo", value: cargoSelecionado?.nome || "" }
+          );
+        }
+
         // Envio do HTML usando a nova rota /html
         const payload = {
           template_id: selectedTemplate,
@@ -1134,7 +1457,6 @@ export default function CriarDocumentoAutentique() {
     // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
     setNomeDocumento(`${clienteData.name || clienteData.nome || 'Cliente'} - Documento`);
     setShowClienteModal(false);
-    setShowClienteFormModal(false);
     setActiveTab("documento");
   };
 
@@ -1347,6 +1669,11 @@ export default function CriarDocumentoAutentique() {
 
 
   const etapas = ["cliente", "documento", "signatarios", "outras", "gerar"];
+  
+  // Função para obter o nome da primeira etapa baseado no template
+  const getFirstTabName = () => {
+    return isFuncionarioTemplate ? "funcionário" : "cliente";
+  };
 
   // Função para determinar quais abas devem ser mostradas baseado na seleção
   const getVisibleEtapas = () => {
@@ -1378,7 +1705,6 @@ export default function CriarDocumentoAutentique() {
     
     setActiveTab(tab);
     setShowClienteModal(false);
-    setShowClienteFormModal(false);
   };
 
   // Função para ir para a próxima aba visível
@@ -1523,7 +1849,37 @@ export default function CriarDocumentoAutentique() {
     <div className={styles.page}>
       <PrincipalSidebar />
       <div className={styles.pageContent}>
-        <h1 className={styles.title}>Criar Novo documento</h1>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Criar Novo documento</h1>
+          <div className={styles.headerActions}>
+            {hasUnsavedChanges && (
+              <span className={styles.unsavedIndicator}>
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+                Alterações não salvas
+              </span>
+            )}
+            {lastSaved && (
+              <span className={styles.lastSaved}>
+                Último salvamento: {lastSaved.toLocaleTimeString()}
+              </span>
+            )}
+            <button 
+              className={styles.saveButton} 
+              onClick={() => salvarRascunho()}
+              disabled={!hasUnsavedChanges}
+            >
+              <FontAwesomeIcon icon={faCheckCircle} />
+              Salvar Rascunho
+            </button>
+            <button 
+              className={styles.backButton} 
+              onClick={handleExitAttempt}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              Voltar
+            </button>
+          </div>
+        </div>
       <div className={styles.infoContainer}>
         <FontAwesomeIcon icon={faRocket} className={styles.infoIcon} />
         <span className={styles.infoText}>
@@ -1541,7 +1897,7 @@ export default function CriarDocumentoAutentique() {
               className={activeTab === etapa ? styles.active : ""} 
               onClick={() => changeTab(etapa)}
             >
-              {etapa === "cliente" && "Cliente"}
+              {etapa === "cliente" && (isFuncionarioTemplate ? "Funcionário" : "Cliente")}
               {etapa === "documento" && "Dados do Documento"}
               
               {etapa === "signatarios" && "Signatários"}
@@ -1562,7 +1918,10 @@ export default function CriarDocumentoAutentique() {
       {activeTab === "cliente" && (
         <div>
           <div className={styles.headerLine}>
-            <h2 className={styles.tituloComIcone}><FontAwesomeIcon icon={faUser} style={{ marginRight: 8, color: '#2563eb' }} />Selecionar Cliente</h2>
+            <h2 className={styles.tituloComIcone}>
+              <FontAwesomeIcon icon={faUser} style={{ marginRight: 8, color: '#2563eb' }} />
+              {isFuncionarioTemplate ? "Selecionar Funcionário" : "Selecionar Cliente"}
+            </h2>
             <button
               className={styles.button}
               style={{ background: "#0070f3", marginLeft: "10px" }}
@@ -1580,14 +1939,13 @@ export default function CriarDocumentoAutentique() {
                 const clienteEncontrado = clientes.find(c => c.id.toString() === clienteId);
                 setClienteSelecionado(clienteId);
                 
-                // Se cliente existe, abre formulário normal; se não, abre modal
+                // Se cliente existe, define como selecionado; se não, abre modal de criação
                 if (clienteEncontrado) {
                   setCliente(clienteEncontrado);
                   // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
                   setNomeDocumento(`${clienteEncontrado.name || clienteEncontrado.nome || clienteEncontrado.razao_social || 'Cliente'} - Documento`);
-                  setShowClienteFormModal(true);
                 } else {
-                  setCliente({}); // Objeto vazio para evitar undefined
+                  setCliente(null); // null para criar novo
                   setShowClienteModal(true);
                 }
               }}
@@ -1595,7 +1953,7 @@ export default function CriarDocumentoAutentique() {
               disabled={loadingClientes}
             >
               <option value="" disabled>
-                {loadingClientes ? "Carregando clientes..." : "Selecione um cliente..."}
+                {loadingClientes ? `Carregando ${isFuncionarioTemplate ? 'funcionários' : 'clientes'}...` : `Selecione um ${isFuncionarioTemplate ? 'funcionário' : 'cliente'}...`}
               </option>
               {clientes && clientes.length > 0 ? (
                 clientes.map((c) => {
@@ -1609,20 +1967,36 @@ export default function CriarDocumentoAutentique() {
                   );
                 })
               ) : (
-                !loadingClientes && <option value="" disabled>Nenhum cliente encontrado</option>
+                !loadingClientes && <option value="" disabled>Nenhum {isFuncionarioTemplate ? 'funcionário' : 'cliente'} encontrado</option>
               )}
             </select>
 
             <button className={styles.button} onClick={() => {
-              setCliente({}); // Objeto vazio ao invés de null
+              // Sempre abre modal de criação de novo cliente
+              setCliente(null); // null para criar novo
               setShowClienteModal(true);
             }}>
-              Criar Cliente
+              {isFuncionarioTemplate ? "Novo Funcionário" : "Novo Cliente"}
             </button>
           </div>
         </div>
       )}
 
+      {/* Formulário inline de edição de cliente - aparece sempre que há cliente selecionado */}
+      {activeTab === "cliente" && cliente && (
+        <div className={styles.clientFormContainer}>
+          <ClienteForm
+            cliente={cliente}
+            onClose={() => {
+              setCliente(null);
+              setClienteSelecionado("");
+            }}
+            onCreate={handleClienteCriado}
+            onUpdate={handleAtualizarCliente}
+            isFuncionario={isFuncionarioTemplate}
+          />
+        </div>
+      )}
 
       {activeTab === "documento" && (
         <div>
@@ -2000,19 +2374,19 @@ export default function CriarDocumentoAutentique() {
               type="button"
               onClick={() => {
                 if (!clienteSelecionado || !cliente) {
-                  toast.warning("Selecione um cliente primeiro.");
+                  toast.warning(`Selecione um ${isFuncionarioTemplate ? 'funcionário' : 'cliente'} primeiro.`);
                   return;
                 }
                 setNovoSignatario((prev) => ({
                   ...prev,
-                  name: (cliente.name || ""),
+                  name: (cliente.name || cliente.nome || ""),
                   email: (cliente.email || "").toLowerCase(),
                   cpf: cleanCpf(cliente.cpf_cnpj || ""),
                   telefone: maskPhoneBR(cliente.telefone || ""),
                 }));
               }}
             >
-              Adicionar cliente
+              {isFuncionarioTemplate ? "Adicionar funcionário" : "Adicionar cliente"}
             </button>
 
             <button
@@ -2101,6 +2475,7 @@ export default function CriarDocumentoAutentique() {
             <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
             <span className={styles.infoText}>
               <strong>Variáveis Personalizadas:</strong> Preencha todos os campos abaixo antes de criar o contrato.
+              {isFuncionarioTemplate && " Incluindo os dados do funcionário que será cadastrado automaticamente."}
             </span>
           </div>
 
@@ -2157,39 +2532,149 @@ export default function CriarDocumentoAutentique() {
               !customValues[v.variable] || customValues[v.variable].trim() === ''
             );
 
+            // Adiciona campos de funcionário na contagem se template for de funcionário
+            const funcionarioUnfilled = isFuncionarioTemplate ? [
+              ...(!funcionarioData.nome.trim() ? ['Nome do Funcionário'] : []),
+              ...(!funcionarioData.email.trim() ? ['Email do Funcionário'] : []),
+              ...(!funcionarioData.departamento_id ? ['Departamento'] : []),
+              ...(!funcionarioData.cargo_id ? ['Cargo'] : [])
+            ] : [];
+            
+            const totalUnfilledVars = unfilledVars.length + funcionarioUnfilled.length;
+
             // Renderiza apenas as variáveis personalizadas realmente utilizadas no template
             return (
               <div>
-                {/* Status das variáveis */}
-                <div style={{ 
-                  marginBottom: '20px', 
-                  padding: '16px', 
-                  background: unfilledVars.length > 0 ? '#fff3cd' : '#d4edda', 
-                  border: `1px solid ${unfilledVars.length > 0 ? '#ffeaa7' : '#c3e6cb'}`, 
-                  borderRadius: '8px',
-                  color: unfilledVars.length > 0 ? '#856404' : '#155724'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <FontAwesomeIcon 
-                      icon={unfilledVars.length > 0 ? faInfoCircle : faInfoCircle} 
-                      style={{ color: unfilledVars.length > 0 ? '#856404' : '#155724' }} 
-                    />
-                    <strong>
-                      {unfilledVars.length > 0 
-                        ? `${unfilledVars.length} variável(is) não preenchida(s)` 
-                        : 'Todas as variáveis estão preenchidas! ✅'
-                      }
-                    </strong>
-                  </div>
-                  {unfilledVars.length > 0 && (
-                    <p style={{ margin: 0, fontSize: '14px' }}>
-                      Preencha as seguintes variáveis: <strong>{unfilledVars.map(v => v.label || v.variable).join(', ')}</strong>
-                    </p>
-                  )}
-                </div>
 
                 {/* Campos das variáveis */}
                 <div className={styles.grid}>
+                  {/* Campos de funcionário (se template for de funcionário) */}
+                  {isFuncionarioTemplate && (
+                    <>
+                      <div style={{ marginBottom: "1rem" }}>
+                        <label className={styles.label}>
+                          Nome do Funcionário <span style={{color: 'var(--onity-color-error)'}}>*</span>
+                        </label>
+                        <input
+                          className={styles.input}
+                          type="text"
+                          placeholder="Nome completo do funcionário"
+                          value={funcionarioData.nome}
+                          onChange={(e) => setFuncionarioData(prev => ({ ...prev, nome: e.target.value }))}
+                          style={{
+                            borderColor: funcionarioData.nome.trim() ? 'var(--onity-color-success)' : 'var(--onity-color-error)',
+                            borderWidth: '2px'
+                          }}
+                          required
+                        />
+                        {!funcionarioData.nome.trim() && (
+                          <small style={{ color: 'var(--onity-color-error)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            Este campo é obrigatório
+                          </small>
+                        )}
+                        {funcionarioData.nome.trim() && (
+                          <small style={{ color: 'var(--onity-color-success)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            ✓ Preenchido
+                          </small>
+                        )}
+                      </div>
+                      
+                      <div style={{ marginBottom: "1rem" }}>
+                        <label className={styles.label}>
+                          Email do Funcionário <span style={{color: 'var(--onity-color-error)'}}>*</span>
+                        </label>
+                        <input
+                          className={styles.input}
+                          type="email"
+                          placeholder="email@exemplo.com"
+                          value={funcionarioData.email}
+                          onChange={(e) => setFuncionarioData(prev => ({ ...prev, email: e.target.value.toLowerCase() }))}
+                          style={{
+                            borderColor: funcionarioData.email.trim() ? 'var(--onity-color-success)' : 'var(--onity-color-error)',
+                            borderWidth: '2px'
+                          }}
+                          required
+                        />
+                        {!funcionarioData.email.trim() && (
+                          <small style={{ color: 'var(--onity-color-error)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            Este campo é obrigatório
+                          </small>
+                        )}
+                        {funcionarioData.email.trim() && (
+                          <small style={{ color: 'var(--onity-color-success)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            ✓ Preenchido
+                          </small>
+                        )}
+                      </div>
+                      
+                      <div style={{ marginBottom: "1rem" }}>
+                        <label className={styles.label}>
+                          Departamento <span style={{color: 'var(--onity-color-error)'}}>*</span>
+                        </label>
+                        <select
+                          className={styles.input}
+                          value={funcionarioData.departamento_id}
+                          onChange={(e) => setFuncionarioData(prev => ({ ...prev, departamento_id: e.target.value }))}
+                          style={{
+                            borderColor: funcionarioData.departamento_id ? 'var(--onity-color-success)' : 'var(--onity-color-error)',
+                            borderWidth: '2px'
+                          }}
+                          required
+                        >
+                          <option value="">Selecione um departamento</option>
+                          {departamentos.map((dept) => (
+                            <option key={dept.id} value={dept.id}>
+                              {dept.nome}
+                            </option>
+                          ))}
+                        </select>
+                        {!funcionarioData.departamento_id && (
+                          <small style={{ color: 'var(--onity-color-error)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            Este campo é obrigatório
+                          </small>
+                        )}
+                        {funcionarioData.departamento_id && (
+                          <small style={{ color: 'var(--onity-color-success)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            ✓ Preenchido
+                          </small>
+                        )}
+                      </div>
+                      
+                      <div style={{ marginBottom: "1rem" }}>
+                        <label className={styles.label}>
+                          Cargo <span style={{color: 'var(--onity-color-error)'}}>*</span>
+                        </label>
+                        <select
+                          className={styles.input}
+                          value={funcionarioData.cargo_id}
+                          onChange={(e) => setFuncionarioData(prev => ({ ...prev, cargo_id: e.target.value }))}
+                          style={{
+                            borderColor: funcionarioData.cargo_id ? 'var(--onity-color-success)' : 'var(--onity-color-error)',
+                            borderWidth: '2px'
+                          }}
+                          required
+                        >
+                          <option value="">Selecione um cargo</option>
+                          {cargos.map((cargo) => (
+                            <option key={cargo.id} value={cargo.id}>
+                              {cargo.nome}
+                            </option>
+                          ))}
+                        </select>
+                        {!funcionarioData.cargo_id && (
+                          <small style={{ color: 'var(--onity-color-error)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            Este campo é obrigatório
+                          </small>
+                        )}
+                        {funcionarioData.cargo_id && (
+                          <small style={{ color: 'var(--onity-color-success)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            ✓ Preenchido
+                          </small>
+                        )}
+                      </div>
+                    </>
+                  )}
+                  
                   {customVarsToShow.map((v) => {
                     const isFilled = customValues[v.variable] && customValues[v.variable].trim() !== '';
                     const isRequired = true; // Todas as variáveis personalizadas são obrigatórias
@@ -2197,7 +2682,7 @@ export default function CriarDocumentoAutentique() {
                     return (
                       <div key={v.variable} style={{ marginBottom: "1rem" }}>
                         <label className={styles.label}>
-                          {v.label} {isRequired && <span style={{color: 'red'}}>*</span>}
+                          {v.label} {isRequired && <span style={{color: 'var(--onity-color-error)'}}>*</span>}
                         </label>
                         <input
                           className={styles.input}
@@ -2211,17 +2696,17 @@ export default function CriarDocumentoAutentique() {
                             }))
                           }
                           style={{
-                            borderColor: isFilled ? '#28a745' : '#dc3545',
+                            borderColor: isFilled ? 'var(--onity-color-success)' : 'var(--onity-color-error)',
                             borderWidth: '2px'
                           }}
                         />
                         {!isFilled && (
-                          <small style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                          <small style={{ color: 'var(--onity-color-error)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
                             Este campo é obrigatório
                           </small>
                         )}
                         {isFilled && (
-                          <small style={{ color: '#28a745', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                          <small style={{ color: 'var(--onity-color-success)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
                             ✓ Preenchido
                           </small>
                         )}
@@ -2282,19 +2767,11 @@ export default function CriarDocumentoAutentique() {
 
       {showClienteModal && (
         <ClienteModal
-          cliente={cliente}
+          cliente={clienteSelecionado && cliente ? cliente : null}
           onClose={() => setShowClienteModal(false)}
           onCreate={handleClienteCriado}
           onUpdate={handleAtualizarCliente}
-        />
-      )}
-
-      {showClienteFormModal && (
-        <ClienteForm
-          cliente={cliente}
-          onClose={() => setShowClienteFormModal(false)}
-          onCreate={handleClienteCriado}
-          onUpdate={handleAtualizarCliente}
+          isFuncionario={isFuncionarioTemplate}
         />
       )}
 
@@ -2322,6 +2799,53 @@ export default function CriarDocumentoAutentique() {
       />
       </div>
       
+      {/* Modal de confirmação de saída */}
+      {showExitModal && (
+        <div className={styles.modalOverlay} onClick={cancelExit}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>
+                <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '8px', color: '#f59e0b' }} />
+                Alterações não salvas
+              </h3>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalText}>
+                Você tem alterações não salvas. O que deseja fazer?
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.modalButton}
+                onClick={() => confirmExit(true)}
+                style={{ background: '#10b981', color: 'white' }}
+              >
+                <FontAwesomeIcon icon={faCheckCircle} style={{ marginRight: '6px' }} />
+                Salvar e Sair
+              </button>
+              
+              <button
+                className={styles.modalButton}
+                onClick={() => confirmExit(false)}
+                style={{ background: '#ef4444', color: 'white' }}
+              >
+                <FontAwesomeIcon icon={faTrash} style={{ marginRight: '6px' }} />
+                Sair sem Salvar
+              </button>
+              
+              <button
+                className={styles.modalButton}
+                onClick={cancelExit}
+                style={{ background: '#e5e7eb', color: '#374151' }}
+              >
+                <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '6px' }} />
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Overlay de Loading sobre toda a página */}
       {loading && (
         <div style={{

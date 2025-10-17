@@ -7,9 +7,134 @@ const htmlToPdfmake = require("html-to-pdfmake");
 const { JSDOM } = require("jsdom");
 const crypto = require("crypto");
 const axios = require("axios");
+const bcrypt = require("bcryptjs");
+const { sendEmail } = require("../../config/email");
 
 
 const router = express.Router();
+
+// Função para gerar senha aleatória
+function generateRandomPassword(length = 12) {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return password;
+}
+
+// Função para cadastrar funcionário quando contrato/documento for assinado
+async function cadastrarFuncionarioAposAssinatura(recordId, connection, tableType = 'contratos') {
+  try {
+    console.log("🔍 Verificando se deve cadastrar funcionário para", tableType, "ID:", recordId);
+    
+    // 1. Buscar dados do contrato/documento e verificar se o modelo tem funcionario = 1
+    const modelField = tableType === 'contratos' ? 'modelo_id' : 'modelos_contrato_id';
+    const [[record]] = await connection.query(`
+      SELECT r.*, mc.funcionario, pc.*, pc.nome as cliente_nome, pc.email as cliente_email
+      FROM ${tableType} r
+      JOIN modelos_contrato mc ON r.${modelField} = mc.id
+      JOIN pre_clientes pc ON r.pre_cliente_id = pc.id
+      WHERE r.id = ? AND mc.funcionario = 1
+    `, [recordId]);
+
+    if (!record) {
+      console.log("ℹ️", tableType, "não encontrado ou modelo não é de funcionário");
+      return;
+    }
+
+    console.log("✅ Modelo é de funcionário, processando cadastro...");
+
+    // 2. Validar email
+    if (!record.cliente_email || record.cliente_email.trim() === '') {
+      console.log("⚠️ Email inválido ou vazio, pulando cadastro de funcionário");
+      return;
+    }
+
+    // 3. Verificar se email já existe na tabela usuarios
+    const [[usuarioExistente]] = await connection.query(
+      "SELECT id, nome FROM usuarios WHERE email = ?",
+      [record.cliente_email]
+    );
+
+    if (usuarioExistente) {
+      console.log("⚠️ Email já cadastrado, enviando email de aviso...");
+      console.log("📧 Email de aviso para:", record.cliente_email);
+      
+      // Enviar email de aviso
+      await sendEmail({
+        to: record.cliente_email,
+        subject: "Aviso: Documento Assinado - Usuário Já Cadastrado",
+        html: `
+          <h2>Olá ${record.cliente_nome}!</h2>
+          <p>Seu documento foi assinado com sucesso!</p>
+          <p>Porém, detectamos que você já possui um cadastro em nosso sistema com este email.</p>
+          <p>Se precisar de ajuda para acessar sua conta, entre em contato conosco.</p>
+          <br>
+          <p>Atenciosamente,<br>Equipe Onety</p>
+        `
+      });
+      return;
+    }
+
+    // 3. Gerar senha aleatória e criptografar
+    const senhaAleatoria = generateRandomPassword();
+    const senhaCriptografada = await bcrypt.hash(senhaAleatoria, 10);
+
+    // 4. Cadastrar na tabela usuarios
+    const [resultUsuario] = await connection.query(`
+      INSERT INTO usuarios (nome, email, senha, telefone, status) 
+      VALUES (?, ?, ?, ?, 'ativo')
+    `, [
+      record.cliente_nome,
+      record.cliente_email,
+      senhaCriptografada,
+      record.telefone || null
+    ]);
+
+    const usuarioId = resultUsuario.insertId;
+    console.log("✅ Usuário cadastrado com ID:", usuarioId);
+
+    // 5. Cadastrar na tabela usuarios_empresas
+    await connection.query(`
+      INSERT INTO usuarios_empresas (usuario_id, empresa_id, cargo_id, departamento_id) 
+      VALUES (?, ?, ?, ?)
+    `, [
+      usuarioId,
+      record.empresa_id,
+      record.cargo_id || null,
+      record.departamento_id || null
+    ]);
+
+    console.log("✅ Vínculo empresa criado");
+
+    // 6. Enviar email de boas-vindas com a senha
+    console.log("📧 Enviando email de boas-vindas para:", record.cliente_email);
+    await sendEmail({
+      to: record.cliente_email,
+      subject: "Bem-vindo! Seu documento foi assinado e sua conta foi criada",
+      html: `
+        <h2>Olá ${record.cliente_nome}!</h2>
+        <p>Parabéns! Seu documento foi assinado com sucesso e sua conta foi criada em nosso sistema.</p>
+        <p><strong>Suas credenciais de acesso:</strong></p>
+        <ul>
+          <li><strong>Email:</strong> ${record.cliente_email}</li>
+          <li><strong>Senha:</strong> ${senhaAleatoria}</li>
+        </ul>
+        <p><strong>Importante:</strong> Recomendamos que você altere sua senha no primeiro acesso por segurança.</p>
+        <p>Você pode acessar o sistema através do nosso portal.</p>
+        <br>
+        <p>Bem-vindo à equipe!<br>Equipe Onety</p>
+      `
+    });
+
+    console.log("✅ Email de boas-vindas enviado");
+
+  } catch (error) {
+    console.error("❌ Erro ao cadastrar funcionário:", error);
+    // Não falha o processo de assinatura por erro no cadastro
+  }
+}
 
 // troca .../pades.pdf (com ou sem querystring) por .../certificado.pdf
 function fixPadesUrl(url) {
@@ -528,6 +653,11 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
         [recordId]
       );
       contratoCompletamenteAssinado = true;
+    }
+
+    // 🎯 CADASTRAR FUNCIONÁRIO APÓS ASSINATURA COMPLETA
+    if (contratoCompletamenteAssinado && (scope.table === 'contratos' || scope.table === 'documentos')) {
+      await cadastrarFuncionarioAposAssinatura(recordId, connection, scope.table);
     }
 
     // 🔗 Se for contrato completamente assinado, atualizar lead: fase "Ganhou" e status 'ganhou'

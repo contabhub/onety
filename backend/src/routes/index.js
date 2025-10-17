@@ -70,6 +70,7 @@ const documentosAutentiqueRoutes = require('./contratual/documentos-autentique')
 const documentosRoutes = require('./contratual/documentos');
 const listaSignatariosRoutes = require('./contratual/lista_signatarios');
 const rascunhosRoutes = require('./contratual/rascunhos');
+const rascunhosDocumentosRoutes = require('./contratual/rascunhos_documentos');
 
 
 // Rotas do Onety
@@ -141,6 +142,7 @@ router.use('/contratual/documentos-autentique', documentosAutentiqueRoutes);
 router.use('/contratual/documentos', documentosRoutes);
 router.use('/contratual/lista-signatarios', listaSignatariosRoutes);
 router.use('/contratual/rascunhos', rascunhosRoutes);
+router.use('/contratual/rascunhos-documentos', rascunhosDocumentosRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");
