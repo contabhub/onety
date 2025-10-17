@@ -272,14 +272,12 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       }
 
       const url = `${process.env.NEXT_PUBLIC_API_URL}/atendimento/times-atendimento-usuarios/usuario/${userId}?empresa_id=${companyId}`;
-      console.log('🔍 Buscando times do usuário na empresa:', url);
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const teamsData = response.data || [];
-      console.log('✅ Times encontrados na empresa atual:', teamsData);
       setTeams(teamsData);
       return teamsData;
     } catch (error) {
@@ -341,14 +339,12 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       }
 
       const url = `${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/company/${companyId}/all`;
-      console.log('🔍 Buscando todas as conversas da empresa:', url);
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const conversationsData = response.data?.conversations || [];
-      console.log(`✅ ${conversationsData.length} conversas encontradas para a empresa:`, conversationsData);
 
       // Normalizar shape esperado pelo frontend
       const normalized = conversationsData.map((c) => ({
@@ -390,7 +386,6 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       const userTeams = await fetchUserTeams();
 
       if (userTeams.length === 0) {
-        console.log('⚠️ Usuário não possui times');
         setConversations([]);
         setLoading(false);
         return;
@@ -423,7 +418,6 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
       console.error('❌ Erro ao buscar todas as conversas:', error);
     } finally {
       setLoading(false);
-      console.log('🏁 fetchAllConversations finalizado, loading:', false);
     }
   };
 
@@ -462,9 +456,6 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
   };
 
   useEffect(() => {
-    console.log('🔄 useEffect [user] executado - User mudou');
-    console.log('👤 User:', user);
-    console.log('🆔 User ID:', user?.id);
 
     // Verificar se temos dados suficientes para buscar conversas
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -473,24 +464,14 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
     setUserRole(currentUserRole);
 
     if (userId) {
-      console.log('✅ UserId encontrado, userRole:', currentUserRole);
 
       // Se for administrador, buscar todas as conversas da empresa
       if (isAdmin || currentUserRole === 'Administrador' || currentUserRole === 'Superadmin') {
-        console.log('👑 Usuário é administrador, buscando todas as conversas da empresa');
         fetchAllCompanyConversations();
       } else {
-        console.log('👤 Usuário comum, buscando conversas dos times');
         fetchAllConversations();
       }
     } else {
-      console.log('❌ UserId não encontrado, não buscando conversas');
-      console.log('🔍 Verificando localStorage:', {
-        userId: userData.id,
-        EmpresaId: userData.EmpresaId,
-        permissoes: userData.permissoes
-      });
-
       // Se não temos dados suficientes mas ainda estamos carregando, aguardar
       if (loading) {
         console.log('⏳ Aguardando dados do usuário...');
@@ -517,16 +498,13 @@ export default function ChatSidebar({ onSelectConversation, selectedConversation
 
   // Escutar eventos do WebSocket
   useEffect(() => {
-    console.log('🔌 useEffect WebSocket executado, socket:', socket ? 'Conectado' : 'Desconectado');
-    console.log('🔌 Socket ID:', socket?.id);
-    console.log('🔌 Socket conectado:', socket?.connected);
+
 
     if (!socket) {
       console.log('❌ Socket não disponível, não configurando listeners');
       return;
     }
 
-    console.log('✅ Configurando listeners do WebSocket');
 
     // Listener geral para debug - remover depois
     socket.onAny((eventName, ...args) => {

@@ -36,7 +36,6 @@ export function useAuth() {
           id: parsedUser.id
         };
         
-        console.log('✅ Usuário sincronizado:', userWithCompany);
         setUser(userWithCompany);
       } catch (error) {
         console.error('❌ Erro ao parsear dados do usuário:', error);
@@ -53,7 +52,6 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    console.log('🚀 useAuth - useEffect inicial executado');
     // Sincronização inicial
     syncUserData();
 

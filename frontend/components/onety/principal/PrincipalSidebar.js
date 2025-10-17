@@ -738,8 +738,6 @@ export default function PrincipalSidebar() {
     );
   }
 
-  // Debug log
-  console.log('Estado atual:', { isAnimating, currentModule: currentModule?.id });
 
   return (
     <>
@@ -757,8 +755,6 @@ export default function PrincipalSidebar() {
             initial="initial"
             animate="animate"
             exit="exit"
-            onAnimationStart={() => console.log('Logo animation started')}
-            onAnimationComplete={() => console.log('Logo animation completed')}
           >
             <img
               src={collapsed
@@ -792,8 +788,6 @@ export default function PrincipalSidebar() {
           initial="initial"
           animate="animate"
           exit="exit"
-          onAnimationStart={() => console.log('Animação iniciou')}
-          onAnimationComplete={() => console.log('Animação completou')}
         >
           <nav className={styles.nav}>
           {currentModule.items.map((item) => {
@@ -863,7 +857,6 @@ export default function PrincipalSidebar() {
                 variants={item}
                 className={`${styles.navItem} ${activeItem?.id === item.id ? styles.active : ''}`}
                 onClick={(e) => {
-                  console.log('Item clicado:', item.label, e);
                   handleItemClick(item);
                 }}
                 style={{ 

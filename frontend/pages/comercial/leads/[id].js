@@ -42,7 +42,6 @@ export default function LeadDetails() {
 
       // Verificar se a resposta é válida antes de tentar fazer parse do JSON
       if (!res.ok) {
-        console.error('Erro na resposta da API:', res.status, res.statusText);
         alert(`Erro ao carregar lead: ${res.status} - ${res.statusText}`);
         setIsLoading(false);
         return;

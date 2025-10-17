@@ -68,22 +68,16 @@ export default function EmpresaEquipePage() {
     const userData = JSON.parse(localStorage.getItem("userData") || "null");
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const token = localStorage.getItem("token");
-    
-    console.log("UserData no useEffect:", userData);
-    console.log("User no useEffect:", user);
-    console.log("Token:", token);
+
     
     // Usar EmpresaId em vez de equipe_id
     const empresaId = userData?.EmpresaId || user?.EmpresaId || user?.equipe_id;
     
     if (!empresaId || !token) {
-      console.log("EmpresaId não encontrado:", empresaId);
-      console.log("Token não encontrado:", token);
       setEmpresas([]);
       return;
     }
 
-    console.log("Usando EmpresaId:", empresaId);
     setEquipeId(empresaId);
     buscarEmpresas(empresaId, token);
   }, []);
@@ -109,7 +103,6 @@ export default function EmpresaEquipePage() {
       
       if (res.ok) {
         const data = await res.json();
-        console.log("Dados recebidos:", data);
         setEmpresas(Array.isArray(data) ? data : []);
       } else {
         console.log("Erro na resposta:", res.status, res.statusText);

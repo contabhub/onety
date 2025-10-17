@@ -28,8 +28,7 @@ export function useWebSocket() {
     if (!token) return null;
 
     console.log('🔄 Tentando conectar WebSocket...');
-    console.log('🏢 EmpresaId/CompanyId do userData:', companyId);
-    
+   
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000';
     console.log('🔗 URL do WebSocket:', wsUrl);
     
@@ -38,13 +37,6 @@ export function useWebSocket() {
     const isLocalhost = wsUrl.includes('localhost') || wsUrl.includes('127.0.0.1');
     const isProduction = !isLocalhost && !isNgrokUrl;
     
-    console.log('🔍 Debug de detecção de ambiente:', {
-      wsUrl,
-      isNgrokUrl,
-      isLocalhost,
-      isProduction,
-      startsWithHttps: wsUrl.startsWith('https://')
-    });
     
     const socketConfig = {
       auth: { token: `Bearer ${token}`, companyId },
@@ -63,30 +55,25 @@ export function useWebSocket() {
       socketConfig.extraHeaders = {
         'ngrok-skip-browser-warning': 'true'
       };
-      console.log('🔄 Usando configuração Ngrok: polling → websocket upgrade');
     } else if (isProduction) {
       // Para produção: SEMPRE usa polling primeiro para evitar problemas de WSS
       socketConfig.transports = ['polling', 'websocket'];
       socketConfig.upgrade = true;
-      console.log('🌐 Usando configuração produção: polling → websocket upgrade');
     } else {
       // Para localhost: websocket direto
       socketConfig.transports = ['websocket'];
-      console.log('⚡ Usando configuração localhost: websocket direto');
     }
 
     const newSocket = io(wsUrl, socketConfig);
 
     // Eventos de conexão
     newSocket.on('connect', () => {
-      console.log('✅ WebSocket conectado');
       setConnected(true);
       reconnectAttemptsRef.current = 0; // Reset contador de tentativas
       
       // Entrar na sala da empresa
       if (companyId) {
         newSocket.emit('join:company', Number(companyId));
-        console.log('[WS] join:company enviado com empresaId/companyId =', companyId);
       }
     });
 

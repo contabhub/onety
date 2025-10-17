@@ -150,12 +150,10 @@ const Comunications = ({ leadId }) => {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const token = localStorage.getItem('token');
         const url = `${apiUrl}/atendimento/conversas/contact/${leadId}`;
-        console.log('[CRM] Buscando conversas do lead:', url);
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = res.ok ? await res.json() : [];
-        console.log('[CRM] Conversas do lead → status', res.status, 'payload:', data);
         setLeadConversations(Array.isArray(data) ? data : []);
       } catch (e) {
         setLeadConversations([]);

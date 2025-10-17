@@ -5,8 +5,7 @@ import { faThumbsUp, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 
 export default function LeadStageBar({ fases, faseAtualId, onChangeFase }) {
   useEffect(() => {
-    console.log("[LeadStageBar] fases recebidas:", fases);
-    console.log("[LeadStageBar] faseAtualId:", faseAtualId);
+
   }, [fases, faseAtualId]);
 
   if (!fases || fases.length === 0) {
