@@ -10,7 +10,7 @@ router.post("/", verifyToken, async (req, res) => {
       tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id,
       rg, estado_civil, profissao, sexo, nacionalidade,
       cep, numero, complemento, bairro, cidade, estado,
-      representante, funcao
+      representante, funcao, funcionario, departamento_id, cargo_id
     } = req.body;
 
     if (!tipo || !nome || !email || !empresa_id) {
@@ -45,14 +45,14 @@ router.post("/", verifyToken, async (req, res) => {
          tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id,
          rg, estado_civil, profissao, sexo, nacionalidade,
          cep, numero, complemento, bairro, cidade, estado,
-         representante, funcao
+         representante, funcao, funcionario, departamento_id, cargo_id
        ) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tipo, nome, cpf_cnpj || null, email, telefone || null, endereco || null, empresa_id, lead_id || null,
         rg || null, estado_civil || null, profissao || null, sexo || null, nacionalidade || null,
         cep || null, numero || null, complemento || null, bairro || null, cidade || null, estado || null,
-        representante || null, funcao || null
+        representante || null, funcao || null, funcionario || 0, departamento_id || null, cargo_id || null
       ]
     );
 
@@ -73,7 +73,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       tipo, nome, cpf_cnpj, email, telefone, endereco, empresa_id, lead_id,
       rg, estado_civil, profissao, sexo, nacionalidade,
       cep, numero, complemento, bairro, cidade, estado,
-      representante, funcao
+      representante, funcao, funcionario, departamento_id, cargo_id
     } = req.body;
 
     // Verifica se o cliente existe
@@ -87,7 +87,7 @@ router.put("/:id", verifyToken, async (req, res) => {
         tipo = ?, nome = ?, cpf_cnpj = ?, email = ?, telefone = ?, endereco = ?, 
         empresa_id = ?, lead_id = ?, rg = ?, estado_civil = ?, profissao = ?, sexo = ?, 
         nacionalidade = ?, cep = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, 
-        estado = ?, representante = ?, funcao = ?
+        estado = ?, representante = ?, funcao = ?, funcionario = ?, departamento_id = ?, cargo_id = ?
        WHERE id = ?`,
       [
         tipo || "pessoa_fisica", 
@@ -111,6 +111,9 @@ router.put("/:id", verifyToken, async (req, res) => {
         estado || null, 
         representante || null, 
         funcao || null, 
+        funcionario !== undefined ? funcionario : clienteExistente[0].funcionario,
+        departamento_id || null,
+        cargo_id || null,
         id
       ]
     );
@@ -137,7 +140,17 @@ router.get("/",verifyToken, async (req, res) => {
 router.get("/:id",verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const [client] = await db.query("SELECT * FROM pre_clientes WHERE id = ?", [id]);
+    const [client] = await db.query(
+      `SELECT 
+        pc.*,
+        d.nome as departamento_nome,
+        c.nome as cargo_nome
+       FROM pre_clientes pc
+       LEFT JOIN departamentos d ON pc.departamento_id = d.id
+       LEFT JOIN cargos c ON pc.cargo_id = c.id
+       WHERE pc.id = ?`,
+      [id]
+    );
 
     if (client.length === 0) {
       return res.status(404).json({ error: "Cliente não encontrado." });
@@ -156,7 +169,14 @@ router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
 
 
     const [clientes] = await db.query(
-      "SELECT * FROM pre_clientes WHERE empresa_id = ?",
+      `SELECT 
+        pc.*,
+        d.nome as departamento_nome,
+        c.nome as cargo_nome
+       FROM pre_clientes pc
+       LEFT JOIN departamentos d ON pc.departamento_id = d.id
+       LEFT JOIN cargos c ON pc.cargo_id = c.id
+       WHERE pc.empresa_id = ?`,
       [empresaId]
     );
 

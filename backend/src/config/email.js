@@ -13,15 +13,36 @@ const transporter = nodemailer.createTransport({
 });
 
 // Função para enviar email
-const sendEmail = async (to, subject, text, html) => {
+const sendEmail = async (options) => {
   try {
-    const mailOptions = {
-      from: process.env.SMTP_USER,
-      to: to,
-      subject: subject,
-      text: text,
-      html: html
-    };
+    // Suporte tanto para objeto quanto para parâmetros separados
+    let mailOptions;
+    
+    if (typeof options === 'object' && options.to) {
+      // Formato objeto: { to, subject, text, html }
+      mailOptions = {
+        from: process.env.SMTP_USER,
+        to: options.to,
+        subject: options.subject,
+        text: options.text || '',
+        html: options.html || ''
+      };
+    } else {
+      // Formato antigo: sendEmail(to, subject, text, html)
+      const [to, subject, text, html] = arguments;
+      mailOptions = {
+        from: process.env.SMTP_USER,
+        to: to,
+        subject: subject,
+        text: text || '',
+        html: html || ''
+      };
+    }
+
+    // Validação básica
+    if (!mailOptions.to) {
+      throw new Error('No recipients defined');
+    }
 
     const result = await transporter.sendMail(mailOptions);
     console.log('Email enviado com sucesso:', result.messageId);

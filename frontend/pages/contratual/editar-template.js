@@ -22,6 +22,8 @@ export default function EditarTemplate() {
   const [isGlobal, setIsGlobal] = useState(false);
   const [userRole, setUserRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isStraton, setIsStraton] = useState(false);
+  const [isFuncionario, setIsFuncionario] = useState(false);
 
   useEffect(() => {
     const userRaw = localStorage.getItem("userData");
@@ -69,6 +71,8 @@ export default function EditarTemplate() {
         setTitulo(data.nome || data.name);
         setConteudo(data.conteudo || data.content);
         setIsGlobal(data.global || data.is_global);
+        setIsStraton(Boolean(data.straton));
+        setIsFuncionario(Boolean(data.funcionario));
         setIsLoading(false);
       })
       .catch((err) => {
@@ -92,6 +96,12 @@ export default function EditarTemplate() {
     const user = userRaw ? JSON.parse(userRaw) : null;
     const empresaId = user?.EmpresaId;
 
+    // Garantir exclusividade e obrigatoriedade: exatamente uma opção
+    if ((isStraton && isFuncionario) || (!isStraton && !isFuncionario)) {
+      setError("Selecione exatamente uma opção: Straton ou Funcionário.");
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/${id}`, {
         method: "PUT",
@@ -104,8 +114,8 @@ export default function EditarTemplate() {
           conteudo: conteudo,
           global: isGlobal ? 1 : 0,
           empresa_id: empresaId,
-          straton: 0,
-          funcionario: 0,
+          straton: isStraton ? 1 : 0,
+          funcionario: isFuncionario ? 1 : 0,
         }),
       });
 
@@ -199,7 +209,37 @@ export default function EditarTemplate() {
                       />
                     </div>
                     
-                    <div className={styles.checkContainer}>
+                    <div className={`${styles.checkContainer} ${styles.checkRowLeft}`}>
+                      <div className={styles.checkboxWrapper}>
+                        <label className={styles.checkboxLabel} title="Para o módulo financeiro (Straton). Ao assinar, serão solicitadas informações adicionais para gerar parcelas automaticamente no financeiro.">
+                          <input
+                            type="checkbox"
+                            checked={isStraton}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setIsStraton(checked);
+                              if (checked) setIsFuncionario(false);
+                            }}
+                          />
+                          Financeiro
+                        </label>
+                      </div>
+
+                      <div className={styles.checkboxWrapper}>
+                        <label className={styles.checkboxLabel} title="Para cadastro de funcionário. Ao assinar, o usuário será cadastrado e vinculado à empresa, departamento e cargo.">
+                          <input
+                            type="checkbox"
+                            checked={isFuncionario}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setIsFuncionario(checked);
+                              if (checked) setIsStraton(false);
+                            }}
+                          />
+                          Funcionário
+                        </label>
+                      </div>
+
                       {userRole === "superadmin" && (
                         <div className={styles.checkboxWrapper}>
                           <label className={styles.checkboxLabel}>

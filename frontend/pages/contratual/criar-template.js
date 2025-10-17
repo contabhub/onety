@@ -20,6 +20,8 @@ export default function CriarTemplate() {
   const router = useRouter();
   const [isGlobal, setIsGlobal] = useState(false);
   const [userRole, setUserRole] = useState("");
+  const [isStraton, setIsStraton] = useState(false);
+  const [isFuncionario, setIsFuncionario] = useState(false);
 
   useEffect(() => {
     const userRaw = localStorage.getItem("userData");
@@ -59,14 +61,20 @@ export default function CriarTemplate() {
       return;
     }
 
+    // Garantir exclusividade e obrigatoriedade: exatamente uma opção
+    if ((isStraton && isFuncionario) || (!isStraton && !isFuncionario)) {
+      setError("Selecione exatamente uma opção: Straton ou Funcionário.");
+      return;
+    }
+
     try {
       const payload = {
         nome: titulo,
         conteudo: conteudo,
         global: isGlobal ? 1 : 0,
         empresa_id: isGlobal ? null : user?.EmpresaId,
-        straton: 0,
-        funcionario: 0,
+        straton: isStraton ? 1 : 0,
+        funcionario: isFuncionario ? 1 : 0,
       };
 
       console.log("Payload enviado para API:", payload);
@@ -87,6 +95,8 @@ export default function CriarTemplate() {
         setTimeout(() => router.push(`/contratual/templates`), 1500);
         setTitulo("");
         setConteudo("");
+        setIsStraton(false);
+        setIsFuncionario(false);
         setError("");
       } else {
         const errData = await response.json();
@@ -165,7 +175,37 @@ export default function CriarTemplate() {
             />
           </div>
           
-          <div className={styles.checkContainer}>
+          <div className={`${styles.checkContainer} ${styles.checkRowLeft}`}>
+            <div className={styles.checkboxWrapper}>
+              <label className={styles.checkboxLabel} title="Para o módulo financeiro (Straton). Ao assinar, serão solicitadas informações adicionais para gerar parcelas automaticamente no financeiro.">
+                <input
+                  type="checkbox"
+                  checked={isStraton}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setIsStraton(checked);
+                    if (checked) setIsFuncionario(false);
+                  }}
+                />
+                Financeiro
+              </label>
+            </div>
+
+            <div className={styles.checkboxWrapper}>
+              <label className={styles.checkboxLabel} title="Para cadastro de funcionário. Ao assinar, o usuário será cadastrado e vinculado à empresa, departamento e cargo.">
+                <input
+                  type="checkbox"
+                  checked={isFuncionario}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setIsFuncionario(checked);
+                    if (checked) setIsStraton(false);
+                  }}
+                />
+                Funcionário
+              </label>
+            </div>
+
             {userRole === "superadmin" && (
               <div className={styles.checkboxWrapper}>
                 <label className={styles.checkboxLabel}>

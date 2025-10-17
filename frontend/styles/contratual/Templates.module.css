@@ -410,6 +410,14 @@
   justify-content: flex-end;
 }
 
+/* Linha de checkboxes alinhada à esquerda (sem inline) */
+.checkRowLeft {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 
 /* Mostra no mobile */
 @media (max-width: 768px) {

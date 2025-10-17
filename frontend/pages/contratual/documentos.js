@@ -4,7 +4,7 @@ import styles from "../../styles/contratual/Contratos.module.css";
 import { useAuthRedirect } from "../../utils/auth";
 import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt, faFilter } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faDownload, faPencilAlt, faLink, faClone, faClock, faFilePdf, faList, faThLarge, faCheck, faTimes, faCalendarAlt, faFilter, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
@@ -35,6 +35,7 @@ export default function Documentos() {
   const [downloadDropdownId, setDownloadDropdownId] = useState(null); // ID do contrato com dropdown de download aberto
   const [userRole, setUserRole] = useState(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // ID do rascunho para deletar
   const isSuperAdmin = userRole === 'superadmin';
 
   const handleOpenModal = () => {
@@ -112,13 +113,15 @@ export default function Documentos() {
     async function verificarContratosExpirados(contratos) {
       const agora = new Date();
 
-      // Filtra contratos pendentes que podem ser expirados
-      const pendentes = contratos.filter(
-        (contrato) =>
-          contrato.status !== "expirado" &&
-          contrato.status !== "assinado" && // Exclui contratos assinados
-          new Date(contrato.expirado_em) < agora
-      );
+      // Apenas documentos pendentes, com data de expiração válida
+      const pendentes = contratos.filter((contrato) => {
+        if (String(contrato.status).toLowerCase() === 'rascunho') return false; // nunca expira rascunho
+        if (String(contrato.status).toLowerCase() !== 'pendente') return false; // só expira pendente
+        if (!contrato.expirado_em) return false; // precisa ter data
+        const exp = new Date(contrato.expirado_em);
+        if (isNaN(exp.getTime())) return false; // data inválida
+        return exp < agora;
+      });
 
       if (pendentes.length === 0) {
         console.log("Nenhum contrato pendente para expirar.");
@@ -162,8 +165,13 @@ export default function Documentos() {
 
 
 
-  const handleViewContract = (id) => {
-    router.push(`/contratual/documento/${id}`);
+  const handleViewContract = (id, status) => {
+    // Se for rascunho, redireciona para a tela de criação com o ID do rascunho
+    if (status === 'rascunho') {
+      router.push(`/contratual/criar-documento-autentique?rascunho=${id}`);
+    } else {
+      router.push(`/contratual/documento/${id}`);
+    }
   };
 
   // Anos disponíveis nos contratos (useMemo para performance)
@@ -561,6 +569,33 @@ export default function Documentos() {
     }
   };
 
+  // Função para deletar rascunho
+  const handleDeleteRascunho = async (rascunhoId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/rascunhos-documentos/${rascunhoId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!res.ok) {
+        throw new Error("Erro ao deletar rascunho");
+      }
+      
+      toast.success("Rascunho deletado com sucesso!");
+      setDeleteConfirmId(null);
+      
+      // Remove o rascunho da lista local
+      setContratos(prev => prev.filter(c => c.id !== rascunhoId));
+    } catch (err) {
+      console.error("Erro ao deletar rascunho:", err);
+      toast.error("Erro ao deletar rascunho.");
+    }
+  };
+
   return (
     <>
       <div className={styles.page}>
@@ -748,8 +783,8 @@ export default function Documentos() {
 
                             <button
                               className={styles.viewIcon}
-                              onClick={() => handleViewContract(contrato.id)}
-                              title="Visualizar contrato"
+                              onClick={() => handleViewContract(contrato.id, contrato.status)}
+                              title={contrato.status === 'rascunho' ? "Continuar rascunho" : "Visualizar contrato"}
                             >
                               <FontAwesomeIcon icon={faEye} />
                             </button>
@@ -830,29 +865,40 @@ export default function Documentos() {
                               </div>
                             )}
                             <div style={{ position: "relative", display: "inline-block" }}>
+                              {/* Se for rascunho, mostra ícone de lixeira */}
+                              {contrato.status === 'rascunho' ? (
+                                <button
+                                  className={styles.deleteIcon}
+                                  onClick={() => setDeleteConfirmId(contrato.id)}
+                                  title="Deletar rascunho"
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    className={styles.linkIcon}
+                                    onClick={() => handleDropdownSignatarios(contrato.id)}
+                                    title="Copiar link do contrato"
+                                  >
+                                    <FontAwesomeIcon icon={faLink} />
+                                  </button>
 
-                              <button
-                                className={styles.linkIcon}
-                                onClick={() => handleDropdownSignatarios(contrato.id)}
-                                title="Copiar link do contrato"
-                              >
-                                <FontAwesomeIcon icon={faLink} />
-                              </button>
-
-
-                              {/* Dropdown de signatários */}
-                              {openDropdownId === contrato.id && signatariosDropdown[contrato.id] && (
-                                <ul className={styles.signatariosDropdown}>
-                                  {signatariosDropdown[contrato.id].map((sig) => (
-                                    <li
-                                      key={sig.id}
-                                      className={styles.signatarioItem}
-                                      onClick={() => handleCopySignatarioLink(sig.token_acesso, contrato.id)}
-                                    >
-                                      <strong>{sig.name || sig.email}</strong> — {sig.email}
-                                    </li>
-                                  ))}
-                                </ul>
+                                  {/* Dropdown de signatários */}
+                                  {openDropdownId === contrato.id && signatariosDropdown[contrato.id] && (
+                                    <ul className={styles.signatariosDropdown}>
+                                      {signatariosDropdown[contrato.id].map((sig) => (
+                                        <li
+                                          key={sig.id}
+                                          className={styles.signatarioItem}
+                                          onClick={() => handleCopySignatarioLink(sig.token_acesso, contrato.id)}
+                                        >
+                                          <strong>{sig.name || sig.email}</strong> — {sig.email}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </>
                               )}
                             </div>
 
@@ -923,8 +969,8 @@ export default function Documentos() {
 
                       <button
                         className={styles.viewIcon}
-                        onClick={() => handleViewContract(contrato.id)}
-                        title="Visualizar contrato"
+                        onClick={() => handleViewContract(contrato.id, contrato.status)}
+                        title={contrato.status === 'rascunho' ? "Continuar rascunho" : "Visualizar contrato"}
                       >
                         <FontAwesomeIcon icon={faEye} />
                       </button>
@@ -1080,6 +1126,44 @@ export default function Documentos() {
         )}
 
         </div>
+
+        {/* Modal de confirmação para deletar rascunho */}
+        {deleteConfirmId && (
+          <div className={styles.modalOverlay} onClick={() => setDeleteConfirmId(null)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>
+                  <FontAwesomeIcon icon={faTrash} style={{ marginRight: '8px', color: '#ef4444' }} />
+                  Confirmar Exclusão
+                </h3>
+              </div>
+              <div className={styles.modalBody}>
+                <p className={styles.modalText}>
+                  Tem certeza que deseja deletar este rascunho? Esta ação não pode ser desfeita.
+                </p>
+              </div>
+              <div className={styles.modalFooter}>
+                <button
+                  className={styles.modalButton}
+                  onClick={() => handleDeleteRascunho(deleteConfirmId)}
+                  style={{ background: '#ef4444', color: 'white' }}
+                >
+                  <FontAwesomeIcon icon={faTrash} style={{ marginRight: '6px' }} />
+                  Deletar
+                </button>
+                
+                <button
+                  className={styles.modalButton}
+                  onClick={() => setDeleteConfirmId(null)}
+                  style={{ background: '#e5e7eb', color: '#374151' }}
+                >
+                  <FontAwesomeIcon icon={faTimes} style={{ marginRight: '6px' }} />
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <ToastContainer
           position="top-right"

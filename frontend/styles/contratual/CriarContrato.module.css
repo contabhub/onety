@@ -6,6 +6,16 @@
   min-height: 100vh;
 }
 
+/* Container para formulário inline de edição de cliente */
+.clientFormContainer {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .pageContent {
   flex: 1 1 auto;
   display: flex;
@@ -254,6 +264,54 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Indicadores e botões do cabeçalho (Salvar Rascunho / Voltar) */
+.unsavedIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--onity-color-warning) 18%, transparent);
+  border: 1px solid var(--onity-color-warning);
+  color: color-mix(in srgb, var(--onity-color-warning) 70%, black);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lastSaved {
+  color: var(--onity-icon-secondary);
+  font-size: 12px;
+}
+
+.saveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--onity-color-success);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.saveButton:active {
+  transform: translateY(0);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .title {
