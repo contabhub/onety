@@ -278,71 +278,37 @@ router.get("/:id", verifyToken, async (req, res) => {
 /**
  * DELETE /rascunhos/:id - Excluir rascunho
  */
-router.delete("/:id", verifyToken, async (req, res) => {
-  try {
-    const contractId = req.params.id;
-    const userId = req.user.id;
-
-    // Verifica se o rascunho existe e pertence ao usuário
-    const [[contract]] = await db.query(
-      `SELECT id FROM contratos WHERE id = ? AND status = 'rascunho' AND criado_por = ?`,
-      [contractId, userId]
-    );
-
-    if (!contract) {
-      return res.status(404).json({ error: "Rascunho não encontrado ou acesso negado." });
-    }
-
-    // Remove signatários primeiro
-    await db.query(`DELETE FROM signatarios WHERE contrato_id = ?`, [contractId]);
-
-    // Remove o contrato
-    await db.query(`DELETE FROM contratos WHERE id = ?`, [contractId]);
-
-    res.json({ message: "Rascunho excluído com sucesso." });
-
-  } catch (error) {
-    console.error("❌ Erro ao excluir rascunho:", error);
-    res.status(500).json({ error: "Erro ao excluir rascunho." });
-  }
-});
-
-// DELETE - Deletar rascunho
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
 
     console.log(`🗑️ [DEBUG] Tentativa de deletar rascunho ${id} pelo usuário ${userId}`);
+    console.log(`🔍 [DEBUG] Tipos: id=${typeof id}, userId=${typeof userId}`);
 
-    // Buscar o contrato para verificar se existe e se pertence ao usuário
-    const [contracts] = await db.query(
-      `SELECT id, criado_por, empresa_id FROM contratos WHERE id = ? AND status = 'rascunho'`,
+    // Primeiro, vamos verificar se o contrato existe
+    const [allContracts] = await db.query(
+      `SELECT id, status, criado_por FROM contratos WHERE id = ?`,
       [id]
     );
 
-    if (contracts.length === 0) {
-      return res.status(404).json({ error: 'Rascunho não encontrado' });
+    console.log(`📋 [DEBUG] Contratos encontrados:`, allContracts);
+
+    if (allContracts.length === 0) {
+      console.log(`❌ [DEBUG] Contrato ${id} não existe`);
+      return res.status(404).json({ error: 'Contrato não encontrado' });
     }
 
-    const contract = contracts[0];
+    const contract = allContracts[0];
+    console.log(`📄 [DEBUG] Contrato encontrado:`, contract);
 
-    // Verificar se o usuário tem permissão para deletar
-    const [users] = await db.query(
-      `SELECT empresa_id FROM usuarios WHERE id = ?`,
-      [userId]
-    );
-
-    if (users.length === 0) {
-      return res.status(403).json({ error: 'Usuário não encontrado' });
+    // Verificar se é um rascunho
+    if (contract.status !== 'rascunho') {
+      console.log(`❌ [DEBUG] Contrato ${id} não é um rascunho, status: ${contract.status}`);
+      return res.status(400).json({ error: 'Apenas rascunhos podem ser deletados' });
     }
 
-    const user = users[0];
-
-    // Verificar se o usuário pode deletar (mesmo usuário ou mesma empresa)
-    if (String(contract.criado_por) !== String(userId) && String(contract.empresa_id) !== String(user.empresa_id)) {
-      return res.status(403).json({ error: 'Sem permissão para deletar este rascunho' });
-    }
+    console.log(`✅ [DEBUG] Rascunho encontrado, prosseguindo com a deleção`);
 
     // Deletar signatários primeiro (foreign key constraint)
     await db.query(
