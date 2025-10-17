@@ -190,7 +190,7 @@ export default function Documentos() {
     if (status === 'rascunho') {
       router.push(`/contratual/criar-documento-autentique?rascunho=${id}`);
     } else {
-      router.push(`/contratual/documento/${id}`);
+    router.push(`/contratual/documento/${id}`);
     }
   };
 
@@ -896,27 +896,27 @@ export default function Documentos() {
                                 </button>
                               ) : (
                                 <>
-                                  <button
-                                    className={styles.linkIcon}
-                                    onClick={() => handleDropdownSignatarios(contrato.id)}
-                                    title="Copiar link do contrato"
-                                  >
-                                    <FontAwesomeIcon icon={faLink} />
-                                  </button>
+                              <button
+                                className={styles.linkIcon}
+                                onClick={() => handleDropdownSignatarios(contrato.id)}
+                                title="Copiar link do contrato"
+                              >
+                                <FontAwesomeIcon icon={faLink} />
+                              </button>
 
-                                  {/* Dropdown de signatários */}
-                                  {openDropdownId === contrato.id && signatariosDropdown[contrato.id] && (
-                                    <ul className={styles.signatariosDropdown}>
-                                      {signatariosDropdown[contrato.id].map((sig) => (
-                                        <li
-                                          key={sig.id}
-                                          className={styles.signatarioItem}
-                                          onClick={() => handleCopySignatarioLink(sig.token_acesso, contrato.id)}
-                                        >
-                                          <strong>{sig.name || sig.email}</strong> — {sig.email}
-                                        </li>
-                                      ))}
-                                    </ul>
+                              {/* Dropdown de signatários */}
+                              {openDropdownId === contrato.id && signatariosDropdown[contrato.id] && (
+                                <ul className={styles.signatariosDropdown}>
+                                  {signatariosDropdown[contrato.id].map((sig) => (
+                                    <li
+                                      key={sig.id}
+                                      className={styles.signatarioItem}
+                                      onClick={() => handleCopySignatarioLink(sig.token_acesso, contrato.id)}
+                                    >
+                                      <strong>{sig.name || sig.email}</strong> — {sig.email}
+                                    </li>
+                                  ))}
+                                </ul>
                                   )}
                                 </>
                               )}

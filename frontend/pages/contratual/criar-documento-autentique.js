@@ -408,6 +408,38 @@ export default function CriarDocumentoAutentique() {
     setValidade(isoDate);
   }, []);
 
+  // Função para buscar detalhes do template e definir isFuncionarioTemplate
+  const fetchTemplateDetailsAndSetFuncionario = async (templateId) => {
+    if (!templateId) {
+      setIsFuncionarioTemplate(false);
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/${templateId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error("Erro ao buscar detalhes do modelo");
+      }
+      
+      const templateDetails = await response.json();
+      const isFuncionario = templateDetails.funcionario === 1;
+      setIsFuncionarioTemplate(isFuncionario);
+    } catch (error) {
+      console.error("Erro ao carregar detalhes do modelo para funcionario:", error);
+      toast.error("Erro ao carregar detalhes do modelo.");
+      setIsFuncionarioTemplate(false); // Default to false on error
+    }
+  };
+
   // Função para carregar rascunho existente
   const carregarRascunho = async (contractId) => {
     try {
@@ -427,11 +459,7 @@ export default function CriarDocumentoAutentique() {
 
       const rascunho = await response.json();
       
-      console.log("🔍 [DEBUG] Dados do rascunho carregado:", rascunho);
-        console.log("🔍 [DEBUG] Template ID:", rascunho.template_id);
-        console.log("🔍 [DEBUG] Cliente ID:", rascunho.cliente_id);
-        console.log("🔍 [DEBUG] Content:", rascunho.content);
-        console.log("🔍 [DEBUG] Signatários:", rascunho.signatarios);
+  
       
       // Preenche os campos com os dados do rascunho
       setRascunhoId(rascunho.id);
@@ -446,13 +474,41 @@ export default function CriarDocumentoAutentique() {
       setExpiraEmDias(15); // Default para documentos
       setValorContrato(""); // Documentos não têm valor
       setNomeDocumento(rascunho.nome_documento || "");
-      setIsFuncionarioTemplate(rascunho.funcionario === 1);
-      setFuncionarioData(rascunho.funcionario_data || {
-        nome: "",
-        email: "",
-        departamento_id: "",
-        cargo_id: ""
-      });
+      // isFuncionarioTemplate será definido pelo template selecionado, não pelo pre_cliente
+      
+      // Preenche dados do funcionário se existirem no rascunho
+      if (rascunho.funcionario_data) {
+        setFuncionarioData(rascunho.funcionario_data);
+      } else {
+        setFuncionarioData({
+          nome: "",
+          email: "",
+          departamento_id: "",
+          cargo_id: ""
+        });
+      }
+      
+      // Busca detalhes do template para definir isFuncionarioTemplate corretamente
+      await fetchTemplateDetailsAndSetFuncionario(rascunho.template_id);
+      
+      // Garante que os templates estão carregados para exibir as variáveis
+      await fetchTemplates();
+      
+      // Recarrega clientes com o isFuncionarioTemplate correto
+      await fetchClientes();
+      
+      // Força a sincronização do cliente após carregar tudo
+      if (rascunho.cliente_id) {
+    
+        
+        const clienteEncontrado = clientes.find(c => c.id.toString() === rascunho.cliente_id);
+        if (clienteEncontrado) {
+          setCliente(clienteEncontrado);
+
+        } else {
+  
+        }
+      }
       
       setHasUnsavedChanges(false);
       setLastSaved(new Date());
@@ -479,7 +535,7 @@ export default function CriarDocumentoAutentique() {
     setHasUnsavedChanges(true);
   }, [selectedTemplate, clienteSelecionado, content, signatarios, validade, vigenciaInicio, vigenciaFim, vigenciaMeses, expiraEmDias, valorContrato, nomeDocumento, isFuncionarioTemplate, funcionarioData]);
 
-  // Recarrega clientes quando o tipo de template mudar
+    // Recarrega clientes quando o tipo de template mudar
   useEffect(() => {
     if (isFuncionarioTemplate !== undefined) {
       fetchClientes();
@@ -489,13 +545,34 @@ export default function CriarDocumentoAutentique() {
   // Sincroniza os dados do cliente quando clienteSelecionado mudar
   useEffect(() => {
     if (clienteSelecionado && clientes.length > 0) {
-      const clienteEncontrado = clientes.find(c => c.id.toString() === clienteSelecionado);
+      const clienteEncontrado = clientes.find(c => {
+        const match = c.id === clienteSelecionado;
+        return match;
+      });
+      
       if (clienteEncontrado) {
         setCliente(clienteEncontrado);
         // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Documento"
         setNomeDocumento(`${clienteEncontrado.name || clienteEncontrado.nome || 'Cliente'} - Documento`);
-        console.log("🔍 [DEBUG] Cliente sincronizado:", clienteEncontrado);
-        console.log("🔍 [DEBUG] Nome sincronizado:", clienteEncontrado.name || clienteEncontrado.nome);
+        
+        // Preenche automaticamente as datas
+        const hoje = new Date();
+        
+        // Data de expiração: 15 dias a partir de hoje
+        const dataExpiracao = new Date(hoje);
+        dataExpiracao.setDate(hoje.getDate() + 15);
+        const dataExpiracaoISO = dataExpiracao.toISOString().slice(0, 16);
+        setValidade(dataExpiracaoISO);
+        
+        // Data de início da vigência: hoje
+        const dataInicioVigencia = hoje.toISOString().slice(0, 16);
+        setVigenciaInicio(dataInicioVigencia);
+        
+        // Data final da vigência: início + 12 meses (vigência padrão)
+        const dataFinalVigencia = new Date(hoje);
+        dataFinalVigencia.setMonth(hoje.getMonth() + 12);
+        const dataFinalVigenciaISO = dataFinalVigencia.toISOString().slice(0, 16);
+        setVigenciaFim(dataFinalVigenciaISO);
         
         // Se for template de funcionário, preenche automaticamente os dados do funcionário
         if (isFuncionarioTemplate && (clienteEncontrado.name || clienteEncontrado.nome)) {
@@ -531,7 +608,6 @@ export default function CriarDocumentoAutentique() {
         });
 
         const data = await res.json();
-        console.log("🔍 [DEBUG] Variáveis personalizadas carregadas:", data);
         setCustomVariables(data || []);
       } catch (error) {
         console.error("Erro ao carregar variáveis personalizadas:", error);
@@ -580,7 +656,7 @@ export default function CriarDocumentoAutentique() {
     }
   }
 
-  const handleTemplateChange = (e) => {
+  const handleTemplateChange = async (e) => {
     const templateId = e.target.value;
     setSelectedTemplate(templateId);
 
@@ -588,19 +664,18 @@ export default function CriarDocumentoAutentique() {
     const selected = templates.find((template) => template.id.toString() === templateId);
     setContent(selected ? (selected.conteudo || selected.content || "") : "");
 
-    // Verifica se é um template de funcionário
-    const isFuncionario = selected ? Boolean(selected.funcionario) : false;
-    setIsFuncionarioTemplate(isFuncionario);
+    // Busca detalhes do template para definir isFuncionarioTemplate corretamente
+    await fetchTemplateDetailsAndSetFuncionario(templateId);
 
     // Se for template de funcionário e houver cliente selecionado, preenche automaticamente
-    if (isFuncionario && cliente && (cliente.name || cliente.nome)) {
+    if (isFuncionarioTemplate && cliente && (cliente.name || cliente.nome)) {
       setFuncionarioData({
         nome: cliente.name || cliente.nome || "",
         email: cliente.email || "",
         departamento_id: "",
         cargo_id: ""
       });
-    } else if (!isFuncionario) {
+    } else if (!isFuncionarioTemplate) {
       // Limpa dados do funcionário se não for template de funcionário
       setFuncionarioData({
         nome: "",
@@ -623,7 +698,7 @@ export default function CriarDocumentoAutentique() {
 
     if (!empresaId) {
       console.error("EmpresaId não encontrado");
-      return;
+      return [];
     }
 
     setLoadingClientes(true);
@@ -639,24 +714,23 @@ export default function CriarDocumentoAutentique() {
       if (!res.ok) throw new Error("Erro ao buscar clientes.");
 
       const data = await res.json();
-      console.log("🔍 [DEBUG] Clientes carregados:", data);
-      console.log("🔍 [DEBUG] Primeiro cliente:", data[0]);
-      console.log("🔍 [DEBUG] Campos do primeiro cliente:", data[0] ? Object.keys(data[0]) : "Nenhum cliente");
+
       
       // Se for template de funcionário, filtrar apenas funcionários (funcionario = 1)
       if (isFuncionarioTemplate) {
         const funcionarios = data.filter(cliente => cliente.funcionario === 1);
-        console.log("🔍 [DEBUG] Funcionários filtrados:", funcionarios);
         setClientes(funcionarios);
+        return funcionarios;
       } else {
         // Se for template normal, filtrar apenas clientes (funcionario = 0 ou null)
         const clientesNormais = data.filter(cliente => !cliente.funcionario || cliente.funcionario === 0);
-        console.log("🔍 [DEBUG] Clientes normais filtrados:", clientesNormais);
         setClientes(clientesNormais);
+        return clientesNormais;
       }
     } catch (err) {
       console.error("Erro ao carregar clientes:", err);
       toast.error("Erro ao carregar lista de clientes!");
+      return [];
     } finally {
       setLoadingClientes(false);
     }
@@ -982,7 +1056,18 @@ export default function CriarDocumentoAutentique() {
     }
 
     // Buscar os dados do cliente selecionado primeiro
-    const cliente = clientes.find((cliente) => cliente.id.toString() === clienteSelecionado);
+    let cliente = clientes.find((cliente) => {
+      const match = cliente.id === clienteSelecionado;
+      return match;
+    });
+
+    // Se não encontrou e isFuncionarioTemplate é true, forçar recarregamento
+    if (!cliente && isFuncionarioTemplate) {
+      const clientesAtualizados = await fetchClientes();
+      
+      // Tentar novamente com a lista atualizada
+      cliente = clientesAtualizados.find((cliente) => cliente.id === clienteSelecionado);
+    }
 
     // Garantir que o cliente foi encontrado
     if (!cliente) {
@@ -990,6 +1075,7 @@ export default function CriarDocumentoAutentique() {
       setLoading(false);
       return;
     }
+    
 
     // Verificação do nome do documento
     // Aceita quando houver nome manual OU quando houver cliente selecionado válido
@@ -1122,17 +1208,7 @@ export default function CriarDocumentoAutentique() {
           phone: sig.telefone || null
         }))));
 
-        console.log("Enviando FormData com PDF:", {
-          name: nomeFinal,
-          empresa_id: equipeId,
-          created_by: user.id,
-          client_id: clienteSelecionado,
-          expires_at: validade,
-          start_at: vigenciaInicio,
-          end_at: vigenciaFim,
-          signatoriesCount: signatariosToSend.length
-        });
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique`);
+      
         res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique`, {
           method: "POST",
           headers: {
@@ -1353,20 +1429,8 @@ export default function CriarDocumentoAutentique() {
           end_at: vigenciaFim
         };
         
-        console.log("Enviando payload com HTML para rota /html:", {
-          template_id: payload.template_id,
-          client_id: payload.client_id,
-          signatoriesCount: payload.signatories.length,
-          variablesCount: payload.variables.length,
-          empresa_id: payload.empresa_id,
-          expires_at: payload.expires_at,
-          start_at: payload.start_at,
-          end_at: payload.end_at
-        });
-        console.log("Variáveis sendo enviadas:", payload.variables);
-        console.log("Cliente selecionado:", cliente?.name);
-        console.log("Produtos selecionados:", produtosSelecionados.length);
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique/html`);
+     
+    
         res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/documentos-autentique/html`, {
           method: "POST",
           headers: {
@@ -1425,30 +1489,24 @@ export default function CriarDocumentoAutentique() {
   };
 
   const handleClienteCriado = async (clientId) => {
-    console.log("🔍 [DEBUG] handleClienteCriado recebido:", clientId, "tipo:", typeof clientId);
-    
     if (!clientId) {
-      console.error("ClientId não fornecido");
       toast.error("Erro ao criar cliente: ID não encontrado");
       return;
     }
 
     // Garantir que clientId seja uma string ou número
     const clientIdStr = String(clientId);
-    console.log("🔍 [DEBUG] ClientId convertido para string:", clientIdStr);
 
     await fetchClientes();
 
     const token = localStorage.getItem("token");
     const url = `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${clientIdStr}`;
-    console.log("🔍 [DEBUG] URL da requisição:", url);
     
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
     if (!res.ok) {
-      console.error("Erro ao buscar cliente criado:", res.status, res.statusText);
       toast.error("Cliente criado, mas erro ao carregar dados");
       setShowClienteModal(false);
       setActiveTab("documento");
@@ -1456,7 +1514,6 @@ export default function CriarDocumentoAutentique() {
     }
     
     const clienteData = await res.json();
-    console.log("🔍 [DEBUG] Dados do cliente carregado:", clienteData);
 
     setCliente(clienteData);
     setClienteSelecionado(clientIdStr);
@@ -1550,7 +1607,6 @@ export default function CriarDocumentoAutentique() {
       if (!res.ok) throw new Error("Erro ao buscar documento no Autentique");
 
       const data = await res.json();
-      console.log("Dados do documento Autentique:", data);
       // O Autentique retorna dados diferentes, então vamos apenas logar por enquanto
     } catch (err) {
       console.error("Erro ao buscar documento no Autentique:", err);
@@ -1734,58 +1790,47 @@ export default function CriarDocumentoAutentique() {
   useEffect(() => {
     // Detecta se é clonagem
     if (router.query.clone === "1") {
-      console.log("🔍 [DEBUG] Detectada clonagem, buscando dados...");
       const cloneDataRaw = localStorage.getItem("clonedocumentoData");
-      console.log("🔍 [DEBUG] Dados brutos do localStorage:", cloneDataRaw ? "Encontrados" : "Não encontrados");
       
       if (cloneDataRaw) {
         try {
           const cloneData = JSON.parse(cloneDataRaw);
-          console.log("✅ [DEBUG] Dados clonados recebidos:", cloneData);
           
           // Preenche os campos principais usando os nomes CORRETOS da API
           if (!clienteSelecionado && cloneData.pre_cliente_id) {
-            console.log("🔍 [DEBUG] Definindo cliente:", cloneData.pre_cliente_id);
             setClienteSelecionado(cloneData.pre_cliente_id.toString());
           }
           
           if (!selectedTemplate && cloneData.modelos_contrato_id) {
-            console.log("🔍 [DEBUG] Definindo template:", cloneData.modelos_contrato_id);
             setSelectedTemplate(cloneData.modelos_contrato_id.toString());
           }
           
           if (!content && cloneData.conteudo) {
-            console.log("🔍 [DEBUG] Definindo conteúdo");
             setContent(cloneData.conteudo);
           }
           
           if (cloneData.expirado_em) {
             const dataFormatada = formatDateToInput(cloneData.expirado_em);
-            console.log("🔍 [DEBUG] Definindo validade:", dataFormatada);
             setValidade(dataFormatada);
           }
           
           if (cloneData.comeca_em) {
             const dataFormatada = formatDateToInput(cloneData.comeca_em);
-            console.log("🔍 [DEBUG] Definindo vigência início:", dataFormatada);
             setVigenciaInicio(dataFormatada);
           }
           
           if (cloneData.termina_em) {
             const dataFormatada = formatDateToInput(cloneData.termina_em);
-            console.log("🔍 [DEBUG] Definindo vigência fim:", dataFormatada);
             setVigenciaFim(dataFormatada);
           }
           
           // Clone valor do contrato se existir
           if (cloneData.valor) {
-            console.log("🔍 [DEBUG] Definindo valor do contrato:", cloneData.valor);
             setValorContrato(cloneData.valor.toString());
           }
           
           // Clona signatários (transforma de signatarios para o formato esperado)
           if (!signatarios.length && cloneData.signatories && cloneData.signatories.length > 0) {
-            console.log("🔍 [DEBUG] Definindo signatários:", cloneData.signatories.length);
             // Remove campos desnecessários e ajusta formato
             const signatoriesCloned = cloneData.signatories.map(sig => ({
               name: sig.nome || sig.name,
@@ -1798,7 +1843,6 @@ export default function CriarDocumentoAutentique() {
             setSignatarios(signatoriesCloned);
           }
           
-          console.log("✅ [DEBUG] Clonagem concluída com sucesso!");
           toast.success("Documento carregado! Revise os dados antes de salvar.");
           
           // Limpa o localStorage após uso
@@ -1810,7 +1854,6 @@ export default function CriarDocumentoAutentique() {
           localStorage.removeItem("clonedocumentoData");
         }
       } else {
-        console.log("❌ [DEBUG] Nenhum dado encontrado no localStorage para clonagem");
       }
     }
   }, [router.query.clone, router.isReady]);
@@ -1964,7 +2007,6 @@ export default function CriarDocumentoAutentique() {
               {clientes && clientes.length > 0 ? (
                 clientes.map((c) => {
                   // Debug: verificar campos disponíveis
-                  console.log("🔍 [DEBUG] Renderizando cliente:", c);
                   const nomeCliente = c.name || c.nome || c.razao_social || `Cliente ${c.id}`;
                   return (
                     <option key={c.id} value={c.id}>
@@ -1994,7 +2036,7 @@ export default function CriarDocumentoAutentique() {
           <ClienteForm
             cliente={cliente}
             onClose={() => {
-              setCliente(null);
+              setCliente({});
               setClienteSelecionado("");
             }}
             onCreate={handleClienteCriado}
@@ -2488,29 +2530,22 @@ export default function CriarDocumentoAutentique() {
           {(() => {
             // Recupera o template selecionado (caso o usuário tenha escolhido)
             const selectedTemplateObj = templates.find(
-              (t) => t.id.toString() === selectedTemplate
+              (t) => String(t.id) === String(selectedTemplate)
             );
             // Função para filtrar variáveis presentes no conteúdo do template
             function getCustomVariablesInTemplate(content, customVariables) {
               if (!content || !customVariables || !Array.isArray(customVariables)) {
-                console.log("🔍 [DEBUG] Retornando vazio - content ou customVariables inválidos");
                 return [];
               }
               const vars = customVariables.filter((v) => {
                 const found = content.includes(`{{${v.variable}}}`);
-                console.log(`🔍 [DEBUG] Procurando {{${v.variable}}} no template:`, found);
                 return found;
               });
-              console.log("🔍 [DEBUG] Variáveis encontradas no template:", vars);
               return vars;
             }
             // Filtra as variáveis personalizadas presentes no template selecionado
             const templateContent = selectedTemplateObj?.content || selectedTemplateObj?.conteudo || "";
-            
-            console.log("🔍 [DEBUG] Template selecionado:", selectedTemplateObj);
-            console.log("🔍 [DEBUG] Conteúdo do template (primeiros 200 chars):", templateContent.substring(0, 200));
-            console.log("🔍 [DEBUG] Variáveis customizadas disponíveis:", customVariables);
-            
+          
             const customVarsToShow = getCustomVariablesInTemplate(
               templateContent,
               customVariables
