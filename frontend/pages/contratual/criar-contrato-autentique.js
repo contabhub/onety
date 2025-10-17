@@ -147,8 +147,6 @@ export default function CriarContratoAutentique() {
         return;
       }
 
-      console.log(`🔍 [DEBUG] Signatários a serem enviados:`, signatarios);
-
       const dadosRascunho = {
         client_id: clienteSelecionado || null,
         template_id: selectedTemplate || null,
@@ -278,37 +276,26 @@ export default function CriarContratoAutentique() {
       if (contract.template_id) setSelectedTemplate(contract.template_id.toString());
       if (contract.content) setContent(contract.content);
       if (contract.produtos_dados && Array.isArray(contract.produtos_dados)) {
-        console.log(`🔍 [DEBUG] Produtos carregados no frontend:`, contract.produtos_dados);
         setProdutosSelecionados(contract.produtos_dados);
       }
       if (contract.valor) setValorContrato(contract.valor.toString());
       if (contract.valor_recorrente) setValorRecorrente(contract.valor_recorrente.toString());
       
-      // Carregar e formatar datas
-      console.log("🔍 [DEBUG] Datas do backend:", {
-        expires_at: contract.expires_at,
-        start_at: contract.start_at,
-        end_at: contract.end_at
-      });
       
       if (contract.expires_at) {
         const formattedExpires = formatDateTimeToInput(contract.expires_at);
-        console.log("🔍 [DEBUG] Data de expiração formatada:", formattedExpires);
         setValidade(formattedExpires);
       }
       if (contract.start_at) {
         const formattedStart = formatDateToInput(contract.start_at);
-        console.log("🔍 [DEBUG] Data de início formatada:", formattedStart);
         setVigenciaInicio(formattedStart);
       }
       if (contract.end_at) {
         const formattedEnd = formatDateToInput(contract.end_at);
-        console.log("🔍 [DEBUG] Data final formatada:", formattedEnd);
         setVigenciaFim(formattedEnd);
       }
       
       if (signatories && Array.isArray(signatories)) {
-        console.log(`🔍 [DEBUG] Signatários carregados do backend:`, signatories);
         const mappedSignatories = signatories.map(s => ({
           name: s.name,  // Backend já retorna como 'name'
           email: s.email,
@@ -317,14 +304,12 @@ export default function CriarContratoAutentique() {
           telefone: s.telefone,
           funcao_assinatura: s.funcao_assinatura
         }));
-        console.log(`🔍 [DEBUG] Signatários mapeados para frontend:`, mappedSignatories);
         setSignatarios(mappedSignatories);
       }
 
       setRascunhoId(contractId);
       
       // Não mostra toast para carregamento automático
-      console.log("✅ [DEBUG] Rascunho carregado com sucesso!");
     } catch (error) {
       console.error("Erro ao carregar rascunho:", error);
       toast.error("Erro ao carregar rascunho.");
@@ -542,9 +527,6 @@ export default function CriarContratoAutentique() {
         setCliente(clienteEncontrado);
         // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Contrato"
         setNomeDocumento(`${clienteEncontrado.nome || 'Cliente'} - Contrato`);
-        console.log("🔍 [DEBUG] Cliente sincronizado:", clienteEncontrado);
-        console.log("🔍 [DEBUG] Nome sincronizado:", clienteEncontrado.nome);
-        console.log("🔍 [DEBUG] CEP sincronizado:", clienteEncontrado.cep);
       }
     }
   }, [clienteSelecionado, clientes]);
@@ -567,7 +549,6 @@ export default function CriarContratoAutentique() {
         });
 
         const data = await res.json();
-        console.log("🔍 [DEBUG] Variáveis personalizadas carregadas:", data);
         setCustomVariables(data || []);
       } catch (error) {
         console.error("Erro ao carregar variáveis personalizadas:", error);
@@ -610,7 +591,9 @@ export default function CriarContratoAutentique() {
       if (!res.ok) throw new Error("Erro ao buscar templates.");
 
       const data = await res.json();
-      setTemplates(data);
+      // Filtrar templates que NÃO são de funcionário (funcionario = 0 ou null)
+      const templatesContrato = data.filter(template => template.funcionario !== 1);
+      setTemplates(templatesContrato);
     } catch (err) {
       console.error("Erro ao carregar templates:", err);
     }
@@ -656,9 +639,6 @@ export default function CriarContratoAutentique() {
       if (!res.ok) throw new Error("Erro ao buscar clientes.");
 
       const data = await res.json();
-      console.log("🔍 [DEBUG] Clientes carregados:", data);
-      console.log("🔍 [DEBUG] Primeiro cliente:", data[0]);
-      console.log("🔍 [DEBUG] Campos do primeiro cliente:", data[0] ? Object.keys(data[0]) : "Nenhum cliente");
       setClientes(data);
     } catch (err) {
       console.error("Erro ao carregar clientes:", err);
@@ -756,9 +736,6 @@ export default function CriarContratoAutentique() {
           empresa_id: equipeId,
         };
         
-        console.log("🔍 [DEBUG] Dados do signatário a serem enviados:", dadosParaBackend);
-        console.log("🔍 [DEBUG] User data:", user);
-        console.log("🔍 [DEBUG] EquipeId:", equipeId);
         
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
           method: "POST",
@@ -832,9 +809,6 @@ export default function CriarContratoAutentique() {
         empresa_id: equipeId,
       };
       
-      console.log("🔍 [DEBUG] Dados do signatário a serem enviados (função 2):", dadosParaBackend);
-      console.log("🔍 [DEBUG] User data (função 2):", user);
-      console.log("🔍 [DEBUG] EquipeId (função 2):", equipeId);
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/lista-signatarios`, {
         method: "POST",
@@ -1053,20 +1027,7 @@ export default function CriarContratoAutentique() {
           end_at: vigenciaFim
         };
         
-        console.log("Enviando payload com PDF base64:", {
-          name: payload.name,
-          contentLength: payload.content.length,
-          signatoriesCount: payload.signatories.length,
-          empresa_id: payload.empresa_id,
-          created_by: payload.created_by,
-          valor: payload.valor,
-          client_id: payload.client_id,
-          expires_at: payload.expires_at,
-          start_at: payload.start_at,
-          end_at: payload.end_at
-        });
-        console.log("Primeiros 100 caracteres do base64:", payload.content.substring(0, 100));
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique`);
+     
         res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique`, {
           method: "POST",
           headers: {
@@ -1299,25 +1260,8 @@ export default function CriarContratoAutentique() {
           end_at: vigenciaFim
         };
         
-        console.log("Enviando payload com HTML para rota /html:", {
-          template_id: payload.template_id,
-          client_id: payload.client_id,
-          signatoriesCount: payload.signatories.length,
-          variablesCount: payload.variables.length,
-          empresa_id: payload.empresa_id,
-          valor: payload.valor,
-          expires_at: payload.expires_at,
-          start_at: payload.start_at,
-          end_at: payload.end_at
-        });
-        console.log("Variáveis sendo enviadas:", payload.variables);
-        console.log("🔍 [DEBUG] Cliente selecionado:", cliente?.nome);
-        console.log("🔍 [DEBUG] Cliente completo:", cliente);
-        console.log("🔍 [DEBUG] CEP do cliente:", cliente?.cep);
-        console.log("🔍 [DEBUG] Email do cliente:", cliente?.email);
-        console.log("🔍 [DEBUG] Endereço do cliente:", cliente?.endereco);
-        console.log("🔍 [DEBUG] Produtos selecionados:", produtosSelecionados.length);
-        console.log("URL da API:", `${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/html`);
+  
+
         res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos-autentique/html`, {
           method: "POST",
           headers: {
@@ -1376,7 +1320,6 @@ export default function CriarContratoAutentique() {
   };
 
   const handleClienteCriado = async (clientId) => {
-    console.log("🔍 [DEBUG] handleClienteCriado recebido:", clientId, "tipo:", typeof clientId);
     
     if (!clientId) {
       console.error("ClientId não fornecido");
@@ -1386,13 +1329,11 @@ export default function CriarContratoAutentique() {
 
     // Garantir que clientId seja uma string ou número
     const clientIdStr = String(clientId);
-    console.log("🔍 [DEBUG] ClientId convertido para string:", clientIdStr);
 
     await fetchClientes();
 
     const token = localStorage.getItem("token");
     const url = `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${clientIdStr}`;
-    console.log("🔍 [DEBUG] URL da requisição:", url);
     
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
@@ -1408,7 +1349,6 @@ export default function CriarContratoAutentique() {
     }
     
     const clienteData = await res.json();
-    console.log("🔍 [DEBUG] Dados do cliente carregado:", clienteData);
 
     setCliente(clienteData);
     setClienteSelecionado(clientIdStr);
@@ -1503,7 +1443,6 @@ export default function CriarContratoAutentique() {
       if (!res.ok) throw new Error("Erro ao buscar contrato no Autentique");
 
       const data = await res.json();
-      console.log("Dados do contrato Autentique:", data);
       // O Autentique retorna dados diferentes, então vamos apenas logar por enquanto
     } catch (err) {
       console.error("Erro ao buscar contrato no Autentique:", err);
@@ -1732,64 +1671,52 @@ export default function CriarContratoAutentique() {
   useEffect(() => {
     // Detecta se é clonagem
     if (router.query.clone === "1") {
-      console.log("🔍 [DEBUG] Detectada clonagem, buscando dados...");
       const cloneDataRaw = localStorage.getItem("cloneContratoData");
-      console.log("🔍 [DEBUG] Dados brutos do localStorage:", cloneDataRaw ? "Encontrados" : "Não encontrados");
       
       if (cloneDataRaw) {
         try {
           const cloneData = JSON.parse(cloneDataRaw);
-          console.log("✅ [DEBUG] Dados clonados recebidos:", cloneData);
           
           // Preenche os campos principais usando os nomes CORRETOS da API
           if (!clienteSelecionado && cloneData.pre_cliente_id) {
-            console.log("🔍 [DEBUG] Definindo cliente:", cloneData.pre_cliente_id);
             setClienteSelecionado(cloneData.pre_cliente_id.toString());
           }
           
           if (!selectedTemplate && cloneData.modelos_contrato_id) {
-            console.log("🔍 [DEBUG] Definindo template:", cloneData.modelos_contrato_id);
             setSelectedTemplate(cloneData.modelos_contrato_id.toString());
           }
           
           if (!content && cloneData.conteudo) {
-            console.log("🔍 [DEBUG] Definindo conteúdo");
             setContent(cloneData.conteudo);
           }
           
           if (cloneData.expirado_em) {
             const dataFormatada = formatDateToInput(cloneData.expirado_em);
-            console.log("🔍 [DEBUG] Definindo validade:", dataFormatada);
             setValidade(dataFormatada);
           }
           
           if (cloneData.comeca_em) {
             const dataFormatada = formatDateToInput(cloneData.comeca_em);
-            console.log("🔍 [DEBUG] Definindo vigência início:", dataFormatada);
             setVigenciaInicio(dataFormatada);
           }
           
           if (cloneData.termina_em) {
             const dataFormatada = formatDateToInput(cloneData.termina_em);
-            console.log("🔍 [DEBUG] Definindo vigência fim:", dataFormatada);
             setVigenciaFim(dataFormatada);
           }
           
           // Clone valor do contrato se existir
           if (cloneData.valor) {
-            console.log("🔍 [DEBUG] Definindo valor do contrato:", cloneData.valor);
             setValorContrato(cloneData.valor.toString());
           }
           
           // Clone valor recorrente se existir
           if (cloneData.valor_recorrente) {
-            console.log("🔍 [DEBUG] Definindo MRR:", cloneData.valor_recorrente);
             setValorRecorrente(cloneData.valor_recorrente.toString());
           }
           
           // Clona signatários (transforma de signatarios para o formato esperado)
           if (!signatarios.length && cloneData.signatories && cloneData.signatories.length > 0) {
-            console.log("🔍 [DEBUG] Definindo signatários:", cloneData.signatories.length);
             // Remove campos desnecessários e ajusta formato
             const signatoriesCloned = cloneData.signatories.map(sig => ({
               name: sig.nome,
@@ -1802,24 +1729,20 @@ export default function CriarContratoAutentique() {
             setSignatarios(signatoriesCloned);
           }
           
-          console.log("✅ [DEBUG] Clonagem concluída com sucesso!");
           toast.success("Contrato carregado! Revise os dados antes de salvar.");
           
           // Limpa o localStorage após uso
           localStorage.removeItem("cloneContratoData");
         } catch (e) {
-          console.error("❌ [DEBUG] Erro ao processar dados clonados:", e);
           toast.error("Erro ao processar dados do contrato clonado.");
           // Se der erro, limpa para não travar futuras criações
           localStorage.removeItem("cloneContratoData");
         }
       } else {
-        console.log("❌ [DEBUG] Nenhum dado encontrado no localStorage para clonagem");
       }
     }
     // Detecta se é carregamento de rascunho
     else if (router.query.rascunho && !rascunhoCarregado) {
-      console.log("🔍 [DEBUG] Detectado carregamento de rascunho:", router.query.rascunho);
       setRascunhoCarregado(true); // Marca como carregado para evitar múltiplas chamadas
       carregarRascunho(router.query.rascunho);
     }
@@ -1992,9 +1915,6 @@ export default function CriarContratoAutentique() {
                   setCliente(clienteEncontrado);
                   // Preenche automaticamente o nome do documento com o padrão "Nome do Cliente - Contrato"
                   setNomeDocumento(`${clienteEncontrado.nome || clienteEncontrado.name || clienteEncontrado.razao_social || 'Cliente'} - Contrato`);
-                  console.log("🔍 [DEBUG] Cliente selecionado:", clienteEncontrado);
-                  console.log("🔍 [DEBUG] Nome do cliente:", clienteEncontrado.nome);
-                  console.log("🔍 [DEBUG] CEP do cliente:", clienteEncontrado.cep);
                   setShowClienteFormModal(true);
                 } else {
                   setCliente({}); // Objeto vazio para evitar undefined
@@ -2010,7 +1930,6 @@ export default function CriarContratoAutentique() {
               {clientes && clientes.length > 0 ? (
                 clientes.map((c) => {
                   // Debug: verificar campos disponíveis
-                  console.log("🔍 [DEBUG] Renderizando cliente:", c);
                   const nomeCliente = c.nome || c.name || c.razao_social || `Cliente ${c.id}`;
                   return (
                     <option key={c.id} value={c.id}>
@@ -2817,22 +2736,15 @@ export default function CriarContratoAutentique() {
             
             const templateContent = selectedTemplateObj?.content || selectedTemplateObj?.conteudo || "";
             
-            console.log("🔍 [DEBUG] Template selecionado:", selectedTemplateObj);
-            console.log("🔍 [DEBUG] Conteúdo do template (primeiros 200 chars):", templateContent.substring(0, 200));
-            console.log("🔍 [DEBUG] Variáveis customizadas disponíveis:", customVariables);
-            
             // Função para filtrar variáveis presentes no conteúdo do template
             function getCustomVariablesInTemplate(content, customVariables) {
               if (!content || !customVariables || !Array.isArray(customVariables)) {
-                console.log("🔍 [DEBUG] Retornando vazio - content ou customVariables inválidos");
                 return [];
               }
               const vars = customVariables.filter((v) => {
                 const found = content.includes(`{{${v.variable}}}`);
-                console.log(`🔍 [DEBUG] Procurando {{${v.variable}}} no template:`, found);
                 return found;
               });
-              console.log("🔍 [DEBUG] Variáveis encontradas no template:", vars);
               return vars;
             }
             // Filtra as variáveis personalizadas presentes no template selecionado
