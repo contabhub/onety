@@ -89,7 +89,6 @@ export default function Contratos() {
         }
 
         const data = await res.json();
-        console.log("✅ [DEBUG] Dados recebidos da API:", data);
         // Debug adicional para contratos do Autentique
         const contratosAutentique = data.filter(c => c.autentique === 1);
         if (contratosAutentique.length > 0) {
@@ -398,9 +397,7 @@ export default function Contratos() {
         return;
       }
       const data = await res.json();
-      
-      console.log("🔍 [DEBUG] Dados recebidos para clonagem:", data);
-      
+            
       // Checa se é base64 PDF (único bloqueio válido)
       if (data.contract.conteudo && data.contract.conteudo.startsWith("JVBERi0")) {
         toast.warning("Não é possível clonar contratos enviados como PDF.");
@@ -412,9 +409,7 @@ export default function Contratos() {
         ...data.contract,
         signatories: data.signatories || []
       };
-      
-      console.log("✅ [DEBUG] Dados preparados para clonagem:", cloneData);
-      
+            
       // Salva os dados no localStorage
       localStorage.setItem("cloneContratoData", JSON.stringify(cloneData));
       // Redireciona para a tela de criação com flag de clone

@@ -90,7 +90,6 @@ export default function Documentos() {
         }
 
         const data = await res.json();
-        console.log("✅ [DEBUG] Dados recebidos da API:", data);
         // Debug adicional para contratos do Autentique
         const contratosAutentique = data.filter(c => c.autentique === 1);
         if (contratosAutentique.length > 0) {

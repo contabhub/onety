@@ -21,7 +21,7 @@ export default function Propostas({ leadId }) {
 
                 // Buscar todos os clientes
                 const clientsRes = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/clients`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes`,
                     {
                         headers: { Authorization: `Bearer ${token}` },
                     }
@@ -44,7 +44,7 @@ export default function Propostas({ leadId }) {
 
                 // Buscar contratos do cliente
                 const contratosRes = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientData.id}/contracts`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/comercial/pre-clientes/${clientData.id}/contracts`,
                     {
                         headers: { Authorization: `Bearer ${token}` },
                     }
@@ -73,6 +73,8 @@ export default function Propostas({ leadId }) {
                 return "#ffc107"; // amarelo
             case "expirado":
                 return "#dc3545"; // vermelho
+            case "rejeitado":
+                return "#d9534f"; // vermelho escuro
             default:
                 return "#6c757d"; // cinza para outros ou indefinidos
         }
@@ -95,13 +97,13 @@ export default function Propostas({ leadId }) {
                         <li
                             key={proposta.id}
                             className={styles.itemProposta}
-                            onClick={() => router.push(`/contrato/${proposta.id}`)}
+                            onClick={() => router.push(`/contratual/contrato/${proposta.id}`)}
                             style={{ cursor: "pointer" }}
                         >
                             <div>
-                                <strong>{proposta.title || `Proposta #${proposta.id}`}</strong>
+                                <strong>Contrato #{proposta.id}</strong>
                             </div>
-                            <div>Data: {new Date(proposta.created_at).toLocaleDateString()}</div>
+                            <div>Data: {new Date(proposta.criado_em).toLocaleDateString()}</div>
                             <div>
                                 Status:{" "}
                                 <span style={{ color: getStatusColor(proposta.status), fontWeight: "bold" }}>

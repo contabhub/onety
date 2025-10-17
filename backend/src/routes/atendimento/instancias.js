@@ -201,7 +201,6 @@ router.get('/:id/qr-code', authOrApiKey, async (req, res) => {
    */
   router.get('/:id/disconnect', authOrApiKey, async (req, res) => {
     try {
-      console.log("🔌 Iniciando desconexão Z-API para ID:", req.params.id);
       
       // 🔍 Buscar dados da instância no banco
       const [rows] = await pool.query("SELECT * FROM instancias WHERE id = ?", [req.params.id]);

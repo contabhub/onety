@@ -54,7 +54,6 @@ useEffect(() => {
             try {
                 const userObj = JSON.parse(userRaw);
                 setUser(userObj);
-                console.log("Usuário carregado do localStorage", userObj);
                 return;
             } catch (err) {
                 console.error("Erro ao parsear userData", err);

@@ -44,11 +44,6 @@ export default function Templates() {
     return nameOk && globalOk;
   });
 
-  // Debug: log dos templates e filtros
-  console.log("Templates state:", templates);
-  console.log("Filtered templates:", filteredTemplates);
-  console.log("Search term:", searchTerm);
-  console.log("Global filter:", globalFilter);
   const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage) || 1;
   const paginatedTemplates = filteredTemplates.slice(
     (currentPage - 1) * itemsPerPage,
@@ -87,7 +82,6 @@ export default function Templates() {
     const empresaId = user?.EmpresaId;
     const url = `${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/empresa/${empresaId}/light`;
     
-    console.log("URL da API:", url);
     fetch(url, {
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -101,10 +95,8 @@ export default function Templates() {
         return res.json();
       })
       .then(data => {
-        console.log("Dados recebidos da API:", data);
         if (Array.isArray(data)) {
           setTemplates(data);
-          console.log("Templates definidos:", data);
         } else {
           console.log("Dados não são um array:", data);
         }

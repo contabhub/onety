@@ -209,8 +209,8 @@ router.get('/:clientId/contracts', verifyToken, async (req, res) => {
 
     // Buscar contratos vinculados a clientes que vieram do mesmo lead
     const [contracts] = await db.query(
-      `SELECT c.* FROM contracts c
-       JOIN pre_clientes cl ON c.client_id = cl.id
+      `SELECT c.* FROM contratos c
+       JOIN pre_clientes cl ON c.pre_cliente_id = cl.id
        WHERE cl.lead_id = ?`,
       [leadId]
     );
@@ -234,13 +234,13 @@ router.delete('/:id', verifyToken, async (req, res) => {
     // Verifica se há contratos vinculados (se a tabela existir)
     let contratos = [];
     try {
-      const [rows] = await db.query('SELECT id FROM contracts WHERE client_id = ?', [id]);
+      const [rows] = await db.query('SELECT id FROM contratos WHERE pre_cliente_id = ?', [id]);
       contratos = rows;
     } catch (e) {
       if (e?.code !== 'ER_NO_SUCH_TABLE') {
         throw e;
       }
-      // Se a tabela 'contracts' não existe neste ambiente, ignoramos a verificação
+      // Se a tabela 'contratos' não existe neste ambiente, ignoramos a verificação
       contratos = [];
     }
     if (contratos.length > 0) {

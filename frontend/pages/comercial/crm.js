@@ -188,18 +188,11 @@ export default function CRM() {
         };
       });
       
-      console.log('🏗️ Colunas montadas:', newColumns);
 
       setColumns(newColumns);
       setFunilId(fId);
       setOrderedColumnIds(fases.map((fase) => fase.id));
-      
-      console.log('✅ Funil carregado via rota consolidada:', { 
-        funil: funil.nome,
-        fases: fases.length, 
-        totalLeads: contagem.total,
-        contagemPorFase: contagem.por_fase
-      });
+
       
       setIsLoading(false);
     } catch (error) {
