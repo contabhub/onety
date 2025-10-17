@@ -115,12 +115,33 @@ export default function Documentos() {
 
       // Apenas documentos pendentes, com data de expiração válida
       const pendentes = contratos.filter((contrato) => {
-        if (String(contrato.status).toLowerCase() === 'rascunho') return false; // nunca expira rascunho
-        if (String(contrato.status).toLowerCase() !== 'pendente') return false; // só expira pendente
-        if (!contrato.expirado_em) return false; // precisa ter data
+        console.log(`🔍 [DEBUG] Verificando contrato ID ${contrato.id}: status="${contrato.status}", expirado_em="${contrato.expirado_em}"`);
+        
+        if (String(contrato.status).toLowerCase() === 'rascunho') {
+          console.log(`✅ [DEBUG] Contrato ID ${contrato.id} é rascunho - ignorando expiração`);
+          return false; // nunca expira rascunho
+        }
+        
+        if (String(contrato.status).toLowerCase() !== 'pendente') {
+          console.log(`✅ [DEBUG] Contrato ID ${contrato.id} não é pendente (${contrato.status}) - ignorando expiração`);
+          return false; // só expira pendente
+        }
+        
+        if (!contrato.expirado_em) {
+          console.log(`✅ [DEBUG] Contrato ID ${contrato.id} não tem data de expiração - ignorando`);
+          return false; // precisa ter data
+        }
+        
         const exp = new Date(contrato.expirado_em);
-        if (isNaN(exp.getTime())) return false; // data inválida
-        return exp < agora;
+        if (isNaN(exp.getTime())) {
+          console.log(`✅ [DEBUG] Contrato ID ${contrato.id} tem data inválida - ignorando`);
+          return false; // data inválida
+        }
+        
+        const isExpired = exp < agora;
+        console.log(`🔍 [DEBUG] Contrato ID ${contrato.id}: exp=${exp.toISOString()}, agora=${agora.toISOString()}, expirado=${isExpired}`);
+        
+        return isExpired;
       });
 
       if (pendentes.length === 0) {
