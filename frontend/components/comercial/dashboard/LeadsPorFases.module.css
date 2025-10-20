@@ -1,0 +1,227 @@
+/* Estilos específicos para o componente LeadsPorFases */
+.funnelChart {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  padding: 1rem;
+  box-shadow: var(--onity-elev-med);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100px;
+}
+
+.funnelChart h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tituloIcon {
+  color: var(--onity-color-error);
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--onity-color-error) 30%, transparent));
+}
+
+.funnelSelect {
+  min-width: 180px;
+  padding: var(--onity-space-s) 12px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--onity-elev-low);
+  cursor: pointer;
+}
+
+.funnelSelect:focus, .funnelSelect:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.noDataMessage {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--onity-icon-secondary);
+  background: var(--onity-color-bg);
+  border-radius: var(--onity-radius-m);
+  border: 1px dashed var(--onity-color-border);
+  margin-top: 15px;
+}
+
+.noDataMessage p {
+  margin: 8px 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Container das fases */
+.fasesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: var(--onity-space-m);
+}
+
+.faseCard {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  padding: 12px;
+  border: 1px solid var(--onity-color-border);
+  transition: all 0.2s ease;
+}
+
+.faseCard:hover {
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-1px);
+}
+
+.faseInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-s);
+}
+
+.faseNome {
+  font-weight: 500;
+  color: var(--onity-color-text);
+  font-size: 0.95rem;
+}
+
+.leadsCount {
+  font-weight: 600;
+  color: var(--onity-color-primary);
+  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: var(--onity-color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Hover suave para o contêiner */
+.funnelChart:hover {
+  box-shadow: var(--onity-elev-med);
+}
+
+/* Skeleton styles */
+.skeletonHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.skeletonTitle {
+  width: 180px;
+  height: 24px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+}
+
+.skeletonSelect {
+  width: 140px;
+  height: 36px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+}
+
+.skeletonFases {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: var(--onity-space-m);
+}
+
+.skeletonFaseCard {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  padding: 12px;
+  border: 1px solid var(--onity-color-border);
+}
+
+.skeletonFaseInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-s);
+}
+
+.skeletonFaseNome {
+  width: 120px;
+  height: 16px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+}
+
+.skeletonLeadsCount {
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+.skeletonProgressBar {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 700px) {
+  .funnelChart {
+    padding: 0.75rem;
+    min-height: 140px;
+  }
+  
+  .funnelChart h3 {
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .funnelSelect {
+    min-width: 120px;
+    font-size: 0.95rem;
+    padding: 6px 8px;
+  }
+} 

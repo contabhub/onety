@@ -23,7 +23,8 @@ import {
   Webhook,
   Tag,
   ExternalLink,
-  Mic
+  Mic,
+  LayoutDashboard
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -70,6 +71,12 @@ const MODULE_REGISTRY = {
       dark: '/img/Comercial branco.png'
     },
    items: [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: <LayoutDashboard size={18} />,
+        route: '/comercial/dashboard'
+      },
       // {
        //  id: 'clients',
         //label: 'Pré-Clientes',
@@ -129,6 +136,12 @@ const MODULE_REGISTRY = {
       dark: '/img/Contratual Branco.png'
     },
     items: [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: <LayoutDashboard size={18} />,
+        route: '/contratual/dashboard'
+      },
       {
         id: 'contratos',
         label: 'Contratos',

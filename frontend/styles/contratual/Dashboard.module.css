@@ -1,0 +1,641 @@
+.container {
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-l);
+  margin-bottom: var(--onity-space-xl);
+}
+
+.equipeSelectWrapper {
+  min-width: 240px;
+  max-width: 320px;
+  margin-left: auto;
+}
+
+.noFunnelsMessage {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--onity-icon-secondary);
+  margin-top: 30px;
+}
+
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--onity-color-text);
+}
+
+
+.cardsContainer {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card {
+  flex: 1;
+  padding: var(--onity-space-l);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  box-shadow: var(--onity-elev-med);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover interativo */
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--onity-elev-high);
+  border-color: var(--onity-color-primary);
+}
+
+/* Sombra interna sutil na borda esquerda */
+.card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--onity-color-primary), color-mix(in srgb, var(--onity-color-primary) 70%, white));
+  border-top-left-radius: var(--onity-radius-m);
+  border-bottom-left-radius: var(--onity-radius-m);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--onity-elev-high);
+
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.iconBlue {
+  color: var(--onity-color-primary);
+}
+
+.iconGreen {
+  color: var(--onity-color-success);
+}
+
+.iconOrange {
+  color: var(--onity-color-warning);
+}
+
+.iconRed {
+  color: var(--onity-color-error);
+}
+
+.iconGray {
+  color: var(--onity-icon-secondary);
+}
+
+.iconBlue,
+.iconGreen,
+.iconOrange,
+.iconRed,
+.iconGray {
+  font-size: 20px;
+}
+
+.recentContracts {
+  margin-top: 30px;
+  background: var(--onity-color-surface);
+  padding: 20px;
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+}
+
+.subTitle {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--onity-color-text);
+}
+
+.tituloIcon {
+  color: var(--onity-color-primary);
+  font-size: 1.3rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--onity-color-border);
+  text-align: left;
+  vertical-align: middle;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+
+.table th {
+  font-weight: bold;
+  color: var(--onity-color-primary);
+}
+
+.table tr:hover {
+  background: var(--onity-color-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.2s ease;
+}
+
+.viewIcon {
+  background-color: var(--onity-color-bg);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 10px;
+  color: var(--onity-color-primary);
+  border: 2px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewIcon:hover {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: scale(1.05);
+}
+
+.pendente {
+  color: #856404;
+}
+
+.assinado,
+.pendente,
+.expirado {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  vertical-align: middle;
+  /* min-width: 200px; */
+}
+
+.assinado {
+  color: var(--onity-color-success);
+  background: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
+}
+
+.pendente {
+  color: var(--onity-color-warning);
+  background: color-mix(in srgb, var(--onity-color-warning) 12%, transparent);
+}
+
+.expirado {
+  color: var(--onity-color-error);
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+}
+
+
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 4px solid var(--onity-color-border);
+  border-top: 4px solid var(--onity-color-primary);
+  /* Azul animado */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fadeIn {
+  opacity: 0;
+  animation: fadeIn 0.6s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cardsContainer>.card {
+  animation: fadeInUp 0.6s ease both;
+}
+
+/* Tabela de contratos recentes aprimorada */
+.tableContainer {
+  overflow-x: auto;
+  border-radius: var(--onity-radius-m);
+  background: var(--onity-color-surface);
+  box-shadow: var(--onity-elev-med);
+  margin-top: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table th,
+.table td {
+  padding: 14px 18px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+
+.table td {
+  font-size: 14px;
+  color: var(--onity-color-text);
+  white-space: nowrap;
+}
+
+.table tr {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.table tr:hover {
+  background-color: var(--onity-color-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.table tr:hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--onity-color-primary), color-mix(in srgb, var(--onity-color-primary) 70%, transparent));
+  border-radius: 1px;
+}
+
+/* Status badges */
+.assinado,
+.pendente,
+.expirado,
+.reprovado {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-block;
+  line-height: normal;
+  vertical-align: middle;
+  white-space: nowrap;
+  display: inline-flex;
+  /* Trocar para flex para melhor alinhamento */
+  align-items: center;
+  /* Alinhamento vertical */
+  justify-content: center;
+  /* Alinhamento horizontal */
+  min-width: 110px;
+}
+
+/* Cores específicas */
+.reprovado {
+  --bg-color: #dc3545;
+  --text-color: white;
+}
+
+.pendente {
+  --bg-color: #fff3cd;
+  --text-color: #856404;
+}
+
+.assinado {
+  --bg-color: #d4edda;
+  --text-color: #155724;
+}
+
+.expirado {
+  --bg-color: #888;
+  --text-color: white;
+}
+
+
+
+@media (max-width: 768px) {
+  .cardsContainer {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 100%;
+  }
+
+  .recentContracts {
+    padding: 12px;
+    margin-top: 20px;
+  }
+
+  .subTitle {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .viewIcon {
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+
+  .table td,
+  .table th {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .assinado,
+  .pendente,
+  .expirado {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+.mobileCards {
+  display: none;
+}
+
+.widgetsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+/* Responsividade para os widgets */
+@media (max-width: 1024px) {
+  .widgetsContainer {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Estilo dos cards no mobile */
+.contractCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+  box-shadow: var(--onity-elev-med);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contractCardTitle {
+  font-weight: bold;
+  color: var(--onity-color-primary);
+  font-size: 16px;
+}
+
+.contractCardMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.funnelsContainer {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+
+/* Visibilidade condicional */
+@media (max-width: 768px) {
+  .tableContainer {
+    display: none;
+  }
+
+  .mobileCards {
+    display: block;
+  }
+
+  .contractCard {
+    animation: fadeInUp 0.3s ease-in-out both;
+  }
+}
+
+
+
+/* Skeleton Loading Styles */
+.skeletonCard {
+  flex: 1;
+  padding: var(--onity-space-l);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  box-shadow: var(--onity-elev-med);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.skeletonTitle {
+  height: 18px;
+  width: 60%;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+}
+
+.skeletonIcon {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 50%;
+}
+
+.skeletonValue {
+  height: 32px;
+  width: 80%;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+  margin-top: 8px;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Skeleton para tabela */
+.skeletonTableCell {
+  height: 16px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+}
+
+/* Skeleton para cards mobile */
+.skeletonMobileCard {
+  padding: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  background: var(--onity-color-surface);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonMobileTitle {
+  height: 16px;
+  width: 80%;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+  margin-bottom: 12px;
+}
+
+.skeletonMobileMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.skeletonMobileStatus {
+  height: 14px;
+  width: 60px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+.skeletonMobileDate {
+  height: 14px;
+  width: 80px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: var(--onity-radius-xs);
+}
+
+.skeletonMobileIcon {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 50%;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+}
