@@ -10,6 +10,7 @@ const axios = require("axios");
 const cloudinary = require("../../config/cloudinary");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
+const webSocketManager = require("../../websocket");
 
 
 const router = express.Router();
@@ -485,14 +486,50 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
       "SELECT COUNT(*) as assinados FROM signatarios WHERE documento_id = ? AND assinado_em IS NOT NULL",
       [documentId]
     );
+    let documentoCompletamenteAssinado = false;
     if (assinados === total) {
       await connection.query(
         "UPDATE documentos SET status = 'assinado' WHERE id = ?",
         [documentId]
       );
+      documentoCompletamenteAssinado = true;
     }
 
     await connection.commit();
+
+    // 🔔 Notificação in-app: documento completamente assinado
+    if (documentoCompletamenteAssinado) {
+      try {
+        const [[meta]] = await db.query(
+          `SELECT empresa_id, criado_por AS created_by FROM documentos WHERE id = ?`,
+          [documentId]
+        );
+        const userId = meta?.created_by || null;
+        const empresaId = meta?.empresa_id || null;
+        if (userId) {
+          const title = 'Documento assinado';
+          const body = `${title} #${documentId}`;
+          const dataJson = JSON.stringify({ tipo: 'documentos', id: documentId });
+          await db.query(
+            `INSERT INTO user_notifications (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+             VALUES (?, ?, 'contratual', 'document.signed', ?, ?, ?, 'documento', ?, ?)`,
+            [userId, empresaId, title, body, dataJson, documentId, userId]
+          );
+          try {
+            webSocketManager.emitToUser(userId, 'notification:new', {
+              module: 'contratual',
+              type: 'document.signed',
+              title,
+              body,
+              created_at: new Date().toISOString()
+            });
+          } catch {}
+        }
+      } catch (e) {
+        console.warn('⚠️ Falha ao notificar documento assinado:', e?.message || e);
+      }
+    }
+
     return res.status(200).json({ message: `Evento ${eventType} processado com sucesso.` });
   } catch (error) {
     if (connection) await connection.rollback();
