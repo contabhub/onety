@@ -4,9 +4,9 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import SortableCard from "../../comercial/crm/SortableCard"; // novo componente com useSortable
 import styles from "../../../styles/comercial/crm/Column.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSuitcase, faSackDollar } from "@fortawesome/free-solid-svg-icons";
+import { faSuitcase, faSackDollar, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-export default function Column({ id, title, cards, onEdit }) {
+export default function Column({ id, title, cards, onEdit, showArrow = false }) {
   const { setNodeRef } = useDroppable({ id });
 
   const totalCards = Array.isArray(cards) ? cards.length : 0;
@@ -54,7 +54,11 @@ export default function Column({ id, title, cards, onEdit }) {
             <FontAwesomeIcon icon={faSackDollar} className={styles.columnCard} />
             R$ {totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </span>
-
+          {showArrow && (
+            <div className={styles.columnArrow}>
+              <FontAwesomeIcon icon={faChevronRight} className={styles.arrowIcon} />
+            </div>
+          )}
         </div>
       </div>
 
