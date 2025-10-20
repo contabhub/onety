@@ -12,6 +12,11 @@ router.post("/", authOrApiKey, async (req, res) => {
   try {
     const { conversation_id, sender_type, sender_id, message_type, content, media_url } = req.body;
 
+    console.log('🟢 [MSG] POST /atendimento/mensagens - payload:', {
+      conversation_id, sender_type, sender_id, message_type,
+      hasContent: Boolean(content), hasMedia: Boolean(media_url)
+    });
+
     if (!conversation_id || !sender_type || !message_type) {
       return res.status(400).json({ error: "Campos obrigatórios: conversation_id, sender_type, message_type." });
     }
@@ -21,6 +26,8 @@ router.post("/", authOrApiKey, async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?)`,
       [conversation_id, sender_type, sender_id || null, message_type, content || null, media_url || null]
     );
+
+    console.log('🟢 [MSG] Mensagem inserida com sucesso:', { insertId: result.insertId, affectedRows: result.affectedRows });
 
     const messageData = { 
       id: result.insertId, 
@@ -34,11 +41,13 @@ router.post("/", authOrApiKey, async (req, res) => {
 
     // Notifica via WebSocket
     MessageHandler.notifyNewMessage(messageData);
+    console.log('📡 [WS] Notificado newMessage para conversa', conversation_id);
 
     // 🔔 Notificação in-app para mensagens recebidas do cliente
     try {
       if (String(sender_type).toLowerCase() !== 'usuario') {
         // Descobrir usuário responsável e empresa
+        console.log('🔔 [NOTIF] Mensagem recebida do cliente. Buscando responsável/empresa...');
         const [convRows] = await pool.query(`
           SELECT c.usuario_responsavel_id AS assigned_user_id,
                  t.empresa_id AS empresa_id
@@ -50,21 +59,25 @@ router.post("/", authOrApiKey, async (req, res) => {
 
         const assignedUserId = convRows?.[0]?.assigned_user_id || null;
         const empresaId = convRows?.[0]?.empresa_id || null;
+        console.log('🔔 [NOTIF] Resolved destinatário:', { assignedUserId, empresaId });
 
         if (assignedUserId) {
           const title = 'Nova mensagem recebida';
           const body = content ? String(content).slice(0, 160) : (message_type || 'mensagem');
           const dataJson = JSON.stringify({ conversation_id, message_id: result.insertId, rota: `/atendimento/chat?conv=${conversation_id}` });
 
-          await pool.query(`
+          console.log('🔔 [NOTIF] Inserindo em user_notifications...');
+          const [ins] = await pool.query(`
             INSERT INTO user_notifications
               (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
             VALUES
               (?, ?, 'atendimento', 'lead.message', ?, ?, ?, 'conversa', ?, NULL)
           `, [assignedUserId, empresaId, title, body, dataJson, conversation_id]);
+          console.log('🔔 [NOTIF] Inserção concluída:', { insertId: ins?.insertId, affectedRows: ins?.affectedRows });
 
           // Emite em tempo real para o usuário (se conectado)
           try {
+            console.log('📡 [WS] Emitindo notification:new para user', assignedUserId);
             webSocketManager.emitToUser(assignedUserId, 'notification:new', {
               module: 'atendimento',
               type: 'lead.message',
@@ -72,6 +85,7 @@ router.post("/", authOrApiKey, async (req, res) => {
               body,
               created_at: new Date().toISOString()
             });
+            console.log('📡 [WS] notification:new emitido');
           } catch {}
         }
       }
