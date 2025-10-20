@@ -43,6 +43,12 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: <LayoutDashboard size={18} />,
+        route: '/atendimento/dashboard'
+      },
+      {
         id: 'chat',
         label: 'Chat',
         icon: <MessageSquare size={18} />,
