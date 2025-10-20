@@ -263,7 +263,7 @@ export default function Dashboard() {
     <div className={styles.container}>
       <PrincipalSidebar />
       <div className={styles.header}>
-        <h1 className={styles.title}>Dashboard</h1>
+        <h1 className={styles.title}>Dashboard - Comercial</h1>
         {Array.isArray(user?.permissoes?.adm) && user.permissoes.adm.includes('superadmin') && (
           <div className={styles.equipeSelectWrapper}>
             <Select
