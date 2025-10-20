@@ -344,6 +344,41 @@ router.post("/zapi", async (req, res) => {
         } catch (e) {
           console.warn('⚠️ [WS] Evolution: falha ao emitir notification:new:', e?.message || e);
         }
+      } else if (empresaId) {
+        // Fallback: sem responsável, notifica todos os usuários da empresa (limite 10) para não perder o evento
+        console.log('🔔 [NOTIF] Evolution: conversa sem responsável. Notificando usuários da empresa', empresaId);
+        const [users] = await pool.query(
+          `SELECT usuario_id FROM usuarios_empresas WHERE empresa_id = ? LIMIT 10`,
+          [empresaId]
+        );
+        const title = 'Nova mensagem recebida';
+        const body = typeof content === 'string' ? content.slice(0, 160) : (messageType || 'mensagem');
+        const dataJson = JSON.stringify({ conversation_id: conversationId, message_id: messageId, rota: `/atendimento/chat?conv=${conversationId}` });
+
+        for (const u of users) {
+          try {
+            const [ins] = await pool.query(
+              `INSERT INTO user_notifications
+                 (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+               VALUES
+                 (?, ?, 'atendimento', 'lead.message', ?, ?, ?, 'conversa', ?, NULL)`,
+              [u.usuario_id, empresaId, title, body, dataJson, conversationId]
+            );
+            console.log('🔔 [NOTIF] Evolution: inserted for user', u.usuario_id, '=>', { insertId: ins?.insertId });
+            try {
+              const webSocketManager = require('../../websocket');
+              webSocketManager.emitToUser(u.usuario_id, 'notification:new', {
+                module: 'atendimento',
+                type: 'lead.message',
+                title,
+                body,
+                created_at: new Date().toISOString()
+              });
+            } catch {}
+          } catch (loopErr) {
+            console.warn('⚠️ [NOTIF] Evolution: falha ao inserir para user', u.usuario_id, loopErr?.message || loopErr);
+          }
+        }
       }
     } catch (notifErr) {
       console.warn('⚠️ [NOTIF] Evolution: falha ao criar notificação:', notifErr?.message || notifErr);
