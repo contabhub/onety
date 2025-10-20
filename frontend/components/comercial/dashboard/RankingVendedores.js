@@ -40,7 +40,7 @@ const SkeletonRankingVendedores = () => (
   </div>
 );
 
-const RankingVendedores = ({ equipeId }) => {
+const RankingVendedores = ({ equipeId, selectedMonth, selectedYear }) => {
   const [ranking, setRanking] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +48,7 @@ const RankingVendedores = ({ equipeId }) => {
     if (equipeId) {
       fetchRanking();
     }
-  }, [equipeId]);
+  }, [equipeId, selectedMonth, selectedYear]);
 
   const fetchRanking = async () => {
     setLoading(true);
@@ -60,8 +60,43 @@ const RankingVendedores = ({ equipeId }) => {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        setRanking(data);
+        let data = await response.json();
+        
+        // Filtrar leads por período e recalcular estatísticas
+        const rankingFiltrado = data.map(vendedor => {
+          // Se temos leads individuais, filtrar por período
+          if (vendedor.leads && Array.isArray(vendedor.leads)) {
+            const leadsFiltrados = vendedor.leads.filter(lead => {
+              const createdDate = new Date(lead.criado_em);
+              return createdDate.getMonth() === selectedMonth && createdDate.getFullYear() === selectedYear;
+            });
+            
+            // Recalcular estatísticas com os leads filtrados
+            const ganhos = leadsFiltrados.filter(l => l.status === 'ganhou').length;
+            const abertos = leadsFiltrados.filter(l => l.status === 'aberto').length;
+            const perdidos = leadsFiltrados.filter(l => l.status === 'perdeu').length;
+            const total = leadsFiltrados.length;
+            
+            return {
+              ...vendedor,
+              ganhos,
+              abertos,
+              perdidos,
+              total
+            };
+          }
+          
+          return vendedor;
+        })
+        // Filtrar vendedores sem leads no período
+        .filter(v => v.total > 0)
+        // Reordenar por ganhos e total
+        .sort((a, b) => {
+          if (b.ganhos !== a.ganhos) return b.ganhos - a.ganhos;
+          return b.total - a.total;
+        });
+        
+        setRanking(rankingFiltrado);
       }
     } catch (error) {
       console.error('Erro ao buscar ranking:', error);

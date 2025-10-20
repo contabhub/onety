@@ -18,7 +18,7 @@
 }
 
 .tituloIcon {
-  color: var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
   font-size: 1.4rem;
 }
   

@@ -97,7 +97,7 @@
 
 .leadsCount {
   font-weight: 600;
-  color: var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
   font-size: 0.9rem;
   background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
   padding: 4px 8px;

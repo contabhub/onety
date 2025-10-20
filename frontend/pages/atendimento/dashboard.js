@@ -18,6 +18,10 @@ import Select from 'react-select';
 export default function DashboardAtendimento() {
   const router = useRouter();
 
+  // Estado do filtro de período (mês/ano)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 0-11
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   const [kpiData, setKpiData] = useState({
     totalConversas: 0,
     conversasAbertas: 0,
@@ -42,6 +46,39 @@ export default function DashboardAtendimento() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingAgentes, setLoadingAgentes] = useState(true);
   const [loadingInstancias, setLoadingInstancias] = useState(true);
+
+  // Função para filtrar conversas pelo período selecionado
+  const filterConversationsByPeriod = (conversations) => {
+    return conversations.filter(conv => {
+      const createdDate = new Date(conv.created_at);
+      const convMonth = createdDate.getMonth();
+      const convYear = createdDate.getFullYear();
+      return convMonth === selectedMonth && convYear === selectedYear;
+    });
+  };
+
+  // Gerar lista de meses
+  const meses = [
+    { value: 0, label: 'Janeiro' },
+    { value: 1, label: 'Fevereiro' },
+    { value: 2, label: 'Março' },
+    { value: 3, label: 'Abril' },
+    { value: 4, label: 'Maio' },
+    { value: 5, label: 'Junho' },
+    { value: 6, label: 'Julho' },
+    { value: 7, label: 'Agosto' },
+    { value: 8, label: 'Setembro' },
+    { value: 9, label: 'Outubro' },
+    { value: 10, label: 'Novembro' },
+    { value: 11, label: 'Dezembro' },
+  ];
+
+  // Gerar lista de anos (últimos 5 anos até ano atual + 1)
+  const currentYear = new Date().getFullYear();
+  const anos = Array.from({ length: 6 }, (_, i) => {
+    const year = currentYear - 4 + i;
+    return { value: year, label: year.toString() };
+  });
 
   useEffect(() => {
     async function fetchAllDashboardData() {
@@ -70,7 +107,10 @@ export default function DashboardAtendimento() {
         if (!resConversas.ok) throw new Error("Erro ao buscar conversas.");
 
         const conversasData = await resConversas.json();
-        const conversas = conversasData.conversations || [];
+        const todasConversas = conversasData.conversations || [];
+        
+        // Filtrar conversas pelo período selecionado
+        const conversas = filterConversationsByPeriod(todasConversas);
 
         // Processar KPIs
         const totalConversas = conversas.length;
@@ -146,7 +186,7 @@ export default function DashboardAtendimento() {
     }
 
     fetchAllDashboardData();
-  }, []);
+  }, [selectedMonth, selectedYear]); // Recarregar quando mudar o período
 
   // Buscar ranking de agentes
   const fetchRankingAgentes = async (empresaId, conversas) => {
@@ -345,6 +385,148 @@ export default function DashboardAtendimento() {
       <PrincipalSidebar />
       <div className={styles.header}>
         <h1 className={styles.title}>Dashboard - Atendimento</h1>
+        
+        <div className={dashStyles.filtersWrapper}>
+          {/* Filtro de Mês/Ano */}
+          <div className={dashStyles.periodFilters}>
+            <span className={dashStyles.periodLabel}>Período:</span>
+            <Select
+              classNamePrefix="react-select"
+              options={meses}
+              value={meses.find(m => m.value === selectedMonth)}
+              onChange={(option) => setSelectedMonth(option.value)}
+              placeholder="Mês"
+              isClearable={false}
+              isSearchable={false}
+              styles={{
+                container: base => ({ ...base, minWidth: 140 }),
+                control: (base, state) => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-low)',
+                  minHeight: '38px',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'var(--onity-color-border)',
+                  },
+                  ...(state.isFocused && {
+                    borderColor: 'var(--onity-color-primary)',
+                    boxShadow: '0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent)',
+                  }),
+                }),
+                menu: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-med)',
+                  marginTop: '4px',
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isSelected
+                    ? 'var(--onity-color-primary)'
+                    : state.isFocused
+                      ? 'color-mix(in srgb, var(--onity-color-primary) 12%, transparent)'
+                      : 'var(--onity-color-surface)',
+                  color: state.isSelected
+                    ? 'var(--onity-color-primary-contrast)'
+                    : 'var(--onity-color-text)',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }),
+                singleValue: base => ({
+                  ...base,
+                  color: 'var(--onity-color-text)',
+                  fontSize: '14px',
+                }),
+                indicatorSeparator: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-border)',
+                }),
+                dropdownIndicator: (base, state) => ({
+                  ...base,
+                  color: 'var(--onity-icon-secondary)',
+                  padding: '6px',
+                  '&:hover': {
+                    color: 'var(--onity-color-text)',
+                  },
+                }),
+              }}
+            />
+            <Select
+              classNamePrefix="react-select"
+              options={anos}
+              value={anos.find(a => a.value === selectedYear)}
+              onChange={(option) => setSelectedYear(option.value)}
+              placeholder="Ano"
+              isClearable={false}
+              isSearchable={false}
+              styles={{
+                container: base => ({ ...base, minWidth: 100 }),
+                control: (base, state) => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-low)',
+                  minHeight: '38px',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'var(--onity-color-border)',
+                  },
+                  ...(state.isFocused && {
+                    borderColor: 'var(--onity-color-primary)',
+                    boxShadow: '0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent)',
+                  }),
+                }),
+                menu: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-med)',
+                  marginTop: '4px',
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isSelected
+                    ? 'var(--onity-color-primary)'
+                    : state.isFocused
+                      ? 'color-mix(in srgb, var(--onity-color-primary) 12%, transparent)'
+                      : 'var(--onity-color-surface)',
+                  color: state.isSelected
+                    ? 'var(--onity-color-primary-contrast)'
+                    : 'var(--onity-color-text)',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }),
+                singleValue: base => ({
+                  ...base,
+                  color: 'var(--onity-color-text)',
+                  fontSize: '14px',
+                }),
+                indicatorSeparator: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-border)',
+                }),
+                dropdownIndicator: (base, state) => ({
+                  ...base,
+                  color: 'var(--onity-icon-secondary)',
+                  padding: '6px',
+                  '&:hover': {
+                    color: 'var(--onity-color-text)',
+                  },
+                }),
+              }}
+            />
+          </div>
+
+          {/* Seletor de Empresa (Superadmin) */}
         {Array.isArray(user?.permissoes?.adm) && user.permissoes.adm.includes('superadmin') && (
           <div className={styles.equipeSelectWrapper}>
             <Select
@@ -438,6 +620,7 @@ export default function DashboardAtendimento() {
             />
           </div>
         )}
+        </div>
       </div>
 
       {/* KPIs */}

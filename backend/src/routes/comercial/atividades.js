@@ -7,21 +7,47 @@ const verifyToken = require('../../middlewares/auth');
 router.get('/empresa/:empresaId/por-tipo', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   try {
-    const [rows] = await db.query(`
+    // Buscar todos os tipos de atividades da empresa
+    const [tipos] = await db.query(`
       SELECT 
-        t.id AS tipo_id,
-        t.nome AS tipo_nome,
-        COUNT(a.id) AS total,
-        SUM(CASE WHEN a.status = 'pendente' THEN 1 ELSE 0 END) AS pendente,
-        SUM(CASE WHEN a.status = 'concluida' THEN 1 ELSE 0 END) AS concluida
-      FROM crm_tipos_atividades t
-      LEFT JOIN crm_atividades a ON a.tipo_id = t.id
-      WHERE t.empresa_id = ?
-      GROUP BY t.id, t.nome
-      ORDER BY t.nome ASC
+        id AS tipo_id,
+        nome AS tipo_nome
+      FROM crm_tipos_atividades
+      WHERE empresa_id = ?
+      ORDER BY nome ASC
     `, [empresaId]);
 
-    res.json(rows);
+    // Para cada tipo, buscar as atividades individuais com criado_em
+    const tiposComAtividades = await Promise.all(
+      tipos.map(async (tipo) => {
+        const [atividades] = await db.query(`
+          SELECT 
+            id,
+            status,
+            criado_em,
+            data,
+            hora
+          FROM crm_atividades
+          WHERE tipo_id = ?
+        `, [tipo.tipo_id]);
+
+        // Calcular estatísticas
+        const total = atividades.length;
+        const pendente = atividades.filter(a => a.status === 'pendente').length;
+        const concluida = atividades.filter(a => a.status === 'concluida').length;
+
+        return {
+          tipo_id: tipo.tipo_id,
+          tipo_nome: tipo.tipo_nome,
+          total,
+          pendente,
+          concluida,
+          atividades // ← Retorna as atividades com criado_em
+        };
+      })
+    );
+
+    res.json(tiposComAtividades);
   } catch (error) {
     console.error('Erro ao agrupar atividades por tipo:', error);
     res.status(500).json({ error: 'Erro ao agrupar atividades por tipo.' });

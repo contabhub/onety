@@ -121,17 +121,38 @@ router.get('/leads/count/:funilId', verifyToken, async (req, res) => {
   try {
     const { funilId } = req.params;
     
-    // Consulta para contar o número de leads por fase de um funil
-    const [rows] = await db.query(`
-      SELECT fase.id, fase.nome, COUNT(l.id) AS leadsCount
-      FROM funil_fases fase
-      LEFT JOIN leads l ON l.funil_fase_id = fase.id
-      WHERE fase.funil_id = ?
-      GROUP BY fase.id
-      ORDER BY fase.ordem ASC
+    // Buscar todas as fases do funil
+    const [fases] = await db.query(`
+      SELECT id, nome, ordem
+      FROM funil_fases
+      WHERE funil_id = ?
+      ORDER BY ordem ASC
     `, [funilId]);
 
-    res.json(rows);
+    // Para cada fase, buscar os leads com criado_em
+    const fasesComLeads = await Promise.all(
+      fases.map(async (fase) => {
+        const [leads] = await db.query(`
+          SELECT 
+            id, 
+            nome, 
+            criado_em,
+            status,
+            valor
+          FROM leads
+          WHERE funil_fase_id = ?
+        `, [fase.id]);
+
+        return {
+          id: fase.id,
+          nome: fase.nome,
+          leadsCount: leads.length,
+          leads: leads // ← Retorna os leads com criado_em
+        };
+      })
+    );
+
+    res.json(fasesComLeads);
   } catch (error) {
     console.error('Erro ao contar leads por fase:', error);
     res.status(500).json({ error: 'Erro ao contar leads por fase' });

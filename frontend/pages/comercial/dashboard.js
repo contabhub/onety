@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import { useRouter } from "next/router";
 import styles from "../../styles/comercial/dashboard/Dashboard.module.css";
+import dashStyles from "../../styles/atendimento/dashboard.module.css";
 import {
   FaUsers,
   FaExchangeAlt,
   FaDollarSign,
   FaChartLine,
   FaUserCheck,
+  FaTimes,
 } from "react-icons/fa";
 import CountUp from "react-countup";
 import LeadsPorFases from "../../components/comercial/dashboard/LeadsPorFases";
@@ -18,11 +20,26 @@ import RankingVendedores from "../../components/comercial/dashboard/RankingVende
 import SkeletonCard from "../../components/onety/skeleton/SkeletonCard";
 import Select from 'react-select';
 
-
+// Função para formatar números grandes de forma compacta
+const formatLargeNumber = (value) => {
+  const num = Number(value);
+  if (num >= 1000000000) {
+    return `${(num / 1000000000).toFixed(1)}B`;
+  } else if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  } else if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+};
 
 
 export default function Dashboard() {
   const router = useRouter();
+
+  // Estado do filtro de período (mês/ano)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 0-11
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const [dashboardData, setDashboardData] = useState({
     total: 0,
@@ -47,8 +64,53 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [selectedEquipe, setSelectedEquipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showTicketMedioModal, setShowTicketMedioModal] = useState(false);
+  const [showNegociosGanhosModal, setShowNegociosGanhosModal] = useState(false);
 
   // Estado para modal de avisos
+
+  // Função para filtrar contratos pelo período selecionado
+  const filterContractsByPeriod = (contracts) => {
+    return contracts.filter(contract => {
+      const createdDate = new Date(contract.created_at || contract.criado_em);
+      const contractMonth = createdDate.getMonth();
+      const contractYear = createdDate.getFullYear();
+      return contractMonth === selectedMonth && contractYear === selectedYear;
+    });
+  };
+
+  // Função para filtrar leads pelo período selecionado
+  const filterLeadsByPeriod = (leads) => {
+    return leads.filter(lead => {
+      const createdDate = new Date(lead.created_at || lead.criado_em);
+      const leadMonth = createdDate.getMonth();
+      const leadYear = createdDate.getFullYear();
+      return leadMonth === selectedMonth && leadYear === selectedYear;
+    });
+  };
+
+  // Gerar lista de meses
+  const meses = [
+    { value: 0, label: 'Janeiro' },
+    { value: 1, label: 'Fevereiro' },
+    { value: 2, label: 'Março' },
+    { value: 3, label: 'Abril' },
+    { value: 4, label: 'Maio' },
+    { value: 5, label: 'Junho' },
+    { value: 6, label: 'Julho' },
+    { value: 7, label: 'Agosto' },
+    { value: 8, label: 'Setembro' },
+    { value: 9, label: 'Outubro' },
+    { value: 10, label: 'Novembro' },
+    { value: 11, label: 'Dezembro' },
+  ];
+
+  // Gerar lista de anos (últimos 5 anos até ano atual + 1)
+  const currentYear = new Date().getFullYear();
+  const anos = Array.from({ length: 6 }, (_, i) => {
+    const year = currentYear - 4 + i;
+    return { value: year, label: year.toString() };
+  });
 
   useEffect(() => {
     async function fetchAllDashboardData() {
@@ -76,7 +138,10 @@ export default function Dashboard() {
 
         if (!resContracts.ok) throw new Error("Erro ao buscar contratos.");
 
-        const contracts = await resContracts.json();
+        const todosContratos = await resContracts.json();
+        
+        // Filtrar contratos pelo período selecionado
+        const contracts = filterContractsByPeriod(todosContratos);
 
         // Processar dados dos contratos
         const total = contracts.length;
@@ -90,7 +155,11 @@ export default function Dashboard() {
         const resLeads = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/empresa/${empresaId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const leads = await resLeads.json();
+        const todosLeads = await resLeads.json();
+        
+        // Filtrar leads pelo período selecionado
+        const leads = filterLeadsByPeriod(todosLeads);
+        
         const totalLeads = leads.length;
         const leadsGanhou = leads.filter(l => l.status?.toLowerCase() === "ganhou");
         const totalConvertidos = leadsGanhou.length;
@@ -136,7 +205,7 @@ export default function Dashboard() {
     }
 
     fetchAllDashboardData();
-  }, []);
+  }, [selectedMonth, selectedYear]); // Recarregar quando mudar o período
 
   useEffect(() => {
     async function fetchFunisAndFases() {
@@ -163,16 +232,34 @@ export default function Dashboard() {
             });
             const fases = await resFases.json();
 
-            // Buscar contagem de leads por fase
+            // Buscar contagem de leads por fase (agora retorna leads individuais)
             const resLeadsCount = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/funis/leads/count/${funil.id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            const leadsCount = await resLeadsCount.json();
+            const fasesComLeadsData = await resLeadsCount.json();
 
-            // Associar a contagem de leads a cada fase
-            const fasesComLeads = fases.map((fase) => {
-              const faseLeads = leadsCount.find((lead) => lead.id === fase.id);
-              return { ...fase, leadsCount: faseLeads ? faseLeads.leadsCount : 0 };
+            // Filtrar leads por período antes de contar
+            const fasesComLeads = fasesComLeadsData.map((faseData) => {
+              let leadsCount = faseData.leadsCount || 0;
+              
+              // Se temos leads individuais, filtrar por período
+              if (faseData.leads && Array.isArray(faseData.leads)) {
+                const leadsFiltrados = faseData.leads.filter(lead => {
+                  const createdDate = new Date(lead.criado_em);
+                  return createdDate.getMonth() === selectedMonth && createdDate.getFullYear() === selectedYear;
+                });
+                leadsCount = leadsFiltrados.length;
+              }
+              
+              // Encontrar a fase correspondente para manter informações adicionais
+              const faseInfo = fases.find(f => f.id === faseData.id) || {};
+              
+              return { 
+                ...faseInfo,
+                id: faseData.id,
+                nome: faseData.nome,
+                leadsCount 
+              };
             });
 
             return { ...funil, fases: fasesComLeads };
@@ -186,7 +273,7 @@ export default function Dashboard() {
     }
 
     fetchFunisAndFases();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
 
 
@@ -264,6 +351,148 @@ export default function Dashboard() {
       <PrincipalSidebar />
       <div className={styles.header}>
         <h1 className={styles.title}>Dashboard - Comercial</h1>
+        
+        <div className={dashStyles.filtersWrapper}>
+          {/* Filtro de Mês/Ano */}
+          <div className={dashStyles.periodFilters}>
+            <span className={dashStyles.periodLabel}>Período:</span>
+            <Select
+              classNamePrefix="react-select"
+              options={meses}
+              value={meses.find(m => m.value === selectedMonth)}
+              onChange={(option) => setSelectedMonth(option.value)}
+              placeholder="Mês"
+              isClearable={false}
+              isSearchable={false}
+              styles={{
+                container: base => ({ ...base, minWidth: 140 }),
+                control: (base, state) => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-low)',
+                  minHeight: '38px',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'var(--onity-color-border)',
+                  },
+                  ...(state.isFocused && {
+                    borderColor: 'var(--onity-color-primary)',
+                    boxShadow: '0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent)',
+                  }),
+                }),
+                menu: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-med)',
+                  marginTop: '4px',
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isSelected
+                    ? 'var(--onity-color-primary)'
+                    : state.isFocused
+                      ? 'color-mix(in srgb, var(--onity-color-primary) 12%, transparent)'
+                      : 'var(--onity-color-surface)',
+                  color: state.isSelected
+                    ? 'var(--onity-color-primary-contrast)'
+                    : 'var(--onity-color-text)',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }),
+                singleValue: base => ({
+                  ...base,
+                  color: 'var(--onity-color-text)',
+                  fontSize: '14px',
+                }),
+                indicatorSeparator: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-border)',
+                }),
+                dropdownIndicator: (base, state) => ({
+                  ...base,
+                  color: 'var(--onity-icon-secondary)',
+                  padding: '6px',
+                  '&:hover': {
+                    color: 'var(--onity-color-text)',
+                  },
+                }),
+              }}
+            />
+            <Select
+              classNamePrefix="react-select"
+              options={anos}
+              value={anos.find(a => a.value === selectedYear)}
+              onChange={(option) => setSelectedYear(option.value)}
+              placeholder="Ano"
+              isClearable={false}
+              isSearchable={false}
+              styles={{
+                container: base => ({ ...base, minWidth: 100 }),
+                control: (base, state) => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-low)',
+                  minHeight: '38px',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    borderColor: 'var(--onity-color-border)',
+                  },
+                  ...(state.isFocused && {
+                    borderColor: 'var(--onity-color-primary)',
+                    boxShadow: '0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 20%, transparent)',
+                  }),
+                }),
+                menu: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-surface)',
+                  border: '1px solid var(--onity-color-border)',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--onity-elev-med)',
+                  marginTop: '4px',
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isSelected
+                    ? 'var(--onity-color-primary)'
+                    : state.isFocused
+                      ? 'color-mix(in srgb, var(--onity-color-primary) 12%, transparent)'
+                      : 'var(--onity-color-surface)',
+                  color: state.isSelected
+                    ? 'var(--onity-color-primary-contrast)'
+                    : 'var(--onity-color-text)',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }),
+                singleValue: base => ({
+                  ...base,
+                  color: 'var(--onity-color-text)',
+                  fontSize: '14px',
+                }),
+                indicatorSeparator: base => ({
+                  ...base,
+                  backgroundColor: 'var(--onity-color-border)',
+                }),
+                dropdownIndicator: (base, state) => ({
+                  ...base,
+                  color: 'var(--onity-icon-secondary)',
+                  padding: '6px',
+                  '&:hover': {
+                    color: 'var(--onity-color-text)',
+                  },
+                }),
+              }}
+            />
+          </div>
+
+          {/* Seletor de Empresa (Superadmin) */}
         {Array.isArray(user?.permissoes?.adm) && user.permissoes.adm.includes('superadmin') && (
           <div className={styles.equipeSelectWrapper}>
             <Select
@@ -357,6 +586,7 @@ export default function Dashboard() {
             />
           </div>
         )}
+        </div>
       </div>
 
 
@@ -406,40 +636,124 @@ export default function Dashboard() {
               </h2>
             </div>
 
-            <div className={styles.card}>
+            <div 
+              className={styles.card}
+              onClick={() => setShowNegociosGanhosModal(true)}
+              style={{ cursor: 'pointer' }}
+              title="Clique para ver valor completo"
+            >
               <div className={styles.cardHeader}>
                 <span>Valor Negócios Ganhos</span>
                 <FaDollarSign className={styles.iconGreen} />
               </div>
               <h2>
-                <div className={styles.fadeIn}>R$ {kpiData.valorNegociosGanhos}</div>
+                <div className={styles.fadeIn}>R$ {formatLargeNumber(kpiData.valorNegociosGanhos)}</div>
               </h2>
             </div>
 
-            <div className={styles.card}>
+            <div 
+              className={styles.card}
+              onClick={() => setShowTicketMedioModal(true)}
+              style={{ cursor: 'pointer' }}
+              title="Clique para ver valor completo"
+            >
               <div className={styles.cardHeader}>
                 <span>Ticket Médio</span>
                 <FaChartLine className={styles.iconOrange} />
               </div>
               <h2>
-                <div className={styles.fadeIn}>R$ {kpiData.ticketMedio}</div>
+                <div className={styles.fadeIn}>R$ {formatLargeNumber(kpiData.ticketMedio)}</div>
               </h2>
             </div>
           </>
         )}
       </div>
 
-      <ProjecaoFunil />
+      <ProjecaoFunil 
+        selectedMonth={selectedMonth} 
+        selectedYear={selectedYear} 
+      />
 
-      <LeadsPorFases funis={funis} />
+      <LeadsPorFases 
+        funis={funis} 
+        selectedMonth={selectedMonth} 
+        selectedYear={selectedYear} 
+      />
 
-      <AtividadesPorTipo />
+      <AtividadesPorTipo 
+        selectedMonth={selectedMonth} 
+        selectedYear={selectedYear} 
+      />
 
       {/* Filtro de Negócios e Ranking de Vendedores */}
       <div className={styles.widgetsContainer}>
-        <LeadsFilter equipeId={user?.EmpresaId || user?.empresa_id || user?.empresa?.id} />
-        <RankingVendedores equipeId={user?.EmpresaId || user?.empresa_id || user?.empresa?.id} />
+        <LeadsFilter 
+          equipeId={user?.EmpresaId || user?.empresa_id || user?.empresa?.id} 
+          selectedMonth={selectedMonth} 
+          selectedYear={selectedYear} 
+        />
+        <RankingVendedores 
+          equipeId={user?.EmpresaId || user?.empresa_id || user?.empresa?.id} 
+          selectedMonth={selectedMonth} 
+          selectedYear={selectedYear} 
+        />
       </div>
+
+      {/* Modal de Ticket Médio */}
+      {showTicketMedioModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowTicketMedioModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Ticket Médio</h3>
+              <button 
+                className={styles.closeButton}
+                onClick={() => setShowTicketMedioModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.valueDisplay}>
+                <FaChartLine className={styles.modalIcon} />
+                <span className={styles.fullValue}>
+                  R$ {Number(kpiData.ticketMedio).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <p className={styles.modalDescription}>
+                Este é o ticket médio dos contratos gerados pelos leads convertidos no período selecionado.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Negócios Ganhos */}
+      {showNegociosGanhosModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowNegociosGanhosModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Valor Negócios Ganhos</h3>
+              <button 
+                className={styles.closeButton}
+                onClick={() => setShowNegociosGanhosModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.valueDisplay}>
+                <FaDollarSign className={styles.modalIcon} />
+                <span className={styles.fullValue}>
+                  R$ {Number(kpiData.valorNegociosGanhos).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <p className={styles.modalDescription}>
+                Este é o valor total dos contratos gerados pelos leads que foram convertidos (status "Ganhou") no período selecionado.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

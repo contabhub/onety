@@ -1,6 +1,32 @@
 /* Estilos específicos para o Dashboard de Atendimento */
 /* Importa estilos base do dashboard comercial */
 
+/* Filtros de Período */
+.filtersWrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.periodFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  box-shadow: var(--onity-elev-low);
+}
+
+.periodLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  white-space: nowrap;
+}
+
 /* Ranking de Agentes */
 .rankingList {
   display: flex;
@@ -276,6 +302,16 @@
     flex-direction: row;
     gap: 8px;
   }
+  
+  .filtersWrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .periodFilters {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 768px) {
@@ -292,6 +328,15 @@
     width: 100%;
     flex-direction: row;
     justify-content: space-around;
+  }
+  
+  .periodFilters {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .periodLabel {
+    width: 100%;
   }
 }
 
