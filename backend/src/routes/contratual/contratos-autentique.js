@@ -12,6 +12,7 @@ const { sendEmail } = require("../../config/email");
 const cloudinary = require("../../config/cloudinary");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
+const webSocketManager = require("../../websocket");
 
 
 const router = express.Router();
@@ -734,6 +735,64 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
 
     await connection.commit();
     
+    // 🔔 Notificação in-app: contrato/documento completamente assinado
+    if (contratoCompletamenteAssinado) {
+      try {
+        const [[meta]] = await db.query(
+          scope.table === 'contratos'
+            ? `SELECT empresa_id, criado_por AS created_by FROM contratos WHERE id = ?`
+            : `SELECT empresa_id, criado_por AS created_by FROM documentos WHERE id = ?`,
+          [recordId]
+        );
+        const userId = meta?.created_by || null;
+        const empresaId = meta?.empresa_id || null;
+        
+        if (userId) {
+          const title = scope.table === 'contratos' ? 'Contrato assinado' : 'Documento assinado';
+          const body = `${title} #${recordId}`;
+          const dataJson = JSON.stringify({ 
+            tipo: scope.table, 
+            id: recordId,
+            recordId: Number(recordId)
+          });
+          
+          // Inserir notificação no banco
+          await db.query(
+            `INSERT INTO user_notifications
+             (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+             VALUES
+             (?, ?, 'contratual', ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              userId, 
+              empresaId, 
+              scope.table === 'contratos' ? 'contract.signed' : 'document.signed', 
+              title, 
+              body, 
+              dataJson, 
+              scope.table.slice(0, -1), 
+              recordId, 
+              userId
+            ]
+          );
+          
+          // Emitir via WebSocket para notificação em tempo real
+          try {
+            webSocketManager.emitToUser(userId, 'notification:new', {
+              module: 'contratual',
+              type: scope.table === 'contratos' ? 'contract.signed' : 'document.signed',
+              title,
+              body,
+              created_at: new Date().toISOString()
+            });
+          } catch (wsError) {
+            console.warn('⚠️ Erro ao emitir notificação via WebSocket:', wsError?.message || wsError);
+          }
+        }
+      } catch (e) {
+        console.warn('⚠️ Falha ao notificar contrato/documento assinado:', e?.message || e);
+      }
+    }
+
     // Se o contrato foi completamente assinado, enviar notificações por email
     if (contratoCompletamenteAssinado && scope.table === 'contratos') {
       try {
