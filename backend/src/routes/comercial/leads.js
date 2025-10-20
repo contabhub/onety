@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../config/database'); // Conexão com banco de dados
 const verifyToken = require('../../middlewares/auth');
+const webSocketManager = require('../../websocket');
 
 router.get("/projecao", async (req, res) => {
   const { funil_id, granularidade = "mes", ano } = req.query;
@@ -420,7 +421,8 @@ router.post('/convert/:leadId', verifyToken, async (req, res) => {
 // 🔹 Mover lead para outra fase e atualizar o status automaticamente
 router.put('/:id/mover-fase', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { fase_funil_id } = req.body;
+  // Suporta ambos nomes vindos do front: funil_fase_id e fase_funil_id
+  const fase_funil_id = req.body?.funil_fase_id || req.body?.fase_funil_id;
 
   if (!fase_funil_id) {
     return res.status(400).json({ error: 'O campo fase_funil_id é obrigatório.' });
@@ -441,7 +443,7 @@ router.put('/:id/mover-fase', verifyToken, async (req, res) => {
 
     // 🔍 Buscar status anterior
     const [leadRows] = await db.query(
-      'SELECT status FROM leads WHERE id = ?',
+      'SELECT status, usuario_id, nome, empresa_id FROM leads WHERE id = ?',
       [id]
     );
 
@@ -462,6 +464,37 @@ router.put('/:id/mover-fase', verifyToken, async (req, res) => {
       'UPDATE leads SET funil_fase_id = ?, status = ? WHERE id = ?',
       [fase_funil_id, novoStatus, id]
     );
+    // 🔔 Notificação: apenas se quem moveu é o responsável pelo lead
+    try {
+      const moverUserId = req.user.id;
+      const leadOwnerId = leadRows[0]?.usuario_id || null;
+      const empresaId = leadRows[0]?.empresa_id || null;
+      const leadNome = leadRows[0]?.nome || `Lead ${id}`;
+      if (leadOwnerId && Number(leadOwnerId) === Number(moverUserId)) {
+        const title = 'Lead movido de fase';
+        const body = `${leadNome} → ${nomeFase}`;
+        const dataJson = JSON.stringify({ lead_id: Number(id), nova_fase_id: Number(fase_funil_id) });
+        await db.query(
+          `INSERT INTO user_notifications
+             (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+           VALUES
+             (?, ?, 'comercial', 'lead.moved', ?, ?, ?, 'lead', ?, ?)`,
+          [moverUserId, empresaId, title, body, dataJson, id, moverUserId]
+        );
+        // WS realtime
+        try {
+          webSocketManager.emitToUser(moverUserId, 'notification:new', {
+            module: 'comercial',
+            type: 'lead.moved',
+            title,
+            body,
+            created_at: new Date().toISOString()
+          });
+        } catch {}
+      }
+    } catch (e) {
+      console.warn('⚠️ Falha ao criar/emitter notificação de lead movido:', e?.message || e);
+    }
 
     res.json({ message: `Fase e status do lead atualizados para "${novoStatus}".` });
   } catch (error) {
