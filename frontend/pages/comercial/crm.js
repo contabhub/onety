@@ -486,42 +486,43 @@ export default function CRM() {
       ) : (
         <>
           <div className={styles.pageContent}>
-            <div className={styles.pageHeader}>
-              <div className={styles.toolbarBox}>
-                <div className={styles.toolbarHeader}>
+            {/* Header unificado com filtros integrados */}
+            <div className={styles.unifiedHeader}>
+              <div className={styles.headerTop}>
+                <div className={styles.headerLeft}>
                   <span className={styles.title}>CRM</span>
-                  <div className={styles.headerActions}>
-                    {/* Botão de filtros avançados */}
+                </div>
+                
+                <div className={styles.headerActions}>
+                  {/* Botão de filtros avançados */}
+                  <button
+                    type="button"
+                    className={`${styles.filterToggleBtn} ${showAdvancedFilters ? styles.filterToggleActive : ''}`}
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    title="Filtros avançados"
+                  >
+                    <FontAwesomeIcon icon={faFilter} />
+                    <span>Filtros</span>
+                  </button>
+
+                  {/* Botões de ação */}
+                  <div className={styles.actionButtons}>
                     <button
                       type="button"
-                      className={`${styles.filterToggleBtn} ${showAdvancedFilters ? styles.filterToggleActive : ''}`}
-                      onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                      title="Filtros avançados"
+                      className={`${styles.viewToggleBtn} ${viewMode === 'crm' ? styles.viewToggleActive : ''}`}
+                      onClick={() => setViewMode('crm')}
+                      title="Visualização Kanban"
                     >
-                      <FontAwesomeIcon icon={faFilter} />
-                      <span>Filtros</span>
+                      <FontAwesomeIcon icon={faThLarge} />
                     </button>
-
-                    {/* Botões de alternância de visualização */}
-                    <div className={styles.viewToggleContainer}>
-                      <button
-                        type="button"
-                        className={`${styles.viewToggleBtn} ${viewMode === 'crm' ? styles.viewToggleActive : ''}`}
-                        onClick={() => setViewMode('crm')}
-                        title="Visualização Kanban"
-                      >
-                        <FontAwesomeIcon icon={faThLarge} />
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.viewToggleBtn} ${viewMode === 'lista' ? styles.viewToggleActive : ''}`}
-                        onClick={() => setViewMode('lista')}
-                        title="Visualização em lista"
-                      >
-                        <FontAwesomeIcon icon={faList} />
-                      </button>
-                    </div>
-
+                    <button
+                      type="button"
+                      className={`${styles.viewToggleBtn} ${viewMode === 'lista' ? styles.viewToggleActive : ''}`}
+                      onClick={() => setViewMode('lista')}
+                      title="Visualização em lista"
+                    >
+                      <FontAwesomeIcon icon={faList} />
+                    </button>
                     <button
                       className={styles.toolsToggleBtn}
                       type="button"
@@ -532,11 +533,61 @@ export default function CRM() {
                     </button>
                   </div>
                 </div>
-                
-                {/* Filtros avançados - só aparecem quando showAdvancedFilters é true */}
-                {showAdvancedFilters && (
-                  <div className={styles.filtersRow}>
-                    {/* Filtro de responsáveis como dropdown */}
+              </div>
+
+              {/* Filtros avançados - só aparecem quando showAdvancedFilters é true */}
+              {showAdvancedFilters && (
+                <div className={styles.filtersRow}>
+                  <div className={styles.filtersRowBox}>
+                    <div className={styles.funilSelector} ref={dropdownFunilRef}>
+                      <button
+                        className={styles.funilSelectorBtn}
+                        type="button"
+                        onClick={() => setDropdownFunilAberto((prev) => !prev)}
+                      >
+                        <span className={styles.funilLabel}>Funil:</span>
+                        <span className={styles.funilNome}>
+                          {funis.find(f => f.id === funilSelecionado)?.nome || 'Selecionar'}
+                        </span>
+                        <span className={styles.funilDropdownIcon}>
+                          <FontAwesomeIcon icon={dropdownFunilAberto ? faChevronUp : faChevronDown} />
+                        </span>
+                      </button>
+                      {dropdownFunilAberto && (
+                        <div className={styles.funilDropdownMenu}>
+                          {funis.map((f) => (
+                            <button
+                              key={f.id}
+                              className={
+                                f.id === funilSelecionado ? styles.funilTabActive : styles.funilTab
+                              }
+                              onClick={() => {
+                                setFunilSelecionado(f.id);
+                                setDropdownFunilAberto(false);
+                              }}
+                            >
+                              {f.nome}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.filtersRowBox}>
+                    <div className={styles.searchContainer}>
+                      <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por nome..."
+                        className={styles.searchInput}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className={styles.filtersRowBox}>
                     <div className={styles.responsavelDropdownWrapper} ref={dropdownRef}>
                       <button
                         className={styles.responsavelDropdownBtn}
@@ -577,55 +628,9 @@ export default function CRM() {
                         </div>
                       )}
                     </div>
-
-                    <div className={styles.responsavelDropdownWrapper} ref={dropdownFunilRef}>
-                      <button
-                        className={styles.responsavelDropdownBtn}
-                        type="button"
-                        onClick={() => setDropdownFunilAberto((prev) => !prev)}
-                      >
-                        <span className={styles.funilLabel}>Funil</span>
-                        <span className={styles.funilNome}>
-                          {funis.find(f => f.id === funilSelecionado)?.nome || 'Selecionar'}
-                        </span>
-                        <span className={styles.responsavelDropdownIcon}>
-                          <FontAwesomeIcon icon={dropdownFunilAberto ? faChevronUp : faChevronDown} />
-                        </span>
-                      </button>
-                      {dropdownFunilAberto && (
-                        <div className={styles.responsavelDropdownMenu + ' ' + styles.funilDropdownMenu}>
-                          {funis.map((f) => (
-                            <button
-                              key={f.id}
-                              className={
-                                (f.id === funilSelecionado ? styles.activeTab : '') + ' ' +
-                                (f.id === funilSelecionado ? styles.funilTabActive : styles.funilTab)
-                              }
-                              onClick={() => {
-                                setFunilSelecionado(f.id);
-                                setDropdownFunilAberto(false);
-                              }}
-                            >
-                              {f.nome}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className={styles.searchContainer}>
-                      <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
-                      <input
-                        type="text"
-                        placeholder="Buscar por nome..."
-                        className={styles.searchInput}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
 
@@ -667,23 +672,28 @@ export default function CRM() {
                       .sort(([aId], [bId]) => {
                         return orderedColumnIds.indexOf(parseInt(aId)) - orderedColumnIds.indexOf(parseInt(bId));
                       })
-                      .map(([columnId, column]) => (
-                        <Column
-                          key={columnId}
-                          id={columnId}
-                          title={column.title}
-                          cards={column.cards.filter(card => {
-                            const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
-                            const ownerId = card.user_id ?? card.usuario_id;
-                            const ownerIdStr = ownerId != null ? ownerId.toString() : null;
-                            const responsavelMatch =
-                              responsaveisSelecionados.includes('todos') ||
-                              (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
-                            return nomeMatch && responsavelMatch;
-                          })}
-                          onEdit={(card) => handleEdit(card, columnId)}
-                        />
-                      ))}
+                      .map(([columnId, column], index) => {
+                        const isLastColumn = index === Object.keys(columns).length - 1;
+                        const isPerdeuColumn = column.title.toLowerCase() === 'perdeu';
+                        return (
+                          <Column
+                            key={columnId}
+                            id={columnId}
+                            title={column.title}
+                            cards={column.cards.filter(card => {
+                              const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
+                              const ownerId = card.user_id ?? card.usuario_id;
+                              const ownerIdStr = ownerId != null ? ownerId.toString() : null;
+                              const responsavelMatch =
+                                responsaveisSelecionados.includes('todos') ||
+                                (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
+                              return nomeMatch && responsavelMatch;
+                            })}
+                            onEdit={(card) => handleEdit(card, columnId)}
+                            showArrow={!isLastColumn}
+                          />
+                        );
+                      })}
 
                   </SortableContext>
                 </div>

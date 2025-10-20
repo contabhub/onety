@@ -150,11 +150,23 @@ export default function CRMCard({ data, onEdit }) {
 
       {/* Rodapé com o ícone de temperatura e avatar do responsável */}
       <div className={styles.crmCardFooter}>
-        <img
-          src={data.responsavel_avatar || "/default-avatar.png"}
-          alt={data.responsavel_nome || "Responsável"}
-          className={styles.responsavelAvatar}
-        />
+        <div className={styles.avatarContainer}>
+          {data.responsavel_avatar ? (
+            <img
+              src={data.responsavel_avatar}
+              alt={data.responsavel_nome || "Responsável"}
+              className={styles.responsavelAvatar}
+              title={data.responsavel_nome || "Responsável"}
+            />
+          ) : (
+            <div 
+              className={styles.responsavelAvatarInitial}
+              title={data.responsavel_nome || "Responsável"}
+            >
+              {(data.responsavel_nome || "R").charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
         <div className={styles.iconRight}>
           {getTemperaturaIcon()} {/* Exibe o ícone correto com base na temperatura */}
         </div>

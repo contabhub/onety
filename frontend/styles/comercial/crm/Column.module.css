@@ -14,7 +14,7 @@
   }
   
   .columnHeader {
-    padding: 16px;
+    padding: 5px 16px;
     border-bottom: 1px solid var(--onity-color-border);
     background-color: var(--onity-color-surface);
     border-top-left-radius: 12px;
@@ -22,10 +22,11 @@
 }
 
 .columnInfo {
-    margin-top: 8px;
+    margin-top: 4px;
     font-size: 0.85rem;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     color: var(--onity-color-text);
 }
 
@@ -35,9 +36,12 @@
 
 .columnBody {
     overflow-y: auto;
-    padding: 10px;
+    padding: 16px;
     flex-grow: 1;
     max-height: calc(85vh - 100px); /* Ajuste de acordo com altura do header */
+    gap: 12px;
+    display: flex;
+    flex-direction: column;
 }
 
 .propostaColumn{
@@ -62,5 +66,30 @@
 
 .perdeuTitle {
     color: var(--onity-color-error);
+}
+
+/* Compensa a falta da seta na última coluna */
+.column:last-child .columnInfo {
+    margin-top: 14px;
+}
+
+/* Estilos para a seta no cabeçalho */
+.columnArrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+}
+
+.arrowIcon {
+    font-size: 36px;
+    color: var(--onity-color-primary, #007bff);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.arrowIcon:hover {
+    opacity: 1;
+    transform: scale(1.2);
 }
   
