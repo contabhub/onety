@@ -129,6 +129,12 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
         }),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na API:', response.status, errorText);
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
       const result = await response.json();
 
       if (response.ok) {
@@ -151,13 +157,14 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
         });
 
         // 🚀 Redirecionar para a página do lead
-        router.push(`/leads/${result.leadId}`);
+        router.push(`/comercial/leads/${result.leadId}`);
 
       } else {
         throw new Error(result.message || "Erro ao criar lead");
       }
     } catch (error) {
       console.error("Erro ao criar lead:", error);
+      toast.error(`Erro ao criar lead: ${error.message || 'Erro desconhecido'}`);
     }
   };
 
@@ -197,7 +204,7 @@ export default function CreateCardModal({ open, onClose, onCreate, columnOptions
 
           <div>
             <label className={styles.label}>Fase do Funil <span style={{color: 'red'}}>*</span></label>
-            <select className={styles.input} name="fase_funil_id" value={formData.fase_funil_id} onChange={handleChange}>
+            <select className={`${styles.input} ${styles.faseFunilSelect}`} name="fase_funil_id" value={formData.fase_funil_id} onChange={handleChange}>
               {columnOptions.map((col) => (
                 <option key={col.id} value={col.id}>{col.title}</option>
               ))}
