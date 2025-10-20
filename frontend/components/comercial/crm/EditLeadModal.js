@@ -18,16 +18,24 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
   const fetchLead = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${leadId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${leadId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Erro na API:', res.status, errorText);
+        throw new Error(`Erro ${res.status}: ${res.statusText}`);
+      }
+
       const data = await res.json();
       setFormData(data);
 
       // Buscar membros da equipe (depois que já pegou o team_id do lead)
-      if (data?.team_id) fetchMembrosEquipe(data.team_id);
+      if (data?.empresa_id) fetchMembrosEquipe(data.empresa_id);
     } catch (error) {
       console.error("Erro ao buscar lead:", error);
+      alert(`Erro ao carregar dados do lead: ${error.message}`);
     }
   };
 
@@ -36,13 +44,19 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
     setIsLoadingMembros(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user_equipes/${teamId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios-empresas/empresa/${teamId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro ${res.status}: ${res.statusText}`);
+      }
+
       const data = await res.json();
       setMembrosEquipe(Array.isArray(data) ? data : []);
       console.log("👤 Membros da equipe:", data);
     } catch (err) {
+      console.error("Erro ao buscar membros da equipe:", err);
       setMembrosEquipe([]);
     }
     setIsLoadingMembros(false);
@@ -58,21 +72,21 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
       const token = localStorage.getItem("token");
       // Payload incluindo o responsável (user_id)
       const payload = {
-        name: formData.name,
+        nome: formData.nome || formData.name,
         email: formData.email,
         telefone: formData.telefone,
         valor: parseFloat(formData.valor || 0),
         data_prevista: formData.data_prevista?.split("T")[0] || null,
-        team_id: formData.team_id,
+        empresa_id: formData.empresa_id,
         funil_id: formData.funil_id,
-        fase_funil_id: formData.fase_funil_id,
+        funil_fase_id: formData.funil_fase_id,
         status: formData.status || "aberto",
-        user_id: formData.user_id ? parseInt(formData.user_id) : null, // <- responsável atualizado!
+        usuario_id: formData.usuario_id || formData.user_id ? parseInt(formData.usuario_id || formData.user_id) : null,
       };
 
       console.log("Enviando atualização:", payload);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/leads/${leadId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/${leadId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -81,12 +95,17 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("Erro ao atualizar lead");
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Erro na API:', res.status, errorText);
+        throw new Error(`Erro ${res.status}: ${res.statusText}`);
+      }
 
       onUpdated();
       onClose();
     } catch (error) {
       console.error("Erro ao atualizar lead:", error);
+      alert(`Erro ao atualizar lead: ${error.message}`);
     }
   };
 
@@ -100,15 +119,15 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
         <div className={styles.formGrid}>
           <div>
             <label className={styles.label}>Nome</label>
-            <input name="name" value={formData.name} onChange={handleChange} placeholder="Nome" className={styles.input} />
+            <input name="nome" value={formData.nome || formData.name || ""} onChange={handleChange} placeholder="Nome" className={styles.input} />
           </div>
           <div>
             <label className={styles.label}>Email</label>
-            <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" className={styles.input} />
+            <input name="email" value={formData.email || ""} onChange={handleChange} placeholder="Email" className={styles.input} />
           </div>
           <div>
             <label className={styles.label}>Telefone</label>
-            <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" className={styles.input}  />
+            <input name="telefone" value={formData.telefone || ""} onChange={handleChange} placeholder="Telefone" className={styles.input}  />
           </div>
           <div>
             <label className={styles.label}>Valor</label>
@@ -121,9 +140,9 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
           <div>
             <label className={styles.label}>Responsável</label>
             <select
-              className={styles.input}
-              name="user_id"
-              value={formData.user_id || ""}
+              className={`${styles.input} ${styles.responsavelSelect}`}
+              name="usuario_id"
+              value={formData.usuario_id || formData.user_id || ""}
               onChange={handleChange}
               required
             >
@@ -132,9 +151,9 @@ export default function EditLeadModal({ leadId, open, onClose, onUpdated }) {
                 <option>Carregando...</option>
               ) : (
                 membrosEquipe
-                  .filter((m) => m.role !== 'superadmin')
+                  .filter((m) => m.cargo_nome !== 'superadmin')
                   .map((m) => (
-                    <option key={m.userId} value={m.userId}>
+                    <option key={m.user_id} value={m.user_id}>
                       {m.full_name}
                     </option>
                   ))

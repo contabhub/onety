@@ -976,31 +976,33 @@ export default function PrincipalSidebar() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Bolinhas de Navegação entre Módulos */}
-      <motion.div 
-        className={styles.moduleDots}
-        variants={container}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-      >
-        <div className={styles.dotsContainer}>
-          {modules.map((module) => (
-            <motion.button
-              key={module.id}
-              className={`${styles.dot} ${currentModule?.id === module.id ? styles.active : ''}`}
-              onClick={() => handleModuleChange(module.id)}
-              title={module.nome}
-              aria-label={`Mudar para módulo ${module.nome}`}
-              variants={item}
-            >
-              <div className={styles.dotIcon}>
-                {module.icon}
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
+      {/* Bolinhas de Navegação entre Módulos - só aparecem quando expandida */}
+      {!collapsed && (
+        <motion.div 
+          className={styles.moduleDots}
+          variants={container}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <div className={styles.dotsContainer}>
+            {modules.map((module) => (
+              <motion.button
+                key={module.id}
+                className={`${styles.dot} ${currentModule?.id === module.id ? styles.active : ''}`}
+                onClick={() => handleModuleChange(module.id)}
+                title={module.nome}
+                aria-label={`Mudar para módulo ${module.nome}`}
+                variants={item}
+              >
+                <div className={styles.dotIcon}>
+                  {module.icon}
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Seção do usuário na parte inferior */}
       <motion.div 

@@ -60,12 +60,16 @@ export default function CRM() {
   const [membrosEquipe, setMembrosEquipe] = useState([]);
   const [fasesDoFunil, setFasesDoFunil] = useState([]);
   const [responsaveisSelecionados, setResponsaveisSelecionados] = useState(['todos']);
+  const [temperaturasSelecionadas, setTemperaturasSelecionadas] = useState(['todas']);
 
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const dropdownRef = useRef(null);
 
   const [dropdownFunilAberto, setDropdownFunilAberto] = useState(false);
   const dropdownFunilRef = useRef(null);
+
+  const [dropdownTemperaturaAberto, setDropdownTemperaturaAberto] = useState(false);
+  const dropdownTemperaturaRef = useRef(null);
 
 
 
@@ -425,6 +429,20 @@ export default function CRM() {
     }
   };
 
+  // Handler para checkboxes de temperaturas
+  const handleTemperaturaChange = (temperatura) => {
+    if (temperatura === 'todas') {
+      setTemperaturasSelecionadas(['todas']);
+    } else {
+      setTemperaturasSelecionadas((prev) => {
+        const novo = prev.includes(temperatura)
+          ? prev.filter((t) => t !== temperatura)
+          : [...prev.filter((t) => t !== 'todas'), temperatura];
+        return novo.length === 0 ? ['todas'] : novo;
+      });
+    }
+  };
+
   // Fechar dropdown ao clicar fora
   useEffect(() => {
     function handleClickOutside(event) {
@@ -459,6 +477,23 @@ export default function CRM() {
     };
   }, [dropdownFunilAberto]);
 
+  // Fechar dropdown de temperatura ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownTemperaturaRef.current && !dropdownTemperaturaRef.current.contains(event.target)) {
+        setDropdownTemperaturaAberto(false);
+      }
+    }
+    if (dropdownTemperaturaAberto) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownTemperaturaAberto]);
+
   // Função para verificar se há leads visíveis após aplicar filtros
   const hasVisibleLeads = () => {
     return Object.values(columns).some(col => 
@@ -469,7 +504,13 @@ export default function CRM() {
         const responsavelMatch =
           responsaveisSelecionados.includes('todos') ||
           (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
-        return nomeMatch && responsavelMatch;
+        
+        // Filtro por temperatura
+        const temperaturaMatch =
+          temperaturasSelecionadas.includes('todas') ||
+          temperaturasSelecionadas.includes(card.temperatura || 'neutro');
+        
+        return nomeMatch && responsavelMatch && temperaturaMatch;
       })
     );
   };
@@ -539,41 +580,41 @@ export default function CRM() {
               {showAdvancedFilters && (
                 <div className={styles.filtersRow}>
                   <div className={styles.filtersRowBox}>
-                    <div className={styles.funilSelector} ref={dropdownFunilRef}>
-                      <button
-                        className={styles.funilSelectorBtn}
-                        type="button"
-                        onClick={() => setDropdownFunilAberto((prev) => !prev)}
-                      >
-                        <span className={styles.funilLabel}>Funil:</span>
-                        <span className={styles.funilNome}>
-                          {funis.find(f => f.id === funilSelecionado)?.nome || 'Selecionar'}
-                        </span>
-                        <span className={styles.funilDropdownIcon}>
-                          <FontAwesomeIcon icon={dropdownFunilAberto ? faChevronUp : faChevronDown} />
-                        </span>
-                      </button>
-                      {dropdownFunilAberto && (
-                        <div className={styles.funilDropdownMenu}>
-                          {funis.map((f) => (
-                            <button
-                              key={f.id}
-                              className={
-                                f.id === funilSelecionado ? styles.funilTabActive : styles.funilTab
-                              }
-                              onClick={() => {
-                                setFunilSelecionado(f.id);
-                                setDropdownFunilAberto(false);
-                              }}
-                            >
-                              {f.nome}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  <div className={styles.funilSelector} ref={dropdownFunilRef}>
+                    <button
+                      className={styles.funilSelectorBtn}
+                      type="button"
+                      onClick={() => setDropdownFunilAberto((prev) => !prev)}
+                    >
+                      <span className={styles.funilLabel}>Funil:</span>
+                      <span className={styles.funilNome}>
+                        {funis.find(f => f.id === funilSelecionado)?.nome || 'Selecionar'}
+                      </span>
+                      <span className={styles.funilDropdownIcon}>
+                        <FontAwesomeIcon icon={dropdownFunilAberto ? faChevronUp : faChevronDown} />
+                      </span>
+                    </button>
+                    {dropdownFunilAberto && (
+                      <div className={styles.funilDropdownMenu}>
+                        {funis.map((f) => (
+                          <button
+                            key={f.id}
+                            className={
+                              f.id === funilSelecionado ? styles.funilTabActive : styles.funilTab
+                            }
+                            onClick={() => {
+                              setFunilSelecionado(f.id);
+                              setDropdownFunilAberto(false);
+                            }}
+                          >
+                            {f.nome}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-
+                </div>
+                
                   <div className={styles.filtersRowBox}>
                     <div className={styles.searchContainer}>
                       <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
@@ -585,8 +626,8 @@ export default function CRM() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
-                  </div>
-                  
+                    </div>
+                    
                   <div className={styles.filtersRowBox}>
                     <div className={styles.responsavelDropdownWrapper} ref={dropdownRef}>
                       <button
@@ -629,6 +670,61 @@ export default function CRM() {
                       )}
                     </div>
                   </div>
+
+                  <div className={styles.filtersRowBox}>
+                    <div className={styles.responsavelDropdownWrapper} ref={dropdownTemperaturaRef}>
+                    <button
+                        className={styles.responsavelDropdownBtn}
+                      type="button"
+                        onClick={() => setDropdownTemperaturaAberto((prev) => !prev)}
+                    >
+                        <span className={styles.responsavelLabel}>Temperatura</span>
+                        <span className={styles.responsavelDropdownIcon}>
+                          <FontAwesomeIcon icon={dropdownTemperaturaAberto ? faChevronUp : faChevronDown} />
+                        </span>
+                    </button>
+                      {dropdownTemperaturaAberto && (
+                        <div className={styles.responsavelDropdownMenu}>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={temperaturasSelecionadas.includes('todas')}
+                              onChange={() => handleTemperaturaChange('todas')}
+                            />
+                            Todas
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={temperaturasSelecionadas.includes('quente')}
+                              onChange={() => handleTemperaturaChange('quente')}
+                            />
+                            <FontAwesomeIcon icon={faFire} style={{ color: '#f44', marginRight: 8 }} />
+                            Quente
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={temperaturasSelecionadas.includes('neutro')}
+                              onChange={() => handleTemperaturaChange('neutro')}
+                            />
+                            <FontAwesomeIcon icon={faInfoCircle} style={{ color: '#aaa', marginRight: 8 }} />
+                            Neutro
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={temperaturasSelecionadas.includes('frio')}
+                              onChange={() => handleTemperaturaChange('frio')}
+                            />
+                            <FontAwesomeIcon icon={faSnowflake} style={{ color: '#2563eb', marginRight: 8 }} />
+                            Frio
+                          </label>
+                  </div>
+                      )}
+                </div>
+              </div>
+
                 </div>
               )}
             </div>
@@ -676,22 +772,28 @@ export default function CRM() {
                         const isLastColumn = index === Object.keys(columns).length - 1;
                         const isPerdeuColumn = column.title.toLowerCase() === 'perdeu';
                         return (
-                          <Column
-                            key={columnId}
-                            id={columnId}
-                            title={column.title}
-                            cards={column.cards.filter(card => {
-                              const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
-                              const ownerId = card.user_id ?? card.usuario_id;
-                              const ownerIdStr = ownerId != null ? ownerId.toString() : null;
-                              const responsavelMatch =
-                                responsaveisSelecionados.includes('todos') ||
-                                (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
-                              return nomeMatch && responsavelMatch;
-                            })}
-                            onEdit={(card) => handleEdit(card, columnId)}
+                        <Column
+                          key={columnId}
+                          id={columnId}
+                          title={column.title}
+                          cards={column.cards.filter(card => {
+                            const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
+                            const ownerId = card.user_id ?? card.usuario_id;
+                            const ownerIdStr = ownerId != null ? ownerId.toString() : null;
+                            const responsavelMatch =
+                              responsaveisSelecionados.includes('todos') ||
+                              (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
+                              
+                              // Filtro por temperatura
+                              const temperaturaMatch =
+                                temperaturasSelecionadas.includes('todas') ||
+                                temperaturasSelecionadas.includes(card.temperatura || 'neutro');
+                              
+                              return nomeMatch && responsavelMatch && temperaturaMatch;
+                          })}
+                          onEdit={(card) => handleEdit(card, columnId)}
                             showArrow={!isLastColumn}
-                          />
+                        />
                         );
                       })}
 
@@ -709,6 +811,7 @@ export default function CRM() {
                 orderedColumnIds={orderedColumnIds}
                 searchTerm={searchTerm}
                 responsaveisSelecionados={responsaveisSelecionados}
+                temperaturasSelecionadas={temperaturasSelecionadas}
                 onEdit={handleEdit}
               />
             )
@@ -811,7 +914,7 @@ export default function CRM() {
   );
 }
 
-function ListView({ columns, orderedColumnIds, searchTerm, responsaveisSelecionados, onEdit }) {
+function ListView({ columns, orderedColumnIds, searchTerm, responsaveisSelecionados, temperaturasSelecionadas, onEdit }) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -824,10 +927,18 @@ function ListView({ columns, orderedColumnIds, searchTerm, responsaveisSeleciona
   // Aplica filtros
   const filteredCards = allCards.filter(card => {
     const nomeMatch = card.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const ownerId = card.user_id ?? card.usuario_id;
+    const ownerIdStr = ownerId != null ? ownerId.toString() : null;
     const responsavelMatch =
       responsaveisSelecionados.includes('todos') ||
-      (card.user_id && responsaveisSelecionados.includes(card.user_id.toString()));
-    return nomeMatch && responsavelMatch;
+      (ownerIdStr && responsaveisSelecionados.includes(ownerIdStr));
+    
+    // Filtro por temperatura
+    const temperaturaMatch =
+      temperaturasSelecionadas.includes('todas') ||
+      temperaturasSelecionadas.includes(card.temperatura || 'neutro');
+    
+    return nomeMatch && responsavelMatch && temperaturaMatch;
   });
 
   // Paginação
