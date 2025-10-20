@@ -300,6 +300,55 @@ router.post("/zapi", async (req, res) => {
     MessageHandler.notifyNewMessage(messageData);
     console.log(`🚀 Notificação WebSocket enviada para mensagem ${messageId}`);
 
+    // 🔔 Notificação in-app (user_notifications) para mensagem recebida via Evolution
+    try {
+      console.log('🔔 [NOTIF] Evolution: buscando responsável/empresa da conversa para notificar...');
+      const [convMeta] = await pool.query(
+        `SELECT c.usuario_responsavel_id AS assigned_user_id,
+                t.empresa_id AS empresa_id
+           FROM conversas c
+           JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+           JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+          WHERE c.id = ?`,
+        [conversationId]
+      );
+
+      const assignedUserId = convMeta?.[0]?.assigned_user_id || null;
+      const empresaId = convMeta?.[0]?.empresa_id || null;
+      console.log('🔔 [NOTIF] Evolution: resolved destinatário:', { assignedUserId, empresaId });
+
+      if (assignedUserId) {
+        const title = 'Nova mensagem recebida';
+        const body = typeof content === 'string' ? content.slice(0, 160) : (messageType || 'mensagem');
+        const dataJson = JSON.stringify({ conversation_id: conversationId, message_id: messageId, rota: `/atendimento/chat?conv=${conversationId}` });
+
+        const [ins] = await pool.query(
+          `INSERT INTO user_notifications
+             (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+           VALUES
+             (?, ?, 'atendimento', 'lead.message', ?, ?, ?, 'conversa', ?, NULL)`,
+          [assignedUserId, empresaId, title, body, dataJson, conversationId]
+        );
+        console.log('🔔 [NOTIF] Evolution: inserted user_notifications:', { insertId: ins?.insertId, affectedRows: ins?.affectedRows });
+
+        try {
+          const webSocketManager = require('../../websocket');
+          webSocketManager.emitToUser(assignedUserId, 'notification:new', {
+            module: 'atendimento',
+            type: 'lead.message',
+            title,
+            body,
+            created_at: new Date().toISOString()
+          });
+          console.log('📡 [WS] Evolution: notification:new emitido para user', assignedUserId);
+        } catch (e) {
+          console.warn('⚠️ [WS] Evolution: falha ao emitir notification:new:', e?.message || e);
+        }
+      }
+    } catch (notifErr) {
+      console.warn('⚠️ [NOTIF] Evolution: falha ao criar notificação:', notifErr?.message || notifErr);
+    }
+
     // 🔥 NOTIFICAÇÃO WEBSOCKET - Nova conversa (se for o caso)
     if (isNewConversation) {
       // Busca dados completos da conversa para notificação
