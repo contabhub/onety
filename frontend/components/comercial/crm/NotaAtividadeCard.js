@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import styles from "../../../styles/comercial/crm/NotaAtividadeCard.module.css";
 import { Calendar, Clock, Mic, ChevronDown, Filter } from "lucide-react";
 import { registrarHistorico } from "../../../utils/registrarHistorico";
@@ -42,7 +43,7 @@ useEffect(() => {
         if (userRaw) {
             try {
                 const userObj = JSON.parse(userRaw);
-                if (userObj.equipe_id) setEquipeId(userObj.equipe_id);
+                if (userObj.EmpresaId) setEquipeId(userObj.EmpresaId);
             } catch {}
         }
     }, []);
@@ -295,15 +296,15 @@ useEffect(() => {
 
             )}
 
-            {isModalOpen && (
-
+            {isModalOpen && createPortal(
                 <CreateActivityModal
                     leadId={leadId}  // Passando o leadId
                     onClose={closeModal}  // Passando a função de fechar o modal
                     onCreated={onCreated}  // Passando a função de callback para ser chamada após criar a atividade
                     open={isModalOpen}  // Passando a visibilidade do modal
                     equipeId={equipeId}
-                />
+                />,
+                document.body
             )}
 
         </div>

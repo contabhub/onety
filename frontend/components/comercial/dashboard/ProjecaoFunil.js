@@ -10,7 +10,7 @@ const GRANULARIDADES = [
   { value: "ano", label: "Ano" },
 ];
 
-export default function ProjecaoFunil() {
+export default function ProjecaoFunil({ selectedMonth, selectedYear }) {
   const [funis, setFunis] = useState([]);
   const [fases, setFases] = useState([]);
   const [historico, setHistorico] = useState([]);
@@ -20,8 +20,15 @@ export default function ProjecaoFunil() {
   // Filtros
   const [funilId, setFunilId] = useState("");
   const [granularidade, setGranularidade] = useState("mes");
-  const [ano, setAno] = useState(new Date().getFullYear());
+  const [ano, setAno] = useState(selectedYear || new Date().getFullYear());
   const [equipeId, setEquipeId] = useState(null);
+  
+  // Sincronizar ano com o filtro do dashboard
+  useEffect(() => {
+    if (selectedYear !== undefined) {
+      setAno(selectedYear);
+    }
+  }, [selectedYear]);
 
   // Pega o empresaId do usuário ao montar o componente
   useEffect(() => {
@@ -79,6 +86,12 @@ export default function ProjecaoFunil() {
         granularidade,
         ano,
       });
+      
+      // Adicionar filtro de mês se fornecido
+      if (selectedMonth !== undefined && granularidade === 'mes') {
+        params.append('mes', selectedMonth + 1); // Backend usa 1-12, frontend usa 0-11
+      }
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/projecao?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -98,7 +111,13 @@ export default function ProjecaoFunil() {
           dataLabel = `Sem. ${row.semana} / ${row.ano}`;
         } else if (granularidade === "dia") {
           key = row.periodo;
-          dataLabel = row.periodo;
+          // Formatar data para exibição mais legível
+          const data = new Date(row.periodo);
+          dataLabel = data.toLocaleDateString('pt-BR', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+          });
         } else {
           key = `${row.ano}`;
           dataLabel = `${row.ano}`;
@@ -109,9 +128,10 @@ export default function ProjecaoFunil() {
         }
 
         // Descobre qual índice da fase
-        const faseIndex = fases.findIndex(f => f.id === row.fase_funil_id);
+        const faseIndex = fases.findIndex(f => f.id === row.funil_fase_id);
         if (faseIndex !== -1) {
           periodMap[key][`fase${faseIndex + 1}`] = row.total;
+        } else {
         }
         // Se quiser somar ganhos/perdidos também, faça aqui se vierem no backend
       });
@@ -128,7 +148,7 @@ export default function ProjecaoFunil() {
       setLoading(false);
     }
     fetchHistorico();
-  }, [funilId, granularidade, ano, fases]);
+  }, [funilId, granularidade, ano, fases, selectedMonth]);
 
   // Cores fixas para fases especiais (lowercase)
   const CORES_FIXAS = {

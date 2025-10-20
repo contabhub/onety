@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "../../../styles/comercial/crm/CreateActivityModal.module.css";
 import { FaTimes } from "react-icons/fa";
+import { registrarHistorico } from "../../../utils/registrarHistorico";
 
 export default function CreateActivityModal({ onClose, leadId, onCreated, equipeId }) {
   const [nome, setNome] = useState("");
@@ -19,7 +20,7 @@ export default function CreateActivityModal({ onClose, leadId, onCreated, equipe
     const fetchTiposAtividade = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos-atividade/equipe/${equipeId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/tipos-atividade/empresa/${equipeId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
@@ -49,7 +50,7 @@ export default function CreateActivityModal({ onClose, leadId, onCreated, equipe
     console.log("Enviando dados para o backend:", activityData);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atividades`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/atividades`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,15 +68,20 @@ export default function CreateActivityModal({ onClose, leadId, onCreated, equipe
 
       // Se a atividade for concluída, envia para o histórico
       if (concluida) {
-        await registrarHistorico({
-          lead_id: leadId,
-          usuario_id: user.id,
-          tipo: "atividade",
-          titulo: "Atividade concluída",
-          descricao: descricao,
-          referencia_id: response.atividadeId,  // Supondo que a resposta tenha a id da atividade criada
-          token,
-        });
+        const userRaw = localStorage.getItem("userData");
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        
+        if (user?.id) {
+          await registrarHistorico({
+            lead_id: leadId,
+            usuario_id: user.id,
+            tipo: "atividade",
+            titulo: "Atividade concluída",
+            descricao: descricao,
+            referencia_id: response.atividadeId,  // Supondo que a resposta tenha a id da atividade criada
+            token,
+          });
+        }
       }
 
       // Limpar campos após salvar

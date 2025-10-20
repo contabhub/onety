@@ -28,7 +28,7 @@ const SkeletonLeadsFilter = () => (
   </div>
 );
 
-const LeadsFilter = ({ equipeId }) => {
+const LeadsFilter = ({ equipeId, selectedMonth, selectedYear }) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
@@ -51,7 +51,7 @@ const LeadsFilter = ({ equipeId }) => {
       fetchLeads();
       fetchResponsaveis();
     }
-  }, [equipeId, filtrosAplicados]);
+  }, [equipeId, filtrosAplicados, selectedMonth, selectedYear]);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -70,7 +70,7 @@ const LeadsFilter = ({ equipeId }) => {
         url += `?${params.toString()}`;
       }
 
-      console.log('🔍 Filtros aplicados:', filtrosAplicados);
+        console.log('🔍 Filtros aplicados:', filtrosAplicados);
       console.log('🌐 URL da requisição:', url);
 
       const response = await fetch(url, {
@@ -81,6 +81,14 @@ const LeadsFilter = ({ equipeId }) => {
         let data = await response.json();
         console.log('📊 Dados recebidos:', data);
         console.log('📈 Total de leads:', data.length);
+        
+        // Filtro por período (mês/ano) do dashboard
+        if (selectedMonth !== undefined && selectedYear !== undefined) {
+          data = data.filter(lead => {
+            const createdDate = new Date(lead.criado_em || lead.created_at);
+            return createdDate.getMonth() === selectedMonth && createdDate.getFullYear() === selectedYear;
+          });
+        }
         
         // Filtro no frontend como fallback
         if (filtrosAplicados.responsavel || filtrosAplicados.status || filtrosAplicados.dataInicio || filtrosAplicados.dataFim) {

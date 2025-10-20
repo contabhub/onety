@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import styles from "./AtividadesPorTipo.module.css";
 import { FaCalendarCheck } from "react-icons/fa";
 
-export default function AtividadesPorTipo() {
+export default function AtividadesPorTipo({ selectedMonth, selectedYear }) {
   const [itens, setItens] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +20,38 @@ export default function AtividadesPorTipo() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        setItens(Array.isArray(data) ? data : []);
+        
+        // Filtrar atividades por período e recalcular estatísticas
+        let filteredData = Array.isArray(data) ? data : [];
+        if (selectedMonth !== undefined && selectedYear !== undefined) {
+          filteredData = filteredData.map(tipo => {
+            // Se temos atividades individuais, filtrar por período
+            if (tipo.atividades && Array.isArray(tipo.atividades)) {
+              const atividadesFiltradas = tipo.atividades.filter(atividade => {
+                const createdDate = new Date(atividade.criado_em);
+                return createdDate.getMonth() === selectedMonth && createdDate.getFullYear() === selectedYear;
+              });
+              
+              // Recalcular estatísticas com as atividades filtradas
+              const total = atividadesFiltradas.length;
+              const pendente = atividadesFiltradas.filter(a => a.status === 'pendente').length;
+              const concluida = atividadesFiltradas.filter(a => a.status === 'concluida').length;
+              
+              return {
+                ...tipo,
+                total,
+                pendente,
+                concluida
+              };
+            }
+            
+            return tipo;
+          })
+          // Filtrar tipos sem atividades no período
+          .filter(tipo => tipo.total > 0);
+        }
+        
+        setItens(filteredData);
       } catch (e) {
         setItens([]);
       } finally {
@@ -28,7 +59,7 @@ export default function AtividadesPorTipo() {
       }
     }
     fetchData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
   return (
     <div className={styles.container}>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaFunnelDollar } from "react-icons/fa";
 import styles from "./LeadsPorFases.module.css";
 
-const LeadsPorFases = ({ funis = [] }) => {
+const LeadsPorFases = ({ funis = [], selectedMonth, selectedYear }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [funilSelecionado, setFunilSelecionado] = useState(funis[0] || null);
   const [dados, setDados] = useState([]);
@@ -16,14 +16,23 @@ const LeadsPorFases = ({ funis = [] }) => {
       setDados([]);
     }
     setTimeout(() => setIsLoading(false), 700);
-  }, [funilSelecionado]);
+  }, [funilSelecionado, selectedMonth, selectedYear]);
 
   // Atualiza o funil selecionado se a lista de funis mudar
   useEffect(() => {
-    if (funis.length > 0 && (!funilSelecionado || !funis.find(f => f.id === funilSelecionado.id))) {
-      setFunilSelecionado(funis[0]);
+    if (funis.length > 0) {
+      // Se não há funil selecionado ou o funil selecionado não existe mais na lista
+      if (!funilSelecionado || !funis.find(f => f.id === funilSelecionado.id)) {
+        setFunilSelecionado(funis[0]);
+      } else {
+        // Atualiza o funil selecionado com os novos dados filtrados
+        const funilAtualizado = funis.find(f => f.id === funilSelecionado.id);
+        if (funilAtualizado) {
+          setFunilSelecionado(funilAtualizado);
+        }
+      }
     }
-  }, [funis]);
+  }, [funis, selectedMonth, selectedYear]);
 
   // Função para definir cores das fases
   const getFaseColor = (faseNome) => {

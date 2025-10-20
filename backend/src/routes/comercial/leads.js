@@ -54,26 +54,60 @@ router.get("/projecao", async (req, res) => {
 router.get('/ranking-vendedores', verifyToken, async (req, res) => {
   const { empresa_id } = req.query;
   if (!empresa_id ) {
-    return res.status(400).json({ error: "Parâmetros obrigatórios: empresa_id, inicio, fim" });
+    return res.status(400).json({ error: "Parâmetros obrigatórios: empresa_id" });
   }
   try {
-    const [rows] = await db.query(`
-      SELECT 
+    // Buscar todos os vendedores únicos da empresa
+    const [vendedores] = await db.query(`
+      SELECT DISTINCT
         l.usuario_id, 
         u.nome AS responsavel_nome,
-        u.avatar_url,
-        SUM(l.status = 'ganhou') AS ganhos,
-        SUM(l.status = 'aberto') AS abertos,
-        SUM(l.status = 'perdeu') AS perdidos,
-        COUNT(*) AS total
+        u.avatar_url
       FROM leads l
       JOIN usuarios u ON u.id = l.usuario_id
       WHERE l.empresa_id = ?
-      GROUP BY l.usuario_id, u.nome, u.avatar_url
-      ORDER BY ganhos DESC, total DESC
+      ORDER BY u.nome ASC
     `, [empresa_id]);
-    
-    res.json(rows);
+
+    // Para cada vendedor, buscar todos os leads com criado_em
+    const rankingComLeads = await Promise.all(
+      vendedores.map(async (vendedor) => {
+        const [leads] = await db.query(`
+          SELECT 
+            id,
+            status,
+            criado_em,
+            valor
+          FROM leads
+          WHERE usuario_id = ? AND empresa_id = ?
+        `, [vendedor.usuario_id, empresa_id]);
+
+        // Calcular estatísticas totais (sem filtro de data)
+        const ganhos = leads.filter(l => l.status === 'ganhou').length;
+        const abertos = leads.filter(l => l.status === 'aberto').length;
+        const perdidos = leads.filter(l => l.status === 'perdeu').length;
+        const total = leads.length;
+
+        return {
+          usuario_id: vendedor.usuario_id,
+          responsavel_nome: vendedor.responsavel_nome,
+          avatar_url: vendedor.avatar_url,
+          ganhos,
+          abertos,
+          perdidos,
+          total,
+          leads // ← Retorna os leads com criado_em para filtrar no frontend
+        };
+      })
+    );
+
+    // Ordenar por ganhos e total
+    rankingComLeads.sort((a, b) => {
+      if (b.ganhos !== a.ganhos) return b.ganhos - a.ganhos;
+      return b.total - a.total;
+    });
+
+    res.json(rankingComLeads);
   } catch (err) {
     console.error('Erro ao buscar ranking de vendedores:', err);
     res.status(500).json({ error: 'Erro interno' });
@@ -667,12 +701,21 @@ router.get("/contratos-ganhos/:empresaId/light", verifyToken, async (req, res) =
     const empresaId = parseInt(req.params.empresaId, 10) || 0;
     const userId = req.user.id;
 
+    console.log('🔍 DEBUG CONTRATOS GANHOS:');
+    console.log('  - Empresa ID:', empresaId);
+    console.log('  - User ID:', userId);
+
     // (opcional, mas recomendado) valida se o usuário pertence à equipe
     const [v] = await db.query(
       "SELECT 1 FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1",
       [userId, empresaId]
     );
+    
+    console.log('  - Validação de acesso:', v.length > 0 ? 'PERMITIDO' : 'NEGADO');
+    console.log('  - Resultado validação:', v);
+    
     if (v.length === 0) {
+      console.log('  - Retornando 403 - Sem acesso à empresa');
       return res.status(403).json({ error: "Você não tem acesso a essa equipe." });
     }
 
@@ -703,6 +746,10 @@ router.get("/contratos-ganhos/:empresaId/light", verifyToken, async (req, res) =
       WHERE l.empresa_id = ? AND l.status = 'ganhou'
       ORDER BY c.criado_em DESC
     `, [empresaId]);
+
+    console.log('  - Query executada com sucesso');
+    console.log('  - Contratos encontrados:', contratos.length);
+    console.log('  - Primeiros contratos:', contratos.slice(0, 3));
 
     return res.json(contratos);
   } catch (error) {
