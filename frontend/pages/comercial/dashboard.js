@@ -10,6 +10,7 @@ import {
   FaChartLine,
   FaUserCheck,
   FaTimes,
+  FaEye,
 } from "react-icons/fa";
 import CountUp from "react-countup";
 import LeadsPorFases from "../../components/comercial/dashboard/LeadsPorFases";
@@ -66,6 +67,8 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showTicketMedioModal, setShowTicketMedioModal] = useState(false);
   const [showNegociosGanhosModal, setShowNegociosGanhosModal] = useState(false);
+  const [showLeadsConvertidosModal, setShowLeadsConvertidosModal] = useState(false);
+  const [leadsConvertidos, setLeadsConvertidos] = useState([]);
 
   // Estado para modal de avisos
 
@@ -161,8 +164,22 @@ export default function Dashboard() {
         const leads = filterLeadsByPeriod(todosLeads);
         
         const totalLeads = leads.length;
-        const leadsGanhou = leads.filter(l => l.status?.toLowerCase() === "ganhou");
+        
+        // Primeiro pegar todos os leads convertidos (sem filtro de período)
+        const todosLeadsGanhou = todosLeads.filter(l => l.status?.toLowerCase() === "ganhou");
+        
+        // Depois filtrar pelos convertidos no período (usando data de atualização/conversão)
+        const leadsGanhou = todosLeadsGanhou.filter(lead => {
+          const conversionDate = new Date(lead.atualizado_em || lead.updated_at || lead.criado_em);
+          const conversionMonth = conversionDate.getMonth();
+          const conversionYear = conversionDate.getFullYear();
+          return conversionMonth === selectedMonth && conversionYear === selectedYear;
+        });
+        
         const totalConvertidos = leadsGanhou.length;
+        
+        // Armazenar leads convertidos para o modal
+        setLeadsConvertidos(leadsGanhou);
 
         // Buscar contratos dos leads que viraram clientes
         const resGanhos = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comercial/leads/contratos-ganhos/${empresaId}/light`, {
@@ -614,7 +631,12 @@ export default function Dashboard() {
               </h2>
             </div>
 
-            <div className={styles.card}>
+            <div 
+              className={styles.card}
+              onClick={() => setShowLeadsConvertidosModal(true)}
+              style={{ cursor: 'pointer' }}
+              title="Clique para ver lista de leads convertidos"
+            >
               <div className={styles.cardHeader}>
                 <span>Leads Convertidos</span>
                 <FaUserCheck className={styles.iconGreen} />
@@ -750,6 +772,64 @@ export default function Dashboard() {
               <p className={styles.modalDescription}>
                 Este é o valor total dos contratos gerados pelos leads que foram convertidos (status "Ganhou") no período selecionado.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Leads Convertidos */}
+      {showLeadsConvertidosModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowLeadsConvertidosModal(false)}>
+          <div className={styles.modalContentLarge} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Leads Convertidos ({leadsConvertidos.length})</h3>
+              <button 
+                className={styles.closeButton}
+                onClick={() => setShowLeadsConvertidosModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBodyTable}>
+              {leadsConvertidos.length > 0 ? (
+                <div className={styles.tableWrapper}>
+                  <table className={styles.leadsTable}>
+                    <thead>
+                      <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Responsável</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leadsConvertidos.map((lead) => (
+                        <tr key={lead.id}>
+                          <td className={styles.leadName}>{lead.nome || '-'}</td>
+                          <td>{lead.email || '-'}</td>
+                          <td>{lead.telefone || '-'}</td>
+                          <td>{lead.responsavel_nome || lead.usuario_nome || '-'}</td>
+                          <td>
+                            <button
+                              className={styles.viewButton}
+                              onClick={() => router.push(`/comercial/leads/${lead.id}`)}
+                              title="Visualizar lead"
+                            >
+                              <FaEye />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <FaUserCheck className={styles.emptyIcon} />
+                  <p>Nenhum lead convertido no período selecionado.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
