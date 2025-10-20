@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require("../../config/database");
 const authOrApiKey = require("../../middlewares/authOrApiKey");
 const MessageHandler = require("../../websocket/handlers/atendimento/messageHandler");
+const webSocketManager = require("../../websocket");
 
 /**
  * 📌 Criar mensagem em uma conversa
@@ -33,6 +34,50 @@ router.post("/", authOrApiKey, async (req, res) => {
 
     // Notifica via WebSocket
     MessageHandler.notifyNewMessage(messageData);
+
+    // 🔔 Notificação in-app para mensagens recebidas do cliente
+    try {
+      if (String(sender_type).toLowerCase() !== 'usuario') {
+        // Descobrir usuário responsável e empresa
+        const [convRows] = await pool.query(`
+          SELECT c.usuario_responsavel_id AS assigned_user_id,
+                 t.empresa_id AS empresa_id
+            FROM conversas c
+            JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+            JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+           WHERE c.id = ?
+        `, [conversation_id]);
+
+        const assignedUserId = convRows?.[0]?.assigned_user_id || null;
+        const empresaId = convRows?.[0]?.empresa_id || null;
+
+        if (assignedUserId) {
+          const title = 'Nova mensagem recebida';
+          const body = content ? String(content).slice(0, 160) : (message_type || 'mensagem');
+          const dataJson = JSON.stringify({ conversation_id, message_id: result.insertId, rota: `/atendimento/chat?conv=${conversation_id}` });
+
+          await pool.query(`
+            INSERT INTO user_notifications
+              (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+            VALUES
+              (?, ?, 'atendimento', 'lead.message', ?, ?, ?, 'conversa', ?, NULL)
+          `, [assignedUserId, empresaId, title, body, dataJson, conversation_id]);
+
+          // Emite em tempo real para o usuário (se conectado)
+          try {
+            webSocketManager.emitToUser(assignedUserId, 'notification:new', {
+              module: 'atendimento',
+              type: 'lead.message',
+              title,
+              body,
+              created_at: new Date().toISOString()
+            });
+          } catch {}
+        }
+      }
+    } catch (notifyErr) {
+      console.warn('⚠️ Falha ao registrar/emitter notificação de mensagem:', notifyErr?.message || notifyErr);
+    }
 
     res.status(201).json(messageData);
   } catch (err) {
