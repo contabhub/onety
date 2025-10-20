@@ -746,15 +746,36 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
         );
         const userId = meta?.created_by || null;
         const empresaId = meta?.empresa_id || null;
+        
         if (userId) {
           const title = scope.table === 'contratos' ? 'Contrato assinado' : 'Documento assinado';
           const body = `${title} #${recordId}`;
-          const dataJson = JSON.stringify({ tipo: scope.table, id: recordId });
+          const dataJson = JSON.stringify({ 
+            tipo: scope.table, 
+            id: recordId,
+            recordId: Number(recordId)
+          });
+          
+          // Inserir notificação no banco
           await db.query(
-            `INSERT INTO user_notifications (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
-             VALUES (?, ?, 'contratual', ?, ?, ?, ?, ?, ?)`,
-            [userId, empresaId, scope.table === 'contratos' ? 'contract.signed' : 'document.signed', title, body, dataJson, scope.table.slice(0, -1), recordId, userId]
+            `INSERT INTO user_notifications
+             (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+             VALUES
+             (?, ?, 'contratual', ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              userId, 
+              empresaId, 
+              scope.table === 'contratos' ? 'contract.signed' : 'document.signed', 
+              title, 
+              body, 
+              dataJson, 
+              scope.table.slice(0, -1), 
+              recordId, 
+              userId
+            ]
           );
+          
+          // Emitir via WebSocket para notificação em tempo real
           try {
             webSocketManager.emitToUser(userId, 'notification:new', {
               module: 'contratual',
@@ -763,7 +784,9 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
               body,
               created_at: new Date().toISOString()
             });
-          } catch {}
+          } catch (wsError) {
+            console.warn('⚠️ Erro ao emitir notificação via WebSocket:', wsError?.message || wsError);
+          }
         }
       } catch (e) {
         console.warn('⚠️ Falha ao notificar contrato/documento assinado:', e?.message || e);
