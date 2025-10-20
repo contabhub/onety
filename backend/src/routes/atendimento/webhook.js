@@ -290,7 +290,7 @@ router.post("/zapi", async (req, res) => {
     const messageData = {
       id: messageId,
       conversation_id: conversationId,
-      sender_type: 'customer',
+      sender_type: data?.key?.fromMe ? 'usuario' : 'cliente',
       message_type: messageType,
       content: content,
       media_url: mediaUrl,
@@ -300,8 +300,13 @@ router.post("/zapi", async (req, res) => {
     MessageHandler.notifyNewMessage(messageData);
     console.log(`🚀 Notificação WebSocket enviada para mensagem ${messageId}`);
 
-    // 🔔 Notificação in-app (user_notifications) para mensagem recebida via Evolution
+    // 🔔 Notificação in-app (user_notifications) SOMENTE quando NÃO for fromMe
     try {
+      const isFromMe = !!(data?.key?.fromMe);
+      console.log('🔔 [NOTIF] Evolution: isFromMe?', isFromMe);
+      if (isFromMe) {
+        console.log('🔔 [NOTIF] Evolution: mensagem enviada pelo usuário; não notificar.');
+      } else {
       console.log('🔔 [NOTIF] Evolution: buscando responsável/empresa da conversa para notificar...');
       const [convMeta] = await pool.query(
         `SELECT c.usuario_responsavel_id AS assigned_user_id,
@@ -379,6 +384,7 @@ router.post("/zapi", async (req, res) => {
             console.warn('⚠️ [NOTIF] Evolution: falha ao inserir para user', u.usuario_id, loopErr?.message || loopErr);
           }
         }
+        }
       }
     } catch (notifErr) {
       console.warn('⚠️ [NOTIF] Evolution: falha ao criar notificação:', notifErr?.message || notifErr);
@@ -444,8 +450,8 @@ router.post("/evolution", async (req, res) => {
     // Pega o nome da instância (não o UUID) para usar na Evolution API
     const instanceName = req.body?.instance; // Nome da instância (ex: "TI-teste")
     const instanceId = data?.instanceId; // UUID da instância (para buscar no banco)
-    const customerPhone = data?.key?.remoteJid?.replace(/@s\.whatsapp\.net$/, "") || null;
-    const customerName = data?.pushName || null;
+  const customerPhone = data?.key?.remoteJid?.replace(/@s\.whatsapp\.net$/, "") || null;
+  const customerName = data?.pushName || null;
     const avatarUrl = null; // Evolution não envia avatar
 
     console.log("🔖 Evolution derivado:", { instanceName, instanceId, customerPhone, customerName });
