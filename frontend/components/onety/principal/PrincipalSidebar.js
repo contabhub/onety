@@ -284,6 +284,10 @@ export default function PrincipalSidebar() {
   const [isLightTheme, setIsLightTheme] = useState(false);
   const [userData, setUserData] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifModalOpen, setNotifModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -499,6 +503,71 @@ export default function PrincipalSidebar() {
     };
 
     loadModules();
+  }, []);
+
+  // Notificações - helpers
+  const fetchUnreadCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notificacoes/unread-count`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setUnreadCount(Number(data?.total || 0));
+    } catch {}
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notificacoes?limit=50`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch {
+      setNotifications([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notificacoes/lidas`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadCount(0);
+      await fetchNotifications();
+    } catch {}
+  };
+
+  const markOneAsRead = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notificacoes/${id}/lida`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications((list) => list.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch {}
+  };
+
+  // Polling simples para badge
+  useEffect(() => {
+    fetchUnreadCount();
+    const i = setInterval(fetchUnreadCount, 20000);
+    return () => clearInterval(i);
   }, []);
 
   // Carregar dados do usuário
@@ -918,6 +987,9 @@ export default function PrincipalSidebar() {
                 {getInitials(userData?.nome || userData?.name)}
               </div>
             )}
+            {unreadCount > 0 && (
+              <span className={styles.notificationBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+            )}
           </div>
           {!collapsed && (
             <div className={styles.userInfo}>
@@ -936,7 +1008,11 @@ export default function PrincipalSidebar() {
 
         {/* Dropdown do usuário */}
         {userMenuOpen && !collapsed && (
-          <div className={styles.userDropdown}>
+          <div className={styles.userDropdown} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.dropdownItem} onClick={() => { setNotifModalOpen(true); fetchNotifications(); setTimeout(() => setUserMenuOpen(false), 0); }}>
+              <MessageSquare size={20} />
+              <span>Notificações {unreadCount > 0 ? `(${unreadCount})` : ''}</span>
+            </button>
             <button className={styles.dropdownItem} onClick={handleEditProfile}>
               <Edit3 size={20} />
               <span>Editar Perfil</span>
@@ -1011,6 +1087,56 @@ export default function PrincipalSidebar() {
             >
               Sair
             </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Modal de Notificações */}
+    {notifModalOpen && (
+      <div className={styles.modalOverlay}>
+        <div className={`${styles.modal} ${styles.notificationsModal}`}>
+          <div className={styles.notificationsHeader}>
+            <h3 className={styles.notificationsTitle}>Notificações</h3>
+            <div className={styles.notificationsActions}>
+              <button className={styles.modalCancel} onClick={markAllAsRead} disabled={unreadCount === 0}>Marcar todas como lidas</button>
+              <button className={styles.modalConfirm} onClick={() => setNotifModalOpen(false)}>Fechar</button>
+            </div>
+          </div>
+          <div className={styles.notificationsMeta}>{unreadCount} não lida(s)</div>
+          <div style={{ maxHeight: 440, overflowY: 'auto' }}>
+            {notificationsLoading ? (
+              <div style={{ padding: 16 }}>Carregando...</div>
+            ) : notifications.length === 0 ? (
+              <div style={{ padding: 16 }}>Sem notificações no momento.</div>
+            ) : (
+              <table className={styles.notificationsTable}>
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Título</th>
+                    <th>Módulo</th>
+                    <th>Quando</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notifications.map((n) => (
+                    <tr key={n.id} className={!n.read_at ? styles.notificationRowUnread : ''}>
+                      <td>{n.read_at ? 'Lida' : 'Nova'}</td>
+                      <td>{n.title}</td>
+                      <td>{n.module}</td>
+                      <td>{new Date(n.created_at).toLocaleString('pt-BR')}</td>
+                      <td>
+                        {!n.read_at && (
+                          <button className={styles.notifMarkButton} onClick={() => markOneAsRead(n.id)}>Marcar lida</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

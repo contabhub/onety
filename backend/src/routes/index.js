@@ -19,6 +19,7 @@ const gruposRoutes = require('./onety/grupos');
 const empresasGruposRoutes = require('./onety/empresas-grupos');
 const empresasConteudosRoutes = require('./onety/empresas-conteudos');
 const provaGrupoRoutes = require('./onety/prova_grupo');
+const notificacoesRoutes = require('./onety/notificacoes');
 
 // Rotas do Atendimento
 const apikeyRoutes = require('./atendimento/apikey');
@@ -91,6 +92,7 @@ router.use('/grupos', gruposRoutes);
 router.use('/empresas-grupos', empresasGruposRoutes);
 router.use('/empresas-conteudos', empresasConteudosRoutes);
 router.use('/prova-grupo', provaGrupoRoutes);
+router.use('/notificacoes', notificacoesRoutes);
 
 // Rotas do Atendimento
 router.use('/atendimento/apikey', apikeyRoutes);
