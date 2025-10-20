@@ -1064,11 +1064,58 @@ router.post("/evolution", async (req, res) => {
       // Não quebra o fluxo principal - apenas loga o erro
     }
 
+    // 🔔 Notificação in-app (user_notifications) SOMENTE quando NÃO for fromMe
+    try {
+      const isFromMe = !!(data?.key?.fromMe);
+      console.log('🔔 [NOTIF][EVOLUTION] isFromMe?', isFromMe);
+      if (!isFromMe) {
+        console.log('🔔 [NOTIF][EVOLUTION] Buscando responsável/empresa da conversa...');
+        const [convMeta] = await pool.query(
+          `SELECT c.usuario_responsavel_id AS assigned_user_id, t.empresa_id AS empresa_id
+             FROM conversas c
+             JOIN times_atendimento_instancias twi ON c.times_atendimento_instancia_id = twi.id
+             JOIN times_atendimento t ON twi.times_atendimento_id = t.id
+            WHERE c.id = ?`,
+          [conversationId]
+        );
+        const assignedUserId = convMeta?.[0]?.assigned_user_id || null;
+        const empresaId = convMeta?.[0]?.empresa_id || null;
+        console.log('🔔 [NOTIF][EVOLUTION] Resolved:', { assignedUserId, empresaId });
+
+        if (assignedUserId) {
+          const title = 'Nova mensagem recebida';
+          const body = typeof content === 'string' ? content.slice(0, 160) : (messageType || 'mensagem');
+          const dataJson = JSON.stringify({ conversation_id: conversationId, message_id: messageId, rota: `/atendimento/chat?conv=${conversationId}` });
+          const [ins] = await pool.query(
+            `INSERT INTO user_notifications
+               (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+             VALUES
+               (?, ?, 'atendimento', 'lead.message', ?, ?, ?, 'conversa', ?, NULL)`,
+            [assignedUserId, empresaId, title, body, dataJson, conversationId]
+          );
+          console.log('🔔 [NOTIF][EVOLUTION] Inserted user_notifications:', { insertId: ins?.insertId, affectedRows: ins?.affectedRows });
+          try {
+            const webSocketManager = require('../../websocket');
+            webSocketManager.emitToUser(assignedUserId, 'notification:new', {
+              module: 'atendimento',
+              type: 'lead.message',
+              title,
+              body,
+              created_at: new Date().toISOString()
+            });
+            console.log('📡 [WS][EVOLUTION] notification:new emitido para', assignedUserId);
+          } catch {}
+        }
+      }
+    } catch (notifErr) {
+      console.warn('⚠️ [NOTIF][EVOLUTION] Falha ao criar notificação:', notifErr?.message || notifErr);
+    }
+
     // 🔥 NOTIFICAÇÃO WEBSOCKET - Nova mensagem
     const messageData = {
       id: messageId,
       conversation_id: conversationId,
-      sender_type: 'customer',
+      sender_type: data?.key?.fromMe ? 'usuario' : 'cliente',
       message_type: messageType,
       content: content,
       media_url: mediaUrl,
