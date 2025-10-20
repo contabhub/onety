@@ -1,0 +1,132 @@
+.container {
+    margin: 2rem 0;
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-m);
+    padding: 2rem;
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .titulo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--onity-color-text);
+}
+
+.tituloIcon {
+  color: var(--onity-color-primary);
+  font-size: 1.4rem;
+}
+  
+  .filtros {
+    display: flex;
+    gap: var(--onity-space-m);
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .select, .inputAno {
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    padding: 6px 10px;
+    font-size: 1rem;
+    min-width: 120px;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+  }
+  
+  .statusText {
+    text-align: center;
+    padding: 40px;
+    color: var(--onity-icon-secondary);
+  }
+
+  .noFunisMessage {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--onity-icon-secondary);
+    background: var(--onity-color-bg);
+    border-radius: var(--onity-radius-m);
+    border: 1px dashed var(--onity-color-border);
+  }
+
+  .noFunisMessage p {
+    margin: 8px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .noFunisMessage strong {
+    color: var(--onity-color-primary);
+    font-weight: 600;
+  }
+
+  /* Skeleton styles */
+  .skeletonTitle {
+    width: 200px;
+    height: 24px;
+    background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: var(--onity-radius-xs);
+    margin-bottom: 1.5rem;
+  }
+
+  .skeletonFilters {
+    display: flex;
+    gap: var(--onity-space-m);
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .skeletonSelect {
+    width: 120px;
+    height: 36px;
+    background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: var(--onity-radius-xs);
+  }
+
+  .skeletonInput {
+    width: 80px;
+    height: 36px;
+    background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: var(--onity-radius-xs);
+  }
+
+  .skeletonChart {
+    width: 100%;
+    height: 350px;
+    background: var(--onity-color-bg);
+    border-radius: var(--onity-radius-m);
+    border: 1px solid var(--onity-color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .skeletonChartArea {
+    width: 90%;
+    height: 280px;
+    background: linear-gradient(90deg, var(--onity-color-border) 25%, color-mix(in srgb, var(--onity-color-border) 50%, transparent) 50%, var(--onity-color-border) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: var(--onity-radius-xs);
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  

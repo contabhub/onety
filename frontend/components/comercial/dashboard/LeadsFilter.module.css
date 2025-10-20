@@ -1,0 +1,425 @@
+.container {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+  padding: var(--onity-space-l);
+  margin-bottom: var(--onity-space-l);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: var(--onity-space-m);
+  border-bottom: 2px solid var(--onity-color-border);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.btnFiltros {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--onity-elev-low);
+}
+
+.btnFiltros:hover {
+  border-color: var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+}
+
+.btnFiltros svg:first-child {
+  color: var(--onity-icon-secondary);
+  font-size: 0.875rem;
+}
+
+.btnFiltros svg:last-child {
+  color: var(--onity-icon-secondary);
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.title svg {
+  color: var(--onity-color-primary);
+}
+
+.total {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.filtrosContainer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  margin-bottom: 0;
+}
+
+.filtrosAbertos {
+  max-height: 300px;
+  margin-bottom: 24px;
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--onity-space-m);
+  padding: 20px;
+  background: var(--onity-color-bg);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+}
+
+.filtroGrupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtroGrupo label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--onity-color-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filtroGrupo label svg {
+  color: var(--onity-icon-secondary);
+}
+
+.input,
+.select {
+  padding: 10px 12px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: 0.875rem;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.filtroAcoes {
+  display: flex;
+  gap: 12px;
+  align-self: end;
+}
+
+.btnAplicar {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--onity-radius-xs);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btnAplicar:hover {
+  background: var(--onity-color-primary-hover);
+}
+
+.btnLimpar {
+  background: var(--onity-color-error);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--onity-radius-xs);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btnLimpar:hover {
+  background: color-mix(in srgb, var(--onity-color-error) 85%, black);
+}
+
+.listaContainer {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leadCard {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+  transition: all 0.2s;
+}
+
+.leadCard:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-med);
+}
+
+.leadHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.leadNome {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.statusGanhou {
+  background: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
+  color: var(--onity-color-success);
+}
+
+.statusPerdeu {
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  color: var(--onity-color-error);
+}
+
+.statusAberto {
+  background: color-mix(in srgb, var(--onity-color-primary) 12%, transparent);
+  color: var(--onity-color-primary);
+}
+
+.statusDefault {
+  background: var(--onity-color-bg);
+  color: var(--onity-icon-secondary);
+}
+
+.leadInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--onity-space-s);
+}
+
+.infoItem {
+  font-size: 0.875rem;
+  color: var(--onity-icon-secondary);
+}
+
+.infoItem strong {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--onity-icon-secondary);
+  font-size: 1rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--onity-icon-secondary);
+  font-size: 1rem;
+  background: var(--onity-color-bg);
+  border-radius: var(--onity-radius-m);
+  border: 2px dashed var(--onity-color-border);
+}
+
+/* Skeleton styles */
+.skeletonTitle {
+  width: 180px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonTotal {
+  width: 120px;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 20px;
+}
+
+.skeletonLabel {
+  width: 80px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonInput {
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeletonBtnLimpar {
+  width: 120px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 6px;
+  align-self: end;
+}
+
+.skeletonLeads {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeletonLeadCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+}
+
+.skeletonLeadHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.skeletonLeadNome {
+  width: 200px;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonStatus {
+  width: 80px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+.skeletonLeadInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonInfoItem {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .btnFiltros {
+    flex-shrink: 0;
+  }
+  
+  .filtros {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .leadInfo {
+    grid-template-columns: 1fr;
+  }
+  
+  .filtroAcoes {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .btnAplicar,
+  .btnLimpar {
+    align-self: stretch;
+  }
+} 

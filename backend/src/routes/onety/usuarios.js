@@ -80,6 +80,39 @@ router.get("/recentes", async (req, res) => {
   }
 });
 
+// Empresas vinculadas a um usuário
+router.get("/:id/empresas", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "ID do usuário é obrigatório." });
+
+    const [rows] = await pool.query(
+      `SELECT 
+        e.id,
+        e.nome,
+        e.cnpj,
+        e.logo_url,
+        ue.cargo_id,
+        ue.departamento_id,
+        c.nome as cargo_nome,
+        d.nome as departamento_nome
+       FROM usuarios_empresas ue
+       INNER JOIN empresas e ON e.id = ue.empresa_id
+       LEFT JOIN cargos c ON ue.cargo_id = c.id
+       LEFT JOIN departamentos d ON ue.departamento_id = d.id
+       WHERE ue.usuario_id = ?
+       ORDER BY e.nome ASC`,
+      [id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar empresas do usuário." });
+  }
+});
+
+
 // Lista usuários com paginação
 router.get("/", async (req, res) => {
   try {

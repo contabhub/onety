@@ -60,16 +60,16 @@ router.get('/ranking-vendedores', verifyToken, async (req, res) => {
     const [rows] = await db.query(`
       SELECT 
         l.usuario_id, 
-        u.full_nome AS responsavel_nome,
+        u.nome AS responsavel_nome,
         u.avatar_url,
         SUM(l.status = 'ganhou') AS ganhos,
         SUM(l.status = 'aberto') AS abertos,
         SUM(l.status = 'perdeu') AS perdidos,
         COUNT(*) AS total
       FROM leads l
-      JOIN users u ON u.id = l.usuario_id
+      JOIN usuarios u ON u.id = l.usuario_id
       WHERE l.empresa_id = ?
-      GROUP BY l.usuario_id, u.full_nome, u.avatar_url
+      GROUP BY l.usuario_id, u.nome, u.avatar_url
       ORDER BY ganhos DESC, total DESC
     `, [empresa_id]);
     
@@ -228,11 +228,11 @@ router.get('/', verifyToken, async (req, res) => {
 
         if (lead.usuario_id) {
           const [userRows] = await db.query(
-            'SELECT full_nome, avatar_url FROM users WHERE id = ?',
+            'SELECT nome, avatar_url FROM usuarios WHERE id = ?',
             [lead.usuario_id]
           );
           if (userRows.length > 0) {
-            responsavel_nome = userRows[0].full_nome;
+            responsavel_nome = userRows[0].nome;
             responsavel_avatar = userRows[0].avatar_url || null;
           }
         }
@@ -302,11 +302,11 @@ router.get('/empresa/:empresaId', verifyToken, async (req, res) => {
 
         if (lead.usuario_id) {
           const [userRows] = await db.query(
-            'SELECT full_nome, avatar_url FROM users WHERE id = ?',
+            'SELECT nome, avatar_url FROM usuarios WHERE id = ?',
             [lead.usuario_id]
           );
           if (userRows.length > 0) {
-            responsavel_nome = userRows[0].full_nome;
+            responsavel_nome = userRows[0].nome;
             responsavel_avatar = userRows[0].avatar_url || null;
           }
         }
@@ -649,7 +649,7 @@ router.get("/contratos-ganhos/:empresaId", verifyToken, async (req, res) => {
 
     // Buscar contratos vinculados a esses clientes
     const [contratos] = await db.query(
-      "SELECT * FROM contracts WHERE client_id IN (?)",
+      "SELECT * FROM contratos WHERE pre_cliente_id IN (?)",
       [clientIds]
     );
 
@@ -661,7 +661,7 @@ router.get("/contratos-ganhos/:empresaId", verifyToken, async (req, res) => {
 });
 
 
-// GET /contracts/contratos-ganhos/:empresaId/light
+// GET /leads/contratos-ganhos/:empresaId/light
 router.get("/contratos-ganhos/:empresaId/light", verifyToken, async (req, res) => {
   try {
     const empresaId = parseInt(req.params.empresaId, 10) || 0;
@@ -669,7 +669,7 @@ router.get("/contratos-ganhos/:empresaId/light", verifyToken, async (req, res) =
 
     // (opcional, mas recomendado) valida se o usuário pertence à equipe
     const [v] = await db.query(
-      "SELECT 1 FROM user_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1",
+      "SELECT 1 FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1",
       [userId, empresaId]
     );
     if (v.length === 0) {
@@ -680,25 +680,26 @@ router.get("/contratos-ganhos/:empresaId/light", verifyToken, async (req, res) =
     const [contratos] = await db.query(`
       SELECT
         c.id,
-        c.template_id,
+        c.modelos_contrato_id,
         c.status,
         c.autentique,
         c.autentique_id,
         u.id        AS created_by_id,
-        u.full_nome AS created_by,          -- nome do responsável
+        u.nome AS created_by,          -- nome do responsável
         c.criado_em,
-        c.expires_at,
-        c.client_id,
+        c.expirado_em,
+        c.pre_cliente_id,
         cl.nome     AS client_nome,
-        c.start_at,
-        c.end_at,
+        c.comeca_em,
+        c.termina_em,
         c.empresa_id,
-        c.rejected_by,
-        c.valor
-      FROM contracts c
-      INNER JOIN pre_clientes cl ON cl.id = c.client_id
+        c.rejeitado_por,
+        c.valor,
+        c.valor_recorrente
+      FROM contratos c
+      INNER JOIN pre_clientes cl ON cl.id = c.pre_cliente_id
       INNER JOIN leads   l  ON l.id = cl.lead_id
-      INNER JOIN users   u  ON u.id = c.created_by
+      INNER JOIN usuarios   u  ON u.id = c.criado_por
       WHERE l.empresa_id = ? AND l.status = 'ganhou'
       ORDER BY c.criado_em DESC
     `, [empresaId]);
