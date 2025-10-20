@@ -58,7 +58,7 @@
 .card:hover {
   transform: translateY(-6px);
   box-shadow: var(--onity-elev-high);
-  border-color: var(--onity-color-primary);
+  border-color: var(--primary-color, #3b82f6);
 }
 
 /* Sombra interna sutil na borda esquerda */
@@ -69,7 +69,7 @@
   top: 0;
   height: 100%;
   width: 4px;
-  background: linear-gradient(to bottom, var(--onity-color-primary), color-mix(in srgb, var(--onity-color-primary) 70%, white));
+  background: linear-gradient(to bottom, var(--primary-color, #3b82f6), color-mix(in srgb, var(--primary-color, #3b82f6) 70%, white));
   border-top-left-radius: var(--onity-radius-m);
   border-bottom-left-radius: var(--onity-radius-m);
   transition: opacity 0.3s ease;
@@ -98,7 +98,7 @@
 }
 
 .iconBlue {
-  color: var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
 }
 
 .iconGreen {
@@ -144,7 +144,7 @@
 }
 
 .tituloIcon {
-  color: var(--onity-color-primary);
+  color: var(--primary-color, #3b82f6);
   font-size: 1.3rem;
 }
 
@@ -179,23 +179,22 @@
 }
 
 .viewIcon {
-  background-color: var(--onity-color-bg);
+  background: transparent;
+  border: none;
+  padding: 6px;
   cursor: pointer;
-  font-size: 16px;
-  padding: 6px 10px;
-  color: var(--onity-color-primary);
-  border: 2px solid var(--onity-color-primary);
-  border-radius: var(--onity-radius-xs);
-  transition: all 0.2s ease;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  color: var(--onity-color-text);
+  transition: color 0.2s ease;
 }
 
 .viewIcon:hover {
-  background-color: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-  transform: scale(1.05);
+  background-color: transparent;
+  color: var(--primary-color, #3b82f6);
 }
 
 .pendente {
@@ -638,4 +637,127 @@
   position: absolute;
   right: 16px;
   top: 16px;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-high);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-s);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.modalBody {
+  padding: var(--onity-space-xl);
+  text-align: center;
+}
+
+.valueDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
+}
+
+.modalIcon {
+  font-size: 3rem;
+  color: var(--primary-color, #3b82f6);
+}
+
+.fullValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--onity-color-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.modalDescription {
+  color: var(--onity-icon-secondary);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modalContent {
+    width: 95%;
+    margin: var(--onity-space-m);
+  }
+  
+  .modalBody {
+    padding: var(--onity-space-l);
+  }
+  
+  .fullValue {
+    font-size: 2rem;
+  }
+  
+  .modalIcon {
+    font-size: 2.5rem;
+  }
 }

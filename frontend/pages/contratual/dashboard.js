@@ -15,6 +15,20 @@ import CountUp from "react-countup";
 import SkeletonCard from "../../components/onety/skeleton/SkeletonCard";
 import SkeletonTable from "../../components/onety/skeleton/SkeletonTable";
 import Select from 'react-select';
+import { FaTimes } from "react-icons/fa";
+
+// Função para formatar números grandes de forma compacta
+const formatLargeNumber = (value) => {
+  const num = Number(value);
+  if (num >= 1000000000) {
+    return `${(num / 1000000000).toFixed(1)}B`;
+  } else if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  } else if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K`;
+  }
+  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+};
 
 
 
@@ -45,6 +59,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [selectedEquipe, setSelectedEquipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showValueModal, setShowValueModal] = useState(false);
 
   // Estado para modal de avisos
 
@@ -314,13 +329,20 @@ export default function Dashboard() {
               </h2>
             </div>
 
-            <div className={styles.card}>
+            <div 
+              className={styles.card}
+              onClick={() => setShowValueModal(true)}
+              style={{ cursor: 'pointer' }}
+              title="Clique para ver valor completo"
+            >
               <div className={styles.cardHeader}>
                 <span>Valor Total Contratos</span>
                 <FaMoneyBills className={styles.iconBlue} />
               </div>
               <h2>
-                <div className={styles.fadeIn}>R$ {kpiData.valorTotal}</div>
+                <div className={styles.fadeIn}>
+                  R$ {formatLargeNumber(kpiData.valorTotal)}
+                </div>
               </h2>
             </div>
 
@@ -417,7 +439,7 @@ export default function Dashboard() {
                       <td>
                         <button
                           className={styles.viewIcon}
-                          onClick={() => router.push(`/contrato/${contrato.id}`)}
+                          onClick={() => router.push(`/contratual/contrato/${contrato.id}`)}
                           title="Visualizar contrato"
                         >
                           <FaEye />
@@ -435,8 +457,35 @@ export default function Dashboard() {
           </div>
         )}
 
-
       </div>
+
+      {/* Modal de Valor Completo */}
+      {showValueModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowValueModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Valor Total dos Contratos</h3>
+              <button 
+                className={styles.closeButton}
+                onClick={() => setShowValueModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.valueDisplay}>
+                <FaMoneyBills className={styles.modalIcon} />
+                <span className={styles.fullValue}>
+                  R$ {Number(kpiData.valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <p className={styles.modalDescription}>
+                Este é o valor total de todos os contratos da empresa.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
   );
 }
