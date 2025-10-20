@@ -28,6 +28,7 @@ import {
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
 import EditarPerfil from '../menu/EditarPerfil';
+import { useWebSocket } from '../../../hooks/useWebSocket';
 
 // Registry de módulos com seus itens específicos
 const MODULE_REGISTRY = {
@@ -295,6 +296,7 @@ export default function PrincipalSidebar() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
+  const { socket } = useWebSocket();
 
   // Carrega o estado da sidebar do localStorage na inicialização
   useEffect(() => {
@@ -569,6 +571,20 @@ export default function PrincipalSidebar() {
     const i = setInterval(fetchUnreadCount, 20000);
     return () => clearInterval(i);
   }, []);
+
+  // Realtime: incrementa badge ao receber notification:new
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (payload) => {
+      try {
+        setUnreadCount((c) => (isFinite(c) ? c + 1 : 1));
+      } catch {}
+    };
+    socket.on('notification:new', handler);
+    return () => {
+      socket.off('notification:new', handler);
+    };
+  }, [socket]);
 
   // Carregar dados do usuário
   useEffect(() => {
