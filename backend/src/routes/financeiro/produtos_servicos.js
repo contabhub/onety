@@ -5,16 +5,16 @@ const verifyToken = require("../../middlewares/auth");
 
 // 🔹 Criar produto ou serviço
 router.post("/", verifyToken, async (req, res) => {
-  const { nome, tipo, company_id } = req.body;
+  const { nome, tipo, empresa_id } = req.body;
 
-  if (!nome || !tipo || !company_id) {
-    return res.status(400).json({ error: "Campos obrigatórios: nome, tipo, company_id." });
+  if (!nome || !tipo || !empresa_id) {
+    return res.status(400).json({ error: "Campos obrigatórios: nome, tipo, empresa_id." });
   }
 
   try {
     const [result] = await pool.query(
-      "INSERT INTO produtos_servicos (nome, tipo, company_id) VALUES (?, ?, ?)",
-      [nome, tipo, company_id]
+      "INSERT INTO produtos (nome, tipo, empresa_id) VALUES (?, ?, ?)",
+      [nome, tipo, empresa_id]
     );
     res.status(201).json({ id: result.insertId, message: "Produto/Serviço criado com sucesso." });
   } catch (error) {
@@ -25,17 +25,17 @@ router.post("/", verifyToken, async (req, res) => {
 
 // 🔹 Listar produtos/serviços — com filtros opcionais por empresa e status
 router.get("/", verifyToken, async (req, res) => {
-  const { company_id, status } = req.query;
+  const { empresa_id, status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos_servicos`;
+    let query = `SELECT id, nome, tipo, status FROM produtos`;
     const params = [];
     const conditions = [];
 
-    // Se company_id foi fornecido, filtra por empresa
-    if (company_id) {
-      conditions.push(`company_id = ?`);
-      params.push(company_id);
+    // Se empresa_id foi fornecido, filtra por empresa
+    if (empresa_id) {
+      conditions.push(`empresa_id = ?`);
+      params.push(empresa_id);
     }
 
     // Se status foi fornecido, filtra por status
@@ -59,14 +59,14 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar todos por company_id (mantém compatibilidade) — com filtro opcional por status
-router.get("/company/:company_id", verifyToken, async (req, res) => {
-  const { company_id } = req.params;
+// 🔹 Listar todos por empresa_id (mantém compatibilidade) — com filtro opcional por status
+router.get("/empresa/:empresa_id", verifyToken, async (req, res) => {
+  const { empresa_id } = req.params;
   const { status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos_servicos WHERE company_id = ?`;
-    const params = [company_id];
+    let query = `SELECT id, nome, tipo, status FROM produtos WHERE empresa_id = ?`;
+    const params = [empresa_id];
 
     // Se status foi fornecido, adiciona filtro por status
     if (status && ['ativo', 'inativo'].includes(status)) {
@@ -84,14 +84,14 @@ router.get("/company/:company_id", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar apenas produtos por company_id — com filtro opcional por status
-router.get("/company/:company_id/produtos", verifyToken, async (req, res) => {
-  const { company_id } = req.params;
+// 🔹 Listar apenas produtos por empresa_id — com filtro opcional por status
+router.get("/empresa/:empresa_id/produtos", verifyToken, async (req, res) => {
+  const { empresa_id } = req.params;
   const { status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos_servicos WHERE company_id = ? AND tipo = 'produto'`;
-    const params = [company_id];
+    let query = `SELECT id, nome, tipo, status FROM produtos WHERE empresa_id = ? AND tipo = 'produto'`;
+    const params = [empresa_id];
 
     // Se status foi fornecido, adiciona filtro por status
     if (status && ['ativo', 'inativo'].includes(status)) {
@@ -109,14 +109,14 @@ router.get("/company/:company_id/produtos", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar apenas serviços por company_id — com filtro opcional por status
-router.get("/company/:company_id/servicos", verifyToken, async (req, res) => {
-  const { company_id } = req.params;
+// 🔹 Listar apenas serviços por empresa_id — com filtro opcional por status
+router.get("/empresa/:empresa_id/servicos", verifyToken, async (req, res) => {
+  const { empresa_id } = req.params;
   const { status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos_servicos WHERE company_id = ? AND tipo = 'servico'`;
-    const params = [company_id];
+    let query = `SELECT id, nome, tipo, status FROM produtos WHERE empresa_id = ? AND tipo = 'servico'`;
+    const params = [empresa_id];
 
     // Se status foi fornecido, adiciona filtro por status
     if (status && ['ativo', 'inativo'].includes(status)) {
@@ -139,7 +139,7 @@ router.get("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await pool.query("SELECT * FROM produtos_servicos WHERE id = ?", [id]);
+    const [rows] = await pool.query("SELECT * FROM produtos WHERE id = ?", [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: "Produto/Serviço não encontrado." });
     }
@@ -161,7 +161,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      "UPDATE produtos_servicos SET nome = ?, tipo = ? WHERE id = ?",
+      "UPDATE produtos SET nome = ?, tipo = ? WHERE id = ?",
       [nome, tipo, id]
     );
     if (result.affectedRows === 0) {
@@ -185,7 +185,7 @@ router.patch("/:id/status", verifyToken, async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      "UPDATE produtos_servicos SET status = ? WHERE id = ?",
+      "UPDATE produtos SET status = ? WHERE id = ?",
       [status, id]
     );
     
@@ -208,7 +208,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query("DELETE FROM produtos_servicos WHERE id = ?", [id]);
+    const [result] = await pool.query("DELETE FROM produtos WHERE id = ?", [id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Produto/Serviço não encontrado." });
     }

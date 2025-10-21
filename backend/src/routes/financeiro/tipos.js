@@ -5,11 +5,11 @@ const verifyToken = require("../../middlewares/auth");
 
 // 🔹 Criar Tipo
 router.post("/", verifyToken, async (req, res) => {
-  const { nome, company_id } = req.body;
+  const { nome, empresa_id } = req.body;
   try {
     const [result] = await pool.query(
-      `INSERT INTO tipos (nome, company_id) VALUES (?, ?)`,
-      [nome, company_id]
+      `INSERT INTO tipos (nome, empresa_id) VALUES (?, ?)`,
+      [nome, empresa_id]
     );
     res.status(201).json({ id: result.insertId, message: "Tipo criado com sucesso." });
   } catch (err) {
@@ -21,7 +21,7 @@ router.post("/", verifyToken, async (req, res) => {
 // 🔹 Listar todos os Tipos
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM tipos ORDER BY created_at DESC`);
+    const [rows] = await pool.query(`SELECT * FROM tipos ORDER BY criado_em DESC`);
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar todos os tipos:", err);
@@ -30,10 +30,10 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // 🔹 Listar Tipos por empresa
-router.get("/empresa/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   try {
-    const [rows] = await pool.query(`SELECT * FROM tipos WHERE company_id = ?`, [companyId]);
+    const [rows] = await pool.query(`SELECT * FROM tipos WHERE empresa_id = ?`, [empresaId]);
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar tipos:", err);
@@ -61,19 +61,18 @@ router.put("/:id", verifyToken, async (req, res) => {
 });
 
 // 🔹 Deletar Tipo
-// 🔹 Deletar Tipo
 router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
     // Verifica se o tipo é padrão
-    const [check] = await pool.query(`SELECT is_default FROM tipos WHERE id = ?`, [id]);
+    const [check] = await pool.query(`SELECT padrao FROM tipos WHERE id = ?`, [id]);
 
     if (check.length === 0) {
       return res.status(404).json({ error: "Tipo não encontrado." });
     }
 
-    if (check[0].is_default) {
+    if (check[0].padrao) {
       return res.status(403).json({ error: "Tipo padrão não pode ser excluído." });
     }
 
@@ -87,30 +86,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("Erro ao deletar tipo:", err);
     res.status(500).json({ error: "Erro ao deletar tipo." });
-  }
-});
-
-
-// 🔹 Atualizar ordem das subcategorias
-router.put("/ordenar", verifyToken, async (req, res) => {
-  const { novaOrdem } = req.body; // Ex: [{ id: 3, ordem: 1 }, { id: 5, ordem: 2 }]
-
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-
-    for (const item of novaOrdem) {
-      await connection.query(`UPDATE sub_categorias SET ordem = ? WHERE id = ?`, [item.ordem, item.id]);
-    }
-
-    await connection.commit();
-    res.json({ message: "Ordem atualizada com sucesso!" });
-  } catch (error) {
-    await connection.rollback();
-    console.error("Erro ao atualizar ordem:", error);
-    res.status(500).json({ error: "Erro ao atualizar ordem." });
-  } finally {
-    connection.release();
   }
 });
 

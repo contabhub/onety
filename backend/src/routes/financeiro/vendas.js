@@ -10,18 +10,17 @@ router.post("/", verifyToken, async (req, res) => {
         tipo_venda,
         cliente_id,
         categoria_id,
-        sub_categoria_id,
-        produtos_servicos_id,
-        company_id,
-        centro_de_custo_id,
-        vendedor_id,
+        subcategoria_id,
+        produtos_id,
+        empresa_id,
+        centro_custo_id,
+        usuario_id,
         data_venda,
         situacao,
         valor_venda,
         desconto_venda,
         pagamento,
-        conta_recebimento,
-        conta_recebimento_api,  // ✅ Adicionado
+        conta_recebimento_api,
         parcelamento,
         vencimento,
         observacoes,
@@ -31,24 +30,23 @@ router.post("/", verifyToken, async (req, res) => {
   
       const [result] = await pool.query(
         `INSERT INTO vendas 
-        (tipo_venda, cliente_id, categoria_id, sub_categoria_id, produtos_servicos_id, company_id, centro_de_custo_id, vendedor_id, data_venda, situacao, valor_venda, desconto_venda, pagamento, conta_recebimento, conta_recebimento_api, parcelamento, vencimento, observacoes, natureza, observacoes_fiscais)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (tipo_venda, cliente_id, categoria_id, subcategoria_id, produtos_id, empresa_id, centro_custo_id, usuario_id, data_venda, situacao, valor_venda, desconto_venda, pagamento, conta_recebimento_api, parcelamento, vencimento, observacoes, natureza, observacoes_fiscais)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           tipo_venda,
           cliente_id,
           categoria_id,
-          sub_categoria_id,
-          produtos_servicos_id,
-          company_id,
-          centro_de_custo_id,
-          vendedor_id,
+          subcategoria_id,
+          produtos_id,
+          empresa_id,
+          centro_custo_id,
+          usuario_id,
           data_venda,
           situacao,
           valor_venda,
           desconto_venda,
           pagamento,
-          conta_recebimento,
-          conta_recebimento_api,  // ✅ Adicionado
+          conta_recebimento_api,
           parcelamento,
           vencimento,
           observacoes,
@@ -67,7 +65,7 @@ router.post("/", verifyToken, async (req, res) => {
 // ✅ READ - Listar todas as vendas (com JOIN e filtros opcionais)
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { company_id, start_date, end_date, situacao } = req.query;
+    const { empresa_id, start_date, end_date, situacao } = req.query;
 
     let query = `
         SELECT 
@@ -79,17 +77,15 @@ router.get("/", verifyToken, async (req, res) => {
           co.nome AS empresa_nome,
           cc.nome AS centro_custo_nome,
           u.name AS vendedor_nome,
-          cr.descricao_banco AS conta_recebimento_nome,
           cra.descricao_banco AS conta_recebimento_api_nome
         FROM vendas v
         LEFT JOIN clientes c ON v.cliente_id = c.id
-        LEFT JOIN produtos_servicos ps ON v.produtos_servicos_id = ps.id
-        LEFT JOIN categorias ct ON v.categoria_id = ct.id
-        LEFT JOIN sub_categorias sc ON v.sub_categoria_id = sc.id
-        LEFT JOIN companies co ON v.company_id = co.id
-        LEFT JOIN centro_de_custo cc ON v.centro_de_custo_id = cc.id
-        LEFT JOIN users u ON v.vendedor_id = u.id
-        LEFT JOIN contas cr ON v.conta_recebimento = cr.id
+        LEFT JOIN produtos ps ON v.produtos_id = ps.id
+        LEFT JOIN straton_categorias ct ON v.categoria_id = ct.id
+        LEFT JOIN straton_subcategorias sc ON v.subcategoria_id = sc.id
+        LEFT JOIN companies co ON v.empresa_id = co.id
+        LEFT JOIN centro_de_custo cc ON v.centro_custo_id = cc.id
+        LEFT JOIN users u ON v.usuario_id = u.id
         LEFT JOIN contas_api cra ON v.conta_recebimento_api = cra.id
         WHERE 1=1
       `;
@@ -97,9 +93,9 @@ router.get("/", verifyToken, async (req, res) => {
     let params = [];
 
     // Filtro por empresa
-    if (company_id) {
-      query += " AND v.company_id = ?";
-      params.push(company_id);
+    if (empresa_id) {
+      query += " AND v.empresa_id = ?";
+      params.push(empresa_id);
     }
 
     // Filtro por período de data
@@ -132,35 +128,35 @@ router.get("/", verifyToken, async (req, res) => {
 
 router.get("/form-data", verifyToken, async (req, res) => {
     try {
-      const { company_id } = req.query;
+      const { empresa_id } = req.query;
   
-      if (!company_id) {
-        return res.status(400).json({ message: "O parâmetro company_id é obrigatório." });
+      if (!empresa_id) {
+        return res.status(400).json({ message: "O parâmetro empresa_id é obrigatório." });
       }
   
-      // tabelas que têm company_id diretamente
-      const [clientes] = await pool.query("SELECT id, nome_fantasia FROM clientes WHERE company_id = ?", [company_id]);
-      const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos_servicos WHERE company_id = ?", [company_id]);
-      const [companies] = await pool.query("SELECT id, nome FROM companies WHERE id = ?", [company_id]);
-      const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE company_id = ?", [company_id]);
-      const [contas] = await pool.query("SELECT id, descricao_banco FROM contas WHERE company_id = ?", [company_id]);
+      // tabelas que têm empresa_id diretamente
+      const [clientes] = await pool.query("SELECT id, nome_fantasia FROM clientes WHERE empresa_id = ?", [empresa_id]);
+      const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos WHERE empresa_id = ?", [empresa_id]);
+      const [companies] = await pool.query("SELECT id, nome FROM companies WHERE id = ?", [empresa_id]);
+      const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE empresa_id = ?", [empresa_id]);
+      const [contas] = await pool.query("SELECT id, descricao_banco FROM contas WHERE empresa_id = ?", [empresa_id]);
   
       // categorias e subcategorias via tipos
       const [categorias] = await pool.query(
         `SELECT c.id, c.nome 
-         FROM categorias c
+         FROM straton_categorias c
          INNER JOIN tipos t ON c.tipo_id = t.id
-         WHERE t.company_id = ?`,
-        [company_id]
+         WHERE t.empresa_id = ?`,
+        [empresa_id]
       );
   
       const [subCategorias] = await pool.query(
         `SELECT sc.id, sc.nome 
-         FROM sub_categorias sc
-         INNER JOIN categorias c ON sc.categoria_id = c.id
+         FROM straton_subcategorias sc
+         INNER JOIN straton_categorias c ON sc.categoria_id = c.id
          INNER JOIN tipos t ON c.tipo_id = t.id
-         WHERE t.company_id = ?`,
-        [company_id]
+         WHERE t.empresa_id = ?`,
+        [empresa_id]
       );
   
       // usuários filtrados pela tabela pivô user_company
@@ -169,7 +165,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
          FROM users u
          INNER JOIN user_company uc ON uc.user_id = u.id
          WHERE uc.company_id = ?`,
-        [company_id]
+        [empresa_id]
       );
   
       // retorna tudo pronto pro frontend
@@ -205,17 +201,15 @@ router.get("/:id", verifyToken, async (req, res) => {
         co.nome AS empresa_nome,
         cc.nome AS centro_custo_nome,
         u.name AS vendedor_nome,
-        cr.descricao_banco AS conta_recebimento_nome,
         cra.descricao_banco AS conta_recebimento_api_nome
     FROM vendas v
     LEFT JOIN clientes c ON v.cliente_id = c.id
-    LEFT JOIN produtos_servicos ps ON v.produtos_servicos_id = ps.id
-    LEFT JOIN categorias ct ON v.categoria_id = ct.id
-    LEFT JOIN sub_categorias sc ON v.sub_categoria_id = sc.id
-    LEFT JOIN companies co ON v.company_id = co.id
-    LEFT JOIN centro_de_custo cc ON v.centro_de_custo_id = cc.id
-    LEFT JOIN users u ON v.vendedor_id = u.id
-    LEFT JOIN contas cr ON v.conta_recebimento = cr.id
+    LEFT JOIN produtos ps ON v.produtos_id = ps.id
+    LEFT JOIN straton_categorias ct ON v.categoria_id = ct.id
+    LEFT JOIN straton_subcategorias sc ON v.subcategoria_id = sc.id
+    LEFT JOIN companies co ON v.empresa_id = co.id
+    LEFT JOIN centro_de_custo cc ON v.centro_custo_id = cc.id
+    LEFT JOIN users u ON v.usuario_id = u.id
     LEFT JOIN contas_api cra ON v.conta_recebimento_api = cra.id
     WHERE v.id = ?
   `;  
@@ -247,14 +241,13 @@ router.put("/:id", verifyToken, async (req, res) => {
     const allowedFields = [
       'situacao',
       'categoria_id',
-      'sub_categoria_id', 
-      'produtos_servicos_id',
-      'centro_de_custo_id',
-      'vendedor_id',
+      'subcategoria_id', 
+      'produtos_id',
+      'centro_custo_id',
+      'usuario_id',
       'valor_venda',
       'desconto_venda',
       'pagamento',
-      'conta_recebimento',
       'conta_recebimento_api',
       'parcelamento',
       'vencimento',
@@ -271,8 +264,8 @@ router.put("/:id", verifyToken, async (req, res) => {
       }
     });
 
-    // Adicionar updated_at
-    fields.push('updated_at=NOW()');
+    // Adicionar atualizado_em
+    fields.push('atualizado_em=NOW()');
 
     if (fields.length === 0) {
       return res.status(400).json({ error: "Nenhum campo válido para atualização." });
@@ -309,7 +302,7 @@ router.patch("/:id/situacao", verifyToken, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `UPDATE vendas SET situacao = ?, updated_at = NOW() WHERE id = ?`,
+      `UPDATE vendas SET situacao = ?, atualizado_em = NOW() WHERE id = ?`,
       [situacao, id]
     );
 
@@ -365,7 +358,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
         co.nome as empresa_nome
       FROM vendas v
       INNER JOIN clientes c ON v.cliente_id = c.id
-      INNER JOIN companies co ON v.company_id = co.id
+      INNER JOIN companies co ON v.empresa_id = co.id
       WHERE v.id = ?
     `, [id]);
 
@@ -426,7 +419,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
         linha1: `Venda ${id}`,
         linha2: observacoes || `Vencimento: ${dataVencimento}`
       },
-      company_id: venda.company_id
+      company_id: venda.empresa_id
     };
 
     // Fazer requisição para gerar boleto via API Inter

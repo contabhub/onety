@@ -7,16 +7,16 @@ const verifyToken = require("../../middlewares/auth");
 router.post("/", verifyToken, async (req, res) => {
   try {
     const {
-      centro_de_custo_id,
+      centro_custo_id,
       vendedor_id,
       observacoes_fiscais,
       numero_contrato,
       cliente_id,
       produtos_servicos, // ✅ Novo: array de produtos/serviços
       produtos_servicos_id, // ✅ Mantido para compatibilidade
-      company_id,
+      empresa_id,
       categoria_id,
-      sub_categoria_id,
+      subcategoria_id,
       conta_id,
       conta_api_id,
 
@@ -30,8 +30,8 @@ router.post("/", verifyToken, async (req, res) => {
     } = req.body;
 
     // ✅ Validação: aceita tanto array quanto campo único para compatibilidade
-    if (!cliente_id || !company_id || !data_inicio) {
-      return res.status(400).json({ error: "Campos obrigatórios: cliente_id, company_id, data_inicio" });
+    if (!cliente_id || !empresa_id || !data_inicio) {
+      return res.status(400).json({ error: "Campos obrigatórios: cliente_id, empresa_id, data_inicio" });
     }
 
     // ✅ Validação: deve ter pelo menos um produto/serviço
@@ -62,14 +62,14 @@ router.post("/", verifyToken, async (req, res) => {
       // ✅ 1. Criar contrato principal
       const [contratoResult] = await connection.query(
         `INSERT INTO contratos 
-          (centro_de_custo_id, vendedor_id, observacoes_fiscais, numero_contrato, cliente_id, 
-           produtos_servicos_id, company_id, categoria_id, sub_categoria_id, conta_id, conta_api_id, 
+          (centro_custo_id, vendedor_id, observacoes_fiscais, numero_contrato, cliente_id, 
+           produtos_servicos_id, empresa_id, categoria_id, subcategoria_id, conta_id, conta_api_id, 
            valor, desconto, data_inicio, dia_gerado, proximo_vencimento, status, observacoes) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          centro_de_custo_id || null, vendedor_id || null, observacoes_fiscais || null, 
-          numero_contrato || null, cliente_id, produtos_servicos_id || null, company_id, 
-          categoria_id || null, sub_categoria_id || null, conta_id || null, conta_api_id || null, 
+          centro_custo_id || null, vendedor_id || null, observacoes_fiscais || null, 
+          numero_contrato || null, cliente_id, produtos_servicos_id || null, empresa_id, 
+          categoria_id || null, subcategoria_id || null, conta_id || null, conta_api_id || null, 
           valorTotal, descontoTotal, data_inicio, dia_gerado || null, 
           proximo_vencimento || null, status || 'ativo', observacoes || null
         ]
@@ -82,7 +82,7 @@ router.post("/", verifyToken, async (req, res) => {
         for (const produto of produtos_servicos) {
           if (produto.produtos_servicos_id && produto.valor_unitario) {
             await connection.query(
-              `INSERT INTO contrato_produtos_servicos 
+              `INSERT INTO contrato_produto_servico 
                 (contrato_id, produtos_servicos_id, departamento_id, quantidade, valor_unitario, desconto, observacoes) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
@@ -101,7 +101,7 @@ router.post("/", verifyToken, async (req, res) => {
       // ✅ 3. Se apenas produtos_servicos_id foi fornecido, criar registro único na tabela pivô
       else if (produtos_servicos_id) {
         await connection.query(
-          `INSERT INTO contrato_produtos_servicos 
+          `INSERT INTO contrato_produto_servico 
             (contrato_id, produtos_servicos_id, departamento_id, quantidade, valor_unitario, desconto, observacoes) 
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
@@ -123,14 +123,14 @@ router.post("/", verifyToken, async (req, res) => {
         
         // Buscar configuração de recorrência (se existir)
         const [recorrenciaConfig] = await connection.query(
-          `SELECT * FROM recorrencia_vendas_contratos WHERE contrato_id = ? LIMIT 1`,
+          `SELECT * FROM recorrencias_vendas WHERE contrato_id = ? LIMIT 1`,
           [contratoId]
         );
 
         // Se não tem configuração, criar uma padrão
         if (recorrenciaConfig.length === 0) {
           await connection.query(
-            `INSERT INTO recorrencia_vendas_contratos 
+            `INSERT INTO recorrencias_vendas 
               (contrato_id, tipo_intervalo, intervalo, indeterminado, status, tipo_origem) 
              VALUES (?, ?, ?, ?, ?, ?)`,
             [contratoId, 'meses', 1, 1, 'ativo', 'contrato'] // 1 mês, indeterminado, ativo
@@ -148,16 +148,16 @@ router.post("/", verifyToken, async (req, res) => {
 
           await connection.query(`
             INSERT INTO vendas (
-              cliente_id, company_id, valor_venda, vencimento, situacao, tipo_venda,
+              cliente_id, empresa_id, valor_venda, vencimento, situacao, tipo_venda,
               observacoes, contrato_origem_id, mes_referencia, ano_referencia,
-              categoria_id, sub_categoria_id
+              categoria_id, subcategoria_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `, [
-            cliente_id, company_id, valorTotal, 
+            cliente_id, empresa_id, valorTotal, 
             dataVencimento.toISOString().split('T')[0], 'pendente', 'recorrente',
             `Contrato ${contratoId} - ${mes + 1}º período de ${anoAtual}`, 
             contratoId, mes + 1, anoAtual,
-            categoria_id, sub_categoria_id
+            categoria_id, subcategoria_id
           ]);
 
           // Criar registro de recorrência para esta venda
@@ -168,7 +168,7 @@ router.post("/", verifyToken, async (req, res) => {
 
           if (vendaResult.length > 0) {
             await connection.query(
-              `INSERT INTO recorrencia_vendas_contratos 
+              `INSERT INTO recorrencias_vendas 
                 (contrato_id, venda_id, tipo_intervalo, intervalo, indeterminado, status, tipo_origem) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [contratoId, vendaResult[0].id, 'meses', 1, 1, 'ativo', 'venda']
@@ -206,35 +206,35 @@ router.post("/", verifyToken, async (req, res) => {
 
 router.get("/form-data", verifyToken, async (req, res) => {
   try {
-    const { company_id } = req.query;
+    const { empresa_id } = req.query;
 
-    if (!company_id) {
-      return res.status(400).json({ message: "O parâmetro company_id é obrigatório." });
+    if (!empresa_id) {
+      return res.status(400).json({ message: "O parâmetro empresa_id é obrigatório." });
     }
 
-    // tabelas que têm company_id diretamente
-    const [clientes] = await pool.query("SELECT id, nome_fantasia FROM clientes WHERE company_id = ?", [company_id]);
-    const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos_servicos WHERE company_id = ?", [company_id]);
-    const [companies] = await pool.query("SELECT id, nome FROM companies WHERE id = ?", [company_id]);
-    const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE company_id = ?", [company_id]);
-    const [departamentos] = await pool.query("SELECT id, nome, codigo FROM departamentos WHERE company_id = ? AND ativo = 1", [company_id]);
+    // tabelas que têm empresa_id diretamente
+    const [clientes] = await pool.query("SELECT id, nome_fantasia FROM clientes WHERE empresa_id = ?", [empresa_id]);
+    const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos WHERE empresa_id = ?", [empresa_id]);
+    const [companies] = await pool.query("SELECT id, nome FROM companies WHERE id = ?", [empresa_id]);
+    const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE empresa_id = ?", [empresa_id]);
+    const [departamentos] = await pool.query("SELECT id, nome, codigo FROM departamentos WHERE empresa_id = ? AND status = 'ativo'", [empresa_id]);
 
     // categorias e subcategorias via tipos
     const [categorias] = await pool.query(
       `SELECT c.id, c.nome 
-       FROM categorias c
+       FROM straton_categorias c
        INNER JOIN tipos t ON c.tipo_id = t.id
-       WHERE t.company_id = ?`,
-      [company_id]
+       WHERE t.empresa_id = ?`,
+      [empresa_id]
     );
 
     const [subCategorias] = await pool.query(
       `SELECT sc.id, sc.nome 
-       FROM sub_categorias sc
-       INNER JOIN categorias c ON sc.categoria_id = c.id
+       FROM straton_subcategorias sc
+       INNER JOIN straton_categorias c ON sc.categoria_id = c.id
        INNER JOIN tipos t ON c.tipo_id = t.id
-       WHERE t.company_id = ?`,
-      [company_id]
+       WHERE t.empresa_id = ?`,
+      [empresa_id]
     );
 
     // usuários filtrados pela tabela pivô user_company
@@ -243,7 +243,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
        FROM users u
        INNER JOIN user_company uc ON uc.user_id = u.id
        WHERE uc.company_id = ?`,
-      [company_id]
+      [empresa_id]
     );
 
     // retorna tudo pronto pro frontend
@@ -267,7 +267,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
 // ✅ READ - Listar todos os contratos (com filtro opcional por empresa)
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { company_id } = req.query;
+    const { empresa_id } = req.query;
     let query = `
       SELECT 
         c.*, 
@@ -277,18 +277,18 @@ router.get("/", verifyToken, async (req, res) => {
         u.name AS vendedor_nome
       FROM contratos c
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
-      LEFT JOIN companies co ON c.company_id = co.id
-      LEFT JOIN centro_de_custo cc ON c.centro_de_custo_id = cc.id
+      LEFT JOIN companies co ON c.empresa_id = co.id
+      LEFT JOIN centro_de_custo cc ON c.centro_custo_id = cc.id
       LEFT JOIN users u ON c.vendedor_id = u.id
     `;
 
     let params = [];
-    if (company_id) {
-      query += " WHERE c.company_id = ?";
-      params.push(company_id);
+    if (empresa_id) {
+      query += " WHERE c.empresa_id = ?";
+      params.push(empresa_id);
     }
 
-    query += " ORDER BY c.created_at DESC";
+    query += " ORDER BY c.criado_em DESC";
 
     const [contratos] = await pool.query(query, params);
     
@@ -302,8 +302,8 @@ router.get("/", verifyToken, async (req, res) => {
             ps.tipo as produto_tipo,
             d.nome as departamento_nome,
             d.codigo as departamento_codigo
-           FROM contrato_produtos_servicos cps
-           INNER JOIN produtos_servicos ps ON cps.produtos_servicos_id = ps.id
+           FROM contrato_produto_servico cps
+           INNER JOIN produtos ps ON cps.produtos_servicos_id = ps.id
            LEFT JOIN departamentos d ON cps.departamento_id = d.id
            WHERE cps.contrato_id = ?`,
           [contrato.id]
@@ -337,8 +337,8 @@ router.get("/:id", verifyToken, async (req, res) => {
         u.name AS vendedor_nome
       FROM contratos c
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
-      LEFT JOIN companies co ON c.company_id = co.id
-      LEFT JOIN centro_de_custo cc ON c.centro_de_custo_id = cc.id
+      LEFT JOIN companies co ON c.empresa_id = co.id
+      LEFT JOIN centro_de_custo cc ON c.centro_custo_id = cc.id
       LEFT JOIN users u ON c.vendedor_id = u.id
       WHERE c.id = ?
     `;
@@ -359,8 +359,8 @@ router.get("/:id", verifyToken, async (req, res) => {
         ps.tipo as produto_tipo,
         d.nome as departamento_nome,
         d.codigo as departamento_codigo
-       FROM contrato_produtos_servicos cps
-       INNER JOIN produtos_servicos ps ON cps.produtos_servicos_id = ps.id
+       FROM contrato_produto_servico cps
+       INNER JOIN produtos ps ON cps.produtos_servicos_id = ps.id
        LEFT JOIN departamentos d ON cps.departamento_id = d.id
        WHERE cps.contrato_id = ?`,
       [id]
@@ -395,7 +395,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 
       // Campos que podem ser atualizados no contrato
       const allowedFields = [
-        'centro_de_custo_id',
+        'centro_custo_id',
         'vendedor_id', 
         'observacoes_fiscais',
         'valor',
@@ -403,7 +403,7 @@ router.put("/:id", verifyToken, async (req, res) => {
         'proximo_vencimento',
         'observacoes',
         'categoria_id',
-        'sub_categoria_id',
+        'subcategoria_id',
         'conta_id',
         'conta_api_id'
       ];
@@ -417,7 +417,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       });
 
       // Adicionar updated_at
-      fields.push('updated_at=NOW()');
+      fields.push('atualizado_em=NOW()');
 
       if (fields.length > 0) {
         // Adicionar o ID no final
@@ -437,13 +437,13 @@ router.put("/:id", verifyToken, async (req, res) => {
       // ✅ 2. Atualizar produtos se enviados
       if (updateData.produtos && Array.isArray(updateData.produtos)) {
         // Remover produtos existentes
-        await connection.query('DELETE FROM contrato_produtos_servicos WHERE contrato_id = ?', [id]);
+        await connection.query('DELETE FROM contrato_produto_servico WHERE contrato_id = ?', [id]);
 
         // Inserir novos produtos
         for (const produto of updateData.produtos) {
           if (produto.produtos_servicos_id && produto.valor_unitario) {
             await connection.query(
-              `INSERT INTO contrato_produtos_servicos 
+              `INSERT INTO contrato_produto_servico 
                 (contrato_id, produtos_servicos_id, departamento_id, quantidade, valor_unitario, desconto, observacoes) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
@@ -464,7 +464,7 @@ router.put("/:id", verifyToken, async (req, res) => {
           `SELECT 
             SUM(quantidade * valor_unitario) as valor_total,
             SUM(desconto) as desconto_total
-           FROM contrato_produtos_servicos 
+           FROM contrato_produto_servico 
            WHERE contrato_id = ?`,
           [id]
         );
@@ -535,7 +535,7 @@ router.post("/:id/produtos", verifyToken, async (req, res) => {
 
     // ✅ Verificar se o produto já existe no contrato
     const [produtoExistente] = await pool.query(
-      "SELECT id FROM contrato_produtos_servicos WHERE contrato_id = ? AND produtos_servicos_id = ?",
+      "SELECT id FROM contrato_produto_servico WHERE contrato_id = ? AND produtos_servicos_id = ?",
       [id, produtos_servicos_id]
     );
 
@@ -545,7 +545,7 @@ router.post("/:id/produtos", verifyToken, async (req, res) => {
 
     // ✅ Inserir novo produto
     const [result] = await pool.query(
-      `INSERT INTO contrato_produtos_servicos 
+      `INSERT INTO contrato_produto_servico 
         (contrato_id, produtos_servicos_id, departamento_id, quantidade, valor_unitario, desconto, observacoes) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [id, produtos_servicos_id, departamento_id || null, quantidade || 1, valor_unitario, desconto || 0, observacoes || null]
@@ -556,7 +556,7 @@ router.post("/:id/produtos", verifyToken, async (req, res) => {
       `SELECT 
         SUM(quantidade * valor_unitario) as valor_total,
         SUM(desconto) as desconto_total
-       FROM contrato_produtos_servicos 
+       FROM contrato_produto_servico 
        WHERE contrato_id = ?`,
       [id]
     );
@@ -594,7 +594,7 @@ router.put("/:id/produtos/:produto_id", verifyToken, async (req, res) => {
 
     // ✅ Verificar se o produto existe no contrato
     const [produto] = await pool.query(
-      "SELECT id FROM contrato_produtos_servicos WHERE id = ? AND contrato_id = ?",
+      "SELECT id FROM contrato_produto_servico WHERE id = ? AND contrato_id = ?",
       [produto_id, id]
     );
 
@@ -604,8 +604,8 @@ router.put("/:id/produtos/:produto_id", verifyToken, async (req, res) => {
 
     // ✅ Atualizar produto
     await pool.query(
-      `UPDATE contrato_produtos_servicos 
-       SET departamento_id = ?, quantidade = ?, valor_unitario = ?, desconto = ?, observacoes = ?, updated_at = NOW()
+      `UPDATE contrato_produto_servico 
+       SET departamento_id = ?, quantidade = ?, valor_unitario = ?, desconto = ?, observacoes = ?, atualizado_em = NOW()
        WHERE id = ?`,
       [departamento_id || null, quantidade || 1, valor_unitario, desconto || 0, observacoes || null, produto_id]
     );
@@ -615,7 +615,7 @@ router.put("/:id/produtos/:produto_id", verifyToken, async (req, res) => {
       `SELECT 
         SUM(quantidade * valor_unitario) as valor_total,
         SUM(desconto) as desconto_total
-       FROM contrato_produtos_servicos 
+       FROM contrato_produto_servico 
        WHERE contrato_id = ?`,
       [id]
     );
@@ -645,7 +645,7 @@ router.delete("/:id/produtos/:produto_id", verifyToken, async (req, res) => {
 
     // ✅ Verificar se o produto existe no contrato
     const [produto] = await pool.query(
-      "SELECT id FROM contrato_produtos_servicos WHERE id = ? AND contrato_id = ?",
+      "SELECT id FROM contrato_produto_servico WHERE id = ? AND contrato_id = ?",
       [produto_id, id]
     );
 
@@ -655,7 +655,7 @@ router.delete("/:id/produtos/:produto_id", verifyToken, async (req, res) => {
 
     // ✅ Remover produto
     await pool.query(
-      "DELETE FROM contrato_produtos_servicos WHERE id = ? AND contrato_id = ?",
+      "DELETE FROM contrato_produto_servico WHERE id = ? AND contrato_id = ?",
       [produto_id, id]
     );
 
@@ -664,7 +664,7 @@ router.delete("/:id/produtos/:produto_id", verifyToken, async (req, res) => {
       `SELECT 
         SUM(quantidade * valor_unitario) as valor_total,
         SUM(desconto) as desconto_total
-       FROM contrato_produtos_servicos 
+       FROM contrato_produto_servico 
        WHERE contrato_id = ?`,
       [id]
     );
@@ -725,7 +725,7 @@ router.patch("/:id/vencimento", verifyToken, async (req, res) => {
     const query = `UPDATE contratos 
                    SET proximo_vencimento = ?, 
                        somente_proximo_vencimento = ?, 
-                       updated_at = NOW() 
+                       atualizado_em = NOW() 
                    WHERE id = ?`;
     
     console.log("🔍 Backend - Query:", query);
@@ -901,15 +901,15 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     const axios = require('axios');
     
     // Buscar conta Inter configurada para a empresa
-    let companyId = contrato.company_id;
+    let empresaId = contrato.empresa_id;
     
     // Primeiro tentar buscar na tabela inter_accounts
     let [[contaInter]] = await pool.query(
       `SELECT * FROM inter_accounts 
-       WHERE company_id = ? AND status = 'ativo' 
+       WHERE empresa_id = ? AND status = 'ativo' 
        ORDER BY is_default DESC, id ASC 
        LIMIT 1`,
-      [companyId]
+      [empresaId]
     );
 
     // Se não encontrou, buscar na tabela contas_api
@@ -917,7 +917,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
       [[contaInter]] = await pool.query(
         `SELECT 
            id,
-           company_id,
+           empresa_id,
            inter_apelido as apelido,
            inter_conta_corrente as conta_corrente,
            inter_client_id as client_id,
@@ -928,15 +928,15 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
            inter_is_default as is_default,
            inter_status as status
          FROM contas_api 
-         WHERE company_id = ? AND inter_enabled = TRUE AND inter_status = 'ativo'
+         WHERE empresa_id = ? AND inter_enabled = TRUE AND inter_status = 'ativo'
          ORDER BY inter_is_default DESC, id ASC 
          LIMIT 1`,
-        [companyId]
+        [empresaId]
       );
     }
 
     if (!contaInter) {
-      return res.status(400).json({ error: `Nenhuma conta Inter configurada para a empresa ${companyId}. Configure uma conta em /contas-api ou /inter-accounts.` });
+      return res.status(400).json({ error: `Nenhuma conta Inter configurada para a empresa ${empresaId}. Configure uma conta em /contas-api ou /inter-accounts.` });
     }
 
     console.log(`🏦 Usando conta Inter: ${contaInter.apelido || contaInter.conta_corrente}`);
@@ -1073,7 +1073,7 @@ router.post("/:id/gerar-vendas-futuras", verifyToken, async (req, res) => {
 
     // 🔍 2. Verificar se o contrato tem recorrência ativa
     const [recorrencia] = await pool.query(`
-      SELECT * FROM recorrencia_vendas_contratos 
+      SELECT * FROM recorrencias_vendas 
       WHERE contrato_id = ? AND tipo_origem = 'contrato' AND status = 'ativo'
     `, [id]);
 
@@ -1140,7 +1140,7 @@ router.post("/:id/gerar-vendas-futuras", verifyToken, async (req, res) => {
         const [vendaResult] = await connection.query(`
           INSERT INTO vendas (
             cliente_id, 
-            company_id, 
+            empresa_id, 
             valor_venda, 
             vencimento, 
             situacao, 
@@ -1150,11 +1150,11 @@ router.post("/:id/gerar-vendas-futuras", verifyToken, async (req, res) => {
             mes_referencia,
             ano_referencia,
             categoria_id,
-            sub_categoria_id
+            subcategoria_id
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           contrato.cliente_id,
-          contrato.company_id,
+          contrato.empresa_id,
           contrato.valor,
           dataVencimento.toISOString().split('T')[0],
           'pendente',
@@ -1164,12 +1164,12 @@ router.post("/:id/gerar-vendas-futuras", verifyToken, async (req, res) => {
           mes + 1, // mes_referencia (1-12)
           anoRef, // ano_referencia
           contrato.categoria_id,
-          contrato.sub_categoria_id
+          contrato.subcategoria_id
         ]);
 
         // Criar recorrência específica para esta venda
         await connection.query(`
-          INSERT INTO recorrencia_vendas_contratos (
+          INSERT INTO recorrencias_vendas (
             venda_id, 
             tipo_origem, 
             indeterminado, 

@@ -15,9 +15,9 @@ router.get("/sugestoes/:companyId", verifyToken, async (req, res) => {
   try {
     // --- API Transações não conciliadas ---
     const [apiTransacoes] = await pool.query(`
-      SELECT ta.id, ta.description, ta.amount, ta.date
+      SELECT ta.id, ta.descricao, ta.valor, ta.data
       FROM transacoes_api ta
-      WHERE ta.company_id = ?
+      WHERE ta.empresa_id = ?
         AND ta.situacao <> 'ignorada'           -- ⬅️ novo filtro
         AND ta.id NOT IN (
           SELECT transacao_api_id 
@@ -37,16 +37,16 @@ router.get("/sugestoes/:companyId", verifyToken, async (req, res) => {
           c.status = 'conciliada'
           ${allowReconcilAfterRevoke ? "" : "OR c.status = 'revogada'"}
         )
-      WHERE t.company_id = ? 
+      WHERE t.empresa_id = ? 
         AND t.situacao != 'recebido' 
         AND c.id IS NULL
     `, [companyId]);
 
     // --- Montagem do resultado ---
     const resultado = apiTransacoes.map(apiTx => {
-      const valorApi = parseFloat(apiTx.amount);
-      const descricaoApi = (apiTx.description || '').toLowerCase().replace(/\s+/g, ' ').trim();
-      const dataApi = new Date(apiTx.date);
+      const valorApi = parseFloat(apiTx.valor);
+      const descricaoApi = (apiTx.descricao || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const dataApi = new Date(apiTx.data);
 
       const sugestoes = [];
 
@@ -80,9 +80,9 @@ router.get("/sugestoes/:companyId", verifyToken, async (req, res) => {
 
       return {
         transacao_api_id: apiTx.id,
-        descricao_api: apiTx.description,
-        valor: apiTx.amount,
-        data_api: apiTx.date,
+        descricao_api: apiTx.descricao,
+        valor: apiTx.valor,
+        data_api: apiTx.data,
         sugestoes
       };
     });
@@ -142,31 +142,31 @@ router.post("/criar-transacao", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Transação API não encontrada." });
     }
     // Montar dados para nova transação
-    const tipo = parseFloat(apiTx.amount) > 0 ? 'entrada' : 'saida';
-    const valor = Math.abs(parseFloat(apiTx.amount));
-    const data_transacao = apiTx.date
-      ? (typeof apiTx.date === 'string'
-          ? apiTx.date.substring(0, 10)
-          : apiTx.date.toISOString().substring(0, 10))
+    const tipo = parseFloat(apiTx.valor) > 0 ? 'entrada' : 'saida';
+    const valor = Math.abs(parseFloat(apiTx.valor));
+    const data_transacao = apiTx.data
+      ? (typeof apiTx.data === 'string'
+          ? apiTx.data.substring(0, 10)
+          : apiTx.data.toISOString().substring(0, 10))
       : null;
-    const company_id = apiTx.company_id;
+    const empresa_id = apiTx.empresa_id;
     // Inserir na tabela transacoes
     const [result] = await pool.query(
       `INSERT INTO transacoes (
-        conta_id, company_id, tipo, valor, descricao, data_transacao, situacao, categoria_id, cliente_id, centro_de_custo_id, pluggy_transaction_id, created_at
+        conta_id, empresa_id, tipo, valor, descricao, data_transacao, situacao, categoria_id, cliente_id, centro_custo_id, pluggy_transacao_id, criado_em
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         null, // conta_id (opcional, pode ser null)
-        company_id,
+        empresa_id,
         tipo,
         valor,
-        descricao || apiTx.description,
+        descricao || apiTx.descricao,
         data_transacao,
         'em_aberto',
         categoria_id,
         cliente_id || null,
-        centro_de_custo_id || null,
-        apiTx.pluggy_transaction_id || null
+        centro_custo_id || null,
+        apiTx.pluggy_transacao_id || null
       ]
     );
     res.status(201).json({ transacao_id: result.insertId, message: "Transação criada com sucesso." });

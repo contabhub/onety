@@ -34,7 +34,7 @@ router.post("/", verifyToken, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO recorrencia_vendas_contratos 
+      `INSERT INTO recorrencias_vendas 
         (tipo_origem, contrato_id, venda_id, tipo_intervalo, intervalo, indeterminado, total_ciclos, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -66,10 +66,10 @@ router.get("/", verifyToken, async (req, res) => {
         c.status AS contrato_status,
         v.valor_venda AS venda_valor,
         v.situacao AS venda_status
-      FROM recorrencia_vendas_contratos rvc
+      FROM recorrencias_vendas rvc
       LEFT JOIN contratos c ON rvc.contrato_id = c.id
       LEFT JOIN vendas v ON rvc.venda_id = v.id
-      ORDER BY rvc.created_at DESC
+      ORDER BY rvc.criado_em DESC
     `);
 
     res.json(rows);
@@ -90,7 +90,7 @@ router.get("/:id", verifyToken, async (req, res) => {
         c.status AS contrato_status,
         v.valor_venda AS venda_valor,
         v.situacao AS venda_status
-      FROM recorrencia_vendas_contratos rvc
+      FROM recorrencias_vendas rvc
       LEFT JOIN contratos c ON rvc.contrato_id = c.id
       LEFT JOIN vendas v ON rvc.venda_id = v.id
       WHERE rvc.id = ?`,
@@ -124,7 +124,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     } = req.body;
 
     const [result] = await pool.query(
-      `UPDATE recorrencia_vendas_contratos 
+      `UPDATE recorrencias_vendas 
        SET tipo_origem = ?, 
            contrato_id = ?, 
            venda_id = ?, 
@@ -133,7 +133,7 @@ router.put("/:id", verifyToken, async (req, res) => {
            indeterminado = ?, 
            total_ciclos = ?, 
            status = ?, 
-           updated_at = NOW()
+           atualizado_em = NOW()
        WHERE id = ?`,
       [
         tipo_origem,
@@ -164,7 +164,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [result] = await pool.query("DELETE FROM recorrencia_vendas_contratos WHERE id = ?", [id]);
+    const [result] = await pool.query("DELETE FROM recorrencias_vendas WHERE id = ?", [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Recorrência não encontrada." });

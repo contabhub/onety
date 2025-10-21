@@ -6,18 +6,18 @@ const verifyToken = require("../../middlewares/auth");
 // 🔹 Criar um registro em pago_recebido
 router.post("/", verifyToken, async (req, res) => {
   const {
-    tipo, company_id, descricao, valor, vencimento,
-    pago_recebido, data, categoria_id, transacoes_id
+    tipo, empresa_id, descricao, observacoes, valor, vencimento,
+    pago_recebido, data_recebimento, categoria_id, transacoes_id
   } = req.body;
 
   try {
     const [result] = await pool.query(`
       INSERT INTO pago_recebido 
-        (tipo, company_id, descricao, valor, vencimento, pago_recebido, data, categoria_id, transacoes_id, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (tipo, empresa_id, descricao, observacoes, valor, vencimento, pago_recebido, data_recebimento, categoria_id, transacoes_id, criado_em)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
-      tipo, company_id, descricao, valor, vencimento,
-      pago_recebido, data, categoria_id, transacoes_id
+      tipo, empresa_id, descricao, observacoes, valor, vencimento,
+      pago_recebido, data_recebimento, categoria_id, transacoes_id
     ]);
 
     res.status(201).json({ id: result.insertId, message: "Registro criado com sucesso!" });
@@ -31,7 +31,7 @@ router.post("/", verifyToken, async (req, res) => {
 router.get("/", verifyToken, async (req, res) => {
   try {
     const [result] = await pool.query(`
-      SELECT * FROM pago_recebido ORDER BY created_at DESC
+      SELECT * FROM pago_recebido ORDER BY criado_em DESC
     `);
     res.json(result);
   } catch (error) {
@@ -59,19 +59,19 @@ router.get("/:id", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const {
-    tipo, company_id, descricao, valor, vencimento,
-    pago_recebido, data, categoria_id, transacoes_id
+    tipo, empresa_id, descricao, observacoes, valor, vencimento,
+    pago_recebido, data_recebimento, categoria_id, transacoes_id
   } = req.body;
 
   try {
     const [result] = await pool.query(`
       UPDATE pago_recebido SET
-        tipo = ?, company_id = ?, descricao = ?, valor = ?, vencimento = ?,
-        pago_recebido = ?, data = ?, categoria_id = ?, transacoes_id = ?
+        tipo = ?, empresa_id = ?, descricao = ?, observacoes = ?, valor = ?, vencimento = ?,
+        pago_recebido = ?, data_recebimento = ?, categoria_id = ?, transacoes_id = ?
       WHERE id = ?
     `, [
-      tipo, company_id, descricao, valor, vencimento,
-      pago_recebido, data, categoria_id, transacoes_id, id
+      tipo, empresa_id, descricao, observacoes, valor, vencimento,
+      pago_recebido, data_recebimento, categoria_id, transacoes_id, id
     ]);
 
     if (result.affectedRows === 0) {

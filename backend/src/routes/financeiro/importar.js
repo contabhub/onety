@@ -38,13 +38,13 @@ const parseValor = (str) => {
   );
 };
 
-// 🔹 POST /api/import/contas-a-pagar/:companyId
+// 🔹 POST /api/import/contas-a-pagar/:empresaId
 router.post(
-  "/contas-a-pagar/:companyId",
+  "/contas-a-pagar/:empresaId",
   verifyToken,
   upload.single("arquivo"),
   async (req, res) => {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
     const { save } = req.body;
     const file = req.file;
 
@@ -67,36 +67,36 @@ router.post(
 
       // 🔁 LOOP para inserção
       for (const row of rows) {
-        // 🔸 Categorias e subcategorias agora são globais (sem company_id)
+        // 🔸 Categorias e subcategorias agora são globais (sem empresa_id)
         const [categoria] = await pool.query(
-          "SELECT id FROM categorias WHERE nome = ?",
+          "SELECT id FROM straton_categorias WHERE nome = ?",
           [row["Categoria"]]
         );
 
         const [subcategoria] = await pool.query(
-          "SELECT id FROM sub_categorias WHERE nome = ?",
+          "SELECT id FROM straton_subcategorias WHERE nome = ?",
           [row["Subcategoria"]]
         );
 
         const [cliente] = await pool.query(
-          "SELECT id FROM clientes WHERE nome_fantasia = ? AND company_id = ?",
-          [row["Cliente/Fornecedor"], companyId]
+          "SELECT id FROM clientes WHERE nome_fantasia = ? AND empresa_id = ?",
+          [row["Cliente/Fornecedor"], empresaId]
         );
         const [conta] = await pool.query(
-          "SELECT id FROM contas WHERE banco = ? AND company_id = ?",
-          [row["Conta"], companyId]
+          "SELECT id FROM contas WHERE banco = ? AND empresa_id = ?",
+          [row["Conta"], empresaId]
         );
         const [centro] = await pool.query(
-          "SELECT id FROM centro_de_custo WHERE nome = ? AND company_id = ?",
-          [row["Centro de Custo"], companyId]
+          "SELECT id FROM centro_de_custo WHERE nome = ? AND empresa_id = ?",
+          [row["Centro de Custo"], empresaId]
         );
 
         await pool.query(
           `INSERT INTO transacoes (
             data_vencimento, data_transacao, valor,
-            categoria_id, sub_categoria_id, descricao,
-            cliente_id, conta_id, centro_de_custo_id,
-            observacoes, origem, situacao, tipo, company_id
+            categoria_id, subcategoria_id, descricao,
+            cliente_id, conta_id, centro_custo_id,
+            observacao, origem, situacao, tipo, empresa_id
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             parseDate(row["Vencimento"]),
@@ -112,7 +112,7 @@ router.post(
             row["Origem"] || "",
             row["Situação"] || "",
             "saida",
-            companyId,
+            empresaId,
           ]
         );
       }
@@ -129,13 +129,13 @@ router.post(
   }
 );
 
-// 🔹 POST /api/import/contas-a-receber/:companyId
+// 🔹 POST /api/import/contas-a-receber/:empresaId
 router.post(
-  "/contas-a-receber/:companyId",
+  "/contas-a-receber/:empresaId",
   verifyToken,
   upload.single("arquivo"),
   async (req, res) => {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
     const { save } = req.body;
     const file = req.file;
 
@@ -158,36 +158,36 @@ router.post(
 
       for (const row of rows) {
         const [categoria] = await pool.query(
-          "SELECT id FROM categorias WHERE nome = ?",
+          "SELECT id FROM straton_categorias WHERE nome = ?",
           [row["Categoria"]]
         );
 
         const [subcategoria] = await pool.query(
-          "SELECT id FROM sub_categorias WHERE nome = ?",
+          "SELECT id FROM straton_subcategorias WHERE nome = ?",
           [row["Subcategoria"]]
         );
 
         const [cliente] = await pool.query(
-          "SELECT id FROM clientes WHERE nome_fantasia = ? AND company_id = ?",
-          [row["Cliente/Fornecedor"], companyId]
+          "SELECT id FROM clientes WHERE nome_fantasia = ? AND empresa_id = ?",
+          [row["Cliente/Fornecedor"], empresaId]
         );
 
         const [conta] = await pool.query(
-          "SELECT id FROM contas WHERE banco = ? AND company_id = ?",
-          [row["Conta"], companyId]
+          "SELECT id FROM contas WHERE banco = ? AND empresa_id = ?",
+          [row["Conta"], empresaId]
         );
 
         const [centro] = await pool.query(
-          "SELECT id FROM centro_de_custo WHERE nome = ? AND company_id = ?",
-          [row["Centro de Custo"], companyId]
+          "SELECT id FROM centro_de_custo WHERE nome = ? AND empresa_id = ?",
+          [row["Centro de Custo"], empresaId]
         );
 
         await pool.query(
           `INSERT INTO transacoes (
               data_vencimento, data_transacao, valor,
-              categoria_id, sub_categoria_id, descricao,
-              cliente_id, conta_id, centro_de_custo_id,
-              observacoes, origem, situacao, tipo, company_id
+              categoria_id, subcategoria_id, descricao,
+              cliente_id, conta_id, centro_custo_id,
+              observacao, origem, situacao, tipo, empresa_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             parseDate(row["Vencimento"]),
@@ -203,7 +203,7 @@ router.post(
             row["Origem"] || "",
             row["Situação"] || "",
             "entrada", // 👈 ALTERADO AQUI!
-            companyId,
+            empresaId,
           ]
         );
       }
@@ -221,11 +221,11 @@ router.post(
 );
 
 router.post(
-  "/movimentacoes/:companyId",
+  "/movimentacoes/:empresaId",
   verifyToken,
   upload.single("arquivo"),
   async (req, res) => {
-    const { companyId } = req.params;
+    const { empresaId } = req.params;
     const { save } = req.body;
     const file = req.file;
 
@@ -254,36 +254,36 @@ router.post(
         const tipo = tipoRaw === "entrada" ? "entrada" : "saida"; // Garantir consistência
 
         const [categoria] = await pool.query(
-          "SELECT id FROM categorias WHERE nome = ?",
+          "SELECT id FROM straton_categorias WHERE nome = ?",
           [row["Categoria"]]
         );
 
         const [subcategoria] = await pool.query(
-          "SELECT id FROM sub_categorias WHERE nome = ?",
+          "SELECT id FROM straton_subcategorias WHERE nome = ?",
           [row["Subcategoria"]]
         );
 
         const [cliente] = await pool.query(
-          "SELECT id FROM clientes WHERE nome_fantasia = ? AND company_id = ?",
-          [row["Cliente/Fornecedor"], companyId]
+          "SELECT id FROM clientes WHERE nome_fantasia = ? AND empresa_id = ?",
+          [row["Cliente/Fornecedor"], empresaId]
         );
 
         const [conta] = await pool.query(
-          "SELECT id FROM contas WHERE banco = ? AND company_id = ?",
-          [row["Conta"], companyId]
+          "SELECT id FROM contas WHERE banco = ? AND empresa_id = ?",
+          [row["Conta"], empresaId]
         );
 
         const [centro] = await pool.query(
-          "SELECT id FROM centro_de_custo WHERE nome = ? AND company_id = ?",
-          [row["Centro de Custo"], companyId]
+          "SELECT id FROM centro_de_custo WHERE nome = ? AND empresa_id = ?",
+          [row["Centro de Custo"], empresaId]
         );
 
         await pool.query(
           `INSERT INTO transacoes (
               data_vencimento, data_transacao, valor,
-              categoria_id, sub_categoria_id, descricao,
-              cliente_id, conta_id, centro_de_custo_id,
-              observacoes, origem, situacao, tipo, company_id
+              categoria_id, subcategoria_id, descricao,
+              cliente_id, conta_id, centro_custo_id,
+              observacao, origem, situacao, tipo, empresa_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             parseDate(row["Vencimento"]),
@@ -299,7 +299,7 @@ router.post(
             row["Origem"] || "",
             row["Situação"] || "",
             tipo,
-            companyId,
+            empresaId,
           ]
         );
       }
