@@ -273,9 +273,9 @@ export default function Modulos() {
     // Redireciona para a página específica do módulo
     const slug = normalize(modulo.nome || modulo.name)
     if (slug === 'atendimento') {
-      router.push('/atendimento/chat')
+      router.push('/atendimento/dashboard')
     } else if (slug === 'comercial') {
-      router.push('/comercial/clients')
+      router.push('/comercial/dashboard')
     } else if (slug === 'financeiro') {
       router.push('/financeiro/contas-pagar')
     } else {
