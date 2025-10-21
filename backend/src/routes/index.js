@@ -73,6 +73,28 @@ const listaSignatariosRoutes = require('./contratual/lista_signatarios');
 const rascunhosRoutes = require('./contratual/rascunhos');
 const rascunhosDocumentosRoutes = require('./contratual/rascunhos_documentos');
 
+// Rotas do Financeiro
+const automacaoRoutes = require('./financeiro/automacao');
+const boletosDraftsRoutes = require('./financeiro/boletos_drafts');
+const categoriasFinanceiroRoutes = require('./financeiro/categorias');
+const centroDeCustoRoutes = require('./financeiro/centro_de_custo');
+const clientesFinanceiroRoutes = require('./financeiro/clientes');
+const conciliacoesRoutes = require('./financeiro/conciliacoes');
+const contasRoutes = require('./financeiro/contas');
+const contratosFinanceiroRoutes = require('./financeiro/contratos');
+const departamentosFinanceiroRoutes = require('./financeiro/departamentos');
+const exportarRoutes = require('./financeiro/exportar');
+const importarRoutes = require('./financeiro/importar');
+const ofxImportRoutes = require('./financeiro/ofxImport');
+const pagoRecebidoRoutes = require('./financeiro/pago_recebido');
+const produtosServicosRoutes = require('./financeiro/produtos_servicos');
+const recorrenciaVendasContratosRoutes = require('./financeiro/recorrencia_vendas_contratos');
+const recorrenciasRoutes = require('./financeiro/recorrencias');
+const subCategoriasRoutes = require('./financeiro/sub_categorias');
+const tiposRoutes = require('./financeiro/tipos');
+const transacoesRoutes = require('./financeiro/transacoes');
+const transferenciasRoutes = require('./financeiro/transferencias');
+const vendasRoutes = require('./financeiro/vendas');
 
 // Rotas do Onety
 router.use('/auth', authRoutes);
@@ -145,6 +167,29 @@ router.use('/contratual/documentos', documentosRoutes);
 router.use('/contratual/lista-signatarios', listaSignatariosRoutes);
 router.use('/contratual/rascunhos', rascunhosRoutes);
 router.use('/contratual/rascunhos-documentos', rascunhosDocumentosRoutes);
+
+// Rotas do Financeiro
+router.use('/financeiro/automacao', automacaoRoutes);
+router.use('/financeiro/boletos-drafts', boletosDraftsRoutes);
+router.use('/financeiro/categorias', categoriasFinanceiroRoutes);
+router.use('/financeiro/centro-de-custo', centroDeCustoRoutes);
+router.use('/financeiro/clientes', clientesFinanceiroRoutes);
+router.use('/financeiro/conciliacoes', conciliacoesRoutes);
+router.use('/financeiro/contas', contasRoutes);
+router.use('/financeiro/contratos', contratosFinanceiroRoutes);
+router.use('/financeiro/departamentos', departamentosFinanceiroRoutes);
+router.use('/financeiro/exportar', exportarRoutes);
+router.use('/financeiro/importar', importarRoutes);
+router.use('/financeiro/ofx-import', ofxImportRoutes);
+router.use('/financeiro/pago-recebido', pagoRecebidoRoutes);
+router.use('/financeiro/produtos-servicos', produtosServicosRoutes);
+router.use('/financeiro/recorrencia-vendas-contratos', recorrenciaVendasContratosRoutes);
+router.use('/financeiro/recorrencias', recorrenciasRoutes);
+router.use('/financeiro/sub-categorias', subCategoriasRoutes);
+router.use('/financeiro/tipos', tiposRoutes);
+router.use('/financeiro/transacoes', transacoesRoutes);
+router.use('/financeiro/transferencias', transferenciasRoutes);
+router.use('/financeiro/vendas', vendasRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");
