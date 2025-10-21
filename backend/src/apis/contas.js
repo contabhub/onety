@@ -4,16 +4,15 @@ const pool = require("../config/database");
 const verifyToken = require("../middlewares/auth");
 const { makePluggyRequest } = require("../middlewares/pluggyToken");
 
-// 🔹 Cria ou atualiza consentimento Pluggy (contas_api) com suporte Inter
+// 🔹 Cria ou atualiza consentimento Pluggy (contas) com suporte Inter
 router.post("/", verifyToken, async (req, res) => {
     const {
         item_id,
-        client_user_id,
-        connector_id,
+        conector_id,
         status,
-        execution_status,
-        consent_expires_at,
-        company_id,
+        status_execucao,
+        expiracao_consentimento,
+        empresa_id,
         cliente_id,
         banco,
         descricao_banco,
@@ -24,14 +23,14 @@ router.post("/", verifyToken, async (req, res) => {
         
         // 🏦 Campos Inter
         inter_enabled,
-        inter_client_id,
-        inter_client_secret,
-        inter_cert_b64,
-        inter_key_b64,
+        inter_cliente_id,
+        inter_cliente_secret,
+        inter_cert,
+        inter_key,
         inter_conta_corrente,
         inter_apelido,
         inter_ambiente,
-        inter_is_default,
+        inter_padrao,
         inter_status
     } = req.body;
 
@@ -46,33 +45,32 @@ router.post("/", verifyToken, async (req, res) => {
     // Debug: Log dos dados recebidos
     console.log("[DEBUG] Dados recebidos na rota POST /:", {
         item_id,
-        company_id,
+        empresa_id,
         cliente_id,
         inter_enabled,
-        has_inter_client_id: !!inter_client_id
+        has_inter_cliente_id: !!inter_cliente_id
     });
 
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
 
-        // 1. Inserir/atualizar na tabela contas_api
+        // 1. Inserir/atualizar na tabela contas
         const [result] = await conn.query(
             `
-            INSERT INTO contas_api
-                (item_id, client_user_id, connector_id, status, execution_status, consent_expires_at, 
-                 company_id, cliente_id, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo,
-                 inter_enabled, inter_client_id, inter_client_secret, inter_cert_b64, inter_key_b64, 
-                 inter_conta_corrente, inter_apelido, inter_ambiente, inter_is_default, inter_status, 
-                 created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            INSERT INTO contas
+                (api_id, conector_id, status, status_execucao, expiracao_consentimento, 
+                 empresa_id, cliente_id, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo,
+                 inter_enabled, inter_cliente_id, inter_cliente_secret, inter_cert, inter_key, 
+                 inter_conta_corrente, inter_apelido, inter_ambiente, inter_padrao, inter_status, 
+                 criado_em, atualizado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             ON DUPLICATE KEY UPDATE
-                client_user_id = VALUES(client_user_id),
-                connector_id = VALUES(connector_id),
+                conector_id = VALUES(conector_id),
                 status = VALUES(status),
-                execution_status = VALUES(execution_status),
-                consent_expires_at = VALUES(consent_expires_at),
-                company_id = VALUES(company_id),
+                status_execucao = VALUES(status_execucao),
+                expiracao_consentimento = VALUES(expiracao_consentimento),
+                empresa_id = VALUES(empresa_id),
                 cliente_id = VALUES(cliente_id),
                 banco = VALUES(banco),
                 descricao_banco = VALUES(descricao_banco),
@@ -81,25 +79,24 @@ router.post("/", verifyToken, async (req, res) => {
                 agencia = VALUES(agencia),
                 tipo = VALUES(tipo),
                 inter_enabled = VALUES(inter_enabled),
-                inter_client_id = VALUES(inter_client_id),
-                inter_client_secret = VALUES(inter_client_secret),
-                inter_cert_b64 = VALUES(inter_cert_b64),
-                inter_key_b64 = VALUES(inter_key_b64),
+                inter_cliente_id = VALUES(inter_cliente_id),
+                inter_cliente_secret = VALUES(inter_cliente_secret),
+                inter_cert = VALUES(inter_cert),
+                inter_key = VALUES(inter_key),
                 inter_conta_corrente = VALUES(inter_conta_corrente),
                 inter_apelido = VALUES(inter_apelido),
                 inter_ambiente = VALUES(inter_ambiente),
-                inter_is_default = VALUES(inter_is_default),
+                inter_padrao = VALUES(inter_padrao),
                 inter_status = VALUES(inter_status),
-                updated_at = NOW()
+                atualizado_em = NOW()
             `,
             [
                 item_id,
-                client_user_id || null,
-                connector_id || null,
+                conector_id || null,
                 status || null,
-                execution_status || null,
-                consent_expires_at || null,
-                company_id || null,
+                status_execucao || null,
+                expiracao_consentimento || null,
+                empresa_id || null,
                 cliente_id || null,
                 banco || null,
                 descricao_banco || null,
@@ -108,35 +105,35 @@ router.post("/", verifyToken, async (req, res) => {
                 agencia || null,
                 tipo || null,
                 inter_enabled || false,
-                inter_client_id || null,
-                inter_client_secret || null,
-                inter_cert_b64 || null,
-                inter_key_b64 || null,
+                inter_cliente_id || null,
+                inter_cliente_secret || null,
+                inter_cert || null,
+                inter_key || null,
                 inter_conta_corrente || null,
                 inter_apelido || null,
                 inter_ambiente || 'prod',
-                inter_is_default || false,
+                inter_padrao || false,
                 inter_status || 'ativo'
             ]
         );
 
         // 2. Se Inter está habilitado e tem credenciais, criar/atualizar na tabela inter_accounts
-        if (inter_enabled && inter_client_id && inter_client_secret && inter_cert_b64 && inter_key_b64) {
+        if (inter_enabled && inter_cliente_id && inter_cliente_secret && inter_cert && inter_key) {
             console.log("[DEBUG] Criando/atualizando conta Inter...");
             
-            // Buscar o ID da conta_api recém-criada/atualizada
+            // Buscar o ID da conta recém-criada/atualizada
             const [[contaApi]] = await conn.query(
-                'SELECT id FROM contas_api WHERE item_id = ?',
+                'SELECT id FROM contas WHERE api_id = ?',
                 [item_id]
             );
 
             if (contaApi) {
                 // Se é conta padrão, desmarcar outras da mesma empresa
-                if (inter_is_default && company_id) {
+                if (inter_padrao && empresa_id) {
                     await conn.query(
                         `UPDATE inter_accounts SET is_default = FALSE 
-                         WHERE company_id = ? AND id <> (SELECT inter_account_id FROM contas_api WHERE id = ?)`,
-                        [company_id, contaApi.id]
+                         WHERE company_id = ? AND id <> (SELECT inter_conta_id FROM contas WHERE id = ?)`,
+                        [empresa_id, contaApi.id]
                     );
                 }
 
@@ -159,24 +156,24 @@ router.post("/", verifyToken, async (req, res) => {
                         updated_at = NOW()
                     `,
                     [
-                        company_id,
+                        empresa_id,
                         inter_conta_corrente,
-                        inter_client_id,
-                        inter_client_secret,
-                        inter_cert_b64,
-                        inter_key_b64,
+                        inter_cliente_id,
+                        inter_cliente_secret,
+                        inter_cert,
+                        inter_key,
                         inter_apelido || `Conta ${inter_conta_corrente}`,
                         inter_ambiente || 'prod',
-                        inter_is_default ? 1 : 0,
+                        inter_padrao ? 1 : 0,
                         inter_status || 'ativo'
                     ]
                 );
 
-                // Atualizar o inter_account_id na contas_api
+                // Atualizar o inter_conta_id na contas
                 const interAccountId = interResult.insertId || interResult.insertId;
                 if (interAccountId) {
                     await conn.query(
-                        'UPDATE contas_api SET inter_account_id = ? WHERE id = ?',
+                        'UPDATE contas SET inter_conta_id = ? WHERE id = ?',
                         [interAccountId, contaApi.id]
                     );
                 }
@@ -192,8 +189,8 @@ router.post("/", verifyToken, async (req, res) => {
         });
     } catch (error) {
         await conn.rollback();
-        console.error("Erro ao salvar conta_api:", error);
-        res.status(500).json({ error: "Erro ao salvar conta_api." });
+        console.error("Erro ao salvar conta:", error);
+        res.status(500).json({ error: "Erro ao salvar conta." });
     } finally {
         conn.release();
     }
@@ -202,20 +199,20 @@ router.post("/", verifyToken, async (req, res) => {
 // 🔹 Listar todos os consentimentos Pluggy
 router.get("/", verifyToken, async (req, res) => {
     try {
-        const [rows] = await pool.query(`SELECT * FROM contas_api ORDER BY created_at DESC`);
+        const [rows] = await pool.query(`SELECT * FROM contas ORDER BY criado_em DESC`);
         res.json(rows);
     } catch (error) {
-        console.error("Erro ao listar contas_api:", error);
-        res.status(500).json({ error: "Erro ao listar contas_api." });
+        console.error("Erro ao listar contas:", error);
+        res.status(500).json({ error: "Erro ao listar contas." });
     }
 });
 
-// 🔹 Buscar um consentimento Pluggy por item_id
-router.get("/:item_id", verifyToken, async (req, res) => {
-    const { item_id } = req.params;
+// 🔹 Buscar um consentimento Pluggy por api_id
+router.get("/:api_id", verifyToken, async (req, res) => {
+    const { api_id } = req.params;
 
     try {
-        const [rows] = await pool.query(`SELECT * FROM contas_api WHERE item_id = ?`, [item_id]);
+        const [rows] = await pool.query(`SELECT * FROM contas WHERE api_id = ?`, [api_id]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: "Conta Pluggy não encontrada." });
@@ -223,24 +220,24 @@ router.get("/:item_id", verifyToken, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        console.error("Erro ao buscar conta_api:", error);
-        res.status(500).json({ error: "Erro ao buscar conta_api." });
+        console.error("Erro ao buscar conta:", error);
+        res.status(500).json({ error: "Erro ao buscar conta." });
     }
 });
 
-// 🔹 Atualizar status/execution_status se precisar
-router.put("/:item_id", verifyToken, async (req, res) => {
-    const { item_id } = req.params;
-    const { status, execution_status } = req.body;
+// 🔹 Atualizar status/status_execucao se precisar
+router.put("/:api_id", verifyToken, async (req, res) => {
+    const { api_id } = req.params;
+    const { status, status_execucao } = req.body;
 
     try {
         const [result] = await pool.query(
             `
-      UPDATE contas_api
-      SET status = ?, execution_status = ?, updated_at = NOW()
-      WHERE item_id = ?
+      UPDATE contas
+      SET status = ?, status_execucao = ?, atualizado_em = NOW()
+      WHERE api_id = ?
       `,
-            [status, execution_status, item_id]
+            [status, status_execucao, api_id]
         );
 
         if (result.affectedRows === 0) {
@@ -249,18 +246,18 @@ router.put("/:item_id", verifyToken, async (req, res) => {
 
         res.json({ message: "Conta Pluggy atualizada com sucesso." });
     } catch (error) {
-        console.error("Erro ao atualizar conta_api:", error);
-        res.status(500).json({ error: "Erro ao atualizar conta_api." });
+        console.error("Erro ao atualizar conta:", error);
+        res.status(500).json({ error: "Erro ao atualizar conta." });
     }
 });
 
-// 🔹 GET /company/:companyId/contas ➜ Todas as contas da empresa
-router.get("/company/:companyId/contas", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 GET /company/:empresaId/contas ➜ Todas as contas da empresa
+router.get("/company/:empresaId/contas", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM contas_api WHERE company_id = ? ORDER BY created_at DESC`,
-      [companyId]
+      `SELECT * FROM contas WHERE empresa_id = ? ORDER BY criado_em DESC`,
+      [empresaId]
     );
     res.json({ total: rows.length, contas: rows });
   } catch (error) {
@@ -269,9 +266,9 @@ router.get("/company/:companyId/contas", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 PUT /company/:companyId/conta/:account ➜ Editar conta da empresa
-router.put("/company/:companyId/conta/:account", verifyToken, async (req, res) => {
-  const { companyId, account } = req.params;
+// 🔹 PUT /company/:empresaId/conta/:conta ➜ Editar conta da empresa
+router.put("/company/:empresaId/conta/:conta", verifyToken, async (req, res) => {
+  const { empresaId, conta } = req.params;
   const {
     banco,
     descricao_banco,
@@ -280,12 +277,12 @@ router.put("/company/:companyId/conta/:account", verifyToken, async (req, res) =
     agencia,
     tipo,
     status,
-    execution_status
+    status_execucao
   } = req.body;
   try {
     const [result] = await pool.query(
-      `UPDATE contas_api SET banco = ?, descricao_banco = ?, tipo_conta = ?, numero_conta = ?, agencia = ?, tipo = ?, status = ?, execution_status = ?, updated_at = NOW() WHERE account = ? AND company_id = ?`,
-      [banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo, status, execution_status, account, companyId]
+      `UPDATE contas SET banco = ?, descricao_banco = ?, tipo_conta = ?, numero_conta = ?, agencia = ?, tipo = ?, status = ?, status_execucao = ?, atualizado_em = NOW() WHERE conta = ? AND empresa_id = ?`,
+      [banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo, status, status_execucao, conta, empresaId]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Conta não encontrada para esta empresa." });
@@ -297,13 +294,13 @@ router.put("/company/:companyId/conta/:account", verifyToken, async (req, res) =
   }
 });
 
-// 🔹 DELETE /company/:companyId/conta/:account ➜ Excluir conta da empresa
-router.delete("/company/:companyId/conta/:account", verifyToken, async (req, res) => {
-  const { companyId, account } = req.params;
+// 🔹 DELETE /company/:empresaId/conta/:conta ➜ Excluir conta da empresa
+router.delete("/company/:empresaId/conta/:conta", verifyToken, async (req, res) => {
+  const { empresaId, conta } = req.params;
   try {
     const [result] = await pool.query(
-      `DELETE FROM contas_api WHERE account = ? AND company_id = ?`,
-      [account, companyId]
+      `DELETE FROM contas WHERE conta = ? AND empresa_id = ?`,
+      [conta, empresaId]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Conta não encontrada para esta empresa." });
@@ -315,14 +312,14 @@ router.delete("/company/:companyId/conta/:account", verifyToken, async (req, res
   }
 });
 
-// 🔹 GET /inter/:companyId ➜ Listar contas com Inter habilitado
-router.get("/inter/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 GET /inter/:empresaId ➜ Listar contas com Inter habilitado
+router.get("/inter/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   try {
     const [rows] = await pool.query(
       `SELECT 
          id,
-         item_id,
+         api_id,
          banco,
          descricao_banco,
          tipo_conta,
@@ -333,15 +330,15 @@ router.get("/inter/:companyId", verifyToken, async (req, res) => {
          inter_apelido,
          inter_conta_corrente,
          inter_ambiente,
-         inter_is_default,
+         inter_padrao,
          inter_status,
-         inter_account_id,
-         created_at,
-         updated_at
-       FROM contas_api 
-       WHERE company_id = ? AND inter_enabled = TRUE
-       ORDER BY inter_is_default DESC, created_at DESC`,
-      [companyId]
+         inter_conta_id,
+         criado_em,
+         atualizado_em
+       FROM contas 
+       WHERE empresa_id = ? AND inter_enabled = TRUE
+       ORDER BY inter_padrao DESC, criado_em DESC`,
+      [empresaId]
     );
     res.json({ total: rows.length, contas: rows });
   } catch (error) {
@@ -350,11 +347,11 @@ router.get("/inter/:companyId", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Nova rota: sincronizar contas Pluggy com a tabela contas_api
+// 🔹 Nova rota: sincronizar contas Pluggy com a tabela contas
 router.post("/sync", verifyToken, async (req, res) => {
-    const { itemId, company_id, cliente_id } = req.body;
+    const { itemId, empresa_id, cliente_id } = req.body;
   
-    console.log("[DEBUG] company_id recebido na sync:", company_id);
+    console.log("[DEBUG] empresa_id recebido na sync:", empresa_id);
     console.log("[DEBUG] cliente_id recebido na sync:", cliente_id);
   
     if (!itemId) {
@@ -409,15 +406,15 @@ router.post("/sync", verifyToken, async (req, res) => {
 
         await pool.query(
           `
-          INSERT INTO contas_api
-            (item_id, account, connector_id, status, execution_status, company_id, cliente_id, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo, created_at, updated_at)
+          INSERT INTO contas
+            (api_id, conta, conector_id, status, status_execucao, empresa_id, cliente_id, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo, criado_em, atualizado_em)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
           ON DUPLICATE KEY UPDATE
-            account = VALUES(account),
-            connector_id = VALUES(connector_id),
+            conta = VALUES(conta),
+            conector_id = VALUES(conector_id),
             status = VALUES(status),
-            execution_status = VALUES(execution_status),
-            company_id = VALUES(company_id),
+            status_execucao = VALUES(status_execucao),
+            empresa_id = VALUES(empresa_id),
             cliente_id = VALUES(cliente_id),
             banco = VALUES(banco),
             descricao_banco = VALUES(descricao_banco),
@@ -425,7 +422,7 @@ router.post("/sync", verifyToken, async (req, res) => {
             numero_conta = VALUES(numero_conta),
             agencia = VALUES(agencia),
             tipo = VALUES(tipo),
-            updated_at = NOW()
+            atualizado_em = NOW()
           `,
           [
             itemId,
@@ -433,7 +430,7 @@ router.post("/sync", verifyToken, async (req, res) => {
             acc.connectorId || null,
             acc.status || null,
             acc.execution_status || null,
-            company_id || null,
+            empresa_id || null,
             cliente_id || null,
             banco,
             descricao_banco,
@@ -451,16 +448,16 @@ router.post("/sync", verifyToken, async (req, res) => {
   
       // Retorna todos os dados, incluindo os novos campos
       const [accountsRows] = await pool.query(
-        `SELECT account, connector_id, status, execution_status, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo
-         FROM contas_api WHERE item_id = ? ORDER BY updated_at DESC`,
+        `SELECT conta, conector_id, status, status_execucao, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo
+         FROM contas WHERE api_id = ? ORDER BY atualizado_em DESC`,
         [itemId]
       );
   
       const accountsList = accountsRows.map(row => ({
-        account: row.account,
-        connector_id: row.connector_id,
+        conta: row.conta,
+        conector_id: row.conector_id,
         status: row.status,
-        execution_status: row.execution_status,
+        status_execucao: row.status_execucao,
         banco: row.banco,
         descricao_banco: row.descricao_banco,
         tipo_conta: row.tipo_conta,
@@ -472,7 +469,7 @@ router.post("/sync", verifyToken, async (req, res) => {
       return res.json({
         message: "Sincronização concluída.",
         total: inserted,
-        accounts: accountsList
+        contas: accountsList
       });
   
     } catch (error) {

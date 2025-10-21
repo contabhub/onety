@@ -83,7 +83,7 @@ router.post(
           [row["Cliente/Fornecedor"], empresaId]
         );
         const [conta] = await pool.query(
-          "SELECT id FROM contas WHERE banco = ? AND empresa_id = ?",
+          "SELECT id FROM caixinha WHERE banco = ? AND empresa_id = ?",
           [row["Conta"], empresaId]
         );
         const [centro] = await pool.query(
@@ -173,7 +173,7 @@ router.post(
         );
 
         const [conta] = await pool.query(
-          "SELECT id FROM contas WHERE banco = ? AND empresa_id = ?",
+          "SELECT id FROM caixinha WHERE banco = ? AND empresa_id = ?",
           [row["Conta"], empresaId]
         );
 
@@ -269,7 +269,7 @@ router.post(
         );
 
         const [conta] = await pool.query(
-          "SELECT id FROM contas WHERE banco = ? AND empresa_id = ?",
+          "SELECT id FROM caixinha WHERE banco = ? AND empresa_id = ?",
           [row["Conta"], empresaId]
         );
 

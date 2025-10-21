@@ -94,12 +94,12 @@ async function extractBoletoValueFromPDF(pdfBuffer) {
   }
 }
 
-// 🔹 Criar transação com pluggy_transaction_id e boleto_id
+// 🔹 Criar transação com pluggy_transacao_id e boleto_id
 router.post("/", verifyToken, async (req, res) => {
   const {
+    caixinha_id,
     conta_id,
-    conta_api_id,
-    company_id,
+    empresa_id,
     tipo,
     valor,
     descricao,
@@ -107,29 +107,29 @@ router.post("/", verifyToken, async (req, res) => {
     origem,
     data_vencimento,
     situacao,
-    observacoes,
+    observacao,
     parcelamento,
     intervalo_parcelas,
     categoria_id,
-    sub_categoria_id,
+    subcategoria_id,
     cliente_id,
-    anexo_base64,
-    centro_de_custo_id,
-    pluggy_transaction_id, // ✅ NOVO CAMPO
-    boleto_id
-    
+    anexo,
+    centro_custo_id,
+    pluggy_transacao_id,
+    boleto_id,
+    recorrencia_id
   } = req.body;
 
   try {
     let valorFinal = valor;
     
-    // 🔹 Processar PDF se foi enviado no anexo_base64
-    if (anexo_base64) {
+    // 🔹 Processar PDF se foi enviado no anexo
+    if (anexo) {
       console.log('[DEBUG] PDF detectado na criação da transação');
       
       try {
         // Converter base64 para buffer
-        const pdfBuffer = Buffer.from(anexo_base64, 'base64');
+        const pdfBuffer = Buffer.from(anexo, 'base64');
         
         // Extrair valor do PDF
         const valorExtraido = await extractBoletoValueFromPDF(pdfBuffer);
@@ -149,39 +149,39 @@ router.post("/", verifyToken, async (req, res) => {
     const [result] = await pool.query(
       `
       INSERT INTO transacoes (
-        conta_id, conta_api_id, company_id, tipo, valor, descricao, data_transacao, origem,
-        data_vencimento, situacao, observacoes, parcelamento, intervalo_parcelas,
-        categoria_id, sub_categoria_id, cliente_id,
-        anexo_base64, centro_de_custo_id,
-        pluggy_transaction_id, -- ✅ INSERE AQUI
-        boleto_id,             -- ✅ INSIRA AQUI
-
-        created_at
+        caixinha_id, conta_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
+        data_vencimento, situacao, observacao, parcelamento, intervalo_parcelas,
+        categoria_id, subcategoria_id, cliente_id,
+        anexo, centro_custo_id,
+        pluggy_transacao_id,
+        boleto_id,
+        recorrencia_id,
+        criado_em
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `,
       [
-        conta_id,
-        conta_api_id || null,
-        company_id,
+        caixinha_id || null,
+        conta_id || null,
+        empresa_id,
         tipo,
-        valorFinal, // ✅ Usar valor extraído do PDF se disponível
+        valorFinal,
         descricao,
         data_transacao,
         origem,
         data_vencimento,
         situacao,
-        observacoes,
+        observacao,
         parcelamento,
         intervalo_parcelas,
         categoria_id,
-        sub_categoria_id || null,
+        subcategoria_id || null,
         cliente_id || null,
-        anexo_base64 || null,
-        centro_de_custo_id || null,
-        pluggy_transaction_id || null,
-        boleto_id || null
-
+        anexo || null,
+        centro_custo_id || null,
+        pluggy_transacao_id || null,
+        boleto_id || null,
+        recorrencia_id || null
       ]
     );
 
@@ -192,7 +192,7 @@ router.post("/", verifyToken, async (req, res) => {
     };
     
     // Se o valor foi extraído do PDF, informar na resposta
-    if (anexo_base64 && valorFinal !== valor) {
+    if (anexo && valorFinal !== valor) {
       response.valor_extraido_pdf = true;
       response.valor_original = valor;
       response.valor_novo = valorFinal;
@@ -211,10 +211,12 @@ router.get("/", verifyToken, async (req, res) => {
     const [result] = await pool.query(`
       SELECT 
         t.*, 
-        ca.descricao_banco AS descricao_banco
+        c.descricao_banco AS descricao_banco_conta,
+        cx.banco AS descricao_banco_caixinha
       FROM transacoes t
-      LEFT JOIN contas_api ca ON ca.id = t.conta_api_id
-      ORDER BY t.created_at DESC
+      LEFT JOIN contas c ON c.id = t.conta_id
+      LEFT JOIN caixinha cx ON cx.id = t.caixinha_id
+      ORDER BY t.criado_em DESC
     `);
     res.json(result);
   } catch (error) {
@@ -232,9 +234,11 @@ router.get("/:id", verifyToken, async (req, res) => {
       `
         SELECT 
           t.*, 
-          ca.descricao_banco AS descricao_banco
+          c.descricao_banco AS descricao_banco_conta,
+          cx.banco AS descricao_banco_caixinha
         FROM transacoes t
-        LEFT JOIN contas_api ca ON ca.id = t.conta_api_id
+        LEFT JOIN contas c ON c.id = t.conta_id
+        LEFT JOIN caixinha cx ON cx.id = t.caixinha_id
         WHERE t.id = ?
       `,
       [id]
@@ -251,9 +255,9 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Buscar transações por Company ID com JOINs para categoria, subcategoria, tipo, cliente e centro_de_custo
-router.get("/empresa/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 Buscar transações por Empresa ID com JOINs para categoria, subcategoria, tipo, cliente e centro_custo
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
 
   try {
     const [rows] = await pool.query(
@@ -264,32 +268,34 @@ router.get("/empresa/:companyId", verifyToken, async (req, res) => {
       sc.nome AS subcategoria_nome,
       tp.nome AS tipo_nome,
       cl.nome_fantasia AS cliente_nome_fantasia,
-      ca.descricao_banco AS descricao_banco,
-      cc.codigo AS centro_custo_codigo,         -- ✅ NOVO JOIN!
-      cc.nome AS centro_custo_nome              -- ✅ NOVO JOIN!
+      cont.descricao_banco AS descricao_banco_conta,
+      cx.banco AS descricao_banco_caixinha,
+      cc.codigo AS centro_custo_codigo,
+      cc.nome AS centro_custo_nome
     FROM transacoes t
-    LEFT JOIN categorias c ON c.id = t.categoria_id
-    LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+    LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+    LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
     LEFT JOIN tipos tp ON tp.id = c.tipo_id
     LEFT JOIN clientes cl ON cl.id = t.cliente_id
-    LEFT JOIN contas_api ca ON ca.id = t.conta_api_id
-    LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id -- ✅ NOVO JOIN!
-    WHERE t.company_id = ?
-    ORDER BY t.created_at DESC
+    LEFT JOIN contas cont ON cont.id = t.conta_id
+    LEFT JOIN caixinha cx ON cx.id = t.caixinha_id
+    LEFT JOIN centro_custo cc ON cc.id = t.centro_custo_id
+    WHERE t.empresa_id = ?
+    ORDER BY t.criado_em DESC
       `,
-      [companyId]
+      [empresaId]
     );
 
     res.json(rows);
   } catch (error) {
-    console.error("Erro ao buscar transações por companyId:", error);
+    console.error("Erro ao buscar transações por empresaId:", error);
     res.status(500).json({ error: "Erro ao buscar transações por empresa." });
   }
 });
 
-// Buscar transações de entrada por Company ID + filtros via query
-router.get("/empresa/:companyId/entradas", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// Buscar transações de entrada por Empresa ID + filtros via query
+router.get("/empresa/:empresaId/entradas", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   const { status, vencimento } = req.query;
 
   let query = `
@@ -300,14 +306,16 @@ router.get("/empresa/:companyId/entradas", verifyToken, async (req, res) => {
       t.data_transacao,
       t.data_vencimento,
       t.situacao,
-      t.observacoes,
+      t.observacao,
       t.parcelamento,
       t.intervalo_parcelas,
-      t.anexo_base64,
+      t.anexo,
       t.boleto_id,
       t.origem,
-      t.conta_api_id,
-      ca.descricao_banco AS descricao_banco,
+      t.conta_id,
+      t.caixinha_id,
+      cont.descricao_banco AS descricao_banco_conta,
+      cx.banco AS descricao_banco_caixinha,
       c.nome AS categoria_nome,
       sc.nome AS subcategoria_nome,
       tp.nome AS tipo_nome,
@@ -315,15 +323,16 @@ router.get("/empresa/:companyId/entradas", verifyToken, async (req, res) => {
       cc.codigo AS centro_custo_codigo,
       cc.nome AS centro_custo_nome
     FROM transacoes t
-    LEFT JOIN categorias c ON c.id = t.categoria_id
-    LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+    LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+    LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
     LEFT JOIN tipos tp ON tp.id = c.tipo_id
     LEFT JOIN clientes cl ON cl.id = t.cliente_id
-    LEFT JOIN contas_api ca ON ca.id = t.conta_api_id
-    LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
-    WHERE t.company_id = ? AND t.tipo = 'entrada'
+    LEFT JOIN contas cont ON cont.id = t.conta_id
+    LEFT JOIN caixinha cx ON cx.id = t.caixinha_id
+    LEFT JOIN centro_custo cc ON cc.id = t.centro_custo_id
+    WHERE t.empresa_id = ? AND t.tipo = 'entrada'
   `;
-  const params = [companyId];
+  const params = [empresaId];
 
   if (status) {
     query += ` AND t.situacao = ?`;
@@ -335,7 +344,7 @@ router.get("/empresa/:companyId/entradas", verifyToken, async (req, res) => {
     params.push(vencimento);
   }
 
-  query += ` ORDER BY t.created_at DESC`;
+  query += ` ORDER BY t.criado_em DESC`;
 
   try {
     const [rows] = await pool.query(query, params);
@@ -346,9 +355,9 @@ router.get("/empresa/:companyId/entradas", verifyToken, async (req, res) => {
   }
 });
 
-// Buscar transações de saída por Company ID
-router.get("/empresa/:companyId/saidas", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// Buscar transações de saída por Empresa ID
+router.get("/empresa/:empresaId/saidas", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   const { status, vencimento } = req.query;
 
   let query = `
@@ -359,13 +368,13 @@ router.get("/empresa/:companyId/saidas", verifyToken, async (req, res) => {
       t.data_transacao,
       t.data_vencimento,
       t.situacao,
-      t.observacoes,
+      t.observacao,
       t.parcelamento,
       t.intervalo_parcelas,
-      t.anexo_base64,
+      t.anexo,
       t.boleto_id,
       t.origem,
-      t.conta_api_id,
+      t.conta_id,
       ca.descricao_banco AS descricao_banco,
       c.nome AS categoria_nome,
       sc.nome AS subcategoria_nome,
@@ -378,15 +387,15 @@ router.get("/empresa/:companyId/saidas", verifyToken, async (req, res) => {
       con.id AS conciliacao_id,
       con.status AS conciliacao_status
     FROM transacoes t
-    LEFT JOIN categorias c ON c.id = t.categoria_id
-    LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+    LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+    LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
     LEFT JOIN tipos tp ON tp.id = c.tipo_id
     LEFT JOIN clientes cl ON cl.id = t.cliente_id
-    LEFT JOIN contas_api ca ON ca.id = t.conta_api_id
-    LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
+    LEFT JOIN contas ca ON ca.id = t.conta_id
+    LEFT JOIN centro_custo cc ON cc.id = t.centro_custo_id
     -- �� JOIN COM CONCILIAÇÕES:
     LEFT JOIN conciliacoes con ON con.transacao_id = t.id AND con.status = 'conciliada'
-    WHERE t.company_id = ? AND t.tipo = 'saida'
+    WHERE t.empresa_id = ? AND t.tipo = 'saida'
   `;
 
   const params = [companyId];
@@ -403,7 +412,7 @@ router.get("/empresa/:companyId/saidas", verifyToken, async (req, res) => {
     params.push(vencimento);
   }
 
-  query += ` ORDER BY t.created_at DESC`;
+  query += ` ORDER BY t.criado_em DESC`;
 
   try {
     const [rows] = await pool.query(query, params);
@@ -417,9 +426,9 @@ router.get("/empresa/:companyId/saidas", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const {
+    caixinha_id,
     conta_id,
-    conta_api_id,
-    company_id,
+    empresa_id,
     tipo,
     valor,
     descricao,
@@ -427,14 +436,14 @@ router.put("/:id", verifyToken, async (req, res) => {
     origem,
     data_vencimento,
     situacao,
-    observacoes,
+    observacao,
     parcelamento,
     intervalo_parcelas,
     categoria_id,
-    sub_categoria_id,
+    subcategoria_id,
     cliente_id,
-    anexo_base64,
-    centro_de_custo_id,
+    anexo,
+    centro_custo_id,
     pluggy_transaction_id, // ✅ NOVO CAMPO
     boleto_id // ✅ NOVO CAMPO
   } = req.body;
@@ -442,13 +451,13 @@ router.put("/:id", verifyToken, async (req, res) => {
   try {
     let valorFinal = valor;
     
-    // 🔹 Processar PDF se foi enviado no anexo_base64
-    if (anexo_base64) {
+    // 🔹 Processar PDF se foi enviado no anexo
+    if (anexo) {
       console.log('[DEBUG] PDF detectado na atualização da transação');
       
       try {
         // Converter base64 para buffer
-        const pdfBuffer = Buffer.from(anexo_base64, 'base64');
+        const pdfBuffer = Buffer.from(anexo, 'base64');
         
         // Extrair valor do PDF
         const valorExtraido = await extractBoletoValueFromPDF(pdfBuffer);
@@ -468,36 +477,38 @@ router.put("/:id", verifyToken, async (req, res) => {
     const [result] = await pool.query(
       `
       UPDATE transacoes SET
-        conta_id = ?, conta_api_id = ?, company_id = ?, tipo = ?, valor = ?, descricao = ?, 
+        caixinha_id = ?, conta_id = ?, empresa_id = ?, tipo = ?, valor = ?, descricao = ?, 
         data_transacao = ?, origem = ?, data_vencimento = ?, situacao = ?, 
-        observacoes = ?, parcelamento = ?, intervalo_parcelas = ?, 
-        categoria_id = ?, sub_categoria_id = ?, cliente_id = ?,
-        anexo_base64 = ?, centro_de_custo_id = ?,
-        pluggy_transaction_id = ?, -- ✅ UPDATE TAMBÉM
-        boleto_id = ? -- ✅ UPDATE TAMBÉM
+        observacao = ?, parcelamento = ?, intervalo_parcelas = ?, 
+        categoria_id = ?, subcategoria_id = ?, cliente_id = ?,
+        anexo = ?, centro_custo_id = ?,
+        pluggy_transacao_id = ?,
+        boleto_id = ?,
+        recorrencia_id = ?
       WHERE id = ?
       `,
       [
-        conta_id,
-        conta_api_id || null,
-        company_id,
+        caixinha_id || null,
+        conta_id || null,
+        empresa_id,
         tipo,
-        valorFinal, // ✅ Usar valor extraído do PDF se disponível
+        valorFinal,
         descricao,
         data_transacao,
         origem,
         data_vencimento,
         situacao,
-        observacoes,
+        observacao,
         parcelamento,
         intervalo_parcelas,
         categoria_id,
-        sub_categoria_id || null,
+        subcategoria_id || null,
         cliente_id || null,
-        anexo_base64 || null,
-        centro_de_custo_id || null,
-        pluggy_transaction_id || null,
+        anexo || null,
+        centro_custo_id || null,
+        pluggy_transacao_id || null,
         boleto_id || null,
+        recorrencia_id || null,
         id
       ]
     );
@@ -512,7 +523,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     };
     
     // Se o valor foi extraído do PDF, informar na resposta
-    if (anexo_base64 && valorFinal !== valor) {
+    if (anexo && valorFinal !== valor) {
       response.valor_extraido_pdf = true;
       response.valor_original = valor;
       response.valor_novo = valorFinal;
@@ -604,9 +615,9 @@ router.put("/:id/situacao", verifyToken, async (req, res) => {
 // 🔹 Atualizar valor com base em PDF de boleto
 router.put("/:id/valor-pdf", verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { anexo_base64 } = req.body;
+  const { anexo } = req.body;
 
-  if (!anexo_base64) {
+  if (!anexo) {
     return res.status(400).json({ error: "PDF é obrigatório para extrair o valor." });
   }
 
@@ -628,7 +639,7 @@ router.put("/:id/valor-pdf", verifyToken, async (req, res) => {
     
     try {
       // Converter base64 para buffer
-      const pdfBuffer = Buffer.from(anexo_base64, 'base64');
+      const pdfBuffer = Buffer.from(anexo, 'base64');
       
       // Extrair valor do PDF
       const valorExtraido = await extractBoletoValueFromPDF(pdfBuffer);
@@ -674,12 +685,12 @@ router.put("/:id/valor-pdf", verifyToken, async (req, res) => {
 });
 
 // 🔹 Relatório de categorias com subcategorias e valores agregados
-router.get("/relatorio/categorias/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
-  const { mes, ano, tipo, dia, conta_id, conta_api_id } = req.query; // Filtros opcionais
+router.get("/relatorio/categorias/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
+  const { mes, ano, tipo, dia, conta_id, caixinha_id } = req.query; // Filtros opcionais
 
   try {
-    const params = [companyId];
+    const params = [empresaId];
 
     // Adicionar filtros opcionais aos parâmetros
     if (mes && ano && dia) {
@@ -698,11 +709,11 @@ router.get("/relatorio/categorias/:companyId", verifyToken, async (req, res) => 
     }
 
     if (conta_id) {
-      params.push(conta_id, companyId); // conta_id + company_id para validação
+      params.push(conta_id, empresaId); // conta_id + empresa_id para validação
     }
 
-    if (conta_api_id) {
-      params.push(conta_api_id, companyId); // conta_api_id + company_id para validação
+    if (caixinha_id) {
+      params.push(caixinha_id, empresaId); // caixinha_id + empresa_id para validação
     }
 
     const [rows] = await pool.query(
@@ -754,16 +765,16 @@ router.get("/relatorio/categorias/:companyId", verifyToken, async (req, res) => 
         GROUP_CONCAT(DISTINCT t.situacao) AS situacoes_encontradas
         
       FROM tipos tp
-      INNER JOIN categorias c ON c.tipo_id = tp.id
-      LEFT JOIN sub_categorias sc ON sc.categoria_id = c.id
-      LEFT JOIN transacoes t ON t.categoria_id = c.id AND t.sub_categoria_id = sc.id AND t.company_id = tp.company_id
-      WHERE tp.company_id = ?
+      INNER JOIN straton_categorias c ON c.tipo_id = tp.id
+      LEFT JOIN straton_subcategorias sc ON sc.categoria_id = c.id
+      LEFT JOIN transacoes t ON t.categoria_id = c.id AND t.subcategoria_id = sc.id AND t.empresa_id = tp.empresa_id
+      WHERE tp.empresa_id = ?
       ${mes && ano && dia ? ' AND MONTH(t.data_vencimento) = ? AND YEAR(t.data_vencimento) = ? AND DAY(t.data_vencimento) = ?' : ''}
       ${mes && ano && !dia ? ' AND MONTH(t.data_vencimento) = ? AND YEAR(t.data_vencimento) = ?' : ''}
       ${ano && !mes ? ' AND YEAR(t.data_vencimento) = ?' : ''}
       ${tipo && (tipo === 'entrada' || tipo === 'saida') ? ' AND t.tipo = ?' : ''}
-      ${conta_id ? ' AND t.conta_id = ? AND EXISTS(SELECT 1 FROM contas WHERE id = t.conta_id AND company_id = ?)' : ''}
-      ${conta_api_id ? ' AND t.conta_api_id = ? AND EXISTS(SELECT 1 FROM contas_api WHERE id = t.conta_api_id AND company_id = ?)' : ''}
+      ${conta_id ? ' AND t.conta_id = ? AND EXISTS(SELECT 1 FROM contas WHERE id = t.conta_id AND empresa_id = ?)' : ''}
+      ${caixinha_id ? ' AND t.caixinha_id = ? AND EXISTS(SELECT 1 FROM caixinha WHERE id = t.caixinha_id AND empresa_id = ?)' : ''}
       GROUP BY tp.id, tp.nome, c.id, c.nome, sc.id, sc.nome, t.tipo
       HAVING valor_previsto > 0 OR valor_realizado > 0 OR sc.id IS NOT NULL
       ORDER BY tp.nome, c.nome, sc.nome
@@ -854,12 +865,12 @@ router.get("/relatorio/categorias/:companyId", verifyToken, async (req, res) => 
 
     res.json({
       filtros_aplicados: {
-        company_id: companyId,
+        empresa_id: empresaId,
         mes: mes || null,
         ano: ano || null,
         tipo: tipo || 'todos',
         conta_id: conta_id || null,
-        conta_api_id: conta_api_id || null
+        caixinha_id: caixinha_id || null
       },
       totais_gerais: totaisGerais,
       tipos: relatorio
@@ -918,7 +929,7 @@ router.get("/:id/codigo-solicitacao", verifyToken, async (req, res) => {
 
     // 3️ Busca o access_token mais recente do Inter
     const [[tokenRow]] = await pool.query(
-      "SELECT access_token FROM inter_tokens ORDER BY created_at DESC LIMIT 1"
+      "SELECT access_token FROM inter_tokens ORDER BY criado_em DESC LIMIT 1"
     );
 
     if (!tokenRow || !tokenRow.access_token) {

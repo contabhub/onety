@@ -768,7 +768,7 @@ router.patch("/:id/vencimento", verifyToken, async (req, res) => {
 router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    // Conta corrente será pega do numero_conta (contas) ou inter_conta_corrente (contas_api)
+    // Conta corrente será pega do numero_conta (contas) ou inter_conta_corrente (contas)
 
     // 🔍 1. Buscar dados completos do contrato + conta corrente
     const [contratos] = await pool.query(`
@@ -785,12 +785,12 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
         cli.estado as uf,
         cli.cep,
         cli.tipo_de_pessoa as tipo_pessoa,
-        contas.numero_conta as conta_corrente_contas,
+        contas_origem.numero_conta as conta_corrente_contas,
         contas_api.inter_conta_corrente as conta_corrente_api
       FROM contratos c
       INNER JOIN clientes cli ON c.cliente_id = cli.id
-      LEFT JOIN contas ON c.conta_id = contas.id
-      LEFT JOIN contas_api ON c.conta_api_id = contas_api.id
+      LEFT JOIN contas contas_origem ON c.conta_id = contas_origem.id
+      LEFT JOIN contas contas_api ON c.conta_api_id = contas_api.id
       WHERE c.id = ?
     `, [id]);
 
@@ -805,11 +805,11 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Contrato não possui data de vencimento definida." });
     }
 
-    // 🔍 2.1. Validar se tem conta corrente (verifica tanto contas quanto contas_api)
+    // 🔍 2.1. Validar se tem conta corrente (verifica tanto contas quanto contas)
     const contaCorrente = contrato.conta_corrente_contas || contrato.conta_corrente_api;
     if (!contaCorrente) {
       return res.status(400).json({ 
-        error: "Contrato não possui conta corrente definida. Verifique se o conta_id ou conta_api_id está vinculado a uma conta válida.",
+        error: "Contrato não possui conta corrente definida. Verifique se o conta_id está vinculado a uma conta válida.",
         debug: {
           conta_id: contrato.conta_id,
           conta_api_id: contrato.conta_api_id,
@@ -912,7 +912,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
       [empresaId]
     );
 
-    // Se não encontrou, buscar na tabela contas_api
+    // Se não encontrou, buscar na tabela contas
     if (!contaInter) {
       [[contaInter]] = await pool.query(
         `SELECT 
@@ -927,7 +927,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
            inter_ambiente as ambiente,
            inter_is_default as is_default,
            inter_status as status
-         FROM contas_api 
+         FROM contas 
          WHERE empresa_id = ? AND inter_enabled = TRUE AND inter_status = 'ativo'
          ORDER BY inter_is_default DESC, id ASC 
          LIMIT 1`,

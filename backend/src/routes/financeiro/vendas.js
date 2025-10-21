@@ -86,7 +86,7 @@ router.get("/", verifyToken, async (req, res) => {
         LEFT JOIN companies co ON v.empresa_id = co.id
         LEFT JOIN centro_de_custo cc ON v.centro_custo_id = cc.id
         LEFT JOIN users u ON v.usuario_id = u.id
-        LEFT JOIN contas_api cra ON v.conta_recebimento_api = cra.id
+        LEFT JOIN contas cra ON v.conta_recebimento_api = cra.id
         WHERE 1=1
       `;
 
@@ -139,7 +139,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
       const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos WHERE empresa_id = ?", [empresa_id]);
       const [companies] = await pool.query("SELECT id, nome FROM companies WHERE id = ?", [empresa_id]);
       const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE empresa_id = ?", [empresa_id]);
-      const [contas] = await pool.query("SELECT id, descricao_banco FROM contas WHERE empresa_id = ?", [empresa_id]);
+      const [contas] = await pool.query("SELECT id, descricao_banco FROM caixinha WHERE empresa_id = ?", [empresa_id]);
   
       // categorias e subcategorias via tipos
       const [categorias] = await pool.query(
@@ -210,7 +210,7 @@ router.get("/:id", verifyToken, async (req, res) => {
     LEFT JOIN companies co ON v.empresa_id = co.id
     LEFT JOIN centro_de_custo cc ON v.centro_custo_id = cc.id
     LEFT JOIN users u ON v.usuario_id = u.id
-    LEFT JOIN contas_api cra ON v.conta_recebimento_api = cra.id
+        LEFT JOIN contas cra ON v.conta_recebimento_api = cra.id
     WHERE v.id = ?
   `;  
 

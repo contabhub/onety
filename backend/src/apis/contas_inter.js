@@ -1,4 +1,4 @@
-// apis/inter-accounts.js
+// apis/contas_inter.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
@@ -7,13 +7,13 @@ const verifyToken = require('../middlewares/auth');
 // Criar conta do Inter
 router.post('/', verifyToken, async (req, res) => {
   const {
-    company_id, apelido, conta_corrente,
-    client_id, client_secret, cert_b64, key_b64,
-    ambiente = 'prod', is_default = 0, status = 'ativo'
+    empresa_id, apelido, conta_corrente,
+    cliente_id, cliente_secret, certificado, key,
+    status = 'ativo', contas_id
   } = req.body;
 
-  if (!company_id || !conta_corrente || !client_id || !client_secret || !cert_b64 || !key_b64) {
-    return res.status(400).json({ error: 'Campos obrigatórios: company_id, conta_corrente, client_id, client_secret, cert_b64, key_b64.' });
+  if (!empresa_id || !conta_corrente || !cliente_id || !cliente_secret || !certificado || !key) {
+    return res.status(400).json({ error: 'Campos obrigatórios: empresa_id, conta_corrente, cliente_id, cliente_secret, certificado, key.' });
   }
 
   const conn = await pool.getConnection();
@@ -21,19 +21,12 @@ router.post('/', verifyToken, async (req, res) => {
     await conn.beginTransaction();
 
     const [result] = await conn.query(
-      `INSERT INTO inter_accounts
-       (company_id, apelido, conta_corrente, client_id, client_secret, cert_b64, key_b64, ambiente, is_default, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [company_id, apelido || `Conta ${conta_corrente}`, conta_corrente, client_id, client_secret, cert_b64, key_b64, ambiente, is_default ? 1 : 0, status]
+      `INSERT INTO contas_inter
+       (empresa_id, apelido, conta_corrente, cliente_id, cliente_secret, certificado, key, status, contas_id, criado_em, atualizado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [empresa_id, apelido || `Conta ${conta_corrente}`, conta_corrente, cliente_id, cliente_secret, certificado, key, status, contas_id || null]
     );
     const newId = result.insertId;
-
-    if (is_default) {
-      await conn.query(
-        `UPDATE inter_accounts SET is_default = 0 WHERE company_id = ? AND id <> ?`,
-        [company_id, newId]
-      );
-    }
 
     await conn.commit();
     res.status(201).json({ id: newId, message: 'Conta Inter criada com sucesso.' });
@@ -48,18 +41,18 @@ router.post('/', verifyToken, async (req, res) => {
 
 // Listar contas por empresa (sem vazar segredos)
 router.get('/', verifyToken, async (req, res) => {
-  const { company_id } = req.query;
+  const { empresa_id } = req.query;
   try {
-    const [rows] = company_id
+    const [rows] = empresa_id
       ? await pool.query(
-          `SELECT id, company_id, apelido, conta_corrente, ambiente, is_default, status, created_at
-           FROM inter_accounts WHERE company_id = ?
-           ORDER BY is_default DESC, id DESC`,
-          [company_id]
+          `SELECT id, empresa_id, apelido, conta_corrente, status, contas_id, criado_em, atualizado_em
+           FROM contas_inter WHERE empresa_id = ?
+           ORDER BY id DESC`,
+          [empresa_id]
         )
       : await pool.query(
-          `SELECT id, company_id, apelido, conta_corrente, ambiente, is_default, status, created_at
-           FROM inter_accounts ORDER BY id DESC`
+          `SELECT id, empresa_id, apelido, conta_corrente, status, contas_id, criado_em, atualizado_em
+           FROM contas_inter ORDER BY id DESC`
         );
     res.json(rows);
   } catch (err) {
@@ -72,8 +65,8 @@ router.get('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const [[row]] = await pool.query(
-      `SELECT id, company_id, apelido, conta_corrente, ambiente, is_default, status, created_at
-       FROM inter_accounts WHERE id = ?`,
+      `SELECT id, empresa_id, apelido, conta_corrente, status, contas_id, criado_em, atualizado_em
+       FROM contas_inter WHERE id = ?`,
       [id]
     );
     if (!row) return res.status(404).json({ error: 'Conta não encontrada.' });
@@ -86,37 +79,30 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 router.put('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { apelido, conta_corrente, client_id, client_secret, cert_b64, key_b64, ambiente, is_default, status } = req.body;
+  const { apelido, conta_corrente, cliente_id, cliente_secret, certificado, key, status, contas_id } = req.body;
 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
     const [result] = await conn.query(
-      `UPDATE inter_accounts
+      `UPDATE contas_inter
        SET apelido = COALESCE(?, apelido),
            conta_corrente = COALESCE(?, conta_corrente),
-           client_id = COALESCE(?, client_id),
-           client_secret = COALESCE(?, client_secret),
-           cert_b64 = COALESCE(?, cert_b64),
-           key_b64 = COALESCE(?, key_b64),
-           ambiente = COALESCE(?, ambiente),
-           is_default = COALESCE(?, is_default),
-           status = COALESCE(?, status)
+           cliente_id = COALESCE(?, cliente_id),
+           cliente_secret = COALESCE(?, cliente_secret),
+           certificado = COALESCE(?, certificado),
+           key = COALESCE(?, key),
+           status = COALESCE(?, status),
+           contas_id = COALESCE(?, contas_id),
+           atualizado_em = NOW()
        WHERE id = ?`,
-      [apelido, conta_corrente, client_id, client_secret, cert_b64, key_b64, ambiente, typeof is_default === 'number' ? is_default : null, status, id]
+      [apelido, conta_corrente, cliente_id, cliente_secret, certificado, key, status, contas_id, id]
     );
 
     if (result.affectedRows === 0) {
       await conn.rollback();
       return res.status(404).json({ error: 'Conta não encontrada.' });
-    }
-
-    if (is_default === 1) {
-      const [[acc]] = await conn.query('SELECT company_id FROM inter_accounts WHERE id = ?', [id]);
-      if (acc?.company_id) {
-        await conn.query('UPDATE inter_accounts SET is_default = 0 WHERE company_id = ? AND id <> ?', [acc.company_id, id]);
-      }
     }
 
     await conn.commit();
@@ -133,7 +119,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 router.delete('/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const [result] = await pool.query('DELETE FROM inter_accounts WHERE id = ?', [id]);
+    const [result] = await pool.query('DELETE FROM contas_inter WHERE id = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Conta não encontrada.' });
     res.json({ message: 'Conta Inter deletada com sucesso.' });
   } catch (err) {
