@@ -72,14 +72,13 @@ router.post("/", verifyToken, async (req, res) => {
         
         await pool.query(
           `INSERT INTO transacoes (
-            conta_id, conta_api_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
+            conta_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
             data_vencimento, situacao, observacao, parcelamento, intervalo_parcelas,
             categoria_id, subcategoria_id, cliente_id,
             anexo_base64, centro_custo_id, pluggy_transaction_id, recorrencia_id, criado_em
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
           [
             payload.conta_id,
-            payload.conta_api_id,  // ← ADICIONAR ESTA LINHA
             payload.empresa_id,
             payload.tipo,
             payload.valor,
@@ -154,14 +153,13 @@ router.post("/", verifyToken, async (req, res) => {
         
         await pool.query(
           `INSERT INTO transacoes (
-            conta_id, conta_api_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
+            conta_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
             data_vencimento, situacao, observacao, parcelamento, intervalo_parcelas,
             categoria_id, subcategoria_id, cliente_id,
             anexo_base64, centro_custo_id, pluggy_transaction_id, recorrencia_id, criado_em
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
           [
             payload.conta_id,
-            payload.conta_api_id,  // ← ADICIONAR ESTA LINHA
             payload.empresa_id,
             payload.tipo,
             payload.valor,

@@ -6,17 +6,15 @@ const verifyToken = require("../../middlewares/auth");
 // 🔹 Criar conta
 router.post("/", verifyToken, async (req, res) => {
   const {
-    company_id,
+    empresa_id,
     cliente_id,
     banco,
     descricao_banco,
     tipo_conta,
     inicio_lancamento,
-    tipo,
     numero_conta,
     agencia,
-    saldo,
-    pluggy_account_id // ✅ Novo campo
+    saldo
   } = req.body;
 
   const saldoFinal =
@@ -29,22 +27,20 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const [result] = await pool.query(
       `
-      INSERT INTO contas 
-      (company_id, cliente_id, banco, descricao_banco, tipo_conta, inicio_lancamento, tipo, numero_conta, agencia, saldo, pluggy_account_id, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      INSERT INTO caixinha 
+      (empresa_id, cliente_id, banco, descricao_banco, tipo_conta, inicio_lancamento, numero_conta, agencia, saldo, criado_em)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `,
       [
-        company_id,
+        empresa_id,
         cliente_id || null,
         banco,
         descricao_banco,
         tipo_conta,
         inicio_lancamento || null,
-        tipo,
         numero_conta || null,
         agencia || null,
-        saldoSanitized,
-        pluggy_account_id || null // ✅ Inserir se vier, senão NULL
+        saldoSanitized
       ]
     );
 
@@ -59,17 +55,15 @@ router.post("/", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const {
-    company_id,
+    empresa_id,
     cliente_id,
     banco,
     descricao_banco,
     tipo_conta,
     inicio_lancamento,
-    tipo,
     numero_conta,
     agencia,
-    saldo,
-    pluggy_account_id // ✅ Novo campo
+    saldo
   } = req.body;
 
   const saldoFinal =
@@ -82,32 +76,28 @@ router.put("/:id", verifyToken, async (req, res) => {
   try {
     const [result] = await pool.query(
       `
-      UPDATE contas SET 
-        company_id = ?, 
+      UPDATE caixinha SET 
+        empresa_id = ?, 
         cliente_id = ?, 
         banco = ?, 
         descricao_banco = ?, 
         tipo_conta = ?, 
         inicio_lancamento = ?, 
-        tipo = ?, 
         numero_conta = ?, 
         agencia = ?, 
-        saldo = ?,
-        pluggy_account_id = ?
+        saldo = ?
       WHERE id = ?
     `,
       [
-        company_id,
+        empresa_id,
         cliente_id || null,
         banco,
         descricao_banco,
         tipo_conta,
         inicio_lancamento || null,
-        tipo,
         numero_conta || null,
         agencia || null,
         saldoSanitized,
-        pluggy_account_id || null, // ✅ Atualiza se vier, senão NULL
         id
       ]
     );
@@ -125,19 +115,19 @@ router.put("/:id", verifyToken, async (req, res) => {
 
 // 🔹 Listar contas — com filtro opcional por empresa
 router.get("/", verifyToken, async (req, res) => {
-  const { company_id } = req.query;
+  const { empresa_id } = req.query;
 
   try {
-    let query = `SELECT * FROM contas`;
+    let query = `SELECT * FROM caixinha`;
     const params = [];
 
-    // Se company_id foi fornecido, filtra por empresa
-    if (company_id) {
-      query += ` WHERE company_id = ?`;
-      params.push(company_id);
+    // Se empresa_id foi fornecido, filtra por empresa
+    if (empresa_id) {
+      query += ` WHERE empresa_id = ?`;
+      params.push(empresa_id);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY criado_em DESC`;
 
     const [rows] = await pool.query(query, params);
     res.json(rows);
@@ -152,7 +142,7 @@ router.get("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [conta] = await pool.query("SELECT * FROM contas WHERE id = ?", [id]);
+    const [conta] = await pool.query("SELECT * FROM caixinha WHERE id = ?", [id]);
 
     if (conta.length === 0) {
       return res.status(404).json({ error: "Conta não encontrada." });
@@ -165,14 +155,14 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Buscar contas por company_id
-router.get("/empresa/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 Buscar contas por empresa_id
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
 
   try {
     const [contas] = await pool.query(
-      "SELECT * FROM contas WHERE company_id = ? ORDER BY created_at DESC",
-      [companyId]
+      "SELECT * FROM caixinha WHERE empresa_id = ? ORDER BY criado_em DESC",
+      [empresaId]
     );
 
     if (contas.length === 0) {
@@ -181,83 +171,18 @@ router.get("/empresa/:companyId", verifyToken, async (req, res) => {
 
     res.json(contas);
   } catch (error) {
-    console.error("Erro ao buscar contas por company_id:", error);
+    console.error("Erro ao buscar contas por empresa_id:", error);
     res.status(500).json({ error: "Erro ao buscar contas da empresa." });
   }
 });
 
-// 🔹 Atualizar uma conta
-router.put("/:id", verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const {
-    company_id,
-    cliente_id,
-    banco,
-    descricao_banco,
-    tipo_conta,
-    inicio_lancamento,
-    tipo,
-    numero_conta,
-    agencia,
-    saldo
-  } = req.body;
-
-  // 🧹 Sanitizar saldo também no update
-  const saldoFinal =
-    saldo === '' || saldo === null || saldo === undefined
-      ? null
-      : parseFloat(saldo);
-
-  const saldoSanitized = isNaN(saldoFinal) ? null : saldoFinal;
-
-  try {
-    const [result] = await pool.query(
-      `
-      UPDATE contas SET 
-        company_id = ?, 
-        cliente_id = ?, 
-        banco = ?, 
-        descricao_banco = ?, 
-        tipo_conta = ?, 
-        inicio_lancamento = ?, 
-        tipo = ?, 
-        numero_conta = ?, 
-        agencia = ?, 
-        saldo = ?
-      WHERE id = ?
-    `,
-      [
-        company_id,
-        cliente_id || null,
-        banco,
-        descricao_banco,
-        tipo_conta,
-        inicio_lancamento || null,
-        tipo,
-        numero_conta || null,
-        agencia || null,
-        saldoSanitized, // 👈 sempre número ou NULL
-        id
-      ]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Conta não encontrada." });
-    }
-
-    res.json({ message: "Conta atualizada com sucesso." });
-  } catch (error) {
-    console.error("Erro ao atualizar conta:", error);
-    res.status(500).json({ error: "Erro ao atualizar conta." });
-  }
-});
 
 // 🔹 Deletar uma conta
 router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query("DELETE FROM contas WHERE id = ?", [id]);
+    const [result] = await pool.query("DELETE FROM caixinha WHERE id = ?", [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Conta não encontrada." });

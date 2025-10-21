@@ -31,7 +31,7 @@ router.get("/saidas/:empresaId", verifyToken, async (req, res) => {
       LEFT JOIN straton_categorias c ON c.id = t.categoria_id
       LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
       LEFT JOIN clientes cl ON cl.id = t.cliente_id
-      LEFT JOIN contas co ON co.id = t.conta_id
+      LEFT JOIN caixinha co ON co.id = t.conta_id
       LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
       WHERE t.empresa_id = ? AND t.tipo = 'saida'
     `;
@@ -138,7 +138,7 @@ router.get("/saidas-simples/:empresaId", verifyToken, async (req, res) => {
         LEFT JOIN straton_categorias c ON c.id = t.categoria_id
         LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
         LEFT JOIN clientes cl ON cl.id = t.cliente_id
-        LEFT JOIN contas co ON co.id = t.conta_id
+        LEFT JOIN caixinha co ON co.id = t.conta_id
         LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
         WHERE t.empresa_id = ? AND t.tipo = 'saida'
         `,
@@ -232,7 +232,7 @@ router.get("/entradas/:empresaId", verifyToken, async (req, res) => {
         LEFT JOIN straton_categorias c ON c.id = t.categoria_id
         LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
         LEFT JOIN clientes cl ON cl.id = t.cliente_id
-        LEFT JOIN contas co ON co.id = t.conta_id
+        LEFT JOIN caixinha co ON co.id = t.conta_id
         LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
         WHERE t.empresa_id = ? AND t.tipo = 'entrada'
       `;
@@ -336,7 +336,7 @@ router.get("/movimentacoes/:empresaId", verifyToken, async (req, res) => {
         LEFT JOIN straton_categorias c ON c.id = t.categoria_id
         LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
         LEFT JOIN clientes cl ON cl.id = t.cliente_id
-        LEFT JOIN contas co ON co.id = t.conta_id
+        LEFT JOIN caixinha co ON co.id = t.conta_id
         LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
         WHERE t.empresa_id = ?
       `;

@@ -7,7 +7,7 @@ const { makePluggyRequest } = require("../middlewares/pluggyToken");
 
 
 router.post("/sync", verifyToken, async (req, res) => {
-  const { accountId, company_id, cliente_id } = req.body;
+  const { accountId, empresa_id, cliente_id, contas_id } = req.body;
 
   if (!accountId) {
     return res.status(400).json({ error: "accountId é obrigatório." });
@@ -25,41 +25,45 @@ router.post("/sync", verifyToken, async (req, res) => {
     let inserted = 0;
 
     for (const tx of transactions) {
-      const parsedDate = tx.date ? tx.date.substring(0, 10) : null;
+      const parsedDate = tx.data ? tx.data.substring(0, 10) : null;
 
       // 🟢 Por padrão: situacao = 'recebido'
       const situacao = 'recebido';
-      const anexo_base64 = null; // Aqui fica null por padrão, se não vier nada do Pluggy
+      const anexo = null; // Aqui fica null por padrão, se não vier nada do Pluggy
 
       await pool.query(
         `
         INSERT INTO transacoes_api
-          (pluggy_transaction_id, account_id, description, amount, currency_code, date, company_id, cliente_id, situacao, anexo_base64, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+          (pluggy_transacao_id, conta_id, descricao, valor, moeda, data, categoria, situacao, anexo, empresa_id, cliente_id, contas_id, criado_em, atualizado_em)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         ON DUPLICATE KEY UPDATE
-          description = VALUES(description),
-          amount = VALUES(amount),
-          date = VALUES(date),
-          company_id = VALUES(company_id),
+          descricao = VALUES(descricao),
+          valor = VALUES(valor),
+          data = VALUES(data),
+          categoria = VALUES(categoria),
+          empresa_id = VALUES(empresa_id),
           cliente_id = VALUES(cliente_id),
+          contas_id = VALUES(contas_id),
           situacao = CASE 
             WHEN situacao = 'ignorada' THEN 'ignorada'  -- ✅ Preserva transações ignoradas
             ELSE VALUES(situacao)                       -- ✅ Atualiza outras situações
           END,
-          anexo_base64 = VALUES(anexo_base64),
-          updated_at = NOW()
+          anexo = VALUES(anexo),
+          atualizado_em = NOW()
       `,
         [
           tx.id,
           tx.accountId,
-          tx.description || null,
-          tx.amount || null,
+          tx.descricao || null,
+          tx.valor || null,
           tx.currencyCode || null,
           parsedDate,
-          company_id || null,
-          cliente_id || null,
+          tx.category || null,
           situacao,
-          anexo_base64
+          anexo,
+          empresa_id || null,
+          cliente_id || null,
+          contas_id || null
         ]
       );
 
@@ -87,21 +91,23 @@ router.get("/:accountId", verifyToken, async (req, res) => {
       `
       SELECT 
         id,
-        pluggy_transaction_id,
-        account_id,
-        description,
-        amount,
-        currency_code,
-        date,
+        pluggy_transacao_id,
+        conta_id,
+        descricao,
+        valor,
+        moeda,
+        data,
+        categoria,
         situacao,
-        anexo_base64,
-        company_id,
+        anexo,
+        empresa_id,
         cliente_id,
-        created_at,
-        updated_at
+        contas_id,
+        criado_em,
+        atualizado_em
       FROM transacoes_api
-      WHERE account_id = ?
-      ORDER BY date DESC
+      WHERE conta_id = ?
+      ORDER BY data DESC
     `,
       [accountId]
     );
@@ -129,28 +135,28 @@ router.get("/:accountId/entradas", verifyToken, async (req, res) => {
       SELECT 
         id,
         pluggy_transaction_id,
-        account_id,
-        description,
-        amount,
-        currency_code,
-        date,
+        conta_id,
+        descricao,
+        valor,
+        moeda,
+        data,
         situacao,
-        anexo_base64,
-        company_id,
+        anexo,
+        empresa_id,
         cliente_id,
-        created_at,
-        updated_at
+        criado_em,
+        updatad_at
       FROM transacoes_api
-      WHERE account_id = ? AND amount > 0 AND situacao <> 'ignorada'
+      WHERE conta_id = ? AND valor > 0 AND situacao <> 'ignorada'
     `;
     const params = [accountId];
 
     if (empresaId) {
-      query += " AND company_id = ?";
+      query += " AND empresa_id = ?";
       params.push(empresaId);
     }
 
-    query += " ORDER BY date DESC";
+    query += " ORDER BY data DESC";
 
     const [rows] = await pool.query(query, params);
 
@@ -171,28 +177,28 @@ router.get("/:accountId/saidas", verifyToken, async (req, res) => {
       SELECT 
         id,
         pluggy_transaction_id,
-        account_id,
-        description,
-        amount,
-        currency_code,
-        date,
+        conta_id,
+        descricao,
+        valor,
+        moeda,
+        data,
         situacao,
-        anexo_base64,
-        company_id,
+        anexo,
+        empresa_id,
         cliente_id,
-        created_at,
-        updated_at
+        criado_em,
+        updatad_at
       FROM transacoes_api
-      WHERE account_id = ? AND amount < 0 AND situacao <> 'ignorada'
+      WHERE conta_id = ? AND valor < 0 AND situacao <> 'ignorada'
     `;
     const params = [accountId];
 
     if (empresaId) {
-      query += " AND company_id = ?";
+      query += " AND empresa_id = ?";
       params.push(empresaId);
     }
 
-    query += " ORDER BY date DESC";
+    query += " ORDER BY data DESC";
 
     const [rows] = await pool.query(query, params);
 
@@ -208,7 +214,7 @@ router.get("/company/:companyId/transacoes", verifyToken, async (req, res) => {
   const { companyId } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM transacoes_api WHERE company_id = ? ORDER BY date DESC`,
+      `SELECT * FROM transacoes_api WHERE empresa_id = ? ORDER BY data DESC`,
       [companyId]
     );
     res.json({ total: rows.length, transactions: rows });
@@ -218,12 +224,12 @@ router.get("/company/:companyId/transacoes", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 GET /company/:companyId/entradas ➜ Entradas da empresa (amount > 0)
+// 🔹 GET /company/:companyId/entradas ➜ Entradas da empresa (valor > 0)
 router.get("/company/:companyId/entradas", verifyToken, async (req, res) => {
   const { companyId } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM transacoes_api WHERE company_id = ? AND amount > 0 AND situacao <> 'ignorada' ORDER BY date DESC`,
+      `SELECT * FROM transacoes_api WHERE empresa_id = ? AND valor > 0 AND situacao <> 'ignorada' ORDER BY data DESC`,
       [companyId]
     );
     res.json({ total: rows.length, transactions: rows });
@@ -233,12 +239,12 @@ router.get("/company/:companyId/entradas", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 GET /company/:companyId/saidas ➜ Saídas da empresa (amount < 0)
+// 🔹 GET /company/:companyId/saidas ➜ Saídas da empresa (valor < 0)
 router.get("/company/:companyId/saidas", verifyToken, async (req, res) => {
   const { companyId } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM transacoes_api WHERE company_id = ? AND amount < 0 AND situacao <> 'ignorada' ORDER BY date DESC`,
+      `SELECT * FROM transacoes_api WHERE empresa_id = ? AND valor < 0 AND situacao <> 'ignorada' ORDER BY data DESC`,
       [companyId]
     );
     res.json({ total: rows.length, transactions: rows });
@@ -251,7 +257,7 @@ router.get("/company/:companyId/saidas", verifyToken, async (req, res) => {
 // 🔹 PUT /company/:companyId/transacao/:id ➜ Editar transação da empresa
 router.put("/company/:companyId/transacao/:id", verifyToken, async (req, res) => {
   const { companyId, id } = req.params;
-  const { description, amount, date, situacao, anexo_base64 } = req.body;
+  const { descricao, valor, data, situacao, anexo } = req.body;
 
   // ✅ Agora aceita 'ignorada'
   const allowedSituacoes = ['em_aberto', 'recebido', 'vencidos', 'ignorada'];
@@ -261,8 +267,8 @@ router.put("/company/:companyId/transacao/:id", verifyToken, async (req, res) =>
 
   try {
     const [result] = await pool.query(
-      `UPDATE transacoes_api SET description = ?, amount = ?, date = ?, situacao = ?, anexo_base64 = ?, updated_at = NOW() WHERE id = ? AND company_id = ?`,
-      [description, amount, date, situacao, anexo_base64, id, companyId]
+      `UPDATE transacoes_api SET descricao = ?, valor = ?, data = ?, situacao = ?, anexo = ?, updatad_at = NOW() WHERE id = ? AND empresa_id = ?`,
+      [descricao, valor, data, situacao, anexo, id, companyId]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Transação não encontrada para esta empresa." });
@@ -279,7 +285,7 @@ router.delete("/company/:companyId/transacao/:id", verifyToken, async (req, res)
   const { companyId, id } = req.params;
   try {
     const [result] = await pool.query(
-      `DELETE FROM transacoes_api WHERE id = ? AND company_id = ?`,
+      `DELETE FROM transacoes_api WHERE id = ? AND empresa_id = ?`,
       [id, companyId]
     );
     if (result.affectedRows === 0) {
@@ -294,21 +300,21 @@ router.delete("/company/:companyId/transacao/:id", verifyToken, async (req, res)
 
 // 🔹 Ignorar transações da transacoes_api (1 ou várias)
 router.post("/ignore", verifyToken, async (req, res) => {
-  const { company_id, id, ids } = req.body;
+  const { empresa_id, id, ids } = req.body;
 
-  if (!company_id) return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) return res.status(400).json({ error: "empresa_id é obrigatório." });
 
-  const toUpdate = Array.isArray(ids) ? ids : (id ? [id] : []);
-  if (toUpdate.length === 0) return res.status(400).json({ error: "Informe 'id' ou 'ids'." });
+  const toUpdata = Array.isArray(ids) ? ids : (id ? [id] : []);
+  if (toUpdata.length === 0) return res.status(400).json({ error: "Informe 'id' ou 'ids'." });
 
   try {
     const [result] = await pool.query(
       `UPDATE transacoes_api 
-         SET situacao = 'ignorada', updated_at = NOW()
-       WHERE company_id = ? AND id IN (?)`,
-      [company_id, toUpdate]
+         SET situacao = 'ignorada', updatad_at = NOW()
+       WHERE empresa_id = ? AND id IN (?)`,
+      [empresa_id, toUpdata]
     );
-    res.json({ message: "Transação(ões) ignorada(s) com sucesso.", affected: result.affectedRows, ids: toUpdate });
+    res.json({ message: "Transação(ões) ignorada(s) com sucesso.", affected: result.affectedRows, ids: toUpdata });
   } catch (error) {
     console.error("Erro ao ignorar transações:", error);
     res.status(500).json({ error: "Erro ao ignorar transações." });
@@ -317,21 +323,21 @@ router.post("/ignore", verifyToken, async (req, res) => {
 
 // 🔹 Designorar (trazer de volta) — volta para 'recebido'
 router.post("/unignore", verifyToken, async (req, res) => {
-  const { company_id, id, ids } = req.body;
+  const { empresa_id, id, ids } = req.body;
 
-  if (!company_id) return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) return res.status(400).json({ error: "empresa_id é obrigatório." });
 
-  const toUpdate = Array.isArray(ids) ? ids : (id ? [id] : []);
-  if (toUpdate.length === 0) return res.status(400).json({ error: "Informe 'id' ou 'ids'." });
+  const toUpdata = Array.isArray(ids) ? ids : (id ? [id] : []);
+  if (toUpdata.length === 0) return res.status(400).json({ error: "Informe 'id' ou 'ids'." });
 
   try {
     const [result] = await pool.query(
       `UPDATE transacoes_api 
-         SET situacao = 'recebido', updated_at = NOW()
-       WHERE company_id = ? AND id IN (?)`,
-      [company_id, toUpdate]
+         SET situacao = 'recebido', updatad_at = NOW()
+       WHERE empresa_id = ? AND id IN (?)`,
+      [empresa_id, toUpdata]
     );
-    res.json({ message: "Transação(ões) restaurada(s) com sucesso.", affected: result.affectedRows, ids: toUpdate });
+    res.json({ message: "Transação(ões) restaurada(s) com sucesso.", affected: result.affectedRows, ids: toUpdata });
   } catch (error) {
     console.error("Erro ao restaurar transações:", error);
     res.status(500).json({ error: "Erro ao restaurar transações." });
@@ -344,8 +350,8 @@ router.get("/company/:companyId/ignoradas", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT * FROM transacoes_api 
-        WHERE company_id = ? AND situacao = 'ignorada'
-        ORDER BY date DESC`,
+        WHERE empresa_id = ? AND situacao = 'ignorada'
+        ORDER BY data DESC`,
       [companyId]
     );
     res.json({ total: rows.length, transactions: rows });
