@@ -463,8 +463,8 @@ export default function CriarDocumentoAutentique() {
       
       // Preenche os campos com os dados do rascunho
       setRascunhoId(rascunho.id);
-      setSelectedTemplate(rascunho.template_id || "");
-      setClienteSelecionado(rascunho.cliente_id || "");
+      setSelectedTemplate((rascunho.template_id || "").toString());
+      setClienteSelecionado((rascunho.cliente_id || "").toString());
       setContent(rascunho.content || "");
       setSignatarios(rascunho.signatarios || []);
       setValidade(rascunho.expires_at || "");
@@ -501,7 +501,7 @@ export default function CriarDocumentoAutentique() {
       if (rascunho.cliente_id) {
     
         
-        const clienteEncontrado = clientes.find(c => c.id.toString() === rascunho.cliente_id);
+        const clienteEncontrado = clientes.find(c => c.id.toString() === rascunho.cliente_id.toString());
         if (clienteEncontrado) {
           setCliente(clienteEncontrado);
 
@@ -546,7 +546,7 @@ export default function CriarDocumentoAutentique() {
   useEffect(() => {
     if (clienteSelecionado && clientes.length > 0) {
       const clienteEncontrado = clientes.find(c => {
-        const match = c.id === clienteSelecionado;
+        const match = c.id.toString() === clienteSelecionado;
         return match;
       });
       
@@ -1057,7 +1057,7 @@ export default function CriarDocumentoAutentique() {
 
     // Buscar os dados do cliente selecionado primeiro
     let cliente = clientes.find((cliente) => {
-      const match = cliente.id === clienteSelecionado;
+      const match = cliente.id.toString() === clienteSelecionado;
       return match;
     });
 
@@ -1066,7 +1066,7 @@ export default function CriarDocumentoAutentique() {
       const clientesAtualizados = await fetchClientes();
       
       // Tentar novamente com a lista atualizada
-      cliente = clientesAtualizados.find((cliente) => cliente.id === clienteSelecionado);
+      cliente = clientesAtualizados.find((cliente) => cliente.id.toString() === clienteSelecionado);
     }
 
     // Garantir que o cliente foi encontrado
