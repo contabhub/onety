@@ -307,6 +307,11 @@ export default function PrincipalSidebar() {
   const [notifModalOpen, setNotifModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [showLeadsModal, setShowLeadsModal] = useState(false);
+  const [selectedNotificationLeads, setSelectedNotificationLeads] = useState([]);
+  const [selectedNotificationTitle, setSelectedNotificationTitle] = useState('');
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -582,6 +587,35 @@ export default function PrincipalSidebar() {
       setNotifications((list) => list.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
       setUnreadCount((c) => Math.max(0, c - 1));
     } catch {}
+  };
+
+  const handleNotificationClick = (notification) => {
+    // Verifica se é uma notificação de leads
+    if (notification.type === 'leads.upcoming' || notification.type === 'leads.overdue') {
+      try {
+        // Verifica se data_json já é um objeto ou se precisa ser parseado
+        let data;
+        if (typeof notification.data_json === 'string') {
+          data = JSON.parse(notification.data_json);
+        } else {
+          data = notification.data_json;
+        }
+        
+        if (data && data.leads && data.leads.length > 0) {
+          setSelectedNotificationLeads(data.leads);
+          setSelectedNotificationTitle(notification.title);
+          setShowLeadsModal(true);
+        }
+      } catch (error) {
+        console.error('Erro ao processar dados da notificação:', error);
+        console.error('data_json:', notification.data_json);
+        console.error('Tipo do data_json:', typeof notification.data_json);
+      }
+    } else {
+      // Para outros tipos de notificação, mostra modal genérico com detalhes
+      setSelectedNotification(notification);
+      setShowDetailsModal(true);
+    }
   };
 
   // Polling simples para badge
@@ -1159,21 +1193,230 @@ export default function PrincipalSidebar() {
                 </thead>
                 <tbody>
                   {notifications.map((n) => (
-                    <tr key={n.id} className={!n.read_at ? styles.notificationRowUnread : ''}>
+                    <tr 
+                      key={n.id} 
+                      className={`${!n.read_at ? styles.notificationRowUnread : ''} ${styles.notificationRowClickable}`}
+                      onClick={() => handleNotificationClick(n)}
+                    >
                       <td>{n.read_at ? 'Lida' : 'Nova'}</td>
                       <td>{n.title}</td>
                       <td>{n.module}</td>
                       <td>{new Date(n.created_at).toLocaleString('pt-BR')}</td>
-                      <td>
-                        {!n.read_at && (
-                          <button className={styles.notifMarkButton} onClick={() => markOneAsRead(n.id)}>Marcar lida</button>
-                        )}
-                      </td>
+             <td>
+               {!n.read_at && (
+                 <button 
+                   className={styles.notifMarkButton} 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     markOneAsRead(n.id);
+                   }}
+                 >
+                   Marcar lida
+                 </button>
+               )}
+             </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Modal de Detalhes dos Leads */}
+    {showLeadsModal && (
+      <div className={styles.modalOverlay} onClick={() => setShowLeadsModal(false)}>
+        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalHeader}>
+            <h3 className={styles.modalTitle}>{selectedNotificationTitle}</h3>
+            <button 
+              className={styles.closeButton} 
+              onClick={() => setShowLeadsModal(false)}
+            >
+              ×
+            </button>
+          </div>
+          <div className={styles.modalContent}>
+            <div className={styles.leadsList}>
+              {selectedNotificationLeads.map((lead) => (
+                <div key={lead.id} className={styles.leadCard}>
+                  <div className={styles.leadHeader}>
+                    <h4 className={styles.leadName}>{lead.nome}</h4>
+                    <span className={`${styles.leadStatus} ${lead.urgente ? styles.urgent : styles.normal}`}>
+                      {lead.urgente ? 'Urgente' : 'Normal'}
+                    </span>
+                  </div>
+                  <div className={styles.leadDetails}>
+                    <div className={styles.leadInfo}>
+                      <span className={styles.leadLabel}>Data Prevista:</span>
+                      <span className={styles.leadValue}>
+                        {new Date(lead.data_prevista).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    {lead.dias_restantes !== undefined && (
+                      <div className={styles.leadInfo}>
+                        <span className={styles.leadLabel}>Dias Restantes:</span>
+                        <span className={`${styles.leadValue} ${lead.dias_restantes <= 0 ? styles.overdue : ''}`}>
+                          {lead.dias_restantes <= 0 ? `${Math.abs(lead.dias_restantes)} dias atrasado` : `${lead.dias_restantes} dias`}
+                        </span>
+                      </div>
+                    )}
+                    {lead.dias_atraso !== undefined && (
+                      <div className={styles.leadInfo}>
+                        <span className={styles.leadLabel}>Dias de Atraso:</span>
+                        <span className={`${styles.leadValue} ${styles.overdue}`}>
+                          {lead.dias_atraso} dias
+                        </span>
+                      </div>
+                    )}
+                    {lead.fase_nome && (
+                      <div className={styles.leadInfo}>
+                        <span className={styles.leadLabel}>Fase:</span>
+                        <span className={styles.leadValue}>{lead.fase_nome}</span>
+                      </div>
+                    )}
+                    {lead.responsavel_nome && (
+                      <div className={styles.leadInfo}>
+                        <span className={styles.leadLabel}>Responsável:</span>
+                        <span className={styles.leadValue}>{lead.responsavel_nome}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.leadActions}>
+                    <button 
+                      className={styles.viewLeadButton}
+                      onClick={() => {
+                        setShowLeadsModal(false);
+                        router.push(`/comercial/leads/${lead.id}`);
+                      }}
+                    >
+                      Ver Lead
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Modal de Detalhes Genérico */}
+    {showDetailsModal && selectedNotification && (
+      <div className={styles.modalOverlay} onClick={() => setShowDetailsModal(false)}>
+        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalHeader}>
+            <h3 className={styles.modalTitle}>Detalhes da Notificação</h3>
+            <button 
+              className={styles.closeButton} 
+              onClick={() => setShowDetailsModal(false)}
+            >
+              ×
+            </button>
+          </div>
+           <div className={styles.modalContent}>
+             <div className={styles.notificationDetails}>
+               {/* Para notificações de mensagem, layout simplificado */}
+               {selectedNotification.type === 'lead.message' ? (
+                 <>
+                   <div className={styles.detailRow}>
+                     <span className={styles.detailLabel}>Mensagem:</span>
+                     <span className={styles.detailValue}>{selectedNotification.body}</span>
+                   </div>
+                 </>
+               ) : (
+                 <>
+                   {/* Layout simplificado para outros tipos de notificação */}
+                   <div className={styles.detailRow}>
+                     <span className={styles.detailLabel}>Título:</span>
+                     <span className={styles.detailValue}>{selectedNotification.title}</span>
+                   </div>
+                   <div className={styles.detailRow}>
+                     <span className={styles.detailLabel}>Data de Criação:</span>
+                     <span className={styles.detailValue}>
+                       {new Date(selectedNotification.created_at).toLocaleString('pt-BR')}
+                     </span>
+                   </div>
+                   <div className={styles.detailRow}>
+                     <span className={styles.detailLabel}>Descrição:</span>
+                     <span className={styles.detailValue}>{selectedNotification.body}</span>
+                   </div>
+                 </>
+               )}
+             </div>
+            
+             {/* Botões de ação baseados no tipo */}
+             <div className={styles.notificationActions}>
+               {selectedNotification.type === 'lead.message' ? (
+                 <button 
+                   className={styles.actionButton}
+                   onClick={() => {
+                     setShowDetailsModal(false);
+                     // Extrai o conversation_id dos dados JSON
+                     let route = '/atendimento/chat';
+                     if (selectedNotification.data_json) {
+                       try {
+                         const data = typeof selectedNotification.data_json === 'string' 
+                           ? JSON.parse(selectedNotification.data_json) 
+                           : selectedNotification.data_json;
+                         if (data.conversation_id) {
+                           route = `/atendimento/chat?conv=${data.conversation_id}`;
+                         }
+                       } catch (error) {
+                         console.error('Erro ao parsear dados da notificação:', error);
+                       }
+                     }
+                     router.push(route);
+                   }}
+                 >
+                   Ir para Chat
+                 </button>
+               ) : selectedNotification.type === 'leads.upcoming' || selectedNotification.type === 'leads.overdue' ? (
+                 <button 
+                   className={styles.actionButton}
+                   onClick={() => {
+                     setShowDetailsModal(false);
+                     router.push('/comercial/crm');
+                   }}
+                 >
+                   Ir para CRM
+                 </button>
+               ) : selectedNotification.module === 'contratual' ? (
+                 <button 
+                   className={styles.actionButton}
+                   onClick={() => {
+                     setShowDetailsModal(false);
+                     router.push('/contratual/dashboard');
+                   }}
+                 >
+                   Ir para Contratual
+                 </button>
+               ) : selectedNotification.module === 'atendimento' ? (
+                 <button 
+                   className={styles.actionButton}
+                   onClick={() => {
+                     setShowDetailsModal(false);
+                     router.push('/atendimento/dashboard');
+                   }}
+                 >
+                   Ir para Atendimento
+                 </button>
+               ) : null}
+              
+              {!selectedNotification.read_at && (
+                <button 
+                  className={styles.markReadButton}
+                  onClick={() => {
+                    markOneAsRead(selectedNotification.id);
+                    setShowDetailsModal(false);
+                  }}
+                >
+                  Marcar como Lida
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

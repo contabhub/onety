@@ -15,6 +15,7 @@ export default function Chat({ auth }) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [companyStatus, setCompanyStatus] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [conversationFromUrl, setConversationFromUrl] = useState(null);
 
 
   useEffect(() => {
@@ -52,6 +53,48 @@ export default function Chat({ auth }) {
       setIsAdmin(false);
     }
   }, [user, loading, router, auth]);
+
+  // Processar parâmetro conv da URL
+  useEffect(() => {
+    if (router.isReady && router.query.conv) {
+      const conversationId = router.query.conv;
+      console.log('🔍 Parâmetro conv encontrado na URL:', conversationId);
+      
+      // Buscar a conversa específica
+      const fetchConversation = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) return;
+          
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/atendimento/conversas/${conversationId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (response.ok) {
+            const conversation = await response.json();
+            console.log('✅ Conversa encontrada:', conversation);
+            
+            // Normalizar a estrutura da conversa para o formato esperado pelo ChatWindow
+            const normalizedConversation = {
+              ...conversation,
+              conversation_id: conversation.id, // Mapear id para conversation_id
+              contact_id: conversation.contact_id || conversation.lead_id
+            };
+            
+            console.log('🔍 Conversa normalizada:', normalizedConversation);
+            setConversationFromUrl(normalizedConversation);
+            setSelectedConversation(normalizedConversation);
+          } else {
+            console.error('❌ Erro ao buscar conversa:', response.status);
+          }
+        } catch (error) {
+          console.error('❌ Erro ao buscar conversa:', error);
+        }
+      };
+      
+      fetchConversation();
+    }
+  }, [router.isReady, router.query.conv]);
 
   // Buscar status da empresa para exibir banner
   useEffect(() => {
