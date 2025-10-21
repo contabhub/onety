@@ -877,3 +877,268 @@
 .themeButton {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Estilos para notificações clicáveis */
+.notificationRowClickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notificationRowClickable:hover {
+  background-color: var(--onity-color-primary);
+  opacity: 0.1;
+}
+
+.notificationRowClickable:hover td {
+  color: var(--onity-color-primary-contrast);
+}
+
+
+/* Modal de Detalhes dos Leads */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--onity-color-surface);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--onity-color-text);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: var(--onity-color-border);
+}
+
+.modalContent {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.leadsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.leadCard {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.leadCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.leadHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.leadName {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.leadStatus {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.leadStatus.urgent {
+  background-color: var(--onity-color-error);
+  color: white;
+}
+
+.leadStatus.normal {
+  background-color: var(--onity-color-info);
+  color: white;
+}
+
+.leadDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.leadInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.leadLabel {
+  font-size: 14px;
+  color: var(--onity-color-text);
+  opacity: 0.7;
+}
+
+.leadValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+
+.leadValue.overdue {
+  color: var(--onity-color-error);
+  font-weight: 600;
+}
+
+.leadActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.viewLeadButton {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viewLeadButton:hover {
+  background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Modal de Detalhes Genérico */
+.notificationDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.detailRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  opacity: 0.8;
+}
+
+.detailValue {
+  font-size: 14px;
+  color: var(--onity-color-text);
+  word-break: break-word;
+}
+
+.jsonData {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: var(--onity-color-text);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.notificationActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.markReadButton {
+  background: var(--onity-color-info);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.markReadButton:hover {
+  background: var(--onity-color-warning);
+  transform: translateY(-1px);
+}

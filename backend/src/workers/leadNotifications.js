@@ -16,14 +16,14 @@ const checkUpcomingLeads = async () => {
         l.nome,
         l.data_prevista,
         l.empresa_id,
-        l.user_id,
+        l.usuario_id,
         l.funil_fase_id,
         ff.nome as fase_nome,
         u.nome as responsavel_nome,
         u.email as responsavel_email
       FROM leads l
       LEFT JOIN funil_fases ff ON l.funil_fase_id = ff.id
-      LEFT JOIN usuarios u ON l.user_id = u.id
+      LEFT JOIN usuarios u ON l.usuario_id = u.id
       WHERE l.data_prevista IS NOT NULL 
         AND l.data_prevista BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)
         AND l.status != 'perdeu'
@@ -74,6 +74,68 @@ const checkUpcomingLeads = async () => {
           timestamp: new Date().toISOString()
         });
 
+        // Salva notificação na tabela user_notifications
+        try {
+          const urgentes = leadsWithDaysLeft.filter(l => l.urgente).length;
+          
+          // Agrupa leads por responsável
+          const leadsPorResponsavel = leadsWithDaysLeft.reduce((acc, lead) => {
+            const responsavelId = lead.usuario_id;
+            if (!acc[responsavelId]) {
+              acc[responsavelId] = [];
+            }
+            acc[responsavelId].push(lead);
+            return acc;
+          }, {});
+
+          // Processa cada grupo de leads
+          for (const [responsavelId, leadsDoResponsavel] of Object.entries(leadsPorResponsavel)) {
+            const urgentesDoResponsavel = leadsDoResponsavel.filter(l => l.urgente).length;
+            
+            const title = urgentesDoResponsavel > 0 
+              ? `${urgentesDoResponsavel} lead(s) urgente(s) com data prevista próxima`
+              : `${leadsDoResponsavel.length} lead(s) com data prevista próxima`;
+            
+            const body = urgentesDoResponsavel > 0
+              ? `${urgentesDoResponsavel} lead(s) precisam de atenção urgente! ${leadsDoResponsavel.length} leads no total.`
+              : `${leadsDoResponsavel.length} lead(s) têm data prevista nos próximos 3 dias.`;
+
+            const dataJson = JSON.stringify({
+              leads: leadsDoResponsavel,
+              total_leads: leadsDoResponsavel.length,
+              urgentes: urgentesDoResponsavel,
+              tipo: 'leads_upcoming'
+            });
+
+            if (responsavelId === 'null' || responsavelId === null) {
+              // Lead sem responsável: notifica todos os usuários da empresa
+              const [empresaUsers] = await pool.query(
+                'SELECT usuario_id FROM usuarios_empresas WHERE empresa_id = ?',
+                [empresaId]
+              );
+
+              for (const user of empresaUsers) {
+                await pool.query(
+                  `INSERT INTO user_notifications (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+                   VALUES (?, ?, 'comercial', 'leads.upcoming', ?, ?, ?, 'leads', ?, ?)`,
+                  [user.usuario_id, empresaId, title, body, dataJson, empresaId, 0]
+                );
+              }
+              console.log(`💾 Notificações de leads sem responsável enviadas para ${empresaUsers.length} usuários da empresa ${empresaId}`);
+            } else {
+              // Lead com responsável: notifica apenas o responsável
+              await pool.query(
+                `INSERT INTO user_notifications (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+                 VALUES (?, ?, 'comercial', 'leads.upcoming', ?, ?, ?, 'leads', ?, ?)`,
+                [responsavelId, empresaId, title, body, dataJson, empresaId, 0]
+              );
+              console.log(`💾 Notificação enviada para responsável ${responsavelId} da empresa ${empresaId}`);
+            }
+          }
+        } catch (notifError) {
+          console.error(`❌ Erro ao salvar notificações na tabela para empresa ${empresaId}:`, notifError);
+        }
+
         console.log(`📡 Notificação enviada para empresa ${empresaId}: ${leads.length} leads próximos (${leadsWithDaysLeft.filter(l => l.urgente).length} urgentes)`);
 
       } catch (error) {
@@ -102,14 +164,14 @@ const checkOverdueLeads = async () => {
         l.nome,
         l.data_prevista,
         l.empresa_id,
-        l.user_id,
+        l.usuario_id,
         l.funil_fase_id,
         ff.nome as fase_nome,
         u.nome as responsavel_nome,
         u.email as responsavel_email
       FROM leads l
       LEFT JOIN funil_fases ff ON l.funil_fase_id = ff.id
-      LEFT JOIN usuarios u ON l.user_id = u.id
+      LEFT JOIN usuarios u ON l.usuario_id = u.id
       WHERE l.data_prevista IS NOT NULL 
         AND l.data_prevista < CURDATE()
         AND l.status != 'perdeu'
@@ -157,6 +219,58 @@ const checkOverdueLeads = async () => {
           total_leads: leadsWithOverdueDays.length,
           timestamp: new Date().toISOString()
         });
+
+        // Salva notificação na tabela user_notifications
+        try {
+          // Agrupa leads por responsável
+          const leadsPorResponsavel = leadsWithOverdueDays.reduce((acc, lead) => {
+            const responsavelId = lead.usuario_id;
+            if (!acc[responsavelId]) {
+              acc[responsavelId] = [];
+            }
+            acc[responsavelId].push(lead);
+            return acc;
+          }, {});
+
+          // Processa cada grupo de leads
+          for (const [responsavelId, leadsDoResponsavel] of Object.entries(leadsPorResponsavel)) {
+            const title = `${leadsDoResponsavel.length} lead(s) atrasado(s)`;
+            const body = `${leadsDoResponsavel.length} lead(s) passaram da data prevista e precisam de atenção!`;
+
+            const dataJson = JSON.stringify({
+              leads: leadsDoResponsavel,
+              total_leads: leadsDoResponsavel.length,
+              tipo: 'leads_overdue'
+            });
+
+            if (responsavelId === 'null' || responsavelId === null) {
+              // Lead sem responsável: notifica todos os usuários da empresa
+              const [empresaUsers] = await pool.query(
+                'SELECT usuario_id FROM usuarios_empresas WHERE empresa_id = ?',
+                [empresaId]
+              );
+
+              for (const user of empresaUsers) {
+                await pool.query(
+                  `INSERT INTO user_notifications (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+                   VALUES (?, ?, 'comercial', 'leads.overdue', ?, ?, ?, 'leads', ?, ?)`,
+                  [user.usuario_id, empresaId, title, body, dataJson, empresaId, 0]
+                );
+              }
+              console.log(`💾 Notificações de leads atrasados sem responsável enviadas para ${empresaUsers.length} usuários da empresa ${empresaId}`);
+            } else {
+              // Lead com responsável: notifica apenas o responsável
+              await pool.query(
+                `INSERT INTO user_notifications (user_id, empresa_id, module, type, title, body, data_json, entity_type, entity_id, created_by)
+                 VALUES (?, ?, 'comercial', 'leads.overdue', ?, ?, ?, 'leads', ?, ?)`,
+                [responsavelId, empresaId, title, body, dataJson, empresaId, 0]
+              );
+              console.log(`💾 Notificação de atraso enviada para responsável ${responsavelId} da empresa ${empresaId}`);
+            }
+          }
+        } catch (notifError) {
+          console.error(`❌ Erro ao salvar notificações de atraso na tabela para empresa ${empresaId}:`, notifError);
+        }
 
         console.log(`📡 Notificação de atraso enviada para empresa ${empresaId}: ${leads.length} leads atrasados`);
 
