@@ -6,41 +6,34 @@ const verifyToken = require("../../middlewares/auth");
 // 🔹 Criar cliente
 router.post("/", verifyToken, async (req, res) => {
   const {
-    tipo_de_pessoa, cnpj, nome_fantasia, tipo_de_papel, codigo_do_cadastro,
-    e_mail_principal, telefone_comercial, telefone_celular, abertura_da_empresa,
-    razao_social, optante_pelo_simples, pais, cep, endereco, numero, estado, cidade,
-    bairro, complemento, pessoa_de_contato, e_mail_pessoa_contato,
-    telefone_comercial_pessoa_contato, telefone_celular_pessoa_contato, cargo, observacoes,
-    company_id // 👈 agora vem do body
+    tipo_pessoa, cpf_cnpj, nome_fantasia, razao_social, apelido,
+    email_principal, telefone_comercial, telefone_celular, abertura_empresa,
+    optante_simples, pais, cep, endereco, numero, estado, cidade,
+    bairro, complemento, observacoes, empresa_id
   } = req.body;
 
-  if (!company_id) {
-    return res.status(400).json({ error: "O campo company_id é obrigatório." });
+  if (!empresa_id) {
+    return res.status(400).json({ error: "O campo empresa_id é obrigatório." });
   }
 
   try {
     // Sanitizar dados antes de salvar
-    const emailPrincipalSanitizado = e_mail_principal ? e_mail_principal.toLowerCase().trim() : null;
-    const emailPessoaContatoSanitizado = e_mail_pessoa_contato ? e_mail_pessoa_contato.toLowerCase().trim() : null;
+    const emailPrincipalSanitizado = email_principal ? email_principal.toLowerCase().trim() : null;
     const cepSanitizado = cep ? cep.replace(/\D/g, '') : null; // Remove todos os caracteres não numéricos
     
     const [result] = await pool.query(`
       INSERT INTO clientes (
-        tipo_de_pessoa, cnpj, nome_fantasia, tipo_de_papel, codigo_do_cadastro,
-        e_mail_principal, telefone_comercial, telefone_celular, abertura_da_empresa,
-        razao_social, optante_pelo_simples, pais, cep, endereco, numero, estado, cidade,
-        bairro, complemento, pessoa_de_contato, e_mail_pessoa_contato,
-        telefone_comercial_pessoa_contato, telefone_celular_pessoa_contato, cargo, observacoes,
-        created_at, company_id
+        tipo_pessoa, cpf_cnpj, nome_fantasia, razao_social, apelido,
+        email_principal, telefone_comercial, telefone_celular, abertura_empresa,
+        optante_simples, pais, cep, endereco, numero, estado, cidade,
+        bairro, complemento, observacoes, empresa_id
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      tipo_de_pessoa, cnpj, nome_fantasia, tipo_de_papel, codigo_do_cadastro,
-      emailPrincipalSanitizado, telefone_comercial, telefone_celular, abertura_da_empresa?.trim() === "" ? null : abertura_da_empresa,
-      razao_social, optante_pelo_simples, pais, cepSanitizado, endereco, numero, estado, cidade,
-      bairro, complemento, pessoa_de_contato, emailPessoaContatoSanitizado,
-      telefone_comercial_pessoa_contato, telefone_celular_pessoa_contato, cargo, observacoes,
-      company_id
+      tipo_pessoa, cpf_cnpj, nome_fantasia, razao_social, apelido,
+      emailPrincipalSanitizado, telefone_comercial, telefone_celular, abertura_empresa?.trim() === "" ? null : abertura_empresa,
+      optante_simples, pais, cepSanitizado, endereco, numero, estado, cidade,
+      bairro, complemento, observacoes, empresa_id
     ]);
 
     res.status(201).json({ id: result.insertId, message: "Cliente criado com sucesso!" });
@@ -53,7 +46,7 @@ router.post("/", verifyToken, async (req, res) => {
 // 🔹 Listar todos os clientes
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const [clientes] = await pool.query("SELECT * FROM clientes ORDER BY created_at DESC");
+    const [clientes] = await pool.query("SELECT * FROM clientes ORDER BY criado_em DESC");
     res.json(clientes);
   } catch (error) {
     console.error("Erro ao buscar clientes:", error);
@@ -76,19 +69,19 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar clientes por company_id
-router.get("/company/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 Listar clientes por empresa_id
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
 
   try {
     const [clientes] = await pool.query(
-      "SELECT * FROM clientes WHERE company_id = ? ORDER BY created_at DESC",
-      [companyId]
+      "SELECT * FROM clientes WHERE empresa_id = ? ORDER BY criado_em DESC",
+      [empresaId]
     );
 
     res.json(clientes);
   } catch (error) {
-    console.error("Erro ao buscar clientes por company_id:", error);
+    console.error("Erro ao buscar clientes por empresa_id:", error);
     res.status(500).json({ error: "Erro ao buscar clientes da empresa." });
   }
 });
@@ -97,34 +90,30 @@ router.get("/company/:companyId", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const {
-    tipo_de_pessoa, cnpj, nome_fantasia, tipo_de_papel, codigo_do_cadastro,
-    e_mail_principal, telefone_comercial, telefone_celular, abertura_da_empresa,
-    razao_social, optante_pelo_simples, pais, cep, endereco, numero, estado, cidade,
-    bairro, complemento, pessoa_de_contato, e_mail_pessoa_contato,
-    telefone_comercial_pessoa_contato, telefone_celular_pessoa_contato, cargo, observacoes
+    tipo_pessoa, cpf_cnpj, nome_fantasia, razao_social, apelido,
+    email_principal, telefone_comercial, telefone_celular, abertura_empresa,
+    optante_simples, pais, cep, endereco, numero, estado, cidade,
+    bairro, complemento, observacoes
   } = req.body;
 
   try {
     // Sanitizar dados antes de atualizar
-    const emailPrincipalSanitizado = e_mail_principal ? e_mail_principal.toLowerCase().trim() : null;
-    const emailPessoaContatoSanitizado = e_mail_pessoa_contato ? e_mail_pessoa_contato.toLowerCase().trim() : null;
+    const emailPrincipalSanitizado = email_principal ? email_principal.toLowerCase().trim() : null;
     const cepSanitizado = cep ? cep.replace(/\D/g, '') : null; // Remove todos os caracteres não numéricos
     
     const [result] = await pool.query(`
       UPDATE clientes SET
-        tipo_de_pessoa = ?, cnpj = ?, nome_fantasia = ?, tipo_de_papel = ?, codigo_do_cadastro = ?,
-        e_mail_principal = ?, telefone_comercial = ?, telefone_celular = ?, abertura_da_empresa = ?,
-        razao_social = ?, optante_pelo_simples = ?, pais = ?, cep = ?, endereco = ?, numero = ?, 
-        estado = ?, cidade = ?, bairro = ?, complemento = ?, pessoa_de_contato = ?, 
-        e_mail_pessoa_contato = ?, telefone_comercial_pessoa_contato = ?, 
-        telefone_celular_pessoa_contato = ?, cargo = ?, observacoes = ?
+        tipo_pessoa = ?, cpf_cnpj = ?, nome_fantasia = ?, razao_social = ?, apelido = ?,
+        email_principal = ?, telefone_comercial = ?, telefone_celular = ?, abertura_empresa = ?,
+        optante_simples = ?, pais = ?, cep = ?, endereco = ?, numero = ?, 
+        estado = ?, cidade = ?, bairro = ?, complemento = ?, observacoes = ?,
+        atualizado_em = NOW()
       WHERE id = ?
     `, [
-      tipo_de_pessoa, cnpj, nome_fantasia, tipo_de_papel, codigo_do_cadastro,
-      emailPrincipalSanitizado, telefone_comercial, telefone_celular, abertura_da_empresa,
-      razao_social, optante_pelo_simples, pais, cepSanitizado, endereco, numero, estado, cidade,
-      bairro, complemento, pessoa_de_contato, emailPessoaContatoSanitizado,
-      telefone_comercial_pessoa_contato, telefone_celular_pessoa_contato, cargo, observacoes, id
+      tipo_pessoa, cpf_cnpj, nome_fantasia, razao_social, apelido,
+      emailPrincipalSanitizado, telefone_comercial, telefone_celular, abertura_empresa,
+      optante_simples, pais, cepSanitizado, endereco, numero, estado, cidade,
+      bairro, complemento, observacoes, id
     ]);
 
     if (result.affectedRows === 0) {

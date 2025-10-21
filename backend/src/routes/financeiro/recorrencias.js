@@ -16,7 +16,7 @@ router.post("/", verifyToken, async (req, res) => {
     intervalo_personalizado,
     tipo_intervalo,
     status,
-    company_id,
+    empresa_id,
     usar_template_existente, // ← NOVA FLAG (vem do frontend)
     recorrencia_template_id, // ← REFERÊNCIA AO TEMPLATE (vem do frontend)
     ...camposTransacao
@@ -26,8 +26,8 @@ router.post("/", verifyToken, async (req, res) => {
   if (indeterminada && total_parcelas) {
     return res.status(400).json({ error: "Recorrência indeterminada não deve ter total_parcelas." });
   }
-  if (!company_id) {
-    return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) {
+    return res.status(400).json({ error: "empresa_id é obrigatório." });
   }
 
   try {
@@ -62,44 +62,44 @@ router.post("/", verifyToken, async (req, res) => {
         );
         
         for (let i = 0; i < datas.length; i++) {
-          const payload = {
-            ...camposTransacao,
-            company_id,
-            data_transacao: null,
-            data_vencimento: datas[i],
-            recorrencia_id: recorrenciaId
-          };
-          
-          await pool.query(
-            `INSERT INTO transacoes (
-              conta_id, conta_api_id, company_id, tipo, valor, descricao, data_transacao, origem,
-              data_vencimento, situacao, observacoes, parcelamento, intervalo_parcelas,
-              categoria_id, sub_categoria_id, cliente_id,
-              anexo_base64, centro_de_custo_id, pluggy_transaction_id, recorrencia_id, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-            [
-              payload.conta_id,
-              payload.conta_api_id,  // ← ADICIONAR ESTA LINHA
-              payload.company_id,
-              payload.tipo,
-              payload.valor,
-              payload.descricao,
-              payload.data_transacao,
-              payload.origem,
-              payload.data_vencimento,
-              payload.situacao,
-              payload.observacoes,
-              payload.parcelamento,
-              payload.intervalo_parcelas,
-              payload.categoria_id,
-              payload.sub_categoria_id || null,
-              payload.cliente_id || null,
-              payload.anexo_base64 || null,
-              payload.centro_de_custo_id || null,
-              payload.pluggy_transaction_id || null,
-              payload.recorrencia_id
-            ]
-          );
+        const payload = {
+          ...camposTransacao,
+          empresa_id,
+          data_transacao: null,
+          data_vencimento: datas[i],
+          recorrencia_id: recorrenciaId
+        };
+        
+        await pool.query(
+          `INSERT INTO transacoes (
+            conta_id, conta_api_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
+            data_vencimento, situacao, observacao, parcelamento, intervalo_parcelas,
+            categoria_id, subcategoria_id, cliente_id,
+            anexo_base64, centro_custo_id, pluggy_transaction_id, recorrencia_id, criado_em
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+          [
+            payload.conta_id,
+            payload.conta_api_id,  // ← ADICIONAR ESTA LINHA
+            payload.empresa_id,
+            payload.tipo,
+            payload.valor,
+            payload.descricao,
+            payload.data_transacao,
+            payload.origem,
+            payload.data_vencimento,
+            payload.situacao,
+            payload.observacao,
+            payload.parcelamento,
+            payload.intervalo_parcelas,
+            payload.categoria_id,
+            payload.subcategoria_id || null,
+            payload.cliente_id || null,
+            payload.anexo_base64 || null,
+            payload.centro_custo_id || null,
+            payload.pluggy_transaction_id || null,
+            payload.recorrencia_id
+          ]
+        );
           transacoesCriadas.push({ ...payload });
         }
       }
@@ -118,7 +118,7 @@ router.post("/", verifyToken, async (req, res) => {
     // Inserir na tabela recorrencias
     const [result] = await pool.query(
       `INSERT INTO recorrencias 
-      (frequencia, total_parcelas, indeterminada, intervalo_personalizado, tipo_intervalo, status, company_id)
+      (frequencia, total_parcelas, indeterminada, intervalo_personalizado, tipo_intervalo, status, empresa_id)
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         frequencia,
@@ -127,7 +127,7 @@ router.post("/", verifyToken, async (req, res) => {
         intervalo_personalizado || null,
         tipo_intervalo || null,
         status || 'ativo',
-        company_id
+        empresa_id
       ]
     );
 
@@ -146,7 +146,7 @@ router.post("/", verifyToken, async (req, res) => {
       for (let i = 0; i < datas.length; i++) {
         const payload = {
           ...camposTransacao,
-          company_id,
+          empresa_id,
           data_transacao: null,
           data_vencimento: datas[i],
           recorrencia_id: recorrenciaId
@@ -154,15 +154,15 @@ router.post("/", verifyToken, async (req, res) => {
         
         await pool.query(
           `INSERT INTO transacoes (
-            conta_id, conta_api_id, company_id, tipo, valor, descricao, data_transacao, origem,
-            data_vencimento, situacao, observacoes, parcelamento, intervalo_parcelas,
-            categoria_id, sub_categoria_id, cliente_id,
-            anexo_base64, centro_de_custo_id, pluggy_transaction_id, recorrencia_id, created_at
+            conta_id, conta_api_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
+            data_vencimento, situacao, observacao, parcelamento, intervalo_parcelas,
+            categoria_id, subcategoria_id, cliente_id,
+            anexo_base64, centro_custo_id, pluggy_transaction_id, recorrencia_id, criado_em
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
           [
             payload.conta_id,
             payload.conta_api_id,  // ← ADICIONAR ESTA LINHA
-            payload.company_id,
+            payload.empresa_id,
             payload.tipo,
             payload.valor,
             payload.descricao,
@@ -170,14 +170,14 @@ router.post("/", verifyToken, async (req, res) => {
             payload.origem,
             payload.data_vencimento,
             payload.situacao,
-            payload.observacoes,
+            payload.observacao,
             payload.parcelamento,
             payload.intervalo_parcelas,
             payload.categoria_id,
-            payload.sub_categoria_id || null,
+            payload.subcategoria_id || null,
             payload.cliente_id || null,
             payload.anexo_base64 || null,
-            payload.centro_de_custo_id || null,
+            payload.centro_custo_id || null,
             payload.pluggy_transaction_id || null,
             payload.recorrencia_id
           ]
@@ -203,7 +203,7 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT * FROM recorrencias 
-      ORDER BY created_at DESC
+      ORDER BY criado_em DESC
     `);
     res.json(rows);
   } catch (error) {
@@ -239,7 +239,7 @@ router.get("/frequencia/:frequencia", verifyToken, async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      "SELECT * FROM recorrencias WHERE frequencia = ? ORDER BY created_at DESC",
+      "SELECT * FROM recorrencias WHERE frequencia = ? ORDER BY criado_em DESC",
       [frequencia]
     );
     res.json(rows);
@@ -259,7 +259,7 @@ router.put("/:id", verifyToken, async (req, res) => {
     intervalo_personalizado,
     tipo_intervalo,
     status,
-    company_id
+    empresa_id
   } = req.body;
 
   if (indeterminada && total_parcelas) {
@@ -269,7 +269,7 @@ router.put("/:id", verifyToken, async (req, res) => {
   try {
     const [result] = await pool.query(
       `UPDATE recorrencias 
-      SET frequencia = ?, total_parcelas = ?, indeterminada = ?, intervalo_personalizado = ?, tipo_intervalo = ?, status = ?, company_id = ?
+      SET frequencia = ?, total_parcelas = ?, indeterminada = ?, intervalo_personalizado = ?, tipo_intervalo = ?, status = ?, empresa_id = ?
       WHERE id = ?`,
       [
         frequencia,
@@ -278,7 +278,7 @@ router.put("/:id", verifyToken, async (req, res) => {
         intervalo_personalizado || null,
         tipo_intervalo || null,
         status || 'ativo',
-        company_id,
+        empresa_id,
         id
       ]
     );
@@ -386,11 +386,11 @@ router.get("/:id/transacoes", verifyToken, async (req, res) => {
         cc.codigo AS centro_custo_codigo,
         cc.nome AS centro_custo_nome
       FROM transacoes t
-      LEFT JOIN categorias c ON c.id = t.categoria_id
-      LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+      LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+      LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
       LEFT JOIN tipos tp ON tp.id = c.tipo_id
       LEFT JOIN clientes cl ON cl.id = t.cliente_id
-      LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
+      LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
       WHERE t.recorrencia_id = ?
       ORDER BY t.data_transacao ASC
     `, [id]);

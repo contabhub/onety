@@ -5,25 +5,25 @@ const verifyToken = require("../../middlewares/auth");
 
 // 🔹 Criar Centro de Custo
 router.post("/", verifyToken, async (req, res) => {
-  const { codigo, nome, situacao, company_id } = req.body;
+  const { codigo, nome, situacao, empresa_id } = req.body;
 
-  if (!company_id) {
-    return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) {
+    return res.status(400).json({ error: "empresa_id é obrigatório." });
   }
 
   try {
     // Verifica unicidade do código dentro da mesma empresa
     // const [exists] = await pool.query(
-    //   `SELECT id FROM centro_de_custo WHERE codigo = ? AND company_id = ?`,
-    //   [codigo, company_id]
+    //   `SELECT id FROM centro_custo WHERE codigo = ? AND empresa_id = ?`,
+    //   [codigo, empresa_id]
     // );
     // if (exists.length > 0) {
     //   return res.status(409).json({ error: "Código já cadastrado para esta empresa." });
     // }
 
     const [result] = await pool.query(
-      `INSERT INTO centro_de_custo (codigo, nome, situacao, company_id) VALUES (?, ?, ?, ?)`,
-      [codigo, nome, situacao || 'ativo', company_id]
+      `INSERT INTO centro_custo (codigo, nome, situacao, empresa_id) VALUES (?, ?, ?, ?)`,
+      [codigo, nome, situacao || 'ativo', empresa_id]
     );
 
     res.status(201).json({
@@ -38,19 +38,19 @@ router.post("/", verifyToken, async (req, res) => {
 
 // 🔹 Listar Centros de Custo — com filtro opcional por empresa
 router.get("/", verifyToken, async (req, res) => {
-  const { company_id } = req.query;
+  const { empresa_id } = req.query;
 
   try {
-    let query = `SELECT * FROM centro_de_custo`;
+    let query = `SELECT * FROM centro_custo`;
     const params = [];
 
-    // Se company_id foi fornecido, filtra por empresa
-    if (company_id) {
-      query += ` WHERE company_id = ?`;
-      params.push(company_id);
+    // Se empresa_id foi fornecido, filtra por empresa
+    if (empresa_id) {
+      query += ` WHERE empresa_id = ?`;
+      params.push(empresa_id);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY criado_em DESC`;
 
     const [rows] = await pool.query(query, params);
     res.json(rows);
@@ -63,16 +63,16 @@ router.get("/", verifyToken, async (req, res) => {
 // 🔹 Buscar Centro de Custo por ID
 router.get("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { company_id } = req.query;
+  const { empresa_id } = req.query;
 
-  if (!company_id) {
-    return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) {
+    return res.status(400).json({ error: "empresa_id é obrigatório." });
   }
 
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM centro_de_custo WHERE id = ? AND company_id = ?`,
-      [id, company_id]
+      `SELECT * FROM centro_custo WHERE id = ? AND empresa_id = ?`,
+      [id, empresa_id]
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: "Centro de custo não encontrado." });
@@ -85,17 +85,17 @@ router.get("/:id", verifyToken, async (req, res) => {
 });
 
 // 🔹 Listar Centros de Custo de uma empresa específica
-router.get("/empresa/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
 
-  if (!companyId) {
-    return res.status(400).json({ error: "companyId é obrigatório na URL." });
+  if (!empresaId) {
+    return res.status(400).json({ error: "empresaId é obrigatório na URL." });
   }
 
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM centro_de_custo WHERE company_id = ? ORDER BY created_at DESC`,
-      [companyId]
+      `SELECT * FROM centro_custo WHERE empresa_id = ? ORDER BY criado_em DESC`,
+      [empresaId]
     );
 
     res.json(rows);
@@ -108,18 +108,18 @@ router.get("/empresa/:companyId", verifyToken, async (req, res) => {
 // 🔹 Atualizar Centro de Custo
 router.put("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { codigo, nome, situacao, company_id } = req.body;
+  const { codigo, nome, situacao, empresa_id } = req.body;
 
-  if (!company_id) {
-    return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) {
+    return res.status(400).json({ error: "empresa_id é obrigatório." });
   }
 
   try {
     // Verifica unicidade do código dentro da mesma empresa
     if (codigo) {
       const [exists] = await pool.query(
-        `SELECT id FROM centro_de_custo WHERE codigo = ? AND id <> ? AND company_id = ?`,
-        [codigo, id, company_id]
+        `SELECT id FROM centro_custo WHERE codigo = ? AND id <> ? AND empresa_id = ?`,
+        [codigo, id, empresa_id]
       );
       if (exists.length > 0) {
         return res.status(409).json({ error: "Código já cadastrado para esta empresa." });
@@ -127,12 +127,13 @@ router.put("/:id", verifyToken, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `UPDATE centro_de_custo 
+      `UPDATE centro_custo 
        SET codigo = IFNULL(?, codigo), 
            nome = IFNULL(?, nome), 
-           situacao = IFNULL(?, situacao)
-       WHERE id = ? AND company_id = ?`,
-      [codigo, nome, situacao, id, company_id]
+           situacao = IFNULL(?, situacao),
+           atualizado_em = NOW()
+       WHERE id = ? AND empresa_id = ?`,
+      [codigo, nome, situacao, id, empresa_id]
     );
 
     if (result.affectedRows === 0) {
@@ -149,16 +150,16 @@ router.put("/:id", verifyToken, async (req, res) => {
 // 🔹 Deletar Centro de Custo
 router.delete("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
-  const { company_id } = req.query;
+  const { empresa_id } = req.query;
 
-  if (!company_id) {
-    return res.status(400).json({ error: "company_id é obrigatório." });
+  if (!empresa_id) {
+    return res.status(400).json({ error: "empresa_id é obrigatório." });
   }
 
   try {
     const [result] = await pool.query(
-      `DELETE FROM centro_de_custo WHERE id = ? AND company_id = ?`,
-      [id, company_id]
+      `DELETE FROM centro_custo WHERE id = ? AND empresa_id = ?`,
+      [id, empresa_id]
     );
 
     if (result.affectedRows === 0) {

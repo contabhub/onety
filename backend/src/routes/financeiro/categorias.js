@@ -5,11 +5,11 @@ const verifyToken = require("../../middlewares/auth");
 
 // 🔹 Criar categoria
 router.post("/", verifyToken, async (req, res) => {
-  const { nome, tipo_id, ordem, is_default = 0 } = req.body;
+  const { nome, tipo_id, ordem, padrao = 0 } = req.body;
   try {
     const [result] = await pool.query(
-      `INSERT INTO categorias (nome, tipo_id, ordem, is_default) VALUES (?, ?, ?, ?)`,
-      [nome, tipo_id, ordem || 0, is_default]
+      `INSERT INTO categorias (nome, tipo_id, ordem, padrao) VALUES (?, ?, ?, ?)`,
+      [nome, tipo_id, ordem || 0, padrao]
     );
     res.status(201).json({ id: result.insertId, message: "Categoria criada com sucesso." });
   } catch (err) {
@@ -22,7 +22,7 @@ router.post("/", verifyToken, async (req, res) => {
 // 🔹 Listar todas as categorias
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM categorias ORDER BY created_at DESC`);
+    const [rows] = await pool.query(`SELECT * FROM categorias ORDER BY criado_em DESC`);
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar categorias:", err);
@@ -68,13 +68,13 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
   try {
     // Verifica se a categoria é padrão
-    const [check] = await pool.query(`SELECT is_default FROM categorias WHERE id = ?`, [id]);
+    const [check] = await pool.query(`SELECT padrao FROM categorias WHERE id = ?`, [id]);
 
     if (check.length === 0) {
       return res.status(404).json({ error: "Categoria não encontrada." });
     }
 
-    if (check[0].is_default) {
+    if (check[0].padrao) {
       return res.status(403).json({ error: "Categoria padrão não pode ser excluída." });
     }
 

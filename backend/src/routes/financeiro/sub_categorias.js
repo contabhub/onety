@@ -5,11 +5,11 @@ const verifyToken = require("../../middlewares/auth");
 
 // 🔹 Criar Subcategoria
 router.post("/", verifyToken, async (req, res) => {
-  const { nome, categoria_id, ordem, is_default = 0 } = req.body;
+  const { nome, categoria_id, ordem, padrao = 0 } = req.body;
   try {
     const [result] = await pool.query(
-      `INSERT INTO sub_categorias (nome, categoria_id, ordem, is_default) VALUES (?, ?, ?, ?)`,
-      [nome, categoria_id, ordem || 0, is_default]
+      `INSERT INTO straton_subcategorias (nome, categoria_id, ordem, padrao) VALUES (?, ?, ?, ?)`,
+      [nome, categoria_id, ordem || 0, padrao]
     );
     res.status(201).json({ id: result.insertId, message: "Subcategoria criada com sucesso." });
   } catch (err) {
@@ -23,7 +23,7 @@ router.get("/categoria/:categoriaId", verifyToken, async (req, res) => {
   const { categoriaId } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM sub_categorias WHERE categoria_id = ? ORDER BY ordem ASC`,
+      `SELECT * FROM straton_subcategorias WHERE categoria_id = ? ORDER BY ordem ASC`,
       [categoriaId]
     );
     res.json(rows);
@@ -36,7 +36,7 @@ router.get("/categoria/:categoriaId", verifyToken, async (req, res) => {
 // 🔹 Listar todas as Subcategorias
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM sub_categorias ORDER BY ordem ASC`);
+    const [rows] = await pool.query(`SELECT * FROM straton_subcategorias ORDER BY ordem ASC`);
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar todas subcategorias:", err);
@@ -44,21 +44,21 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 Listar Subcategorias por companyId via relacionamento
-router.get("/empresa/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 Listar Subcategorias por empresaId via relacionamento
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
 
   try {
     const [rows] = await pool.query(
       `
       SELECT sc.*
-      FROM sub_categorias sc
-      JOIN categorias c ON sc.categoria_id = c.id
+      FROM straton_subcategorias sc
+      JOIN straton_categorias c ON sc.categoria_id = c.id
       JOIN tipos t ON c.tipo_id = t.id
-      WHERE t.company_id = ?
+      WHERE t.empresa_id = ?
       ORDER BY sc.ordem ASC
       `,
-      [companyId]
+      [empresaId]
     );
 
     res.json(rows);
@@ -74,7 +74,7 @@ router.put("/:id", verifyToken, async (req, res) => {
   const { nome, categoria_id, ordem } = req.body;
   try {
     const [result] = await pool.query(
-      `UPDATE sub_categorias SET nome = ?, categoria_id = ?, ordem = ? WHERE id = ?`,
+      `UPDATE straton_subcategorias SET nome = ?, categoria_id = ?, ordem = ? WHERE id = ?`,
       [nome, categoria_id, ordem || 0, id]
     );
 
@@ -95,17 +95,17 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
   try {
     // Verifica se é subcategoria padrão
-    const [check] = await pool.query(`SELECT is_default FROM sub_categorias WHERE id = ?`, [id]);
+    const [check] = await pool.query(`SELECT padrao FROM straton_subcategorias WHERE id = ?`, [id]);
 
     if (check.length === 0) {
       return res.status(404).json({ error: "Subcategoria não encontrada." });
     }
 
-    if (check[0].is_default) {
+    if (check[0].padrao) {
       return res.status(403).json({ error: "Subcategoria padrão não pode ser excluída." });
     }
 
-    const [result] = await pool.query(`DELETE FROM sub_categorias WHERE id = ?`, [id]);
+    const [result] = await pool.query(`DELETE FROM straton_subcategorias WHERE id = ?`, [id]);
 
     res.json({ message: "Subcategoria deletada com sucesso." });
   } catch (err) {
@@ -123,7 +123,7 @@ router.put("/ordenar", verifyToken, async (req, res) => {
     await connection.beginTransaction();
 
     for (const item of novaOrdem) {
-      await connection.query(`UPDATE sub_categorias SET ordem = ? WHERE id = ?`, [item.ordem, item.id]);
+      await connection.query(`UPDATE straton_subcategorias SET ordem = ? WHERE id = ?`, [item.ordem, item.id]);
     }
 
     await connection.commit();

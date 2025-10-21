@@ -41,7 +41,7 @@ router.get("/status", verifyToken, async (req, res) => {
     const [[contratosIndeterminados]] = await pool.query(`
       SELECT COUNT(*) as total
       FROM contratos c
-      INNER JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      INNER JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       WHERE rvc.tipo_origem = 'contrato'
         AND rvc.indeterminado = 1 
         AND rvc.status = 'ativo'
@@ -52,34 +52,34 @@ router.get("/status", verifyToken, async (req, res) => {
     const [[vendasIndeterminadas]] = await pool.query(`
       SELECT COUNT(*) as total
       FROM vendas v
-      INNER JOIN recorrencia_vendas_contratos rvc ON v.id = rvc.venda_id
+      INNER JOIN recorrencias_vendas rvc ON v.id = rvc.venda_id
       WHERE rvc.tipo_origem = 'venda'
         AND rvc.indeterminado = 1 
         AND rvc.status = 'ativo'
-        AND v.situacao IN ('ativo', 'aprovado')
+        AND v.situacao IN ('venda avulsa', 'venda recorrente')
     `);
 
     // Contar contratos que precisam de boleto
     const [[contratosParaBoleto]] = await pool.query(`
       SELECT COUNT(*) as total
       FROM contratos c
-      INNER JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      INNER JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       WHERE rvc.tipo_origem = 'contrato'
         AND rvc.indeterminado = 1 
         AND rvc.status = 'ativo'
         AND c.status = 'ativo'
-        AND (c.proximo_vencimento IS NULL OR c.proximo_vencimento <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
+        AND (c.termina_em IS NULL OR c.termina_em <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
     `);
 
     // Contar vendas que precisam de boleto
     const [[vendasParaBoleto]] = await pool.query(`
       SELECT COUNT(*) as total
       FROM vendas v
-      INNER JOIN recorrencia_vendas_contratos rvc ON v.id = rvc.venda_id
+      INNER JOIN recorrencias_vendas rvc ON v.id = rvc.venda_id
       WHERE rvc.tipo_origem = 'venda'
         AND rvc.indeterminado = 1 
         AND rvc.status = 'ativo'
-        AND v.situacao IN ('ativo', 'aprovado')
+        AND v.situacao IN ('venda avulsa', 'venda recorrente')
         AND (v.vencimento IS NULL OR v.vencimento <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
     `);
 
@@ -87,14 +87,14 @@ router.get("/status", verifyToken, async (req, res) => {
     const [todosContratos] = await pool.query(`
       SELECT 
         c.id,
-        c.proximo_vencimento,
+        c.termina_em as proximo_vencimento,
         c.status,
         rvc.indeterminado,
         rvc.status as rvc_status,
         CURDATE() as hoje,
         DATE_ADD(CURDATE(), INTERVAL 5 DAY) as limite_5_dias
       FROM contratos c
-      INNER JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      INNER JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       WHERE c.status = 'ativo'
     `);
 
@@ -102,8 +102,8 @@ router.get("/status", verifyToken, async (req, res) => {
     const [ultimosBoletos] = await pool.query(`
       SELECT 
         b.id,
-        b.seu_numero,
-        b.valor_nominal,
+        b.numero_venda as seu_numero,
+        b.valor as valor_nominal,
         b.data_vencimento,
         b.status,
         b.contrato_id,
@@ -111,7 +111,7 @@ router.get("/status", verifyToken, async (req, res) => {
       FROM boletos b
       LEFT JOIN contratos c ON b.contrato_id = c.id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
-      ORDER BY b.created_at DESC
+      ORDER BY b.criado_em DESC
       LIMIT 10
     `);
 
@@ -143,24 +143,24 @@ router.get("/contratos-pendentes", verifyToken, async (req, res) => {
       SELECT 
         c.id AS contrato_id,
         c.valor,
-        c.proximo_vencimento,
-        c.dia_gerado,
+        c.termina_em as proximo_vencimento,
+        c.criado_em as dia_gerado,
         c.status AS contrato_status,
         rvc.tipo_intervalo,
         rvc.intervalo,
         cli.nome_fantasia AS cliente_nome,
-        cli.e_mail_principal AS cliente_email,
-        co.nome AS empresa_nome,
-        DATEDIFF(c.proximo_vencimento, CURDATE()) AS dias_para_vencer
+        cli.email_principal AS cliente_email,
+        emp.nome AS empresa_nome,
+        DATEDIFF(c.termina_em, CURDATE()) AS dias_para_vencer
       FROM contratos c
-      INNER JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      INNER JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
-      LEFT JOIN companies co ON c.company_id = co.id
+      LEFT JOIN empresas emp ON c.empresa_id = emp.id
       WHERE rvc.indeterminado = 1 
         AND rvc.status = 'ativo'
         AND c.status = 'ativo'
-        AND (c.proximo_vencimento IS NULL OR c.proximo_vencimento <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
-      ORDER BY c.proximo_vencimento ASC
+        AND (c.termina_em IS NULL OR c.termina_em <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
+      ORDER BY c.termina_em ASC
     `);
 
     res.json(contratos);
@@ -181,21 +181,21 @@ router.post("/processar-contrato/:id", verifyToken, async (req, res) => {
       SELECT 
         c.id AS contrato_id,
         c.valor,
-        c.proximo_vencimento,
-        c.dia_gerado,
+        c.termina_em as proximo_vencimento,
+        c.criado_em as dia_gerado,
         c.status AS contrato_status,
         rvc.id AS recorrencia_id,
         rvc.tipo_intervalo,
         rvc.intervalo,
         rvc.indeterminado,
         cli.nome_fantasia AS cliente_nome,
-        cli.e_mail_principal AS cliente_email,
-        cli.cnpj AS cliente_cpf_cnpj,
-        co.nome AS empresa_nome
+        cli.email_principal AS cliente_email,
+        cli.cpf_cnpj AS cliente_cpf_cnpj,
+        emp.nome AS empresa_nome
       FROM contratos c
-      INNER JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      INNER JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
-      LEFT JOIN companies co ON c.company_id = co.id
+      LEFT JOIN empresas emp ON c.empresa_id = emp.id
       WHERE c.id = ?
     `, [id]);
 
@@ -287,13 +287,13 @@ router.get("/teste-vendas-recorrencia", verifyToken, async (req, res) => {
         rvc.indeterminado,
         rvc.status as rvc_status,
         cli.nome_fantasia,
-        cli.cnpj,
-        cli.e_mail_principal
+        cli.cpf_cnpj,
+        cli.email_principal
       FROM vendas v
-      LEFT JOIN recorrencia_vendas_contratos rvc ON v.id = rvc.venda_id
+      LEFT JOIN recorrencias_vendas rvc ON v.id = rvc.venda_id
       LEFT JOIN clientes cli ON v.cliente_id = cli.id
       WHERE rvc.tipo_origem = 'venda'
-      ORDER BY v.created_at DESC
+      ORDER BY v.criado_em DESC
     `);
 
     // 2. Verificar vendas que poderiam ter recorrência
@@ -305,22 +305,22 @@ router.get("/teste-vendas-recorrencia", verifyToken, async (req, res) => {
         v.vencimento,
         v.situacao,
         cli.nome_fantasia,
-        cli.cnpj,
-        cli.e_mail_principal
+        cli.cpf_cnpj,
+        cli.email_principal
       FROM vendas v
       LEFT JOIN clientes cli ON v.cliente_id = cli.id
-      LEFT JOIN recorrencia_vendas_contratos rvc ON v.id = rvc.venda_id
+      LEFT JOIN recorrencias_vendas rvc ON v.id = rvc.venda_id
       WHERE rvc.id IS NULL
-        AND v.situacao IN ('ativo', 'aprovado')
+        AND v.situacao IN ('venda avulsa', 'venda recorrente')
         AND v.cliente_id IS NOT NULL
-      ORDER BY v.created_at DESC
+      ORDER BY v.criado_em DESC
       LIMIT 10
     `);
 
     // 3. Estatísticas gerais
     const [[totalVendas]] = await pool.query("SELECT COUNT(*) as total FROM vendas");
-    const [[vendasAtivas]] = await pool.query("SELECT COUNT(*) as total FROM vendas WHERE situacao IN ('ativo', 'aprovado')");
-    const [[recorrenciasVendas]] = await pool.query("SELECT COUNT(*) as total FROM recorrencia_vendas_contratos WHERE tipo_origem = 'venda'");
+    const [[vendasAtivas]] = await pool.query("SELECT COUNT(*) as total FROM vendas WHERE situacao IN ('venda avulsa', 'venda recorrente')");
+    const [[recorrenciasVendas]] = await pool.query("SELECT COUNT(*) as total FROM recorrencias_vendas WHERE tipo_origem = 'venda'");
 
     res.json({
       estatisticas: {
@@ -348,19 +348,19 @@ router.get("/teste-contratos-recorrencia", verifyToken, async (req, res) => {
         c.id as contrato_id,
         c.cliente_id,
         c.valor,
-        c.proximo_vencimento,
+        c.termina_em as proximo_vencimento,
         c.status,
         rvc.tipo_origem,
         rvc.indeterminado,
         rvc.status as rvc_status,
         cli.nome_fantasia,
-        cli.cnpj,
-        cli.e_mail_principal
+        cli.cpf_cnpj,
+        cli.email_principal
       FROM contratos c
-      LEFT JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      LEFT JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
       WHERE rvc.tipo_origem = 'contrato'
-      ORDER BY c.created_at DESC
+      ORDER BY c.criado_em DESC
     `);
 
     // 2. Verificar contratos que poderiam ter recorrência
@@ -369,25 +369,25 @@ router.get("/teste-contratos-recorrencia", verifyToken, async (req, res) => {
         c.id as contrato_id,
         c.cliente_id,
         c.valor,
-        c.proximo_vencimento,
+        c.termina_em as proximo_vencimento,
         c.status,
         cli.nome_fantasia,
-        cli.cnpj,
-        cli.e_mail_principal
+        cli.cpf_cnpj,
+        cli.email_principal
       FROM contratos c
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
-      LEFT JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      LEFT JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       WHERE rvc.id IS NULL
         AND c.status = 'ativo'
         AND c.cliente_id IS NOT NULL
-      ORDER BY c.created_at DESC
+      ORDER BY c.criado_em DESC
       LIMIT 10
     `);
 
     // 3. Estatísticas gerais
     const [[totalContratos]] = await pool.query("SELECT COUNT(*) as total FROM contratos");
     const [[contratosAtivos]] = await pool.query("SELECT COUNT(*) as total FROM contratos WHERE status = 'ativo'");
-    const [[recorrenciasContratos]] = await pool.query("SELECT COUNT(*) as total FROM recorrencia_vendas_contratos WHERE tipo_origem = 'contrato'");
+    const [[recorrenciasContratos]] = await pool.query("SELECT COUNT(*) as total FROM recorrencias_vendas WHERE tipo_origem = 'contrato'");
 
     res.json({
       estatisticas: {
@@ -415,23 +415,23 @@ router.get("/teste-completo-recorrencia", verifyToken, async (req, res) => {
         c.id as contrato_id,
         c.cliente_id,
         c.valor,
-        c.proximo_vencimento,
+        c.termina_em as proximo_vencimento,
         c.status,
         rvc.tipo_origem,
         rvc.indeterminado,
         rvc.status as rvc_status,
         cli.nome_fantasia,
-        cli.cnpj,
-        cli.e_mail_principal
+        cli.cpf_cnpj,
+        cli.email_principal
       FROM contratos c
-      LEFT JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      LEFT JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
       WHERE rvc.tipo_origem = 'contrato'
         AND rvc.indeterminado = 1
         AND rvc.status = 'ativo'
         AND c.status = 'ativo'
-        AND (c.proximo_vencimento IS NULL OR c.proximo_vencimento <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
-      ORDER BY c.proximo_vencimento ASC
+        AND (c.termina_em IS NULL OR c.termina_em <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
+      ORDER BY c.termina_em ASC
     `);
 
     // 2. Verificar vendas com recorrência
@@ -446,15 +446,15 @@ router.get("/teste-completo-recorrencia", verifyToken, async (req, res) => {
         rvc.indeterminado,
         rvc.status as rvc_status,
         cli.nome_fantasia,
-        cli.cnpj,
-        cli.e_mail_principal
+        cli.cpf_cnpj,
+        cli.email_principal
       FROM vendas v
-      LEFT JOIN recorrencia_vendas_contratos rvc ON v.id = rvc.venda_id
+      LEFT JOIN recorrencias_vendas rvc ON v.id = rvc.venda_id
       LEFT JOIN clientes cli ON v.cliente_id = cli.id
       WHERE rvc.tipo_origem = 'venda'
         AND rvc.indeterminado = 1
         AND rvc.status = 'ativo'
-        AND v.situacao IN ('ativo', 'aprovado')
+        AND v.situacao IN ('venda avulsa', 'venda recorrente')
         AND (v.vencimento IS NULL OR v.vencimento <= DATE_ADD(CURDATE(), INTERVAL 5 DAY))
       ORDER BY v.vencimento ASC
     `);
@@ -472,8 +472,8 @@ router.get("/teste-completo-recorrencia", verifyToken, async (req, res) => {
     // 4. Estatísticas gerais
     const [[totalContratos]] = await pool.query("SELECT COUNT(*) as total FROM contratos");
     const [[totalVendas]] = await pool.query("SELECT COUNT(*) as total FROM vendas");
-    const [[recorrenciasContratos]] = await pool.query("SELECT COUNT(*) as total FROM recorrencia_vendas_contratos WHERE tipo_origem = 'contrato'");
-    const [[recorrenciasVendas]] = await pool.query("SELECT COUNT(*) as total FROM recorrencia_vendas_contratos WHERE tipo_origem = 'venda'");
+    const [[recorrenciasContratos]] = await pool.query("SELECT COUNT(*) as total FROM recorrencias_vendas WHERE tipo_origem = 'contrato'");
+    const [[recorrenciasVendas]] = await pool.query("SELECT COUNT(*) as total FROM recorrencias_vendas WHERE tipo_origem = 'venda'");
 
     res.json({
       estatisticas: {
@@ -515,10 +515,10 @@ router.post("/simular-renovacao-anual", verifyToken, async (req, res) => {
           c.id as contrato_id,
           c.cliente_id,
           c.valor,
-          c.data_inicio,
+          c.comeca_em as data_inicio,
           c.categoria_id,
-          c.sub_categoria_id,
-          c.company_id,
+          c.subcategoria_id,
+          c.empresa_id,
           cli.nome_fantasia as cliente_nome
         FROM contratos c
         LEFT JOIN clientes cli ON c.cliente_id = cli.id
@@ -535,7 +535,7 @@ router.post("/simular-renovacao-anual", verifyToken, async (req, res) => {
       const proximoAno = new Date().getFullYear() + 1;
       const [vendasExistentes] = await pool.query(`
         SELECT COUNT(*) as count FROM vendas 
-        WHERE contrato_origem_id = ? AND ano_referencia = ?
+        WHERE contrato_id = ? AND ano_referencia = ?
       `, [contrato_id, proximoAno]);
 
       if (vendasExistentes[0].count > 0) {
@@ -609,15 +609,15 @@ router.get("/status-renovacao-anual", verifyToken, async (req, res) => {
         c.id as contrato_id,
         c.cliente_id,
         c.valor,
-        c.data_inicio,
+        c.comeca_em as data_inicio,
         cli.nome_fantasia as cliente_nome,
         COUNT(v.id) as vendas_total,
         COUNT(CASE WHEN v.situacao = 'processado' THEN 1 END) as vendas_processadas,
         MAX(v.ano_referencia) as ultimo_ano,
         MAX(v.mes_referencia) as ultimo_mes
       FROM contratos c
-      INNER JOIN vendas v ON v.contrato_origem_id = c.id
-      INNER JOIN recorrencia_vendas_contratos rvc ON c.id = rvc.contrato_id
+      INNER JOIN vendas v ON v.contrato_id = c.id
+      INNER JOIN recorrencias_vendas rvc ON c.id = rvc.contrato_id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
       WHERE c.status = 'ativo'
         AND rvc.tipo_origem = 'contrato'
@@ -638,7 +638,7 @@ router.get("/status-renovacao-anual", verifyToken, async (req, res) => {
         cli.nome_fantasia as cliente_nome,
         COUNT(v2.id) as vendas_proximo_ano
       FROM contratos c
-      INNER JOIN vendas v2 ON v2.contrato_origem_id = c.id
+      INNER JOIN vendas v2 ON v2.contrato_id = c.id
       LEFT JOIN clientes cli ON c.cliente_id = cli.id
       WHERE c.status = 'ativo'
         AND v2.ano_referencia = ?

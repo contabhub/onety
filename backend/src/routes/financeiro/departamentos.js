@@ -6,19 +6,19 @@ const verifyToken = require('../../middlewares/auth');
 // ✅ Criar departamento
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const { nome, codigo, descricao, company_id } = req.body;
+    const { nome, codigo, descricao, empresa_id } = req.body;
 
-    if (!nome || !company_id) {
-      return res.status(400).json({ error: 'Nome e company_id são obrigatórios' });
+    if (!nome || !empresa_id) {
+      return res.status(400).json({ error: 'Nome e empresa_id são obrigatórios' });
     }
 
     const [result] = await pool.query(
-      `INSERT INTO departamentos (company_id, nome, codigo, descricao, ativo)
-       VALUES (?, ?, ?, ?, 1)`,
-      [company_id, nome, codigo || null, descricao || null]
+      `INSERT INTO departamentos (empresa_id, nome, codigo, descricao, status)
+       VALUES (?, ?, ?, ?, 'ativo')`,
+      [empresa_id, nome, codigo || null, descricao || null]
     );
 
-    res.status(201).json({ id: result.insertId, nome, codigo, descricao, company_id, ativo: 1 });
+    res.status(201).json({ id: result.insertId, nome, codigo, descricao, empresa_id, status: 'ativo' });
   } catch (err) {
     console.error('❌ Erro ao criar departamento:', err);
     res.status(500).json({ error: 'Erro ao criar departamento' });
@@ -28,18 +28,18 @@ router.post('/', verifyToken, async (req, res) => {
 // ✅ Listar departamentos por empresa
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const { company_id } = req.query;
+    const { empresa_id } = req.query;
 
-    if (!company_id) {
-      return res.status(400).json({ error: 'company_id é obrigatório' });
+    if (!empresa_id) {
+      return res.status(400).json({ error: 'empresa_id é obrigatório' });
     }
 
     const [rows] = await pool.query(
-      `SELECT id, nome, codigo, descricao, ativo
+      `SELECT id, nome, codigo, descricao, status
        FROM departamentos
-       WHERE company_id = ? AND ativo = 1
+       WHERE empresa_id = ? AND status = 'ativo'
        ORDER BY nome ASC`,
-      [company_id]
+      [empresa_id]
     );
 
     res.json(rows);
@@ -53,33 +53,33 @@ router.get('/', verifyToken, async (req, res) => {
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, codigo, descricao, ativo } = req.body;
+    const { nome, codigo, descricao, status } = req.body;
 
     const [result] = await pool.query(
       `UPDATE departamentos
-       SET nome = ?, codigo = ?, descricao = ?, ativo = ?
+       SET nome = ?, codigo = ?, descricao = ?, status = ?
        WHERE id = ?`,
-      [nome, codigo || null, descricao || null, ativo ?? 1, id]
+      [nome, codigo || null, descricao || null, status || 'ativo', id]
     );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Departamento não encontrado' });
     }
 
-    res.json({ id, nome, codigo, descricao, ativo });
+    res.json({ id, nome, codigo, descricao, status });
   } catch (err) {
     console.error('❌ Erro ao atualizar departamento:', err);
     res.status(500).json({ error: 'Erro ao atualizar departamento' });
   }
 });
 
-// ✅ Remover departamento (soft delete → ativo = 0)
+// ✅ Remover departamento (soft delete → status = 'inativo')
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
 
     const [result] = await pool.query(
-      `UPDATE departamentos SET ativo = 0 WHERE id = ?`,
+      `UPDATE departamentos SET status = 'inativo' WHERE id = ?`,
       [id]
     );
 

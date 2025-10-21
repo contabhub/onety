@@ -6,9 +6,9 @@ const verifyToken = require("../../middlewares/auth");
 const { format } = require("date-fns");
 const { ptBR } = require("date-fns/locale");
 
-// 🔹 GET /api/export/saidas/:companyId?mes=06&ano=2025
-router.get("/saidas/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 GET /api/export/saidas/:empresaId?mes=06&ano=2025
+router.get("/saidas/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   const { mes, ano } = req.query;
 
   try {
@@ -24,19 +24,19 @@ router.get("/saidas/:companyId", verifyToken, async (req, res) => {
         cl.nome_fantasia AS cliente_fornecedor,
         co.banco AS conta_nome,
         cc.nome AS centro_custo,
-        t.observacoes,
+        t.observacao,
         t.origem,
         t.situacao
       FROM transacoes t
-      LEFT JOIN categorias c ON c.id = t.categoria_id
-      LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+      LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+      LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
       LEFT JOIN clientes cl ON cl.id = t.cliente_id
       LEFT JOIN contas co ON co.id = t.conta_id
-      LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
-      WHERE t.company_id = ? AND t.tipo = 'saida'
+      LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
+      WHERE t.empresa_id = ? AND t.tipo = 'saida'
     `;
 
-    const params = [companyId];
+    const params = [empresaId];
 
     // Filtro por mês e ano, se fornecido
     if (mes && ano) {
@@ -65,7 +65,7 @@ router.get("/saidas/:companyId", verifyToken, async (req, res) => {
       "Cliente/Fornecedor": item.cliente_fornecedor || "",
       Conta: item.conta_nome || "",
       "Centro de Custo": item.centro_custo || "",
-      Observações: item.observacoes || "",
+      Observações: item.observacao || "",
       Origem: item.origem || "",
       Situação: item.situacao || "",
     }));
@@ -115,8 +115,8 @@ router.get("/saidas/:companyId", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/saidas-simples/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+router.get("/saidas-simples/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
 
   try {
     const [rows] = await pool.query(
@@ -131,18 +131,18 @@ router.get("/saidas-simples/:companyId", verifyToken, async (req, res) => {
           cl.nome_fantasia AS cliente_fornecedor,
           co.banco AS conta_nome,
           cc.nome AS centro_custo,
-          t.observacoes,
+          t.observacao,
           t.origem,
           t.situacao
         FROM transacoes t
-        LEFT JOIN categorias c ON c.id = t.categoria_id
-        LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+        LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+        LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
         LEFT JOIN clientes cl ON cl.id = t.cliente_id
         LEFT JOIN contas co ON co.id = t.conta_id
-        LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
-        WHERE t.company_id = ? AND t.tipo = 'saida'
+        LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
+        WHERE t.empresa_id = ? AND t.tipo = 'saida'
         `,
-      [companyId]
+      [empresaId]
     );
 
     console.log("🔎 Resultado bruto da query:", rows);
@@ -164,7 +164,7 @@ router.get("/saidas-simples/:companyId", verifyToken, async (req, res) => {
       "Cliente/Fornecedor": item.cliente_fornecedor || "",
       Conta: item.conta_nome || "",
       "Centro de Custo": item.centro_custo || "",
-      Observações: item.observacoes || "",
+      Observações: item.observacao || "",
       Origem: item.origem || "",
       Situação: item.situacao || "",
     }));
@@ -191,7 +191,7 @@ router.get("/saidas-simples/:companyId", verifyToken, async (req, res) => {
     ];
 
     const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-    const nomeArquivo = `contas-a-pagar-completo-${companyId}.xlsx`;
+    const nomeArquivo = `contas-a-pagar-completo-${empresaId}.xlsx`;
 
     res.setHeader(
       "Content-Disposition",
@@ -208,9 +208,9 @@ router.get("/saidas-simples/:companyId", verifyToken, async (req, res) => {
   }
 });
 
-// 🔹 GET /export/entradas/:companyId?mes=06&ano=2025
-router.get("/entradas/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+// 🔹 GET /export/entradas/:empresaId?mes=06&ano=2025
+router.get("/entradas/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   const { mes, ano } = req.query;
 
   try {
@@ -225,19 +225,19 @@ router.get("/entradas/:companyId", verifyToken, async (req, res) => {
           cl.nome_fantasia AS cliente_fornecedor,
           co.banco AS conta_nome,
           cc.nome AS centro_custo,
-          t.observacoes,
+          t.observacao,
           t.origem,
           t.situacao
         FROM transacoes t
-        LEFT JOIN categorias c ON c.id = t.categoria_id
-        LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+        LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+        LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
         LEFT JOIN clientes cl ON cl.id = t.cliente_id
         LEFT JOIN contas co ON co.id = t.conta_id
-        LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
-        WHERE t.company_id = ? AND t.tipo = 'entrada'
+        LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
+        WHERE t.empresa_id = ? AND t.tipo = 'entrada'
       `;
 
-    const params = [companyId];
+    const params = [empresaId];
 
     if (mes && ano) {
       query += ` AND MONTH(t.data_vencimento) = ? AND YEAR(t.data_vencimento) = ?`;
@@ -264,7 +264,7 @@ router.get("/entradas/:companyId", verifyToken, async (req, res) => {
       "Cliente/Fornecedor": item.cliente_fornecedor || "",
       Conta: item.conta_nome || "",
       "Centro de Custo": item.centro_custo || "",
-      Observações: item.observacoes || "",
+      Observações: item.observacao || "",
       Origem: item.origem || "",
       Situação: item.situacao || "",
     }));
@@ -312,8 +312,8 @@ router.get("/entradas/:companyId", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/movimentacoes/:companyId", verifyToken, async (req, res) => {
-  const { companyId } = req.params;
+router.get("/movimentacoes/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
   const { mes, ano } = req.query;
 
   try {
@@ -329,19 +329,19 @@ router.get("/movimentacoes/:companyId", verifyToken, async (req, res) => {
           cl.nome_fantasia AS cliente_fornecedor,
           co.banco AS conta_nome,
           cc.nome AS centro_custo,
-          t.observacoes,
+          t.observacao,
           t.origem,
           t.situacao
         FROM transacoes t
-        LEFT JOIN categorias c ON c.id = t.categoria_id
-        LEFT JOIN sub_categorias sc ON sc.id = t.sub_categoria_id
+        LEFT JOIN straton_categorias c ON c.id = t.categoria_id
+        LEFT JOIN straton_subcategorias sc ON sc.id = t.subcategoria_id
         LEFT JOIN clientes cl ON cl.id = t.cliente_id
         LEFT JOIN contas co ON co.id = t.conta_id
-        LEFT JOIN centro_de_custo cc ON cc.id = t.centro_de_custo_id
-        WHERE t.company_id = ?
+        LEFT JOIN centro_de_custo cc ON cc.id = t.centro_custo_id
+        WHERE t.empresa_id = ?
       `;
 
-    const params = [companyId];
+    const params = [empresaId];
 
     if (mes && ano) {
       query += ` AND MONTH(t.data_vencimento) = ? AND YEAR(t.data_vencimento) = ?`;
@@ -372,7 +372,7 @@ router.get("/movimentacoes/:companyId", verifyToken, async (req, res) => {
       "Cliente/Fornecedor": item.cliente_fornecedor || "",
       Conta: item.conta_nome || "",
       "Centro de Custo": item.centro_custo || "",
-      Observações: item.observacoes || "",
+      Observações: item.observacao || "",
       Origem: item.origem || "",
       Situação: item.situacao || "",
     }));

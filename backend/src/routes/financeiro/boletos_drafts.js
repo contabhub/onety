@@ -197,7 +197,7 @@ router.post('/form', verifyToken, async (req, res) => {
 
     const form = {
       conta_id: null,
-      company_id: company_id ?? null,
+      empresa_id: company_id ?? null,
       tipo,
       valor: parsed.valor,
       descricao: `Boleto ${parsed.bank_code} - ${parsed.barcode.slice(0,5)}...`,
@@ -205,15 +205,15 @@ router.post('/form', verifyToken, async (req, res) => {
       origem: 'boleto',
       data_vencimento: parsed.data_vencimento,
       situacao: 'em_aberto',
-      observacoes: '',
+      observacao: '',
       parcelamento: 1,
       intervalo_parcelas: null,
       categoria_id: null,
-      sub_categoria_id: null,
+      subcategoria_id: null,
       cliente_id: null,
-      anexo_base64: null,
-      centro_de_custo_id: null,
-      pluggy_transaction_id: null,
+      anexo: null,
+      centro_custo_id: null,
+      pluggy_transacao_id: null,
       boleto_id: null,
       nome_arquivo: nome_arquivo || null // Adicionar nome do arquivo
     };
@@ -249,8 +249,8 @@ router.post('/drafts', verifyToken, async (req, res) => {
 
     if (draft_id) {
       const [r] = await pool.query(
-        `UPDATE boleto_drafts SET user_id=?, company_id=?, linha_digitavel=?, boleto_meta=?, form=?, updated_at=NOW()
-         WHERE id=? AND status='draft'`,
+        `UPDATE boleto_drafts SET usuario_id=?, empresa_id=?, linha_digitavel=?, boleto_meta=?, formulario=?, atualizado_em=NOW()
+         WHERE id=? AND status='rascunho'`,
         [user_id, company_id, linha_digitavel, JSON.stringify(boleto_meta), JSON.stringify(form), draft_id]
       );
       if (r.affectedRows === 0) return res.status(404).json({ error: 'Rascunho não encontrado ou finalizado.' });
@@ -258,7 +258,7 @@ router.post('/drafts', verifyToken, async (req, res) => {
     }
 
     const [ins] = await pool.query(
-      `INSERT INTO boleto_drafts (user_id, company_id, linha_digitavel, boleto_meta, form)
+      `INSERT INTO boleto_drafts (usuario_id, empresa_id, linha_digitavel, boleto_meta, formulario)
        VALUES (?, ?, ?, ?, ?)`,
       [user_id, company_id, linha_digitavel, JSON.stringify(boleto_meta), JSON.stringify(form)]
     );
@@ -281,22 +281,22 @@ router.get('/drafts', verifyToken, async (req, res) => {
     let query = `
       SELECT 
         id,
-        user_id,
-        company_id,
+        usuario_id,
+        empresa_id,
         linha_digitavel,
         boleto_meta,
-        form,
+        formulario,
         status,
-        created_at,
-        updated_at
+        criado_em,
+        atualizado_em
       FROM boleto_drafts
-      WHERE company_id = ?
+      WHERE empresa_id = ?
     `;
     
     const params = [company_id];
     
     if (user_id) {
-      query += ' AND user_id = ?';
+      query += ' AND usuario_id = ?';
       params.push(user_id);
     }
     
@@ -305,7 +305,7 @@ router.get('/drafts', verifyToken, async (req, res) => {
       params.push(status);
     }
     
-    query += ' ORDER BY updated_at DESC';
+    query += ' ORDER BY atualizado_em DESC';
 
     const [rows] = await pool.query(query, params);
     
@@ -313,7 +313,7 @@ router.get('/drafts', verifyToken, async (req, res) => {
     const drafts = rows.map(row => ({
       ...row,
       boleto_meta: safeJsonParse(row.boleto_meta),
-      form: safeJsonParse(row.form)
+      form: safeJsonParse(row.formulario)
     }));
 
     res.json({
@@ -332,10 +332,10 @@ router.get('/drafts/ultimo', verifyToken, async (req, res) => {
     const { user_id = null, company_id = null } = req.query;
     const [rows] = await pool.query(
       `SELECT * FROM boleto_drafts
-       WHERE status='draft'
-         AND ( (user_id IS NULL OR ? IS NULL) OR user_id = ? )
-         AND ( (company_id IS NULL OR ? IS NULL) OR company_id = ? )
-       ORDER BY updated_at DESC
+       WHERE status='rascunho'
+         AND ( (usuario_id IS NULL OR ? IS NULL) OR usuario_id = ? )
+         AND ( (empresa_id IS NULL OR ? IS NULL) OR empresa_id = ? )
+       ORDER BY atualizado_em DESC
        LIMIT 1`,
       [user_id, user_id, company_id, company_id]
     );
@@ -343,7 +343,7 @@ router.get('/drafts/ultimo', verifyToken, async (req, res) => {
     
     const draft = rows[0];
     draft.boleto_meta = safeJsonParse(draft.boleto_meta);
-    draft.form = safeJsonParse(draft.form);
+    draft.form = safeJsonParse(draft.formulario);
     
     res.json(draft);
   } catch (e) {
@@ -360,14 +360,14 @@ router.get('/drafts/:id', verifyToken, async (req, res) => {
   
   const draft = rows[0];
   draft.boleto_meta = safeJsonParse(draft.boleto_meta);
-  draft.form = safeJsonParse(draft.form);
+  draft.form = safeJsonParse(draft.formulario);
   
   res.json(draft);
 });
 
 router.delete('/drafts/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
-  const [r] = await pool.query(`DELETE FROM boleto_drafts WHERE id=? AND status='draft'`, [id]);
+  const [r] = await pool.query(`DELETE FROM boleto_drafts WHERE id=? AND status='rascunho'`, [id]);
   if (r.affectedRows === 0) return res.status(404).json({ error: 'Rascunho não encontrado.' });
   res.json({ message: 'Rascunho apagado.' });
 });
@@ -383,7 +383,7 @@ router.put('/drafts/:id', verifyToken, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `UPDATE boleto_drafts SET form = ?, updated_at = NOW() WHERE id = ? AND status = 'draft'`,
+      `UPDATE boleto_drafts SET formulario = ?, atualizado_em = NOW() WHERE id = ? AND status = 'rascunho'`,
       [JSON.stringify(form), id]
     );
 
@@ -440,7 +440,7 @@ router.post('/importar-pdf', verifyToken, upload.single('pdf'), async (req, res)
       
       form = {
         conta_id: null,
-        company_id: company_id,
+        empresa_id: company_id,
         tipo,
         valor: parsed.valor,
         descricao: `Boleto ${parsed.bank_code} - ${parsed.barcode.slice(0,5)}... (Pagador: ${boletoData.pagador || 'N/A'})`,
@@ -448,7 +448,7 @@ router.post('/importar-pdf', verifyToken, upload.single('pdf'), async (req, res)
         origem: 'boleto',
         data_vencimento: parsed.data_vencimento,
         situacao: 'em_aberto',
-        observacoes: `Importado via PDF (Boleto Tradicional)
+        observacao: `Importado via PDF (Boleto Tradicional)
 Beneficiário: ${boletoData.beneficiario || 'N/A'}
 Pagador: ${boletoData.pagador || 'N/A'}
 CNPJ/CPF Beneficiário: ${boletoData.cnpj_cpf_beneficiario || 'N/A'}
@@ -457,11 +457,11 @@ Valor: R$ ${boletoData.valor || parsed.valor || 'N/A'}`,
         parcelamento: 1,
         intervalo_parcelas: null,
         categoria_id: null,
-        sub_categoria_id: null,
+        subcategoria_id: null,
         cliente_id: null,
-        anexo_base64: pdfBase64,
-        centro_de_custo_id: null,
-        pluggy_transaction_id: null,
+        anexo: pdfBase64,
+        centro_custo_id: null,
+        pluggy_transacao_id: null,
         boleto_id: null,
         nome_arquivo: nome_arquivo || req.file.originalname // Adicionar nome do arquivo
       };
@@ -472,7 +472,7 @@ Valor: R$ ${boletoData.valor || parsed.valor || 'N/A'}`,
       
       form = {
         conta_id: null,
-        company_id: company_id,
+        empresa_id: company_id,
         tipo,
         valor: boletoData.valor || 0,
         descricao: `${boletoData.tipo === 'pix' ? 'Boleto PIX' : 'Boleto Tradicional'} - ${boletoData.beneficiario || 'Beneficiário não identificado'} (Pagador: ${boletoData.pagador || 'N/A'})`,
@@ -480,7 +480,7 @@ Valor: R$ ${boletoData.valor || parsed.valor || 'N/A'}`,
         origem: boletoData.tipo === 'pix' ? 'boleto_pix' : 'boleto',
         data_vencimento: null, // PIX geralmente não tem vencimento
         situacao: 'em_aberto',
-        observacoes: `Importado via PDF (${boletoData.tipo === 'pix' ? 'Boleto PIX' : 'Boleto Tradicional'})
+        observacao: `Importado via PDF (${boletoData.tipo === 'pix' ? 'Boleto PIX' : 'Boleto Tradicional'})
 Beneficiário: ${boletoData.beneficiario || 'N/A'}
 Pagador: ${boletoData.pagador || 'N/A'}
 CNPJ/CPF Beneficiário: ${boletoData.cnpj_cpf_beneficiario || 'N/A'}
@@ -490,11 +490,11 @@ Tipo: ${boletoData.tipo}`,
         parcelamento: 1,
         intervalo_parcelas: null,
         categoria_id: null,
-        sub_categoria_id: null,
+        subcategoria_id: null,
         cliente_id: null,
-        anexo_base64: pdfBase64,
-        centro_de_custo_id: null,
-        pluggy_transaction_id: null,
+        anexo: pdfBase64,
+        centro_custo_id: null,
+        pluggy_transacao_id: null,
         boleto_id: null,
         nome_arquivo: nome_arquivo || req.file.originalname // Adicionar nome do arquivo
       };
@@ -502,7 +502,7 @@ Tipo: ${boletoData.tipo}`,
 
     // Salvar como rascunho na tabela boleto_drafts
     const [result] = await pool.query(
-      `INSERT INTO boleto_drafts (user_id, company_id, linha_digitavel, boleto_meta, form)
+      `INSERT INTO boleto_drafts (usuario_id, empresa_id, linha_digitavel, boleto_meta, formulario)
        VALUES (?, ?, ?, ?, ?)`,
       [user_id, company_id, linhaDigitavel, JSON.stringify(boletoMeta), JSON.stringify(form)]
     );
@@ -535,27 +535,27 @@ Tipo: ${boletoData.tipo}`,
 router.post('/drafts/:id/finalizar', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const [[draft]] = await pool.query(`SELECT * FROM boleto_drafts WHERE id=? AND status='draft'`, [id]);
+    const [[draft]] = await pool.query(`SELECT * FROM boleto_drafts WHERE id=? AND status='rascunho'`, [id]);
     if (!draft) return res.status(404).json({ error: 'Rascunho não encontrado.' });
 
-    const form = safeJsonParse(draft.form);
-    // Insere em transacoes com created_at = NOW() (igual sua rota atual)
+    const form = safeJsonParse(draft.formulario);
+    // Insere em transacoes com criado_em = NOW() (igual sua rota atual)
     const [result] = await pool.query(
       `
       INSERT INTO transacoes (
-        conta_id, company_id, tipo, valor, descricao, data_transacao, origem,
-        data_vencimento, situacao, observacoes, parcelamento, intervalo_parcelas,
-        categoria_id, sub_categoria_id, cliente_id,
-        anexo_base64, centro_de_custo_id,
-        pluggy_transaction_id,
+        conta_id, empresa_id, tipo, valor, descricao, data_transacao, origem,
+        data_vencimento, situacao, observacao, parcelamento, intervalo_parcelas,
+        categoria_id, subcategoria_id, cliente_id,
+        anexo, centro_custo_id,
+        pluggy_transacao_id,
         boleto_id,
-        created_at
+        criado_em
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `,
       [
         form.conta_id,
-        form.company_id,
+        form.empresa_id,
         form.tipo,
         form.valor,
         form.descricao,
@@ -563,20 +563,20 @@ router.post('/drafts/:id/finalizar', verifyToken, async (req, res) => {
         form.origem,
         form.data_vencimento,
         form.situacao,
-        form.observacoes,
+        form.observacao,
         form.parcelamento,
         form.intervalo_parcelas,
         form.categoria_id,
-        form.sub_categoria_id || null,
+        form.subcategoria_id || null,
         form.cliente_id || null,
-        form.anexo_base64 || null,
+        form.anexo || null,
         form.centro_de_custo_id || null,
-        form.pluggy_transaction_id || null,
+        form.pluggy_transacao_id || null,
         form.boleto_id || null
       ]
     );
 
-    await pool.query(`UPDATE boleto_drafts SET status='finalizado', updated_at=NOW() WHERE id=?`, [id]);
+    await pool.query(`UPDATE boleto_drafts SET status='finalizado', atualizado_em=NOW() WHERE id=?`, [id]);
     // Dica: você já tem endpoint para pegar codigo_solicitacao/token do Inter depois, se quiser exibir PDF.
 
     res.status(201).json({
