@@ -53,4 +53,63 @@ const sendEmail = async (options) => {
   }
 };
 
-module.exports = { sendEmail };
+// Função para enviar email com anexo PDF
+const sendEmailWithPDF = async (options) => {
+  try {
+    // Suporte tanto para objeto quanto para parâmetros separados
+    let mailOptions;
+    
+    if (typeof options === 'object' && options.to) {
+      // Formato objeto: { to, subject, html, pdfBuffer, filename }
+      mailOptions = {
+        from: process.env.SMTP_USER,
+        to: options.to,
+        subject: options.subject,
+        html: options.html || options.htmlContent || '',
+        attachments: [
+          {
+            filename: options.filename,
+            content: options.pdfBuffer,
+            contentType: 'application/pdf',
+            encoding: 'base64'
+          }
+        ]
+      };
+    } else {
+      // Formato antigo: sendEmailWithPDF(to, subject, htmlContent, pdfBuffer, filename)
+      const [to, subject, htmlContent, pdfBuffer, filename] = arguments;
+      mailOptions = {
+        from: process.env.SMTP_USER,
+        to: to,
+        subject: subject,
+        html: htmlContent,
+        attachments: [
+          {
+            filename: filename,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+            encoding: 'base64'
+          }
+        ]
+      };
+    }
+
+    // Validação básica
+    if (!mailOptions.to) {
+      throw new Error('No recipients defined');
+    }
+
+    if (!mailOptions.attachments[0].content) {
+      throw new Error('No PDF buffer provided');
+    }
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Email enviado com sucesso:', result.messageId);
+    return result;
+  } catch (error) {
+    console.error('❌ Erro ao enviar email:', error);
+    throw error;
+  }
+};
+
+module.exports = { sendEmail, sendEmailWithPDF };

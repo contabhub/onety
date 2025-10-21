@@ -7,6 +7,10 @@ const webSocketManager = require("./websocket");
 require("./workers/expireContracts");
 
 
+// Importar cron jobs
+const cronJobs = require("./services/financeiro/cronJobs");
+const cronBoletos = require("./services/financeiro/cronBoletos");
+
 const app = express();
 
 app.use(cors());
