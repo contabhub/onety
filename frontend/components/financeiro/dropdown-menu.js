@@ -1,122 +1,226 @@
 'use client';
 
 import * as React from 'react';
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
-import styles from '../../styles/financeiro/DropdownMenu.module.css';
+import styles from '../../styles/financeiro/dropdown-menu.module.css';
 
-const DropdownMenu = DropdownMenuPrimitive.Root;
+// Função para combinar classes CSS
+const cn = (...classes) => {
+  return classes.filter(Boolean).join(' ');
+};
 
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+// Contexto para controlar o estado do dropdown
+const DropdownMenuContext = React.createContext({
+  isOpen: false,
+  setIsOpen: () => {},
+});
 
-const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+// Componente principal do dropdown
+const DropdownMenu = ({ children, ...props }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
 
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+  };
 
-const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+  const handleClose = () => {
+    setIsOpen(false);
+  };
 
-const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+  // Fechar dropdown quando clicar fora
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && !event.target.closest('[data-dropdown-menu]')) {
+        handleClose();
+      }
+    };
 
-const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubTrigger
-    ref={ref}
-    className={`${styles.dmItem} ${inset ? styles.dmInset : ''} ${className || ''}`.trim()}
-    {...props}
-  >
-    {children}
-    <ChevronRight className={styles.dmChevron} />
-  </DropdownMenuPrimitive.SubTrigger>
-));
-DropdownMenuSubTrigger.displayName =
-  DropdownMenuPrimitive.SubTrigger.displayName;
+    if (isOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isOpen]);
 
-const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubContent
-    ref={ref}
-    className={`${styles.dmContent} ${className || ''}`.trim()}
-    {...props}
-  />
-));
-DropdownMenuSubContent.displayName =
-  DropdownMenuPrimitive.SubContent.displayName;
+  return (
+    <DropdownMenuContext.Provider value={{ isOpen, setIsOpen: handleToggle }}>
+      <div className={styles.dropdownMenu} data-dropdown-menu {...props}>
+        {children}
+      </div>
+    </DropdownMenuContext.Provider>
+  );
+};
 
-const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content
+// Trigger do dropdown
+const DropdownMenuTrigger = React.forwardRef(({ className, children, asChild, ...props }, ref) => {
+  const { setIsOpen } = React.useContext(DropdownMenuContext);
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      ref,
+      onClick: (e) => {
+        setIsOpen();
+        children.props.onClick?.(e);
+      },
+      className: cn(styles.dropdownTrigger, children.props.className),
+      ...props,
+    });
+  }
+
+  return (
+    <button
       ref={ref}
-      sideOffset={sideOffset}
-      className={`${styles.dmContent} ${className || ''}`.trim()}
+      className={cn(styles.dropdownTrigger, className)}
+      onClick={setIsOpen}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+DropdownMenuTrigger.displayName = 'DropdownMenuTrigger';
+
+// Conteúdo do dropdown
+const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, align = 'end', ...props }, ref) => {
+  const { isOpen } = React.useContext(DropdownMenuContext);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(styles.dropdownContent, className)}
+      style={{
+        marginTop: `${sideOffset}px`,
+        ...props.style,
+      }}
       {...props}
     />
-  </DropdownMenuPrimitive.Portal>
-));
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
+  );
+});
+DropdownMenuContent.displayName = 'DropdownMenuContent';
 
-const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) => (
-  <DropdownMenuPrimitive.Item
-    ref={ref}
-    className={`${styles.dmItem} ${inset ? styles.dmInset : ''} ${className || ''}`.trim()}
-    {...props}
-  />
-));
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
+// Item do dropdown
+const DropdownMenuItem = React.forwardRef(({ className, inset, disabled, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        styles.dropdownItem,
+        inset && styles.dropdownItemInset,
+        disabled && styles.dropdownItemDisabled,
+        className
+      )}
+      {...props}
+    />
+  );
+});
+DropdownMenuItem.displayName = 'DropdownMenuItem';
 
-const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, ...props }, ref) => (
-  <DropdownMenuPrimitive.CheckboxItem
-    ref={ref}
-    className={`${styles.dmItem} ${styles.dmCheckbox} ${className || ''}`.trim()}
-    checked={checked}
-    {...props}
-  >
-    <span className={styles.dmIndicatorWrap}>
-      <DropdownMenuPrimitive.ItemIndicator>
-        <Check className={styles.dmCheckIcon} />
-      </DropdownMenuPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </DropdownMenuPrimitive.CheckboxItem>
-));
-DropdownMenuCheckboxItem.displayName =
-  DropdownMenuPrimitive.CheckboxItem.displayName;
+// Item com checkbox
+const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, onCheckedChange, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(styles.dropdownItem, styles.dropdownCheckboxItem, className)}
+      onClick={() => onCheckedChange?.(!checked)}
+      {...props}
+    >
+      <span className={styles.dropdownIndicator}>
+        {checked && <Check className={styles.dropdownCheckIcon} />}
+      </span>
+      {children}
+    </div>
+  );
+});
+DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
 
-const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props }, ref) => (
-  <DropdownMenuPrimitive.RadioItem
-    ref={ref}
-    className={`${styles.dmItem} ${styles.dmRadio} ${className || ''}`.trim()}
-    {...props}
-  >
-    <span className={styles.dmIndicatorWrap}>
-      <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className={styles.dmCircleIcon} />
-      </DropdownMenuPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </DropdownMenuPrimitive.RadioItem>
-));
-DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
+// Item com radio
+const DropdownMenuRadioItem = React.forwardRef(({ className, children, value, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(styles.dropdownItem, styles.dropdownRadioItem, className)}
+      {...props}
+    >
+      <span className={styles.dropdownIndicator}>
+        <Circle className={styles.dropdownCircleIcon} />
+      </span>
+      {children}
+    </div>
+  );
+});
+DropdownMenuRadioItem.displayName = 'DropdownMenuRadioItem';
 
-const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => (
-  <DropdownMenuPrimitive.Label
-    ref={ref}
-    className={`${styles.dmLabel} ${inset ? styles.dmInset : ''} ${className || ''}`.trim()}
-    {...props}
-  />
-));
-DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
+// Label do dropdown
+const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(styles.dropdownLabel, inset && styles.dropdownItemInset, className)}
+      {...props}
+    />
+  );
+});
+DropdownMenuLabel.displayName = 'DropdownMenuLabel';
 
-const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={`${styles.dmSeparator} ${className || ''}`.trim()}
-    {...props}
-  />
-));
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
+// Separador
+const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(styles.dropdownSeparator, className)}
+      {...props}
+    />
+  );
+});
+DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
 
-const DropdownMenuShortcut = ({ className, ...props }) => (
-  <span className={`${styles.dmShortcut} ${className || ''}`.trim()} {...props} />
-);
+// Atalho de teclado
+const DropdownMenuShortcut = ({ className, ...props }) => {
+  return (
+    <span className={cn(styles.dropdownShortcut, className)} {...props} />
+  );
+};
 DropdownMenuShortcut.displayName = 'DropdownMenuShortcut';
+
+// Componentes de grupo (simplificados)
+const DropdownMenuGroup = ({ children, ...props }) => (
+  <div className={styles.dropdownGroup} {...props}>
+    {children}
+  </div>
+);
+
+const DropdownMenuPortal = ({ children }) => children;
+
+const DropdownMenuSub = ({ children }) => children;
+
+const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn(styles.dropdownContent, className)} {...props} />
+));
+DropdownMenuSubContent.displayName = 'DropdownMenuSubContent';
+
+const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      styles.dropdownItem,
+      styles.dropdownSubTrigger,
+      inset && styles.dropdownItemInset,
+      className
+    )}
+    {...props}
+  >
+    {children}
+    <ChevronRight className={styles.dropdownChevron} />
+  </div>
+));
+DropdownMenuSubTrigger.displayName = 'DropdownMenuSubTrigger';
+
+const DropdownMenuRadioGroup = ({ children, value, onValueChange, ...props }) => (
+  <div className={styles.dropdownRadioGroup} {...props}>
+    {children}
+  </div>
+);
 
 export {
   DropdownMenu,

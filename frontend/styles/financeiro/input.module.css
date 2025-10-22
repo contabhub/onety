@@ -1,0 +1,89 @@
+/* Estilos para input usando design tokens */
+
+.input {
+  display: flex;
+  height: 40px;
+  width: 100%;
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* Input dentro de container de pesquisa */
+.vendasOrcamentosSearchInput {
+  border: none !important;
+  background: transparent !important;
+  padding-left: 28px !important;
+  height: 24px !important;
+  box-shadow: none !important;
+}
+
+.vendasOrcamentosSearchInput:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.vendasOrcamentosSearchInput:hover {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+.input:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.input:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background-color: var(--onity-color-bg);
+}
+
+.input[type="file"] {
+  border: 0;
+  background-color: transparent;
+  padding: 0;
+  height: auto;
+}
+
+.input[type="file"]::-webkit-file-upload-button {
+  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  cursor: pointer;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  margin-right: var(--onity-space-s);
+}
+
+.input[type="file"]::-webkit-file-upload-button:hover {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .input {
+    height: 36px;
+    font-size: var(--onity-type-caption-size);
+    padding: var(--onity-space-xs) var(--onity-space-s);
+  }
+}
