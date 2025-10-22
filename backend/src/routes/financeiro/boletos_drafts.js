@@ -1,6 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+
+// Polyfill para DOMMatrix no Node.js
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  globalThis.DOMMatrix = class DOMMatrix {
+    constructor(init) {
+      if (init) {
+        this.a = init.a || 1;
+        this.b = init.b || 0;
+        this.c = init.c || 0;
+        this.d = init.d || 1;
+        this.e = init.e || 0;
+        this.f = init.f || 0;
+      } else {
+        this.a = 1;
+        this.b = 0;
+        this.c = 0;
+        this.d = 1;
+        this.e = 0;
+        this.f = 0;
+      }
+    }
+  };
+}
+
 const pdfParse = require('pdf-parse');
 const pool = require('../../config/database');
 const verifyToken = require('../../middlewares/auth');
