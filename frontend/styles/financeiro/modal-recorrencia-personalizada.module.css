@@ -1,0 +1,193 @@
+/* Modal de Recorrência Personalizada - Usando variáveis do globals.css */
+
+.modalRecorrenciaPersonalizada {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  color: var(--onity-color-text);
+}
+
+.modalRecorrenciaTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin-bottom: var(--onity-space-m);
+}
+
+.modalRecorrenciaDescription {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  margin-bottom: var(--onity-space-s);
+}
+
+.modalRecorrenciaLabel {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  margin-bottom: var(--onity-space-xs);
+  display: block;
+}
+
+.modalRecorrenciaInput {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.modalRecorrenciaInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.1);
+}
+
+.modalRecorrenciaInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.modalRecorrenciaSelectTrigger {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.modalRecorrenciaSelectTrigger:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.modalRecorrenciaSelectTrigger:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.1);
+}
+
+.modalRecorrenciaSelectContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-med);
+  z-index: 50;
+}
+
+.modalRecorrenciaSelectItem {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.modalRecorrenciaSelectItem:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.modalRecorrenciaSelectItem[data-highlighted] {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.modalRecorrenciaRadio {
+  accent-color: var(--onity-color-primary);
+  margin-right: var(--onity-space-xs);
+}
+
+.modalRecorrenciaRadioText {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+}
+
+.modalRecorrenciaFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.modalRecorrenciaCancelBtn {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modalRecorrenciaCancelBtn:hover {
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.modalRecorrenciaConfirmBtn {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modalRecorrenciaConfirmBtn:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .modalRecorrenciaPersonalizada {
+    margin: var(--onity-space-m);
+    max-width: calc(100vw - 2 * var(--onity-space-m));
+  }
+  
+  .modalRecorrenciaFooter {
+    flex-direction: column;
+  }
+  
+  .modalRecorrenciaCancelBtn,
+  .modalRecorrenciaConfirmBtn {
+    width: 100%;
+  }
+}
+
+/* Estados de erro e validação */
+.modalRecorrenciaInput[aria-invalid="true"] {
+  border-color: var(--onity-color-error);
+}
+
+.modalRecorrenciaInput[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 2px rgba(234, 84, 85, 0.1);
+}
+
+/* Animações suaves */
+.modalRecorrenciaPersonalizada {
+  animation: modalFadeIn 200ms ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

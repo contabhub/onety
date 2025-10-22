@@ -1,0 +1,785 @@
+/* ===== OVERLAY E DRAWER PRINCIPAL ===== */
+.novaReceitaOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(3, 8, 66, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.novaReceitaOverlay.closing {
+  opacity: 0;
+}
+
+.novaReceitaModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: var(--onity-color-surface);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  border-bottom: none;
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.novaReceitaModal.closing {
+  transform: translateY(100%);
+}
+
+/* Handle para indicar que pode ser arrastado */
+.novaReceitaHandle {
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  position: relative;
+}
+
+.novaReceitaHandle:active {
+  cursor: grabbing;
+}
+
+.novaReceitaHandle::before {
+  content: '';
+  width: 40px;
+  height: 4px;
+  background: var(--onity-icon-secondary);
+  border-radius: 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.novaReceitaHandle:hover::before {
+  opacity: 1;
+  background: var(--onity-color-primary);
+}
+
+/* ===== HEADER ===== */
+.novaReceitaHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--onity-space-m) var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.novaReceitaTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.novaReceitaCloseButton {
+  background: none;
+  border: none;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  cursor: pointer;
+  color: var(--onity-icon-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.novaReceitaCloseButton:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+/* ===== CONTENT ===== */
+.novaReceitaContent {
+  flex: 1;
+  padding: var(--onity-space-l);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+  min-height: 0; /* Permite que o flex item encolha */
+}
+
+/* Garantir que todas as seções sejam visíveis */
+.novaReceitaContent > * {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ===== SEÇÕES ===== */
+.novaReceitaSection {
+  display: flex !important;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
+  width: 100%;
+  position: relative;
+}
+
+.novaReceitaSectionTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+  padding-bottom: var(--onity-space-s);
+  border-bottom: 2px solid var(--onity-color-primary);
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+}
+
+.novaReceitaSectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--onity-color-primary);
+  border-radius: 1px;
+}
+
+/* ===== SUBSECÇÕES ===== */
+.novaReceitaSubsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+  padding: var(--onity-space-l);
+  background: linear-gradient(135deg, var(--onity-color-bg) 0%, rgba(68, 84, 100, 0.02) 100%);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.2s ease;
+}
+
+.novaReceitaSubsection:hover {
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-1px);
+}
+
+.novaReceitaSubsectionTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+  padding-bottom: var(--onity-space-s);
+  border-bottom: 1px solid var(--onity-color-border);
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+}
+
+.novaReceitaSubsectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--onity-color-primary);
+  border-radius: 1px;
+}
+
+/* ===== GRID LAYOUT ===== */
+.novaReceitaGrid {
+  display: grid;
+  gap: var(--onity-space-m);
+  grid-template-columns: 1fr;
+}
+
+/* ===== FLEX LAYOUT ===== */
+.novaReceitaFlexRow {
+  display: flex !important;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+}
+
+.novaReceitaFlexRow > * {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .novaReceitaGrid.md\\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .novaReceitaGrid.md\\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .novaReceitaGrid.md\\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ===== CAMPOS ===== */
+.novaReceitaField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.novaReceitaLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.novaReceitaLabelRequired {
+  color: var(--onity-color-error);
+  margin-left: 2px;
+}
+
+/* ===== INPUTS ===== */
+.novaReceitaInput {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.novaReceitaInput:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.novaReceitaInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
+}
+
+.novaReceitaInput::placeholder {
+  color: var(--onity-icon-secondary);
+  font-weight: 400;
+}
+
+/* Input com ícone */
+.novaReceitaInputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.novaReceitaInputIcon {
+  position: absolute;
+  left: var(--onity-space-m);
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  z-index: 1;
+}
+
+.novaReceitaInputWithIcon .novaReceitaInput {
+  padding-left: 40px;
+}
+
+/* ===== TEXTAREA ===== */
+.novaReceitaTextarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.novaReceitaTextarea:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.novaReceitaTextarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
+}
+
+.novaReceitaTextarea::placeholder {
+  color: var(--onity-icon-secondary);
+  font-weight: 400;
+}
+
+/* ===== CONTAINER DE CLIENTE ===== */
+.novaReceitaClientContainer {
+  display: flex;
+  gap: var(--onity-space-m);
+  align-items: flex-end;
+}
+
+.novaReceitaClientField {
+  flex: 1;
+  min-width: 0; /* Permite que o campo encolha se necessário */
+}
+
+/* Ajustar largura do campo de cliente */
+.novaReceitaClientField .react-select-container {
+  width: calc(85%) !important;
+}
+
+/* Ajustar largura do campo de descrição */
+.novaReceitaFlexRow > div:last-child {
+  width: calc(85%) !important;
+}
+
+
+
+.novaReceitaAddButton {
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+  cursor: pointer;
+  color: var(--onity-color-primary-contrast);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 40px;
+  
+}
+
+.novaReceitaAddButton:hover {
+  background: var(--onity-color-primary-hover);
+}
+
+/* ===== SWITCH CONTAINER ===== */
+.novaReceitaSwitchContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-m) 0;
+  border-top: 1px solid var(--onity-color-border);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.novaReceitaSwitchLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+/* ===== CONFIGURAÇÃO DE RECORRÊNCIA ===== */
+.novaReceitaRecurrenceConfig {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
+}
+
+.novaReceitaRecurrenceLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+/* ===== TABS ===== */
+.novaReceitaTabs {
+  width: 100%;
+}
+
+.novaReceitaTabsList {
+  display: flex;
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs);
+  margin-bottom: var(--onity-space-m);
+}
+
+.novaReceitaTabsTrigger {
+  flex: 1;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaReceitaTabsTrigger[data-state="active"] {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.novaReceitaTabsContent {
+  padding: 0;
+}
+
+/* ===== SEÇÃO DE PDF ===== */
+.novaReceitaPdfSection {
+  border: 2px dashed var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--onity-color-bg);
+}
+
+.novaReceitaPdfSection:hover {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-color-surface);
+}
+
+.novaReceitaPdfIcon {
+  width: 48px;
+  height: 48px;
+  color: var(--onity-icon-secondary);
+  margin: 0 auto var(--onity-space-m);
+}
+
+.novaReceitaPdfTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0 0 var(--onity-space-s) 0;
+}
+
+.novaReceitaPdfSubtitle {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+  margin: 0;
+}
+
+.novaReceitaPdfSuccess {
+  background-color: var(--onity-color-success);
+  border: 1px solid var(--onity-color-success);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-m);
+  margin-top: var(--onity-space-m);
+  opacity: 0.1;
+}
+
+.novaReceitaPdfSuccessText {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  color: var(--onity-color-success);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  margin-bottom: var(--onity-space-xs);
+}
+
+.novaReceitaPdfSuccessSubtext {
+  color: var(--onity-color-success);
+  font-size: var(--onity-type-caption-size);
+  margin: 0;
+}
+
+/* ===== INDICADORES DE STATUS ===== */
+.novaReceitaStatusIndicator {
+  display: flex;
+  gap: var(--onity-space-xs);
+  margin-left: var(--onity-space-s);
+}
+
+.novaReceitaStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.novaReceitaStatusDotPrimary {
+  background-color: var(--onity-color-info);
+}
+
+.novaReceitaStatusDotWarning {
+  background-color: var(--onity-color-warning);
+}
+
+/* ===== FOOTER ===== */
+.novaReceitaFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.novaReceitaFooterActions {
+  display: flex;
+  gap: var(--onity-space-s);
+}
+
+/* ===== BOTÕES ===== */
+.novaReceitaButton {
+  padding: var(--onity-space-s) var(--onity-space-l);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 100px;
+}
+
+.novaReceitaButtonSecondary {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-border);
+}
+
+.novaReceitaButtonSecondary:hover {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-icon-secondary);
+}
+
+.novaReceitaButtonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.novaReceitaButtonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.novaReceitaButtonPrimary:active {
+  background-color: var(--onity-color-primary);
+  opacity: 0.9;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .novaReceitaModal {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .novaReceitaHeader {
+    padding: var(--onity-space-m) var(--onity-space-m) 0 var(--onity-space-m);
+  }
+  
+  .novaReceitaContent {
+    padding: 0 var(--onity-space-m);
+  }
+  
+  .novaReceitaFooter {
+    padding: var(--onity-space-m);
+    flex-direction: column;
+    gap: var(--onity-space-s);
+  }
+  
+  .novaReceitaFooterActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .novaReceitaButton {
+    flex: 1;
+  }
+  
+  .novaReceitaClientContainer {
+    flex-direction: column;
+    gap: var(--onity-space-s);
+  }
+  
+  .novaReceitaAddButton {
+    align-self: flex-start;
+  }
+}
+
+/* ===== ESTILOS PARA REACT SELECT ===== */
+.react-select-container {
+  width: 100%;
+}
+
+.react-select__control {
+  min-height: 48px !important;
+  border: 2px solid var(--onity-color-border) !important;
+  border-radius: var(--onity-radius-m) !important;
+  box-shadow: none !important;
+  background-color: var(--onity-color-surface) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.react-select__control:hover {
+  border-color: var(--onity-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.react-select__control--is-focused {
+  border-color: var(--onity-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.react-select__control--is-focused:hover {
+  border-color: var(--onity-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.2) !important;
+}
+
+.react-select__placeholder {
+  color: var(--onity-icon-secondary) !important;
+  font-size: var(--onity-type-body-size) !important;
+  font-weight: 400 !important;
+  margin-left: 4px !important;
+}
+
+.react-select__single-value {
+  color: var(--onity-color-text) !important;
+  font-size: var(--onity-type-body-size) !important;
+  font-weight: 500 !important;
+  margin-left: 4px !important;
+}
+
+.react-select__input-container {
+  color: var(--onity-color-text) !important;
+  margin-left: 4px !important;
+}
+
+.react-select__indicator-separator {
+  background-color: transparent !important;
+  margin: 8px 4px !important;
+}
+
+.react-select__dropdown-indicator {
+  color: var(--onity-icon-secondary) !important;
+  padding: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__control:hover .react-select__dropdown-indicator {
+  color: var(--onity-color-primary) !important;
+  transform: scale(1.1) !important;
+}
+
+.react-select__control--is-focused .react-select__dropdown-indicator {
+  color: var(--onity-color-primary) !important;
+  transform: rotate(180deg) scale(1.1) !important;
+}
+
+.react-select__clear-indicator {
+  color: var(--onity-icon-secondary) !important;
+  padding: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-select__clear-indicator:hover {
+  color: var(--onity-color-error) !important;
+  transform: scale(1.1) !important;
+}
+
+.react-select__menu {
+  border-radius: var(--onity-radius-m) !important;
+  border: 2px solid var(--onity-color-border) !important;
+  box-shadow: var(--onity-elev-high) !important;
+  background-color: var(--onity-color-surface) !important;
+  margin-top: 4px !important;
+  overflow: hidden !important;
+}
+
+.react-select__menu-list {
+  padding: 4px !important;
+}
+
+.react-select__option {
+  font-size: var(--onity-type-body-size) !important;
+  padding: 12px 16px !important;
+  color: var(--onity-color-text) !important;
+  border-radius: var(--onity-radius-xs) !important;
+  margin: 2px 0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-weight: 400 !important;
+}
+
+.react-select__option:hover {
+  background-color: var(--onity-color-bg) !important;
+  color: var(--onity-color-text) !important;
+  transform: translateX(4px) !important;
+}
+
+.react-select__option--is-focused {
+  background-color: var(--onity-color-bg) !important;
+  color: var(--onity-color-text) !important;
+  transform: translateX(4px) !important;
+}
+
+.react-select__option--is-selected {
+  background-color: var(--onity-color-primary) !important;
+  color: var(--onity-color-primary-contrast) !important;
+  font-weight: 600 !important;
+  transform: translateX(4px) !important;
+}
+
+.react-select__option--is-selected:hover {
+  background-color: var(--onity-color-primary-hover) !important;
+  color: var(--onity-color-primary-contrast) !important;
+}
+
+.react-select__loading-indicator {
+  color: var(--onity-color-primary) !important;
+}
+
+.react-select__loading-message {
+  color: var(--onity-icon-secondary) !important;
+  font-size: var(--onity-type-body-size) !important;
+  padding: 12px 16px !important;
+}
+
+.react-select__no-options-message {
+  color: var(--onity-icon-secondary) !important;
+  font-size: var(--onity-type-body-size) !important;
+  padding: 12px 16px !important;
+  font-style: italic !important;
+}

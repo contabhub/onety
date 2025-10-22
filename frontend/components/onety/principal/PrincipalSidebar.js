@@ -198,9 +198,9 @@ const MODULE_REGISTRY = {
     items: [
       {
         id: 'contas-pagar',
-        label: 'Contas a Pagar',
+        label: 'Visão Geral',
         icon: <DollarSign size={18} />,
-        route: '/financeiro/contas-pagar'
+        route: '/financeiro/visao-geral'
       },
       {
         id: 'contas-receber',
