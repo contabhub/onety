@@ -1,0 +1,256 @@
+/* Container principal do dialog */
+.dialogContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+  z-index: 10001;
+}
+
+/* Header do dialog */
+.dialogHeader {
+  padding: 24px 24px 0 24px;
+}
+
+.dialogTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.dialogDescription {
+  color: var(--onity-color-text-secondary);
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* Botão de fechar */
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-text-secondary);
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Conteúdo do formulário */
+.formContent {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Campo do formulário */
+.fieldContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+
+.required {
+  color: var(--onity-color-error);
+}
+
+/* Input */
+.fieldInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.fieldInput::placeholder {
+  color: var(--onity-color-text-secondary);
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.fieldInput:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.fieldInput.error {
+  border-color: var(--onity-color-error);
+}
+
+.fieldInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Select */
+.fieldSelect {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fieldSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.fieldSelect:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.fieldSelect.error {
+  border-color: var(--onity-color-error);
+}
+
+.fieldSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Select Content */
+.selectContent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  z-index: 10002;
+}
+
+.selectItem {
+  padding: 12px 16px;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.selectItem:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+/* Mensagem de erro */
+.errorMessage {
+  font-size: 12px;
+  color: var(--onity-color-error);
+  margin-top: 4px;
+}
+
+/* Footer do dialog */
+.dialogFooter {
+  padding: 0 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+}
+
+/* Botões */
+.button {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Botão cancelar */
+.cancelButton {
+  background: transparent;
+  border: 1px solid var(--onity-color-error);
+  color: var(--onity-color-error);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--onity-color-error);
+  color: white;
+}
+
+/* Botão criar */
+.createButton {
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  color: white;
+}
+
+.createButton:hover:not(:disabled) {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+/* Loading spinner */
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .dialogContent {
+    max-width: 90vw;
+    margin: 20px;
+  }
+  
+  .dialogHeader {
+    padding: 20px 20px 0 20px;
+  }
+  
+  .formContent {
+    padding: 20px;
+  }
+  
+  .dialogFooter {
+    padding: 0 20px 20px 20px;
+    flex-direction: column;
+  }
+  
+  .button {
+    width: 100%;
+  }
+}
