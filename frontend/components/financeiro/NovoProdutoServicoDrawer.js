@@ -140,24 +140,22 @@ export default function NovoProdutoServicoDrawer({
       <DialogContent className={styles.dialogContent}>
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className={styles.dialogTitle}>
-                Novo Produto/Serviço
-              </DialogTitle>
-              <DialogDescription className={styles.dialogDescription}>
-                Adicione um novo produto ou serviço ao sistema
-              </DialogDescription>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className={styles.closeButton}
-              disabled={isLoading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <DialogTitle className={styles.dialogTitle}>
+              Novo Produto/Serviço
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className={styles.closeButton}
+                disabled={isLoading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
           </div>
+          <DialogDescription className={styles.dialogDescription}>
+            Adicione um novo produto ou serviço ao sistema
+          </DialogDescription>
         </DialogHeader>
 
         <div className={styles.formContent}>
@@ -235,7 +233,6 @@ export default function NovoProdutoServicoDrawer({
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4" />
                 Criar
               </>
             )}

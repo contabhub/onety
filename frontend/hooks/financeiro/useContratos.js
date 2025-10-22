@@ -1,9 +1,5 @@
 import { useState, useCallback } from 'react';
 
-// Contrato: { id: number, numero_contrato: string, status: string, ... }
-// RecorrenciaContrato: { id: number, contrato_id: number, tipo_intervalo: string, ... }
-// NovoContratoData: { numero_contrato: string, cliente_id: number, ... }
-
 export const useContratos = () => {
   const [contratos, setContratos] = useState([]);
   const [recorrencias, setRecorrencias] = useState([]);
@@ -14,19 +10,11 @@ export const useContratos = () => {
 
   // Buscar próximo número de contrato automaticamente
   const buscarProximoNumeroContrato = useCallback(async () => {
-    // Buscar empresaId do userData (EmpresaId com E maiúsculo)
-    const userData = localStorage.getItem("userData");
+    const empresaId = localStorage.getItem("empresaId");
     const token = localStorage.getItem("token");
 
-    if (!userData || !token || !API) {
-      throw new Error("Dados de autenticação não encontrados no localStorage");
-    }
-
-    const parsedUserData = JSON.parse(userData);
-    const empresaId = parsedUserData.EmpresaId;
-
-    if (!empresaId) {
-      throw new Error("ID da empresa não encontrado");
+    if (!empresaId || !token || !API) {
+      throw new Error("EmpresaId ou Token não encontrados no localStorage");
     }
 
     try {
@@ -79,20 +67,11 @@ export const useContratos = () => {
 
   // Buscar contratos (usando a rota específica de contratos)
   const buscarContratos = useCallback(async () => {
-    // Buscar empresaId do userData (EmpresaId com E maiúsculo)
-    const userData = localStorage.getItem("userData");
+    const empresaId = localStorage.getItem("empresaId");
     const token = localStorage.getItem("token");
 
-    if (!userData || !token || !API) {
-      setError("Dados de autenticação não encontrados no localStorage");
-      return;
-    }
-
-    const parsedUserData = JSON.parse(userData);
-    const empresaId = parsedUserData.EmpresaId;
-
-    if (!empresaId) {
-      setError("ID da empresa não encontrado");
+    if (!empresaId || !token || !API) {
+      setError("EmpresaId ou Token não encontrados no localStorage");
       return;
     }
 

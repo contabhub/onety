@@ -57,4 +57,3 @@ const ToggleGroupItem = React.forwardRef(({ className, value, isSelected, onSele
 ToggleGroupItem.displayName = 'ToggleGroupItem';
 
 export { ToggleGroup, ToggleGroupItem };
-

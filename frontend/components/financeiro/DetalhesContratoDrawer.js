@@ -2,18 +2,14 @@ import { useState, useEffect } from 'react';
 import { Button } from './botao';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
+import { Separator } from './separator';
 import { X, Calendar, User, Building, Package, DollarSign, FileText, Settings, Mail, Clock, TrendingUp, ChevronDown, CreditCard, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
-// import { generateReciboContrato } from '@/utils/pdfGenerator';
-// import { EditarVencimentoContratoModal } from './EditarVencimentoContratoModal';
-// import EditarContratoDrawer from './EditarContratoDrawer';
+import { generateReciboContrato } from '../../utils/financeiro/pdfGenerator';
+import { EditarVencimentoContratoModal } from './EditarVencimentoContratoModal';
+import EditarContratoDrawer from './EditarContratoDrawer';
+import styles from '../../styles/financeiro/DetalhesContratoDrawer.module.css';
 
-// DetalhesContratoDrawerProps: { isOpen: boolean, onClose: () => void, contratoId: number | null, mostrarApenasBoletosP?: boolean }
-// ProdutoContrato: { id: number, contrato_id: number, produtos_servicos_id: number, departamento_id?: number, quantidade: number, valor_unitario: number, desconto: number, observacoes?: string, produto_nome: string, produto_tipo: string, departamento_nome?: string, departamento_codigo?: string }
-// ContratoDetalhado: { id: number, cliente_id: number, produtos_servicos_id: number, company_id: number, valor: number, desconto: number, data_inicio: string, dia_gerado: string, proximo_vencimento: string, status: string, observacoes: string, created_at: string, updated_at: string, cliente_nome: string, cliente_email?: string, produto_servico_nome: string, empresa_nome: string, centro_de_custo_id?: number, vendedor_id?: number, observacoes_fiscais?: string, numero_contrato?: string, centro_custo_nome?: string, vendedor_nome?: string, categoria_id?: number, sub_categoria_id?: number, produtos?: ProdutoContrato[] }
-// BoletoPagamento: { da_id: number, valor_recebido: number, data_pagamento: string | null, data_cancelamento: string | null, codigo_solicitacao: string, status: string }
-// VendaContrato: { id: number, cliente_id: number, company_id: number, valor_venda: number, vencimento: string, situacao: string, tipo_venda: string, observacoes: string, contrato_origem_id: number, mes_referencia: number, ano_referencia: number, created_at: string, updated_at: string }
-// EmpresaDetalhes: { nome: string, endereco: string, cnpj: string }
 
 export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApenasBoletosP = false }) {
   const [contrato, setContrato] = useState(null);
@@ -424,7 +420,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
   const getSituacaoBadge = (situacao) => {
     if (!situacao)
       return (
-        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+        <Badge className={styles.badgeGray}>
           Não definido
         </Badge>
       );
@@ -432,25 +428,25 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
     switch (situacao) {
       case "ativo":
         return (
-          <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+          <Badge className={styles.badgeSuccess}>
             Ativo
           </Badge>
         );
       case "inativo":
         return (
-          <Badge className="bg-orange-500/20 text-orange-500 border-orange-500/30">
+          <Badge className={styles.badgeWarning}>
             Inativo
           </Badge>
         );
       case "cancelado":
         return (
-          <Badge className="bg-hotPink/20 text-hotPink border-hotPink/30">
+          <Badge className={styles.badgeHotPink}>
             Cancelado
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+          <Badge className={styles.badgeGray}>
             {situacao}
           </Badge>
         );
@@ -850,17 +846,17 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-darkPurple rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-neonPurple">
+    <div className={styles.drawerContainer}>
+      <div className={styles.drawerContent}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-neonPurple bg-darkPurple">
-          <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6 text-primary" />
+        <div className={styles.drawerHeader}>
+          <div className={styles.headerLeft}>
+            <FileText className="w-6 h-6" style={{color: 'var(--onety-primary)'}} />
             <div>
-              <h2 className="text-xl font-bold text-textMain">
+              <h2 className={styles.headerTitle}>
                 Detalhes do contrato {contrato?.numero_contrato || contrato?.id}
               </h2>
-              <p className="text-sm text-textSecondary">
+              <p className={styles.headerSubtitle}>
                 {contrato?.produtos && contrato.produtos.length > 0 
                   ? `${contrato.produtos.length} item(ns) • ${formatCurrency(contrato.valor)}`
                   : `Informações completas do contrato • ${formatCurrency(contrato?.valor || 0)}`
@@ -872,163 +868,163 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-textSecondary hover:text-textMain"
+            className={styles.closeButton}
           >
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 bg-darkPurple">
+        <div className={styles.drawerContentArea}>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="ml-3 text-textMain">Carregando detalhes...</span>
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSpinner}></div>
+              <span className={styles.loadingText}>Carregando detalhes...</span>
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-hotPink mb-4">{error}</p>
-              <Button onClick={fetchContratoDetalhes} className="bg-primary hover:bg-primary/80 text-textMain">
+            <div className={styles.errorContainer}>
+              <p className={styles.errorMessage}>{error}</p>
+              <Button onClick={fetchContratoDetalhes} className={styles.buttonPrimary}>
                 Tentar novamente
               </Button>
             </div>
           ) : contrato ? (
             <>
               {/* Informações da venda */}
-              <Card className="bg-darkPurple border-neonPurple">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardTitle}>
                     <Building className="w-5 h-5 text-primary" />
                     Informações da venda
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  </div>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.gridTwoCols}>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Cliente</label>
-                      <p className="text-primary font-medium">{contrato.cliente_nome}</p>
+                      <label className={styles.label}>Cliente</label>
+                      <p className={styles.textPrimary}>{contrato.cliente_nome}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Data de início</label>
-                      <p className="text-textMain">{formatDate(contrato.data_inicio)}</p>
+                      <label className={styles.label}>Data de início</label>
+                      <p className={styles.textMain}>{formatDate(contrato.data_inicio)}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Dia da geração das vendas</label>
-                      <p className="text-textMain">{contrato.dia_gerado ? `${contrato.dia_gerado}º dia do mês` : "Não definido"}</p>
+                      <label className={styles.label}>Dia da geração das vendas</label>
+                      <p className={styles.textMain}>{contrato.dia_gerado ? `${contrato.dia_gerado}º dia do mês` : "Não definido"}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Data da próxima venda</label>
-                      <p className="text-textMain">{calcularProximoVencimento()}</p>
+                      <label className={styles.label}>Data da próxima venda</label>
+                      <p className={styles.textMain}>{calcularProximoVencimento()}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Próximo vencimento</label>
-                      <p className="text-textMain">{contrato.proximo_vencimento ? formatDate(contrato.proximo_vencimento) : "Indeterminado"}</p>
+                      <label className={styles.label}>Próximo vencimento</label>
+                      <p className={styles.textMain}>{contrato.proximo_vencimento ? formatDate(contrato.proximo_vencimento) : "Indeterminado"}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Situação do contrato</label>
-                      <div className="mt-1">{getSituacaoBadge(contrato.status)}</div>
+                      <label className={styles.label}>Situação do contrato</label>
+                      <div className={styles.label}>{getSituacaoBadge(contrato.status)}</div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Vendedor responsável</label>
-                      <p className="text-textMain">{contrato.vendedor_nome || "Não definido"}</p>
+                      <label className={styles.label}>Vendedor responsável</label>
+                      <p className={styles.textMain}>{contrato.vendedor_nome || "Não definido"}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Configurações de recorrência */}
-              <Card className="bg-darkPurple border-neonPurple">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <Settings className="w-5 h-5 text-green-500" />
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardTitle}>
+                    <Settings className="w-5 h-5" style={{color: 'var(--onety-green)'}} />
                     Configurações de recorrência
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  </div>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.gridTwoCols}>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Repetir venda a cada</label>
-                      <p className="text-textMain">1 mês</p>
+                      <label className={styles.label}>Repetir venda a cada</label>
+                      <p className={styles.textMain}>1 mês</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Término da recorrência</label>
-                      <p className="text-textMain">Indeterminado</p>
+                      <label className={styles.label}>Término da recorrência</label>
+                      <p className={styles.textMain}>Indeterminado</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Itens da venda */}
-              <Card className="bg-darkPurple border-neonPurple">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <Package className="w-5 h-5 text-purple-500" />
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardTitle}>
+                    <Package className="w-5 h-5" style={{color: 'var(--onety-purple)'}} />
                     Itens da venda
-                  </CardTitle>
-                  <div className="space-y-2">
-                    <p className="text-sm text-textSecondary">
+                  </div>
+                  <div className={styles.cardContent}>
+                    <p className={styles.textSecondary}>
                       Os itens e valores apresentados abaixo são da próxima venda prevista. 
                       Para visualizar as informações de outras vendas deste contrato, acesse o 
-                      <strong className="text-textMain"> Histórico do contrato</strong> no final desta página.
+                      <strong className={styles.textMain}> Histórico do contrato</strong> no final desta página.
                     </p>
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                      <p className="text-xs text-blue-400">
+                    <div className={styles.infoBox}>
+                      <p className={styles.infoBoxText}>
                         <strong>💡 Baixa Automática:</strong> Quando este contrato gera vendas, elas são automaticamente 
                         enviadas para <strong>Contas a Receber</strong>. Lá você pode acompanhar o status de pagamento 
                         de cada venda individual gerada por este contrato.
                       </p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-neonPurple">
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Produto/Serviço</th>
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Departamento</th>
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Tipo</th>
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Detalhes</th>
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Quantidade</th>
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Valor unitário (R$)</th>
-                          <th className="text-left py-2 text-sm font-medium text-textSecondary">Subtotal (R$)</th>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.tableContainer}>
+                    <table className={styles.table}>
+                      <thead className={styles.tableHeader}>
+                        <tr>
+                          <th className={styles.tableHeaderCell}>Produto/Serviço</th>
+                          <th className={styles.tableHeaderCell}>Departamento</th>
+                          <th className={styles.tableHeaderCell}>Tipo</th>
+                          <th className={styles.tableHeaderCell}>Detalhes</th>
+                          <th className={styles.tableHeaderCell}>Quantidade</th>
+                          <th className={styles.tableHeaderCell}>Valor unitário (R$)</th>
+                          <th className={styles.tableHeaderCell}>Subtotal (R$)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {contrato.produtos && contrato.produtos.length > 0 ? (
                           contrato.produtos.map((produto, index) => (
-                            <tr key={produto.id} className="border-b border-neonPurple/30">
-                              <td className="py-3 text-textMain">{produto.produto_nome}</td>
-                              <td className="py-3 text-textSecondary">
+                            <tr key={produto.id} className={styles.tableRow}>
+                              <td className={styles.tableCell}>{produto.produto_nome}</td>
+                              <td className={styles.tableCellSecondary}>
                                 {produto.departamento_nome ? (
-                                  <span className="flex items-center gap-1">
+                                  <span className={styles.textSecondary}>
                                     {produto.departamento_codigo && (
-                                      <span className="text-xs bg-neonPurple/20 text-primary px-1 py-0.5 rounded">
+                                      <span className={styles.departmentCode}>
                                         {produto.departamento_codigo}
                                       </span>
                                     )}
                                     {produto.departamento_nome}
                                   </span>
                                 ) : (
-                                  <span className="text-textSecondary italic">Não definido</span>
+                                  <span className={styles.textSecondary}>Não definido</span>
                                 )}
                               </td>
-                              <td className="py-3 text-textSecondary">{produto.produto_tipo === 'produto' ? 'Produto' : 'Serviço'}</td>
-                              <td className="py-3 text-textSecondary">{produto.observacoes || 'MODALIDADE FIXA'}</td>
-                              <td className="py-3 text-textMain">{produto.quantidade}</td>
-                              <td className="py-3 text-textMain">{formatCurrency(produto.valor_unitario)}</td>
-                              <td className="py-3 text-textMain">{formatCurrency((produto.quantidade * produto.valor_unitario) - produto.desconto)}</td>
+                              <td className={styles.tableCellSecondary}>{produto.produto_tipo === 'produto' ? 'Produto' : 'Serviço'}</td>
+                              <td className={styles.tableCellSecondary}>{produto.observacoes || 'MODALIDADE FIXA'}</td>
+                              <td className={styles.tableCell}>{produto.quantidade}</td>
+                              <td className={styles.tableCell}>{formatCurrency(produto.valor_unitario)}</td>
+                              <td className={styles.tableCell}>{formatCurrency((produto.quantidade * produto.valor_unitario) - produto.desconto)}</td>
                             </tr>
                           ))
                         ) : (
-                          <tr className="border-b border-neonPurple/30">
-                            <td className="py-3 text-textMain">{contrato.produto_servico_nome}</td>
-                            <td className="py-3 text-textSecondary italic">Não definido</td>
-                            <td className="py-3 text-textSecondary">Serviço</td>
-                            <td className="py-3 text-textSecondary">MODALIDADE FIXA</td>
-                            <td className="py-3 text-textMain">1</td>
-                            <td className="py-3 text-textMain">{formatCurrency(contrato.valor)}</td>
-                            <td className="py-3 text-textMain">{formatCurrency(contrato.valor)}</td>
+                          <tr className={styles.tableRow}>
+                            <td className={styles.tableCell}>{contrato.produto_servico_nome}</td>
+                            <td className={styles.tableCellSecondary}>Não definido</td>
+                            <td className={styles.tableCellSecondary}>Serviço</td>
+                            <td className={styles.tableCellSecondary}>MODALIDADE FIXA</td>
+                            <td className={styles.tableCell}>1</td>
+                            <td className={styles.tableCell}>{formatCurrency(contrato.valor)}</td>
+                            <td className={styles.tableCell}>{formatCurrency(contrato.valor)}</td>
                           </tr>
                         )}
                       </tbody>
@@ -1056,66 +1052,66 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                     }
 
                     return (
-                      <div className="mt-6 flex justify-end">
-                        <div className="w-64 space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-textSecondary">Total de itens:</span>
-                            <span className="text-textMain">{totalItens}</span>
+                      <div className={styles.totalSection}>
+                        <div className={styles.totalContainer}>
+                          <div className={styles.totalRow}>
+                            <span className={styles.textSecondary}>Total de itens:</span>
+                            <span className={styles.textMain}>{totalItens}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-textSecondary">Total bruto (R$):</span>
-                            <span className="text-textMain">{formatCurrency(totalBruto)}</span>
+                          <div className={styles.totalRow}>
+                            <span className={styles.textSecondary}>Total bruto (R$):</span>
+                            <span className={styles.textMain}>{formatCurrency(totalBruto)}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-textSecondary">Desconto (R$):</span>
-                            <span className="text-textMain">{formatCurrency(totalDesconto)}</span>
+                          <div className={styles.totalRow}>
+                            <span className={styles.textSecondary}>Desconto (R$):</span>
+                            <span className={styles.textMain}>{formatCurrency(totalDesconto)}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-textSecondary">Total líquido (R$):</span>
-                            <span className="text-green-500 font-medium flex items-center gap-1">
+                          <div className={styles.totalRow}>
+                            <span className={styles.textSecondary}>Total líquido (R$):</span>
+                            <span className={styles.totalGreen}>
                               <TrendingUp className="w-4 h-4" />
                               {formatCurrency(totalLiquido)}
                             </span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-textSecondary">Impostos (R$):</span>
-                            <span className="text-textMain">-</span>
+                          <div className={styles.totalRow}>
+                            <span className={styles.textSecondary}>Impostos (R$):</span>
+                            <span className={styles.textMain}>-</span>
                           </div>
                         </div>
                       </div>
                     );
                   })()}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Informações de pagamento */}
-              <Card className="bg-darkPurple border-neonPurple">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <DollarSign className="w-5 h-5 text-green-500" />
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardTitle}>
+                    <DollarSign className="w-5 h-5" style={{color: 'var(--onety-green)'}} />
                     Informações de pagamento
-                  </CardTitle>
-                  <p className="text-sm text-textSecondary mt-2">
+                  </div>
+                  <p className={styles.textSecondary}>
                     As informações de pagamento podem variar em cada venda, aqui exibimos as informações da próxima venda prevista.
                   </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.gridThreeCols}>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Forma de pagamento</label>
-                      <p className="text-textMain">Boleto Bancário</p>
+                      <label className={styles.label}>Forma de pagamento</label>
+                      <p className={styles.textMain}>Boleto Bancário</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Conta de recebimento</label>
-                      <p className="text-textMain">Receba Fácil</p>
+                      <label className={styles.label}>Conta de recebimento</label>
+                      <p className={styles.textMain}>Receba Fácil</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-textSecondary">Vencer sempre no</label>
-                      <p className="text-textMain">{contrato.dia_gerado ? `${contrato.dia_gerado}º dia do mês` : "Não definido"}</p>
+                      <label className={styles.label}>Vencer sempre no</label>
+                      <p className={styles.textMain}>{contrato.dia_gerado ? `${contrato.dia_gerado}º dia do mês` : "Não definido"}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
 
 
@@ -1725,8 +1721,8 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                         }
                                       }
 
-      // Gerar array de meses do mesInicio até dezembro
-      let mesesParaMostrar = [];
+                                      // Gerar array de meses do mesInicio até dezembro
+                                      let mesesParaMostrar = [];
                                       for (let mes = mesInicio; mes <= 12; mes++) {
                                         mesesParaMostrar.push(mes);
                                       }
@@ -1836,18 +1832,18 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-neonPurple bg-darkPurple">
+        <div className={styles.drawerFooter}>
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain"
+            className={styles.buttonOutline}
           >
             Voltar
           </Button>
-          <div className="flex items-center gap-2">
+          <div className={styles.footerActions}>
             <Button 
               variant="outline" 
-              className="border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain"
+              className={styles.buttonOutline}
               onClick={handleGerarRecibo}
               disabled={!contrato || !empresa}
             >
@@ -1855,13 +1851,13 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
             </Button>
             <Button 
               variant="outline" 
-              className="border-green-500 bg-darkPurple text-green-400 hover:bg-green-500 hover:text-white"
+              className={styles.buttonGreen}
               onClick={handleGerarBoleto}
               disabled={!contrato || !contrato.proximo_vencimento || gerandoBoleto}
             >
               {gerandoBoleto ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                  <div className={styles.loadingSpinner}></div>
                   Gerando...
                 </>
               ) : (
@@ -1871,27 +1867,27 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                 </>
               )}
             </Button>
-            <Button variant="outline" className="border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain">
+            <Button variant="outline" className={styles.buttonOutline}>
               Outras ações
             </Button>
-            <Button className="bg-primary hover:bg-primary/80 text-textMain">
+            <Button className={styles.buttonPrimary}>
               Editar contrato
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Modal de Edição de Vencimento - Componente não implementado ainda */}
-      {/* <EditarVencimentoContratoModal
+      {/* Modal de Edição de Vencimento */}
+      <EditarVencimentoContratoModal
         isOpen={isEditarVencimentoOpen}
         onClose={() => setIsEditarVencimentoOpen(false)}
         contratoId={contratoId || 0}
         dataAtual={dataParaEditar}
         onConfirm={handleConfirmarEdicaoVencimento}
-      /> */}
+      />
 
-      {/* Drawer de Edição de Contrato - Componente não implementado ainda */}
-      {/* <EditarContratoDrawer
+      {/* Drawer de Edição de Contrato */}
+      <EditarContratoDrawer
         isOpen={isEditarContratoOpen}
         onClose={() => {
           setIsEditarContratoOpen(false);
@@ -1899,7 +1895,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
         }}
         contratoId={contratoId}
         opcaoEdicao={opcaoEdicaoContrato}
-      /> */}
+      />
     </div>
   );
 } 

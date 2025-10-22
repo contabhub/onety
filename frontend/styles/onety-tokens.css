@@ -1,0 +1,346 @@
+/* 
+ * Tokens de Estilo do Onety
+ * Sistema de design tokens para o projeto Onety
+ */
+
+:root {
+  /* Cores Principais */
+  --onety-primary: #6366f1;
+  --onety-primary-hover: #5b5cf0;
+  --onety-primary-light: #818cf8;
+  --onety-primary-dark: #4f46e5;
+
+  /* Cores de Fundo */
+  --onety-bg-dark: #0f0f23;
+  --onety-bg-dark-purple: #1a1a2e;
+  --onety-bg-card: #16213e;
+  --onety-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Cores de Texto */
+  --onety-text-main: #ffffff;
+  --onety-text-secondary: #a1a1aa;
+  --onety-text-muted: #71717a;
+  --onety-text-disabled: #52525b;
+
+  /* Cores de Destaque */
+  --onety-neon-purple: #8b5cf6;
+  --onety-neon-purple-light: rgba(139, 92, 246, 0.1);
+  --onety-neon-purple-border: rgba(139, 92, 246, 0.3);
+
+  /* Cores de Status */
+  --onety-success: #10b981;
+  --onety-success-light: rgba(16, 185, 129, 0.2);
+  --onety-success-border: rgba(16, 185, 129, 0.3);
+  --onety-success-text: #34d399;
+
+  --onety-warning: #f59e0b;
+  --onety-warning-light: rgba(245, 158, 11, 0.2);
+  --onety-warning-border: rgba(245, 158, 11, 0.3);
+  --onety-warning-text: #fbbf24;
+
+  --onety-error: #ef4444;
+  --onety-error-light: rgba(239, 68, 68, 0.2);
+  --onety-error-border: rgba(239, 68, 68, 0.3);
+  --onety-error-text: #f87171;
+
+  --onety-info: #3b82f6;
+  --onety-info-light: rgba(59, 130, 246, 0.2);
+  --onety-info-border: rgba(59, 130, 246, 0.3);
+  --onety-info-text: #60a5fa;
+
+  /* Cores Especiais */
+  --onety-hot-pink: #ec4899;
+  --onety-hot-pink-light: rgba(236, 72, 153, 0.2);
+  --onety-hot-pink-border: rgba(236, 72, 153, 0.3);
+
+  --onety-purple: #8b5cf6;
+  --onety-purple-light: rgba(139, 92, 246, 0.2);
+  --onety-purple-border: rgba(139, 92, 246, 0.3);
+
+  --onety-blue: #3b82f6;
+  --onety-blue-light: rgba(59, 130, 246, 0.2);
+  --onety-blue-border: rgba(59, 130, 246, 0.3);
+
+  --onety-green: #10b981;
+  --onety-green-light: rgba(16, 185, 129, 0.2);
+  --onety-green-border: rgba(16, 185, 129, 0.3);
+
+  --onety-orange: #f59e0b;
+  --onety-orange-light: rgba(245, 158, 11, 0.2);
+  --onety-orange-border: rgba(245, 158, 11, 0.3);
+
+  --onety-red: #ef4444;
+  --onety-red-light: rgba(239, 68, 68, 0.2);
+  --onety-red-border: rgba(239, 68, 68, 0.3);
+
+  --onety-yellow: #eab308;
+  --onety-yellow-light: rgba(234, 179, 8, 0.2);
+  --onety-yellow-border: rgba(234, 179, 8, 0.3);
+
+  --onety-gray: #6b7280;
+  --onety-gray-light: rgba(107, 114, 128, 0.2);
+  --onety-gray-border: rgba(107, 114, 128, 0.3);
+
+  /* Bordas */
+  --onety-border-radius: 0.5rem;
+  --onety-border-radius-sm: 0.25rem;
+  --onety-border-radius-lg: 0.75rem;
+  --onety-border-radius-xl: 1rem;
+
+  /* Sombras */
+  --onety-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --onety-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --onety-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --onety-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --onety-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Espaçamentos */
+  --onety-spacing-xs: 0.25rem;
+  --onety-spacing-sm: 0.5rem;
+  --onety-spacing-md: 1rem;
+  --onety-spacing-lg: 1.5rem;
+  --onety-spacing-xl: 2rem;
+  --onety-spacing-2xl: 3rem;
+
+  /* Tamanhos de Fonte */
+  --onety-font-xs: 0.75rem;
+  --onety-font-sm: 0.875rem;
+  --onety-font-base: 1rem;
+  --onety-font-lg: 1.125rem;
+  --onety-font-xl: 1.25rem;
+  --onety-font-2xl: 1.5rem;
+  --onety-font-3xl: 1.875rem;
+
+  /* Pesos de Fonte */
+  --onety-font-normal: 400;
+  --onety-font-medium: 500;
+  --onety-font-semibold: 600;
+  --onety-font-bold: 700;
+
+  /* Transições */
+  --onety-transition: all 0.2s ease-in-out;
+  --onety-transition-fast: all 0.1s ease-in-out;
+  --onety-transition-slow: all 0.3s ease-in-out;
+
+  /* Z-index */
+  --onety-z-dropdown: 1000;
+  --onety-z-sticky: 1020;
+  --onety-z-fixed: 1030;
+  --onety-z-modal-backdrop: 1040;
+  --onety-z-modal: 1050;
+  --onety-z-popover: 1060;
+  --onety-z-tooltip: 1070;
+}
+
+/* Classes Utilitárias */
+.onety-bg-dark {
+  background-color: var(--onety-bg-dark);
+}
+
+.onety-bg-dark-purple {
+  background-color: var(--onety-bg-dark-purple);
+}
+
+.onety-text-main {
+  color: var(--onety-text-main);
+}
+
+.onety-text-secondary {
+  color: var(--onety-text-secondary);
+}
+
+.onety-text-muted {
+  color: var(--onety-text-muted);
+}
+
+.onety-border-neon-purple {
+  border-color: var(--onety-neon-purple-border);
+}
+
+.onety-border-radius {
+  border-radius: var(--onety-border-radius);
+}
+
+.onety-shadow {
+  box-shadow: var(--onety-shadow);
+}
+
+.onety-transition {
+  transition: var(--onety-transition);
+}
+
+/* Classes de Status */
+.onety-status-success {
+  background-color: var(--onety-success-light);
+  color: var(--onety-success-text);
+  border-color: var(--onety-success-border);
+}
+
+.onety-status-warning {
+  background-color: var(--onety-warning-light);
+  color: var(--onety-warning-text);
+  border-color: var(--onety-warning-border);
+}
+
+.onety-status-error {
+  background-color: var(--onety-error-light);
+  color: var(--onety-error-text);
+  border-color: var(--onety-error-border);
+}
+
+.onety-status-info {
+  background-color: var(--onety-info-light);
+  color: var(--onety-info-text);
+  border-color: var(--onety-info-border);
+}
+
+/* Classes de Botões */
+.onety-btn-primary {
+  background-color: var(--onety-primary);
+  color: var(--onety-text-main);
+  border: 1px solid var(--onety-primary);
+  transition: var(--onety-transition);
+}
+
+.onety-btn-primary:hover {
+  background-color: var(--onety-primary-hover);
+  border-color: var(--onety-primary-hover);
+}
+
+.onety-btn-outline {
+  background-color: transparent;
+  color: var(--onety-text-main);
+  border: 1px solid var(--onety-neon-purple-border);
+  transition: var(--onety-transition);
+}
+
+.onety-btn-outline:hover {
+  background-color: var(--onety-neon-purple-light);
+  border-color: var(--onety-neon-purple);
+}
+
+/* Classes de Cards */
+.onety-card {
+  background-color: var(--onety-bg-dark-purple);
+  border: 1px solid var(--onety-neon-purple-border);
+  border-radius: var(--onety-border-radius);
+  box-shadow: var(--onety-shadow);
+}
+
+.onety-card-header {
+  padding: var(--onety-spacing-lg);
+  border-bottom: 1px solid var(--onety-neon-purple-border);
+}
+
+.onety-card-content {
+  padding: var(--onety-spacing-lg);
+}
+
+/* Classes de Input */
+.onety-input {
+  background-color: var(--onety-bg-dark-purple);
+  border: 1px solid var(--onety-neon-purple-border);
+  border-radius: var(--onety-border-radius-sm);
+  color: var(--onety-text-main);
+  padding: var(--onety-spacing-sm) var(--onety-spacing-md);
+  transition: var(--onety-transition);
+}
+
+.onety-input:focus {
+  outline: none;
+  border-color: var(--onety-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Classes de Badge */
+.onety-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onety-spacing-xs) var(--onety-spacing-sm);
+  border-radius: var(--onety-border-radius-sm);
+  font-size: var(--onety-font-xs);
+  font-weight: var(--onety-font-medium);
+  border: 1px solid;
+}
+
+.onety-badge-success {
+  background-color: var(--onety-success-light);
+  color: var(--onety-success-text);
+  border-color: var(--onety-success-border);
+}
+
+.onety-badge-warning {
+  background-color: var(--onety-warning-light);
+  color: var(--onety-warning-text);
+  border-color: var(--onety-warning-border);
+}
+
+.onety-badge-error {
+  background-color: var(--onety-error-light);
+  color: var(--onety-error-text);
+  border-color: var(--onety-error-border);
+}
+
+.onety-badge-info {
+  background-color: var(--onety-info-light);
+  color: var(--onety-info-text);
+  border-color: var(--onety-info-border);
+}
+
+/* Classes de Loading */
+.onety-loading {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--onety-neon-purple-border);
+  border-radius: 50%;
+  border-top-color: var(--onety-primary);
+  animation: onety-spin 1s ease-in-out infinite;
+}
+
+@keyframes onety-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Classes de Hover */
+.onety-hover-bg {
+  transition: var(--onety-transition);
+}
+
+.onety-hover-bg:hover {
+  background-color: var(--onety-neon-purple-light);
+}
+
+/* Classes de Responsividade */
+@media (max-width: 768px) {
+  .onety-card-header,
+  .onety-card-content {
+    padding: var(--onety-spacing-md);
+  }
+  
+  .onety-btn-primary,
+  .onety-btn-outline {
+    padding: var(--onety-spacing-sm) var(--onety-spacing-md);
+    font-size: var(--onety-font-sm);
+  }
+}
+
+/* Classes de Acessibilidade */
+.onety-focus-visible:focus-visible {
+  outline: 2px solid var(--onety-primary);
+  outline-offset: 2px;
+}
+
+.onety-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

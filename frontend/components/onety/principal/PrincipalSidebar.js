@@ -213,6 +213,12 @@ const MODULE_REGISTRY = {
         label: 'Clientes',
         icon: <Users size={18} />,
         route: '/financeiro/cadastro-clientes'
+      },
+      {
+        id: 'produtos',
+        label: 'Produtos',
+        icon: <DollarSign size={18} />,
+        route: '/financeiro/cadastro-produtos'
       }
     ]
   },
