@@ -191,6 +191,10 @@ router.use('/financeiro/transacoes', transacoesRoutes);
 router.use('/financeiro/transferencias-caixinha', transferenciasCaixinhasRoutes);
 router.use('/financeiro/vendas', vendasRoutes);
 
+// Rotas diretas para compatibilidade com frontend
+router.use('/vendas', vendasRoutes);
+router.use('/contratos', contratosFinanceiroRoutes);
+
 router.get("/", (req, res) => {
   res.send("API rodando!");
 });

@@ -1,0 +1,96 @@
+/* Estilos para componentes de tabela usando design tokens */
+
+.tableWrapper {
+  position: relative;
+  width: 100%;
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  caption-side: bottom;
+  font-size: var(--onity-type-body-size);
+  border-collapse: collapse;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  overflow: hidden;
+}
+
+.tableHeader {
+  background-color: var(--onity-color-bg);
+}
+
+.tableHeader .tableRow {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableBody .tableRow:last-child {
+  border-bottom: 0;
+}
+
+.tableFooter {
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-bg);
+  font-weight: 500;
+}
+
+.tableFooter .tableRow:last-child {
+  border-bottom: 0;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--onity-color-border);
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.tableRow[data-state="selected"] {
+  background-color: var(--onity-color-bg);
+}
+
+.tableHead {
+  height: 48px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+  background-color: var(--onity-color-bg);
+}
+
+.tableHead:has([role="checkbox"]) {
+  padding-right: 0;
+}
+
+.tableCell {
+  padding: var(--onity-space-m);
+  vertical-align: middle;
+}
+
+.tableCell:has([role="checkbox"]) {
+  padding-right: 0;
+}
+
+.tableCaption {
+  margin-top: var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+  text-align: center;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .tableHead,
+  .tableCell {
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    font-size: var(--onity-type-caption-size);
+  }
+  
+  .tableHead {
+    height: 40px;
+  }
+}
