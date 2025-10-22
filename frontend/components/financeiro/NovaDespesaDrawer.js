@@ -30,6 +30,7 @@ import { NovoClienteDrawer } from "./NovoClienteDrawer";
 import { Switch } from './switch';
 import ModalRecorrenciaPersonalizada from "./ModalRecorrenciaPersonalizada";
 import { PDFViewer } from "./pdf-viewer";
+import styles from '../../styles/financeiro/nova-despesa.module.css';
 
 // Função para combinar classes CSS
 const cn = (...classes) => {
@@ -874,79 +875,76 @@ export function NovaDespesaDrawer({
 
   return (
     <>
-      <div className={cn(
-        "fixed inset-0 z-50 bg-black/50 nova-despesa-overlay",
-        isClosing && "closing"
+      <div  className={cn(
+        styles.novaDespesaOverlay,
+        isClosing && styles.closing
       )}>
         <div
           className={cn(
-            "fixed inset-0 theme-bg-primary shadow-xl overflow-hidden flex flex-col nova-despesa-modal",
-            isClosing && "closing"
+            styles.novaDespesaModal,
+            isClosing && styles.closing
           )}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3 theme-border-primary border-b theme-bg-primary sticky top-0 z-10">
-            <h2 className="text-xl font-semibold theme-text-white">
+          <div className={styles.novaDespesaHeader}>
+            <h2 className={styles.novaDespesaTitle}>
               {dadosBoleto ? 'Editar despesa do boleto' : 'Nova despesa'}
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={handleClose}
-              className="h-8 w-8 p-0 theme-text-white hover:theme-text-secondary"
+              className={styles.novaDespesaCloseButton}
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="h-full px-6 py-4 space-y-4">
+          <div className={styles.novaDespesaContent}>
               {/* Informações do boleto (quando disponível) */}
               {dadosBoleto && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium theme-text-white">
+                <div className={styles.novaDespesaSection}>
+                  <h3 className={styles.novaDespesaSectionTitle}>
                     Informações do boleto
                   </h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className={styles.novaDespesaGrid}>
                     {/* Valor */}
-                    <div className="space-y-2">
-                      <Label className="theme-text-secondary">Valor</Label>
-                      <div className="text-[#1E88E5] font-semibold text-lg">
+                    <div className={styles.novaDespesaField}>
+                      <Label className={styles.novaDespesaLabel}>Valor</Label>
+                      <div className={styles.novaDespesaParcelaValor} style={{color: '#1E88E5', fontSize: '18px'}}>
                         {dadosBoleto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </div>
                     </div>
 
                     {/* Vencimento */}
-                    <div className="space-y-2">
-                      <Label className="theme-text-secondary">Vencimento</Label>
-                      <div className="theme-text-white">
+                    <div className={styles.novaDespesaField}>
+                      <Label className={styles.novaDespesaLabel}>Vencimento</Label>
+                      <div className={styles.novaDespesaLabel}>
                         {dadosBoleto.dataVencimento.toLocaleDateString('pt-BR')}
                       </div>
                     </div>
 
                     {/* Tipo */}
-                    <div className="space-y-2">
-                      <Label className="theme-text-secondary">Tipo</Label>
-                      <div className="theme-text-white">
+                    <div className={styles.novaDespesaField}>
+                      <Label className={styles.novaDespesaLabel}>Tipo</Label>
+                      <div className={styles.novaDespesaLabel}>
                         {dadosBoleto.tipoBoleto === 'pix' ? 'Boleto PIX' : 'Boleto Bancário'}
                       </div>
                     </div>
 
                     {/* Origem */}
-                    <div className="space-y-2">
-                      <Label className="theme-text-secondary">Origem</Label>
-                      <div className="theme-text-white capitalize">
+                    <div className={styles.novaDespesaField}>
+                      <Label className={styles.novaDespesaLabel}>Origem</Label>
+                      <div className={styles.novaDespesaLabel} style={{textTransform: 'capitalize'}}>
                         {dadosBoleto.origem}
                       </div>
                     </div>
 
                     {/* Beneficiário */}
                     {dadosBoleto.boletoMeta?.beneficiario && (
-                      <div className="space-y-2">
-                        <Label className="theme-text-secondary">Beneficiário</Label>
-                        <div className="theme-text-white">
+                      <div className={styles.novaDespesaField}>
+                        <Label className={styles.novaDespesaLabel}>Beneficiário</Label>
+                        <div className={styles.novaDespesaLabel}>
                           {dadosBoleto.boletoMeta.beneficiario}
                         </div>
                       </div>
@@ -954,9 +952,9 @@ export function NovaDespesaDrawer({
 
                     {/* Dados técnicos */}
                     {dadosBoleto.boletoMeta && (
-                      <div className="space-y-2">
-                        <Label className="theme-text-secondary">Dados técnicos</Label>
-                        <div className="theme-text-secondary text-sm">
+                      <div className={styles.novaDespesaField}>
+                        <Label className={styles.novaDespesaLabel}>Dados técnicos</Label>
+                        <div className={styles.novaDespesaLabel} style={{fontSize: '14px', opacity: 0.7}}>
                           {dadosBoleto.tipoBoleto === 'linha_digitavel' ? 
                             `Banco: ${dadosBoleto.boletoMeta.bank_code}, Código: ${dadosBoleto.boletoMeta.barcode?.slice(0, 8)}...` :
                             `Beneficiário: ${dadosBoleto.boletoMeta.beneficiario || 'N/A'}`
@@ -965,23 +963,23 @@ export function NovaDespesaDrawer({
                       </div>
                     )}
                   </div>
-                  
-                  <hr className="theme-border-primary" />
                 </div>
               )}
 
               {/* Informações do lançamento */}
-              <div>
-                <h3 className="text-lg font-medium theme-text-white mb-3">
+              <div className={styles.novaDespesaSection}>
+                <h3 className={styles.novaDespesaSectionTitle}>
                   Informações do lançamento
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div className={styles.novaDespesaGrid}>
                   {/* Fornecedor */}
-                  <div className="space-y-2">
-                    <Label htmlFor="cliente" className="theme-text-secondary">Cliente/Fornecedor <span className="text-[#F50057]">*</span></Label>
-                    <div className="flex gap-2">
-                      <div className="flex-1">
+                  <div className={styles.novaDespesaField}>
+                    <Label htmlFor="cliente" className={styles.novaDespesaLabel}>
+                      Cliente/Fornecedor <span className={styles.novaDespesaLabelRequired}>*</span>
+                    </Label>
+                    <div className={styles.novaDespesaClientContainer}>
+                      <div className={styles.novaDespesaClientField}>
                         <ReactSelect
                           className="react-select-container"
                           classNamePrefix="react-select"
@@ -1010,15 +1008,13 @@ export function NovaDespesaDrawer({
                           isClearable
                         />
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <button
                         onClick={() => setShowNovoClienteDrawer(true)}
-                        className="theme-button-secondary px-3"
+                        className={styles.novaDespesaAddButton}
                         title="Adicionar novo fornecedor"
                       >
                         <Plus className="h-4 w-4" />
-                      </Button>
+                      </button>
                     </div>
                   </div>
 
@@ -1075,8 +1071,10 @@ export function NovaDespesaDrawer({
                   </div> */}
 
                   {/* Descrição */}
-                  <div className="space-y-2">
-                    <Label htmlFor="descricao" className="theme-text-secondary">Descrição <span className="text-[#F50057]">*</span></Label>
+                  <div className={styles.novaDespesaField}>
+                    <Label htmlFor="descricao" className={styles.novaDespesaLabel}>
+                      Descrição <span className={styles.novaDespesaLabelRequired}>*</span>
+                    </Label>
                     <Input
                       id="descricao"
                       value={formData.descricao}
@@ -1084,7 +1082,7 @@ export function NovaDespesaDrawer({
                         handleInputChange("descricao", e.target.value)
                       }
                       placeholder="Digite a descrição"
-                      className="theme-input theme-text-muted"
+                      className={styles.novaDespesaInput}
                     />
                   </div>
 
@@ -1160,12 +1158,14 @@ export function NovaDespesaDrawer({
                 </div>
 
                 {/* Categoria, Centro de Custo e Valor alinhados */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 items-end">
+                <div className={styles.novaDespesaGrid}>
                   {/* Categoria */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label className="theme-text-secondary">Subcategoria Despesa <span className="text-[#F50057]">*</span></Label>
-                      <Info className="h-4 w-4 theme-text-secondary" />
+                  <div className={styles.novaDespesaField}>
+                    <div className={styles.novaDespesaLabelContainer}>
+                      <Label className={styles.novaDespesaLabel}>
+                        Subcategoria Despesa <span className={styles.novaDespesaLabelRequired}>*</span>
+                      </Label>
+                      <Info className={styles.novaDespesaInfoIcon} />
                     </div>
                     <ReactSelect
                       className="react-select-container"
@@ -1198,10 +1198,10 @@ export function NovaDespesaDrawer({
                   </div>
 
                   {/* Centro de Custo */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label className="theme-text-secondary">Centro de Custo</Label>
-                      <Info className="h-4 w-4 invisible" />
+                  <div className={styles.novaDespesaField}>
+                    <div className={styles.novaDespesaLabelContainer}>
+                      <Label className={styles.novaDespesaLabel}>Centro de Custo</Label>
+                      <Info className={styles.novaDespesaInfoIconInvisible} />
                     </div>
                     <ReactSelect
                       className="react-select-container"
@@ -1232,16 +1232,15 @@ export function NovaDespesaDrawer({
                   </div>
 
                   {/* Valor */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="valor" className="theme-text-secondary">Valor <span className="text-[#F50057]">*</span></Label>
-                      <span className="w-4" />{" "}
-                      {/* Placeholder para alinhamento */}
+                  <div className={styles.novaDespesaField}>
+                    <div className={styles.novaDespesaLabelContainer}>
+                      <Label htmlFor="valor" className={styles.novaDespesaLabel}>
+                        Valor <span className={styles.novaDespesaLabelRequired}>*</span>
+                      </Label>
+                      <span className={styles.novaDespesaSpacer} />
                     </div>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-secondary">
-                        R$
-                      </span>
+                    <div className={styles.novaDespesaInputWithIcon}>
+                      <span className={styles.novaDespesaInputIcon}>R$</span>
                       <Input
                         id="valor"
                         value={formData.valor}
@@ -1249,7 +1248,7 @@ export function NovaDespesaDrawer({
                           handleInputChange("valor", e.target.value)
                         }
                         placeholder="0,00"
-                        className="theme-input theme-text-muted pl-10 w-full h-10"
+                        className={styles.novaDespesaInput}
                       />
                     </div>
                   </div>
@@ -1258,250 +1257,235 @@ export function NovaDespesaDrawer({
               </div>
 
               {/* Toggle de recorrência - MOVIDO PARA CIMA DE CONDIÇÃO DE PAGAMENTO */}
-              <div className="flex items-center gap-4 mb-4 mt-4">
-                <Label htmlFor="repetirLancamento" className="theme-text-secondary">Repetir lançamento?</Label>
-                <Switch
-                  id="repetirLancamento"
-                  checked={repetirLancamento}
-                  onCheckedChange={setRepetirLancamento}
-                />
-                {repetirLancamento && (
-                  <div className="flex-1 min-w-[320px]">
-                    <Label className="ml-4 theme-text-secondary">Configurações de repetição *</Label>
-                    <Select
-                      value={recorrenciaSelecionada}
-                      onValueChange={(val) => {
-                        console.log("🔄 Selecionando recorrência:", val);
-                        if (val === "personalizar") {
-                          setShowModalRecorrencia(true);
-                        } else {
-                          setRecorrenciaSelecionada(val);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="theme-input">
-                        <SelectValue placeholder="Selecione a recorrência" />
-                      </SelectTrigger>
-                      <SelectContent className="theme-modal theme-border-secondary">
-                        {recorrencias.length > 0 ? (
-                          recorrencias.map((rec, index) => (
-                            <SelectItem 
-                              key={`${rec.id}-${index}`} 
-                              value={rec.id.toString()} 
-                              className="theme-text-white"
-                            >
-                              {`${rec.frequencia === "mensal" ? "Mensal" : rec.frequencia.charAt(0).toUpperCase() + rec.frequencia.slice(1)}: A cada ${rec.intervalo_personalizado || 1} ${rec.tipo_intervalo || "mês(es)"}, ${rec.total_parcelas || "∞"} vez(es)${rec.indeterminada ? " (indeterminada)" : ""}`}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <div className="theme-text-secondary px-2 py-1">Nenhuma recorrência personalizada encontrada</div>
-                        )}
-                        <SelectItem value="personalizar" className="theme-text-white">
-                          ➕ Criar nova recorrência personalizada...
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+              <div className={styles.novaDespesaField}>
+                <div className={styles.novaDespesaSwitchContainer}>
+                  <Label htmlFor="repetirLancamento" className={styles.novaDespesaLabel}>Repetir lançamento?</Label>
+                  <Switch
+                    id="repetirLancamento"
+                    checked={repetirLancamento}
+                    onCheckedChange={setRepetirLancamento}
+                  />
+                  {repetirLancamento && (
+                    <div className={styles.novaDespesaRecurrenceSelect}>
+                      <Select
+                        value={recorrenciaSelecionada}
+                        onValueChange={(val) => {
+                          console.log("🔄 Selecionando recorrência:", val);
+                          if (val === "personalizar") {
+                            setShowModalRecorrencia(true);
+                          } else {
+                            setRecorrenciaSelecionada(val);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className={styles.novaDespesaSelectTrigger}>
+                          <SelectValue placeholder="Selecione a recorrência" />
+                        </SelectTrigger>
+                        <SelectContent className={styles.novaDespesaSelectContent}>
+                          {recorrencias.length > 0 ? (
+                            recorrencias.map((rec, index) => (
+                              <SelectItem 
+                                key={`${rec.id}-${index}`} 
+                                value={rec.id.toString()} 
+                                className={styles.novaDespesaSelectItem}
+                              >
+                                {`${rec.frequencia === "mensal" ? "Mensal" : rec.frequencia.charAt(0).toUpperCase() + rec.frequencia.slice(1)}: A cada ${rec.intervalo_personalizado || 1} ${rec.tipo_intervalo || "mês(es)"}, ${rec.total_parcelas || "∞"} vez(es)${rec.indeterminada ? " (indeterminada)" : ""}`}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className={styles.novaDespesaNoRecurrenceMessage}>Nenhuma recorrência personalizada encontrada</div>
+                          )}
+                          <SelectItem value="personalizar" className={styles.novaDespesaSelectItem}>
+                            ➕ Criar nova recorrência personalizada...
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Condição de pagamento */}
-              <div>
-                <h3 className="text-lg font-medium theme-text-white mb-3">
+              <div className={styles.novaDespesaSection}>
+                <h3 className={styles.novaDespesaSectionTitle}>
                   Condição de pagamento
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={styles.novaDespesaGrid4Colunas}>
                   {/* Parcelamento e Vencimento lado a lado quando não recorrente */}
                   {!repetirLancamento ? (
                     <>
                       {/* Parcelamento */}
-                      <div className="space-y-2">
-                        <Label className="theme-text-secondary">Parcelamento</Label>
-                        <Select
-                          value={parcelamento}
-                          onValueChange={setParcelamento}
-                        >
-                          <SelectTrigger className="theme-input">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="theme-modal theme-border-secondary">
-                            <SelectItem value="A vista" className="theme-text-white">À vista</SelectItem>
-                            {Array.from({ length: 59 }, (_, i) => (
-                              <SelectItem key={i + 2} value={`${i + 2}x`} className="theme-text-white">{`${i + 2}x`}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className={styles.novaDespesaField}>
+                        <Label className={styles.novaDespesaLabel}>Parcelamento</Label>
+                        <ReactSelect
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                          placeholder="Selecione o parcelamento"
+                          value={{ value: parcelamento, label: parcelamento === 'A vista' ? 'À vista' : parcelamento }}
+                          onChange={(selected) => setParcelamento(selected ? selected.value : 'A vista')}
+                          options={[{ value: 'A vista', label: 'À vista' }, ...Array.from({ length: 59 }, (_, i) => ({ value: `${i + 2}x`, label: `${i + 2}x` }))]}
+                          isClearable
+                        />
                         {parcelamento !== "A vista" && valorParcela && (
-                          <div className="text-sm theme-text-secondary mt-1">
-                            Valor de cada parcela: <span className="font-semibold theme-text-white">{valorParcela}</span>
+                          <div className={styles.novaDespesaParcelaInfo}>
+                            Valor de cada parcela: <span className={styles.novaDespesaParcelaValor}>{valorParcela}</span>
                           </div>
                         )}
                       </div>
 
                       {/* Data de Vencimento */}
-                      <div className="space-y-2">
-                        <Label className="theme-text-white">Data de vencimento <span className="text-[#F50057]">*</span></Label>
-                        <Popover
-                          open={showCalendar === "vencimento"}
-                          onOpenChange={(open) =>
-                            setShowCalendar(open ? "vencimento" : null)
-                          }
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal theme-input",
-                                !formData.vencimento && "theme-text-secondary"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.vencimento
-                                ? format(formData.vencimento, "dd/MM/yyyy", {
-                                    locale: ptBR,
-                                  })
-                                : "Selecione a data"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={formData.vencimento}
-                              onSelect={(date) => {
-                                if (date) {
-                                  handleInputChange("vencimento", date);
-                                }
-                                setShowCalendar(null);
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                      <div className={styles.novaDespesaField}>
+                        <Label className={styles.novaDespesaLabel}>
+                          Data de vencimento <span className={styles.novaDespesaLabelRequired}>*</span>
+                        </Label>
+                        <div className={styles.novaDespesaCalendarWrapper}>
+                          <button
+                            type="button"
+                            className={styles.novaDespesaCalendarTrigger}
+                            onClick={() => {
+                              setShowCalendar(showCalendar === "vencimento" ? null : "vencimento");
+                            }}
+                          >
+                            <CalendarIcon className={styles.novaDespesaCalendarIcon} />
+                            {formData.vencimento
+                              ? format(formData.vencimento, "dd/MM/yyyy", {
+                                  locale: ptBR,
+                                })
+                              : "Selecione a data"}
+                          </button>
+                          
+                          {showCalendar === "vencimento" && (
+                            <div className={styles.novaDespesaCalendarDropdown}>
+                              <Calendar
+                                mode="single"
+                                selected={formData.vencimento}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    handleInputChange("vencimento", date);
+                                  }
+                                  setShowCalendar(null);
+                                }}
+                                initialFocus
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </>
                   ) : (
                     <>
                       {/* 1º vencimento */}
-                      <div className="space-y-2">
-                        <Label className="theme-text-white">1º vencimento *</Label>
-                        <Popover
-                          open={showCalendar === "vencimento"}
-                          onOpenChange={(open) =>
-                            setShowCalendar(open ? "vencimento" : null)
-                          }
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal theme-input",
-                                !formData.vencimento && "theme-text-secondary"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.vencimento
-                                ? format(formData.vencimento, "dd/MM/yyyy", {
-                                    locale: ptBR,
-                                  })
-                                : "Selecione a data"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={formData.vencimento}
-                              onSelect={(date) => {
-                                if (date) {
-                                  handleInputChange("vencimento", date);
-                                  setVencimentoManual(true);
-                                }
-                                setShowCalendar(null);
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                      <div className={styles.novaDespesaField}>
+                        <Label className={styles.novaDespesaLabel}>
+                          1º vencimento <span className={styles.novaDespesaLabelRequired}>*</span>
+                        </Label>
+                        <div className={styles.novaDespesaCalendarWrapper}>
+                          <button
+                            type="button"
+                            className={styles.novaDespesaCalendarTrigger}
+                            onClick={() => {
+                              setShowCalendar(showCalendar === "vencimento" ? null : "vencimento");
+                            }}
+                          >
+                            <CalendarIcon className={styles.novaDespesaCalendarIcon} />
+                            {formData.vencimento
+                              ? format(formData.vencimento, "dd/MM/yyyy", {
+                                  locale: ptBR,
+                                })
+                              : "Selecione a data"}
+                          </button>
+                          
+                          {showCalendar === "vencimento" && (
+                            <div className={styles.novaDespesaCalendarDropdown}>
+                              <Calendar
+                                mode="single"
+                                selected={formData.vencimento}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    handleInputChange("vencimento", date);
+                                    setVencimentoManual(true);
+                                  }
+                                  setShowCalendar(null);
+                                }}
+                                initialFocus
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </>
                   )}
 
                   {/* Forma de pagamento */}
-                  <div className="space-y-2">
-                    <Label className="theme-text-white">Forma de pagamento</Label>
-                    <Select
-                      value={formData.origem}
-                      onValueChange={(value) =>
-                        handleInputChange("origem", value)
-                      }
-                    >
-                      <SelectTrigger className="theme-input">
-                        <SelectValue placeholder="Selecione a forma" />
-                      </SelectTrigger>
-                      <SelectContent className="theme-modal theme-border-secondary">
-                        <SelectItem value="dinheiro" className="theme-text-white">Dinheiro</SelectItem>
-                        <SelectItem value="cartao" className="theme-text-white">Cartão</SelectItem>
-                        <SelectItem value="transferencia" className="theme-text-white">
-                          Transferência
-                        </SelectItem>
-                        <SelectItem value="pix" className="theme-text-white">PIX</SelectItem>
-                        <SelectItem value="boleto" className="theme-text-white">Boleto</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className={styles.novaDespesaField}>
+                    <Label className={styles.novaDespesaLabel}>Forma de pagamento</Label>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione a forma"
+                      value={formData.origem ? {
+                        value: formData.origem,
+                        label: formData.origem === 'dinheiro' ? 'Dinheiro' :
+                               formData.origem === 'cartao' ? 'Cartão' :
+                               formData.origem === 'transferencia' ? 'Transferência' :
+                               formData.origem === 'pix' ? 'PIX' :
+                               formData.origem === 'boleto' ? 'Boleto' : formData.origem
+                      } : null}
+                      onChange={(selected) => handleInputChange('origem', selected ? selected.value : '')}
+                      options={[
+                        { value: 'dinheiro', label: 'Dinheiro' },
+                        { value: 'cartao', label: 'Cartão' },
+                        { value: 'transferencia', label: 'Transferência' },
+                        { value: 'pix', label: 'PIX' },
+                        { value: 'boleto', label: 'Boleto' }
+                      ]}
+                      isClearable
+                    />
                   </div>
 
                   {/* Conta de pagamento */}
-                  <div className="space-y-2">
-                    <Label className="theme-text-white">Conta de pagamento <span className="text-[#F50057]">*</span></Label>
-                    <div className="flex items-center gap-2">
-                   <Select
-                      value={formData.contaPagamento}
-                      onValueChange={(value) =>
-                        handleInputChange("contaPagamento", value)
-                      }
-                    >
-                        <SelectTrigger className="theme-input">
-                          <SelectValue placeholder="Selecione a conta" />
-                        </SelectTrigger>
-                        <SelectContent className="theme-modal theme-border-secondary">
-                          {/* Contas ERP */}
-                          {contas
+                  <div className={styles.novaDespesaField}>
+                    <Label className={styles.novaDespesaLabel}>
+                      Conta de pagamento <span className={styles.novaDespesaLabelRequired}>*</span>
+                    </Label>
+                    <div className={styles.novaDespesaContaContainer}>
+                      <ReactSelect
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        placeholder="Selecione a conta"
+                        value={formData.contaPagamento ? {
+                          value: formData.contaPagamento,
+                          label: (() => {
+                            const isApi = formData.contaPagamento.startsWith('api:');
+                            const isErp = formData.contaPagamento.startsWith('erp:');
+                            if (isErp) {
+                              const contaId = parseInt(formData.contaPagamento.split(':')[1]);
+                              const conta = contas.find(c => c.id === contaId);
+                              return conta ? `${conta.banco} — ${conta.descricao_banco}` : formData.contaPagamento;
+                            } else if (isApi) {
+                              const contaId = parseInt(formData.contaPagamento.split(':')[1]);
+                              const conta = contasApi.find(c => c.id === contaId);
+                              return conta ? conta.descricao_banco : formData.contaPagamento;
+                            }
+                            return formData.contaPagamento;
+                          })()
+                        } : null}
+                        onChange={(selected) => handleInputChange('contaPagamento', selected ? selected.value : '')}
+                        options={[
+                          ...contas
                             .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`erp-${conta.id}`}
-                                value={`erp:${conta.id}`}
-                                className="theme-text-white flex justify-between items-center"
-                              >
-                                <span>{conta.banco} — {conta.descricao_banco}</span>
-                              </SelectItem>
-                            ))}
-
-                          {/* Contas API (OpenFinance) */}
-                          {contasApi
+                            .map((conta) => ({ value: `erp:${conta.id}`, label: `${conta.banco} — ${conta.descricao_banco}` })),
+                          ...contasApi
                             .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`api-${conta.id}`}
-                                value={`api:${conta.id}`}
-                                className="theme-text-white flex justify-between items-center"
-                              >
-                                <span>{conta.descricao_banco}</span>
-                                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
-                              </SelectItem>
-                            ))}
-
-                          {contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                           contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
-                            <div className="theme-text-secondary px-2 py-1">
-                              Nenhuma conta encontrada
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <div className="w-2 h-2 bg-warning rounded-full"></div>
+                            .map((conta) => ({ value: `api:${conta.id}`, label: `${conta.descricao_banco} (OpenFinance)` }))
+                        ]}
+                        noOptionsMessage={() => 'Nenhuma conta encontrada'}
+                        isClearable
+                      />
+                      <div className={styles.novaDespesaStatusIndicator}>
+                        <div className={`${styles.novaDespesaStatusDot} ${styles.novaDespesaStatusDotPrimary}`}></div>
+                        <div className={`${styles.novaDespesaStatusDot} ${styles.novaDespesaStatusDotWarning}`}></div>
                       </div>
                     </div>
                   </div>
@@ -1509,15 +1493,15 @@ export function NovaDespesaDrawer({
               </div>
 
               {/* Tabs - Observações e Anexo */}
-              <div>
-                <Tabs defaultValue="observacoes" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 theme-modal theme-border-secondary">
-                    <TabsTrigger value="observacoes" className="theme-text-white data-[state=active]:bg-[#673AB7] data-[state=active]:theme-text-white">Observações</TabsTrigger>
-                    <TabsTrigger value="anexo" className="theme-text-white data-[state=active]:bg-[#673AB7] data-[state=active]:theme-text-white">Anexo</TabsTrigger>
+              <div className={styles.novaDespesaSection}>
+                <Tabs defaultValue="observacoes" className={styles.novaDespesaTabs}>
+                  <TabsList className={styles.novaDespesaTabsList}>
+                    <TabsTrigger value="observacoes" className={styles.novaDespesaTabsTrigger}>Observações</TabsTrigger>
+                    <TabsTrigger value="anexo" className={styles.novaDespesaTabsTrigger}>Anexo</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="observacoes" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="observacoes" className="theme-text-secondary">Observações</Label>
+                  <TabsContent value="observacoes" className={styles.novaDespesaTabsContent}>
+                    <div className={styles.novaDespesaField}>
+                      <Label htmlFor="observacoes" className={styles.novaDespesaLabel}>Observações</Label>
                       <Textarea
                         id="observacoes"
                         value={formData.observacoes}
@@ -1525,21 +1509,21 @@ export function NovaDespesaDrawer({
                           handleInputChange("observacoes", e.target.value)
                         }
                         placeholder="Descreva observações relevantes sobre esse lançamento financeiro"
-                        className="min-h-[100px] theme-input theme-text-muted"
+                        className={styles.novaDespesaTextarea}
                       />
                     </div>
                   </TabsContent>
-                  <TabsContent value="anexo" className="space-y-4">
-                    <div className="space-y-2">
+                  <TabsContent value="anexo" className={styles.novaDespesaTabsContent}>
+                    <div className={styles.novaDespesaField}>
                       {/* Upload de PDF */}
-                      <div className="nova-despesa-pdf-section border-2 border-dashed theme-border-primary rounded-lg p-6 text-center">
+                      <div className={styles.novaDespesaPdfSection}>
                         <Label htmlFor="fileInput" className="cursor-pointer">
-                          <div className="space-y-2">
-                            <FileText className="h-8 w-8 text-[#673AB7] mx-auto" />
-                            <p className="theme-text-white font-medium">
+                          <div className={styles.novaDespesaField}>
+                            <FileText className={styles.novaDespesaPdfIcon} style={{color: '#673AB7'}} />
+                            <p className={styles.novaDespesaPdfTitle}>
                               Clique para selecionar arquivo PDF
                             </p>
-                            <p className="theme-text-secondary text-sm">
+                            <p className={styles.novaDespesaPdfSubtitle}>
                               O valor será extraído automaticamente do boleto
                             </p>
                           </div>
@@ -1555,12 +1539,12 @@ export function NovaDespesaDrawer({
 
                       {/* Status do arquivo */}
                       {formData.anexo_base64 && (
-                        <div className="nova-despesa-pdf-success">
-                          <div className="flex items-center gap-2 nova-despesa-pdf-success-text">
+                        <div className={styles.novaDespesaPdfSuccess}>
+                          <div className={styles.novaDespesaPdfSuccessText}>
                             <CheckCircle2 className="h-4 w-4" />
                             <span className="font-medium">PDF anexado com sucesso!</span>
                           </div>
-                          <p className="theme-text-secondary text-sm mt-1">
+                          <p className={styles.novaDespesaPdfSuccessSubtext}>
                             O valor será extraído automaticamente ao salvar
                           </p>
                         </div>
@@ -1568,9 +1552,9 @@ export function NovaDespesaDrawer({
 
                       {/* Visualização do PDF */}
                       {formData.anexo_base64 && (
-                        <div className="space-y-2">
-                          <Label className="theme-text-secondary">Visualização do PDF</Label>
-                          <div className="nova-despesa-pdf-viewer">
+                        <div className={styles.novaDespesaField}>
+                          <Label className={styles.novaDespesaLabel}>Visualização do PDF</Label>
+                          <div className={styles.novaDespesaPdfSection}>
                             <PDFViewer 
                               base64Data={formData.anexo_base64}
                               fileName="boleto.pdf"
@@ -1578,7 +1562,7 @@ export function NovaDespesaDrawer({
                               showControls={true}
                             />
                           </div>
-                          <div className="flex items-center gap-2 text-sm theme-text-secondary">
+                          <div className={styles.novaDespesaLabelContainer} style={{fontSize: '14px', opacity: 0.7}}>
                             <Info className="h-4 w-4" />
                             <span>O valor do boleto será extraído automaticamente do PDF</span>
                           </div>
@@ -1588,21 +1572,19 @@ export function NovaDespesaDrawer({
                   </TabsContent>
                 </Tabs>
               </div>
-            </div>
-          </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-3 theme-border-primary border-t theme-bg-primary mt-auto">
-            <Button variant="outline" onClick={onClose} className="theme-button-secondary">
+          <div className={styles.novaDespesaFooter}>
+            <button onClick={onClose} className={styles.novaDespesaButtonSecondary}>
               Voltar
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button
+            </button>
+            <div className={styles.novaDespesaFooterActions}>
+              <button
                 onClick={handleSave}
-                className="theme-button-primary"
+                className={styles.novaDespesaButtonPrimary}
               >
                 {dadosBoleto ? 'Atualizar despesa' : 'Salvar'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -1620,6 +1602,7 @@ export function NovaDespesaDrawer({
         onClose={() => setShowModalRecorrencia(false)}
         onConfirm={handleCriarRecorrenciaPersonalizada}
       />
+    </div>
     </>
-  );
+  );    
 }

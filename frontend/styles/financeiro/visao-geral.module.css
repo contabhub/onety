@@ -275,6 +275,9 @@
   box-shadow: var(--onity-elev-med);
   max-height: 500px;
   overflow-y: auto;
+  min-height: 0; /* Permite que o card encolha */
+  display: flex;
+  flex-direction: column;
 }
 
 .contasHeader {
@@ -515,19 +518,27 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-med);
+  max-height: 500px; /* Mesmo tamanho que contasCard */
+  min-height: 0; /* Permite que o card encolha */
+  display: flex;
+  flex-direction: column;
 }
 
 .fluxoContent {
   padding: var(--onity-space-l);
+  flex: 1;
+  min-height: 0; /* Permite que o conteúdo encolha */
+  overflow: hidden; /* Evita overflow */
 }
 
 /* Chart Container */
 .chartContainer {
-  height: 256px;
+  height: 200px; /* Reduzido para evitar corte */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   margin-bottom: var(--onity-space-m);
+  min-height: 0; /* Permite que o container encolha */
 }
 
 .chartBars {
@@ -549,7 +560,7 @@
 
 .chartBarContainer {
   width: 100%;
-  height: 160px;
+  height: 120px; /* Reduzido para evitar corte */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -770,18 +781,26 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-med);
+  max-height: 500px; /* Mesmo tamanho que contasCard */
+  min-height: 0; /* Permite que o card encolha */
+  display: flex;
+  flex-direction: column;
 }
 
 .vendasContent {
   padding: var(--onity-space-l);
+  flex: 1;
+  min-height: 0; /* Permite que o conteúdo encolha */
+  overflow: hidden; /* Evita overflow */
 }
 
 .vendasChart {
-  height: 256px;
+  height: 200px; /* Mesmo tamanho que chartContainer */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   margin-bottom: var(--onity-space-m);
+  min-height: 0; /* Permite que o container encolha */
 }
 
 .vendasBars {
@@ -885,6 +904,15 @@
   
   .bottomGrid {
     grid-template-columns: 1fr;
+    gap: var(--onity-space-m);
+  }
+  
+  .chartContainer {
+    height: 180px; /* Ainda menor em telas menores */
+  }
+  
+  .chartBarContainer {
+    height: 100px; /* Ainda menor em telas menores */
   }
 }
 
@@ -954,6 +982,10 @@
   margin-top: var(--onity-space-s);
   transform: rotate(-45deg);
   transform-origin: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .chartTooltip {
@@ -1099,4 +1131,129 @@
 
 .contaPendingButton:hover {
   color: var(--onity-color-primary-light);
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badgeDefault {
+  background: rgba(30, 136, 229, 0.1);
+  color: var(--onity-color-primary);
+  border: 1px solid rgba(30, 136, 229, 0.2);
+}
+
+.badgeSecondary {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9C27B0;
+  border: 1px solid rgba(156, 39, 176, 0.2);
+}
+
+.badgeDestructive {
+  background: rgba(234, 84, 85, 0.1);
+  color: #EA5455;
+  border: 1px solid rgba(234, 84, 85, 0.2);
+}
+
+/* Skeleton styles */
+.skeleton {
+  background: rgba(103, 58, 183, 0.2);
+  border-radius: var(--onity-radius-xs);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Sync button styles */
+.syncButton {
+  border: 1px solid var(--onity-color-primary);
+  background: rgba(68, 84, 100, 0.1);
+  color: var(--onity-color-primary);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.syncButton:hover {
+  background: var(--onity-color-primary);
+  color: white;
+}
+
+.syncButtonIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--onity-space-s);
+}
+
+/* Calculating text */
+.calculatingText {
+  margin-left: var(--onity-space-s);
+  font-size: 12px;
+  color: var(--onity-color-primary);
+}
+
+/* Refresh icon */
+.refreshIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Conta image container */
+.contaImageContainer {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--onity-radius-xs);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--onity-color-surface);
+}
+
+.contaImage {
+  object-fit: contain;
+}
+
+/* Conta name container */
+.contaNameContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+/* Vendas bar fill */
+.vendasBarFill {
+  background: var(--onity-color-primary);
+  border-radius: 4px 4px 0 0;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+/* Vendas legend */
+.vendasLegendDot {
+  width: 12px;
+  height: 12px;
+  background: var(--onity-color-primary);
+  border-radius: 50%;
+}
+
+.vendasLegendText {
+  font-size: 12px;
+  color: var(--onity-color-text);
+  opacity: 0.7;
 }

@@ -1,0 +1,799 @@
+/* ===== NOVO CLIENTE DRAWER STYLES ===== */
+
+/* Container principal do drawer */
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: transparent;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  transition: opacity 300ms ease-out;
+}
+
+.drawerOverlay.closing {
+  opacity: 0;
+}
+
+.drawerContainer {
+  width: 100%;
+  background: var(--onity-color-surface);
+  border-radius: 12px 12px 0 0;
+  box-shadow: var(--onity-elev-high);
+  transition: transform 300ms ease-out;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10001;
+  transform: translateY(0);
+}
+
+.drawerContainer.closing {
+  transform: translateY(100%);
+}
+
+.drawerContainerOpen {
+  transform: translateY(0);
+}
+
+.drawerContainerClosed {
+  transform: translateY(100%);
+}
+
+/* Header do drawer */
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.drawerTitle {
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.closeButton {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 120ms ease;
+}
+
+.closeButton:hover {
+  color: var(--onity-color-text);
+}
+
+.closeIcon {
+  height: 16px;
+  width: 16px;
+}
+
+/* Conteúdo do drawer */
+.drawerContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.drawerContentInner {
+  padding: 24px;
+  background: var(--onity-color-surface);
+}
+
+/* Accordion */
+.accordionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.accordionItem {
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+}
+
+.accordionTrigger {
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  transition: background-color 120ms ease;
+}
+
+.accordionTrigger:hover {
+  text-decoration: none;
+}
+
+.accordionContent {
+  padding: 0 16px 16px 16px;
+}
+
+/* Grid layouts */
+.grid1Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.grid2Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.grid3Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.grid4Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.grid5Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Responsive grid */
+@media (min-width: 768px) {
+  .grid2Col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .grid3Col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .grid4Col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .grid5Col {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid4Col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .grid5Col {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Form fields */
+.fieldContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: var(--onity-color-text);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.fieldLabelWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoButton {
+  background: transparent;
+  border: none;
+  color: #B0AFC1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 120ms ease;
+}
+
+.infoButton:hover {
+  color: #1E88E5;
+}
+
+.infoIcon {
+  height: 16px;
+  width: 16px;
+}
+
+/* Input fields */
+.inputField {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 2px solid var(--onity-color-border);
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.inputFieldLarge {
+  min-height: 27px;
+  font-size: 16px;
+  border-radius: 7px;
+}
+
+.inputFieldExtraWide {
+  min-height: 27px;
+  font-size: 16px;
+  border-radius: 7px;
+  width: 100%;
+  min-width: 300px;
+}
+
+.textareaFieldLarge {
+  min-height: 27px;
+  font-size: 16px;
+  border-radius: 7px;
+  width: 98%;
+  min-width: 400px;
+}
+
+.inputField::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.inputField:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.inputField:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Input com botão */
+.inputWithButton {
+  display: flex;
+  gap: 8px;
+}
+
+.inputWithButton .inputField {
+  flex: 1;
+}
+
+/* Select fields */
+.selectField {
+  background-color: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: 8px 12px;
+  border-radius: var(--onity-radius-m);
+  font-size: 15px;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.selectField:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.selectField:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.selectContent {
+  background-color: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  z-index: 10002;
+}
+
+.selectItem {
+  color: var(--onity-color-text);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--onity-radius-xs);
+  margin: 2px 4px;
+}
+
+.selectItem:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.selectItem:focus {
+  background-color: var(--onity-color-bg);
+}
+
+/* Checkbox e Radio */
+.checkboxContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkboxLabel {
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 24px;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radioLabel {
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.helpText {
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+  margin: 0;
+}
+
+/* Error messages */
+.errorMessage {
+  font-size: 12px;
+  color: #F50057;
+  margin-top: 4px;
+}
+
+/* Buttons */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid transparent;
+  min-height: 40px;
+}
+
+.buttonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 2px solid var(--onity-color-primary);
+}
+
+.buttonPrimary:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 2px solid var(--onity-color-border);
+}
+
+.buttonSecondary:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+}
+
+.buttonOutline {
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  border: 2px solid var(--onity-color-primary-hover);
+  font-weight: 600;
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.buttonOutline:hover {
+  background: var(--onity-light-primary-deep);
+  border-color: var(--onity-light-primary-deep);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: var(--onity-elev-high);
+}
+
+.buttonGhost {
+  background: transparent;
+  color: var(--onity-icon-secondary);
+  border: none;
+}
+
+.buttonGhost:hover {
+  color: var(--onity-color-primary);
+}
+
+.buttonSmall {
+  padding: 6px 12px;
+  font-size: 13px;
+  min-height: 36px;
+  border-radius: 6px;
+}
+
+.buttonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--onity-color-border) !important;
+  border-color: var(--onity-color-border) !important;
+  color: var(--onity-color-text) !important;
+}
+
+.buttonDisabled:hover {
+  background: var(--onity-color-border) !important;
+  border-color: var(--onity-color-border) !important;
+  color: var(--onity-color-text) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Icon buttons */
+.iconButton {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #B0AFC1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 120ms ease;
+}
+
+.iconButton:hover {
+  color: var(--onity-color-primary);
+}
+
+.iconButtonDanger:hover {
+  color: #F50057;
+}
+
+/* Calendar icon */
+.calendarIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  width: 16px;
+  color: var(--onity-icon-secondary);
+  pointer-events: none;
+}
+
+.inputWithIcon {
+  position: relative;
+}
+
+
+/* Contact cards */
+.contactCard {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--onity-elev-low);
+}
+
+.contactHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contactTitle {
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.removeButton {
+  background: transparent;
+  border: none;
+  color: #F50057;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 120ms ease;
+}
+
+.removeButton:hover {
+  background: rgba(245, 0, 87, 0.1);
+}
+
+.removeIcon {
+  height: 16px;
+  width: 16px;
+}
+
+/* Add contact button */
+.addContactButton {
+  width: 100%;
+  background: transparent;
+  color: var(--onity-color-primary);
+  border: 2px solid var(--onity-color-border);
+  padding: 12px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: all 120ms ease;
+}
+
+.addContactButton:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.addIcon {
+  height: 16px;
+  width: 16px;
+}
+
+/* Textarea */
+.textareaField {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: 8px 12px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  outline: none;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.textareaField::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.textareaField:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.textareaField:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Footer do drawer */
+.drawerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-top: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.cancelButton {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 2px solid var(--onity-color-border);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 120ms ease;
+}
+
+.cancelButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+}
+
+.saveButton {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 2px solid var(--onity-color-primary);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 120ms ease;
+}
+
+.saveButton:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+/* Utility classes */
+.spaceY4 > * + * {
+  margin-top: 16px;
+}
+
+.spaceY2 > * + * {
+  margin-top: 8px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flexCol {
+  flex-direction: column;
+}
+
+.itemsCenter {
+  align-items: center;
+}
+
+.justifyBetween {
+  justify-content: space-between;
+}
+
+.gap2 {
+  gap: 8px;
+}
+
+.gap4 {
+  gap: 16px;
+}
+
+.gap6 {
+  gap: 24px;
+}
+
+.wFull {
+  width: 100%;
+}
+
+.h4 {
+  height: 16px;
+}
+
+.w4 {
+  width: 16px;
+}
+
+.mr1 {
+  margin-right: 4px;
+}
+
+.mr2 {
+  margin-right: 8px;
+}
+
+.mt1 {
+  margin-top: 4px;
+}
+
+.textWhite {
+  color: var(--onity-color-text);
+}
+
+.textRed400 {
+  color: #F50057;
+}
+
+.textB0AFC1 {
+  color: #B0AFC1;
+}
+
+.text1E88E5 {
+  color: #1E88E5;
+}
+
+.text9C27B0 {
+  color: #9C27B0;
+}
+
+.text673AB7 {
+  color: #673AB7;
+}
+
+.fontMedium {
+  font-weight: 500;
+}
+
+.fontSemibold {
+  font-weight: 600;
+}
+
+.textXs {
+  font-size: 12px;
+}
+
+.textXl {
+  font-size: 20px;
+}
+
+.minH120px {
+  min-height: 120px;
+}
+
+/* Responsive utilities */
+@media (min-width: 768px) {
+  .mdGrid2Col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .mdGrid3Col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lgGrid4Col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .lgGrid5Col {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

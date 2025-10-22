@@ -26,38 +26,38 @@ import styles from '../../styles/financeiro/visao-geral.module.css';
 
 // Componentes simples para substituir os do shadcn/ui
 const Card = ({ className, children, ...props }) => (
-  <div className={`card ${className || ''}`} {...props}>
+  <div className={`${styles.card} ${className || ''}`} {...props}>
     {children}
   </div>
 );
 
 const CardHeader = ({ className, children, ...props }) => (
-  <div className={`p-6 pb-4 ${className || ''}`} {...props}>
+  <div className={`${styles.cardHeader} ${className || ''}`} {...props}>
     {children}
   </div>
 );
 
 const CardTitle = ({ className, children, ...props }) => (
-  <h3 className={`text-lg font-semibold ${className || ''}`} {...props}>
+  <h3 className={`${styles.cardTitle} ${className || ''}`} {...props}>
     {children}
   </h3>
 );
 
 const CardContent = ({ className, children, ...props }) => (
-  <div className={`p-6 pt-0 ${className || ''}`} {...props}>
+  <div className={`${styles.cardContent} ${className || ''}`} {...props}>
     {children}
   </div>
 );
 
 const Badge = ({ className, children, variant = 'default', ...props }) => {
   const variantClasses = {
-    default: 'bg-blue-100 text-blue-800',
-    secondary: 'bg-gray-100 text-gray-800',
-    destructive: 'bg-red-100 text-red-800',
+    default: styles.badgeDefault,
+    secondary: styles.badgeSecondary,
+    destructive: styles.badgeDestructive,
   };
   
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantClasses[variant]} ${className || ''}`} {...props}>
+    <span className={`${styles.badge} ${variantClasses[variant]} ${className || ''}`} {...props}>
       {children}
     </span>
   );
@@ -65,7 +65,7 @@ const Badge = ({ className, children, variant = 'default', ...props }) => {
 
 const Skeleton = ({ className, style, ...props }) => (
   <div 
-    className={`animate-pulse bg-gray-200 rounded ${className || ''}`} 
+    className={`${styles.skeleton} ${className || ''}`} 
     style={style}
     {...props}
   />
@@ -171,15 +171,15 @@ export default function VisaoGeral() {
     {
       title: 'Vencidos',
       value: entradasVencidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      color: styles.statValueReceita,
+      bgColor: styles.statItemReceita
     },
     {
       title: 'Vencem hoje',
       value: entradasVencemHoje.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
       subtitle: 'Restante do mês: R$ Há renderizar',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      color: styles.statValueReceita,
+      bgColor: styles.statItemReceita
     }
   ], [entradasVencidas, entradasVencemHoje]);
 
@@ -187,15 +187,15 @@ export default function VisaoGeral() {
     {
       title: 'Vencidos',
       value: saidasVencidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      color: styles.statValueDespesa,
+      bgColor: styles.statItemDespesa
     },
     {
       title: 'Vencem hoje',
       value: saidasVencemHoje.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
       subtitle: 'Restante do mês: R$ Há renderizar',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      color: styles.statValueDespesa,
+      bgColor: styles.statItemDespesa
     }
   ], [saidasVencidas, saidasVencemHoje]);
 
@@ -1094,9 +1094,9 @@ export default function VisaoGeral() {
             size="sm"
             onClick={() => syncTransacoesPluggy()}
             disabled={syncing}
-            className="border-[#1E88E5]/80 hover:text-[#1E88E5] bg-[#1E88E5]/10 text-[#1E88E5] border-[#1E88E5]"
+            className={styles.syncButton}
           >
-            <Settings className="h-4 w-4 mr-2" />
+            <Settings className={styles.syncButtonIcon} />
             {syncing ? "Sincronizando..." : "Sincronizar transações"}
           </Button>
         </div>
@@ -1276,9 +1276,9 @@ export default function VisaoGeral() {
               onClick={fetchContasFinanceiras}
               disabled={contasLoading}
             >
-              <RefreshCw className={`h-4 w-4 ${contasLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`${styles.refreshIcon} ${contasLoading ? styles.spinning : ''}`} />
               {calculandoContasApi && !contasLoading && (
-                <span className="ml-2 text-xs text-[#1E88E5]">Calculando...</span>
+                <span className={styles.calculatingText}>Calculando...</span>
               )}
             </Button>
           </CardHeader>
@@ -1360,13 +1360,13 @@ export default function VisaoGeral() {
                   >
                     <div className={styles.contaContent}>
                       {conta.fotoBanco ? (
-                        <div className="w-8 h-8 rounded overflow-hidden flex items-center justify-center bg-transparent">
+                        <div className={styles.contaImageContainer}>
                           <Image 
                             src={conta.fotoBanco} 
                             alt={conta.bank}
                             width={32}
                             height={32}
-                            className="object-contain"
+                            className={styles.contaImage}
                           />
                         </div>
                       ) : (
@@ -1377,7 +1377,7 @@ export default function VisaoGeral() {
                       <div className={styles.contaInfo}>
                         <div className={styles.contaHeader}>
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className={styles.contaNameContainer}>
                               <p className={styles.contaName}>{conta.bank}</p>
                               {conta.origem === 'contas-api' && (
                                 <Badge variant="secondary" className={styles.contaBadge}>
@@ -1601,7 +1601,7 @@ export default function VisaoGeral() {
                       className={styles.chartBarContainer}
                     style={{ height: `${(data.value / maxVendas) * 200}px` }}
                     >
-                      <div className="bg-[#1E88E5] rounded-t w-full h-full"></div>
+                      <div className={styles.vendasBarFill}></div>
                     </div>
                     <p className={styles.chartLabel}>
                     {data.month}
@@ -1612,8 +1612,8 @@ export default function VisaoGeral() {
             
               <div className={styles.chartLegend}>
                 <div className={styles.legendItem}>
-              <div className="w-3 h-3 bg-[#1E88E5] rounded-full"></div>
-              <span className="text-[#B0AFC1]">Faturamento</span>
+              <div className={styles.vendasLegendDot}></div>
+              <span className={styles.vendasLegendText}>Faturamento</span>
             </div>
               </div>
             </div>

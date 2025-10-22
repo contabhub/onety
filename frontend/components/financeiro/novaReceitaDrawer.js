@@ -834,7 +834,7 @@ export default function NovaReceitaDrawer({
     setIsClosing(true);
     setTimeout(() => {
       onClose();
-    }, 400); // Duração da animação de fechamento
+    }, 600); // Duração da animação de fechamento
   };
 
   // Função para fechar ao clicar no overlay
@@ -853,14 +853,14 @@ export default function NovaReceitaDrawer({
       <div 
         className={cn(
           styles.novaReceitaOverlay,
-          isClosing && "closing"
+          isClosing && styles.closing
         )}
         onClick={handleOverlayClick}
       >
         <div
           className={cn(
             styles.novaReceitaModal,
-            isClosing && "closing"
+            isClosing && styles.closing
           )}
         >
           {/* Handle para indicar que pode ser arrastado */}
@@ -948,14 +948,14 @@ export default function NovaReceitaDrawer({
                 </div>
               </div>
 
-              {/* Resto dos campos em grid 2x2 */}
-              <div className={cn(styles.novaReceitaGrid, "grid-cols-2")}>
+              {/* Campos principais em grid 3 colunas */}
+              <div className={styles.novaReceitaGrid}>
 
                 {/* Subcategoria Receita */}
                 <div className={styles.novaReceitaField}>
-                  <div className="flex items-center gap-2">
+                  <div className={styles.novaReceitaLabelContainer}>
                     <Label className={styles.novaReceitaLabel}>Subcategoria Receita <span className={styles.novaReceitaLabelRequired}>*</span></Label>
-                    <Info className="h-4 w-4" style={{ color: 'var(--onity-color-text)', opacity: 0.7 }} />
+                    <Info className={styles.novaReceitaInfoIcon} />
                   </div>
                   <ReactSelect
                     className="react-select-container"
@@ -987,9 +987,9 @@ export default function NovaReceitaDrawer({
 
                 {/* Centro de Custo */}
                 <div className={styles.novaReceitaField}>
-                  <div className="flex items-center gap-2">
+                  <div className={styles.novaReceitaLabelContainer}>
                     <Label className={styles.novaReceitaLabel}>Centro de Custo</Label>
-                    <Info className="h-4 w-4 invisible" />
+                    <Info className={styles.novaReceitaInfoIconInvisible} />
                   </div>
                   <ReactSelect
                     className="react-select-container"
@@ -1020,24 +1020,11 @@ export default function NovaReceitaDrawer({
                   />
                 </div>
 
-                {/* Repetir lançamento */}
-                <div className={styles.novaReceitaField}>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="repetirLancamento" className={styles.novaReceitaLabel}>Repetir lançamento?</Label>
-                    <Switch
-                      id="repetirLancamento"
-                      checked={repetirLancamento}
-                      onCheckedChange={setRepetirLancamento}
-                    />
-                  </div>
-                </div>
-
                 {/* Valor */}
                 <div className={styles.novaReceitaField}>
-                  <div className="flex items-center gap-2">
+                  <div className={styles.novaReceitaLabelContainer}>
                     <Label htmlFor="valor" className={styles.novaReceitaLabel}>Valor <span className={styles.novaReceitaLabelRequired}>*</span></Label>
-                    <span className="w-4" />{" "}
-                    {/* Placeholder para alinhamento */}
+                    <span className={styles.novaReceitaSpacer} />
                   </div>
                   <div className={styles.novaReceitaInputWithIcon}>
                     <span className={styles.novaReceitaInputIcon}>
@@ -1055,56 +1042,65 @@ export default function NovaReceitaDrawer({
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Configuração de recorrência */}
-            {repetirLancamento && (
-              <div className={styles.novaReceitaRecurrenceConfig}>
-                <Label className={styles.novaReceitaRecurrenceLabel}>Configurações de repetição *</Label>
-                <Select
-                  value={recorrenciaSelecionada}
-                  onValueChange={(val) => {
-                    console.log("🔄 Selecionando recorrência:", val);
-                    if (val === "personalizar") {
-                      setShowModalRecorrencia(true);
-                    } else {
-                      setRecorrenciaSelecionada(val);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="theme-input">
-                    <SelectValue placeholder="Selecione a recorrência" />
-                  </SelectTrigger>
-                  <SelectContent className="theme-modal theme-border-secondary">
-                  {recorrencias.length > 0 ? (
-                    recorrencias.map((rec, index) => (
-                      <SelectItem 
-                        key={`${rec.id}-${index}`} 
-                        value={rec.id.toString()} 
-                        className="theme-select-item"
+              {/* Repetir lançamento - linha separada */}
+              <div className={styles.novaReceitaField}>
+                <div className={styles.novaReceitaSwitchContainer}>
+                  <Label htmlFor="repetirLancamento" className={styles.novaReceitaLabel}>Repetir lançamento?</Label>
+                  <Switch
+                    id="repetirLancamento"
+                    checked={repetirLancamento}
+                    onCheckedChange={setRepetirLancamento}
+                  />
+                  {repetirLancamento && (
+                    <div className={styles.novaReceitaRecurrenceSelect}>
+                      <Select
+                        value={recorrenciaSelecionada}
+                        onValueChange={(val) => {
+                          console.log("🔄 Selecionando recorrência:", val);
+                          if (val === "personalizar") {
+                            setShowModalRecorrencia(true);
+                          } else {
+                            setRecorrenciaSelecionada(val);
+                          }
+                        }}
                       >
-                        {`${
-                          rec.frequencia === "mensal"
-                            ? "Mensal"
-                            : rec.frequencia.charAt(0).toUpperCase() +
-                              rec.frequencia.slice(1)
-                        }: A cada ${rec.intervalo_personalizado || 1} ${
-                          rec.tipo_intervalo || "mês(es)"
-                        }, ${rec.total_parcelas || "∞"} vez(es)${
-                          rec.indeterminada ? " (indeterminada)" : ""
-                        }`}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="theme-text-secondary px-2 py-1">Nenhuma recorrência personalizada encontrada</div>
+                        <SelectTrigger className={styles.novaReceitaSelectTrigger}>
+                          <SelectValue placeholder="Selecione a recorrência" />
+                        </SelectTrigger>
+                        <SelectContent className={styles.novaReceitaSelectContent}>
+                      {recorrencias.length > 0 ? (
+                        recorrencias.map((rec, index) => (
+                          <SelectItem 
+                            key={`${rec.id}-${index}`} 
+                            value={rec.id.toString()} 
+                            className={styles.novaReceitaSelectItem}
+                          >
+                            {`${
+                              rec.frequencia === "mensal"
+                                ? "Mensal"
+                                : rec.frequencia.charAt(0).toUpperCase() +
+                                  rec.frequencia.slice(1)
+                            }: A cada ${rec.intervalo_personalizado || 1} ${
+                              rec.tipo_intervalo || "mês(es)"
+                            }, ${rec.total_parcelas || "∞"} vez(es)${
+                              rec.indeterminada ? " (indeterminada)" : ""
+                            }`}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className={styles.novaReceitaNoRecurrenceMessage}>Nenhuma recorrência personalizada encontrada</div>
+                      )}
+                        <SelectItem value="personalizar" className={styles.novaReceitaSelectItem}>
+                          ➕ Criar nova recorrência personalizada...
+                        </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                   )}
-                    <SelectItem value="personalizar" className="theme-select-item">
-                      ➕ Criar nova recorrência personalizada...
-                    </SelectItem>
-                </SelectContent>
-              </Select>
+                </div>
+              </div>
             </div>
-            )}
 
             {/* Condição de Pagamento */}
             <div className={styles.novaReceitaSection}>
@@ -1112,27 +1108,31 @@ export default function NovaReceitaDrawer({
                 Condição de pagamento
               </h3>
               
-              <div className={cn(styles.novaReceitaGrid, "grid-cols-2")}>
+              <div className={styles.novaReceitaGrid4Colunas}>
                 {/* Parcelamento */}
                 <div className={styles.novaReceitaField}>
                   <Label className={styles.novaReceitaLabel}>Parcelamento</Label>
-                  <Select
-                    value={parcelamento}
-                    onValueChange={setParcelamento}
-                  >
-                    <SelectTrigger className="theme-input">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="theme-modal theme-border-secondary">
-                      <SelectItem value="A vista" className="theme-select-item">À vista</SelectItem>
-                      {Array.from({ length: 59 }, (_, i) => (
-                        <SelectItem key={i + 2} value={`${i + 2}x`} className="theme-select-item">{`${i + 2}x`}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <ReactSelect
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Selecione o parcelamento"
+                    value={{
+                      value: parcelamento,
+                      label: parcelamento
+                    }}
+                    onChange={(selected) => setParcelamento(selected ? selected.value : "A vista")}
+                    options={[
+                      { value: "A vista", label: "À vista" },
+                      ...Array.from({ length: 59 }, (_, i) => ({
+                        value: `${i + 2}x`,
+                        label: `${i + 2}x`
+                      }))
+                    ]}
+                    isClearable
+                  />
                   {parcelamento !== "A vista" && valorParcela && (
-                    <div className="text-sm mt-1" style={{ color: 'var(--onity-color-text)', opacity: 0.7 }}>
-                      Valor de cada parcela: <span className="font-semibold" style={{ color: 'var(--onity-color-text)' }}>{valorParcela}</span>
+                    <div className={styles.novaReceitaParcelaInfo}>
+                      Valor de cada parcela: <span className={styles.novaReceitaParcelaValor}>{valorParcela}</span>
                     </div>
                   )}
                 </div>
@@ -1140,128 +1140,111 @@ export default function NovaReceitaDrawer({
                 {/* Data de Vencimento */}
                 <div className={styles.novaReceitaField}>
                   <Label className={styles.novaReceitaLabel}>Data de vencimento <span className={styles.novaReceitaLabelRequired}>*</span></Label>
-                  <Popover
-                    open={showCalendar === "vencimento"}
-                    onOpenChange={(open) =>
-                      setShowCalendar(open ? "vencimento" : null)
-                    }
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal theme-input",
-                          !formData.vencimento && "theme-text-secondary"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.vencimento
-                          ? format(formData.vencimento, "dd/MM/yyyy", {
-                              locale: ptBR,
-                            })
-                          : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={formData.vencimento}
-                        onSelect={(date) => {
-                          if (date) {
-                            handleInputChange("vencimento", date);
-                          }
-                          setShowCalendar(null);
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <div className={styles.novaReceitaCalendarWrapper}>
+                    <button
+                      type="button"
+                      className={styles.novaReceitaCalendarTrigger}
+                      onClick={() => {
+                        setShowCalendar(showCalendar === "vencimento" ? null : "vencimento");
+                      }}
+                    >
+                      <CalendarIcon className={styles.novaReceitaCalendarIcon} />
+                      {formData.vencimento
+                        ? format(formData.vencimento, "dd/MM/yyyy", {
+                            locale: ptBR,
+                          })
+                        : "Selecione a data"}
+                    </button>
+                    
+                    {showCalendar === "vencimento" && (
+                      <div className={styles.novaReceitaCalendarDropdown}>
+                        <Calendar
+                          mode="single"
+                          selected={formData.vencimento}
+                          onSelect={(date) => {
+                            if (date) {
+                              handleInputChange("vencimento", date);
+                            }
+                            setShowCalendar(null);
+                          }}
+                          initialFocus
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Forma de pagamento */}
                 <div className={styles.novaReceitaField}>
                   <Label className={styles.novaReceitaLabel}>Forma de pagamento</Label>
-                  <Select
-                    value={formData.formaPagamento}
-                    onValueChange={(value) =>
-                      handleInputChange("formaPagamento", value)
-                    }
-                  >
-                    <SelectTrigger className="theme-input">
-                      <SelectValue placeholder="Selecione a forma" />
-                    </SelectTrigger>
-                    <SelectContent className="theme-modal theme-border-secondary">
-                      <SelectItem value="dinheiro" className="theme-select-item">Dinheiro</SelectItem>
-                      <SelectItem value="cartao" className="theme-select-item">Cartão</SelectItem>
-                      <SelectItem value="transferencia" className="theme-select-item">
-                        Transferência
-                      </SelectItem>
-                      <SelectItem value="pix" className="theme-select-item">PIX</SelectItem>
-                      <SelectItem value="boleto" className="theme-select-item">Boleto</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <ReactSelect
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Selecione a forma"
+                    value={formData.formaPagamento ? {
+                      value: formData.formaPagamento,
+                      label: formData.formaPagamento === 'dinheiro' ? 'Dinheiro' :
+                             formData.formaPagamento === 'cartao' ? 'Cartão' :
+                             formData.formaPagamento === 'transferencia' ? 'Transferência' :
+                             formData.formaPagamento === 'pix' ? 'PIX' :
+                             formData.formaPagamento === 'boleto' ? 'Boleto' : formData.formaPagamento
+                    } : null}
+                    onChange={(selected) => handleInputChange("formaPagamento", selected ? selected.value : "")}
+                    options={[
+                      { value: "dinheiro", label: "Dinheiro" },
+                      { value: "cartao", label: "Cartão" },
+                      { value: "transferencia", label: "Transferência" },
+                      { value: "pix", label: "PIX" },
+                      { value: "boleto", label: "Boleto" }
+                    ]}
+                    isClearable
+                  />
                 </div>
 
                 {/* Conta de recebimento */}
                 <div className={styles.novaReceitaField}>
                   <Label className={styles.novaReceitaLabel}>Conta de recebimento <span className={styles.novaReceitaLabelRequired}>*</span></Label>
-                  <div className="flex items-center gap-2">
-                 <Select
-                    value={formData.contaRecebimento}
-                    onValueChange={(value) =>
-                      handleInputChange("contaRecebimento", value)
-                    }
-                  >
-                      <SelectTrigger className="theme-input">
-                        <SelectValue placeholder="Selecione a conta" />
-                      </SelectTrigger>
-                      <SelectContent className="theme-modal theme-border-secondary">
-                      {/* Contas ERP */}
-                      {contas
+                  <ReactSelect
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Selecione a conta"
+                    value={formData.contaRecebimento ? {
+                      value: formData.contaRecebimento,
+                      label: (() => {
+                        const isApi = formData.contaRecebimento.startsWith('api:');
+                        const isErp = formData.contaRecebimento.startsWith('erp:');
+                        if (isErp) {
+                          const contaId = parseInt(formData.contaRecebimento.split(':')[1]);
+                          const conta = contas.find(c => c.id === contaId);
+                          return conta ? `${conta.banco} — ${conta.descricao_banco}` : formData.contaRecebimento;
+                        } else if (isApi) {
+                          const contaId = parseInt(formData.contaRecebimento.split(':')[1]);
+                          const conta = contasApi.find(c => c.id === contaId);
+                          return conta ? conta.descricao_banco : formData.contaRecebimento;
+                        }
+                        return formData.contaRecebimento;
+                      })()
+                    } : null}
+                    onChange={(selected) => handleInputChange("contaRecebimento", selected ? selected.value : "")}
+                    options={[
+                      // Contas ERP
+                      ...contas
                         .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                        .map((conta) => (
-                        <SelectItem
-                          key={`erp-${conta.id}`}
-                          value={`erp:${conta.id}`}
-                          className="theme-select-item flex justify-between items-center"
-                        >
-                          <span>{conta.banco} — {conta.descricao_banco}</span>
-                        </SelectItem>
-                      ))}
-
-                      {/* Contas API (OpenFinance) */}
-                      {contasApi
+                        .map((conta) => ({
+                          value: `erp:${conta.id}`,
+                          label: `${conta.banco} — ${conta.descricao_banco}`
+                        })),
+                      // Contas API (OpenFinance)
+                      ...contasApi
                         .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                        .map((conta) => (
-                        <SelectItem
-                          key={`api-${conta.id}`}
-                          value={`api:${conta.id}`}
-                          className="theme-select-item flex justify-between items-center"
-                        >
-                          <span>{conta.descricao_banco}</span>
-                          <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ 
-                            backgroundColor: 'var(--onity-color-info)', 
-                            color: 'white', 
-                            border: '1px solid var(--onity-color-info)',
-                            fontSize: '10px',
-                            fontWeight: '500'
-                          }}>OpenFinance</span>
-                        </SelectItem>
-                      ))}
-
-                      {contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                       contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
-                        <div className="theme-text-secondary px-2 py-1">
-                          Nenhuma conta encontrada
-                        </div>
-                      )}
-                    </SelectContent>
-                    </Select>
-                    <div className={styles.novaReceitaStatusIndicator}>
-                      <div className={cn(styles.novaReceitaStatusDot, styles.novaReceitaStatusDotPrimary)}></div>
-                      <div className={cn(styles.novaReceitaStatusDot, styles.novaReceitaStatusDotWarning)}></div>
-                    </div>
-                  </div>
+                        .map((conta) => ({
+                          value: `api:${conta.id}`,
+                          label: `${conta.descricao_banco} (OpenFinance)`
+                        }))
+                    ]}
+                    isClearable
+                    noOptionsMessage={() => "Nenhuma conta encontrada"}
+                  />
                 </div>
               </div>
             </div>
@@ -1333,13 +1316,13 @@ export default function NovaReceitaDrawer({
 
           {/* Footer */}
           <div className={styles.novaReceitaFooter}>
-            <button onClick={onClose} className={cn(styles.novaReceitaButton, styles.novaReceitaButtonSecondary)}>
+            <button onClick={handleClose} className={styles.novaReceitaButtonSecondary}>
               Voltar
             </button>
             <div className={styles.novaReceitaFooterActions}>
               <button
                 onClick={handleSave}
-                className={cn(styles.novaReceitaButton, styles.novaReceitaButtonPrimary)}
+                className={styles.novaReceitaButtonPrimary}
               >
                 Salvar
               </button>
@@ -1361,5 +1344,5 @@ export default function NovaReceitaDrawer({
         onConfirm={handleCriarRecorrenciaPersonalizada}
       />
     </>
-  )
+  );
 }

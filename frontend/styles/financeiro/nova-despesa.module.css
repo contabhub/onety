@@ -22,7 +22,7 @@
 }
 
 /* ===== OVERLAY E DRAWER PRINCIPAL ===== */
-.novaReceitaOverlay {
+.novaDespesaOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -36,12 +36,11 @@
   transition: opacity 0.4s ease;
 }
 
-.novaReceitaOverlay.closing {
+.novaDespesaOverlay.closing {
   opacity: 0;
 }
 
-
-.novaReceitaModal {
+.novaDespesaModal {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -60,13 +59,13 @@
   animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.novaReceitaModal.closing {
+.novaDespesaModal.closing {
   animation: slideOutDown 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   transform: translateY(100%);
 }
 
 /* Handle para indicar que pode ser arrastado */
-.novaReceitaHandle {
+.novaDespesaHandle {
   width: 100%;
   height: 20px;
   background: transparent;
@@ -78,11 +77,11 @@
   position: relative;
 }
 
-.novaReceitaHandle:active {
+.novaDespesaHandle:active {
   cursor: grabbing;
 }
 
-.novaReceitaHandle::before {
+.novaDespesaHandle::before {
   content: '';
   width: 40px;
   height: 4px;
@@ -92,17 +91,17 @@
   transition: opacity 0.2s ease;
 }
 
-.novaReceitaHandle:hover::before {
+.novaDespesaHandle:hover::before {
   opacity: 1;
   background: var(--onity-color-primary);
 }
 
 /* ===== HEADER ===== */
-.novaReceitaHeader {
+.novaDespesaHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1px 35px;
+  padding: 2px 35px;
   border-bottom: 1px solid var(--onity-color-border);
   background: var(--onity-color-surface);
   position: sticky;
@@ -111,14 +110,14 @@
   flex-shrink: 0;
 }
 
-.novaReceitaTitle {
+.novaDespesaTitle {
   font-size: 23px;
   font-weight: var(--onity-type-h3-weight);
   color: var(--onity-color-text);
   margin: 0;
 }
 
-.novaReceitaCloseButton {
+.novaDespesaCloseButton {
   background: none;
   border: none;
   padding: var(--onity-space-s);
@@ -131,13 +130,13 @@
   justify-content: center;
 }
 
-.novaReceitaCloseButton:hover {
+.novaDespesaCloseButton:hover {
   background-color: var(--onity-color-bg);
   color: var(--onity-color-text);
 }
 
 /* ===== CONTENT ===== */
-.novaReceitaContent {
+.novaDespesaContent {
   flex: 1;
   padding: var(--onity-space-l);
   overflow-y: auto;
@@ -148,14 +147,14 @@
 }
 
 /* Garantir que todas as seções sejam visíveis */
-.novaReceitaContent > * {
+.novaDespesaContent > * {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
 
 /* ===== SEÇÕES ===== */
-.novaReceitaSection {
+.novaDespesaSection {
   display: flex !important;
   flex-direction: column;
   gap: var(--onity-space-s);
@@ -164,7 +163,7 @@
   position: relative;
 }
 
-.novaReceitaSectionTitle {
+.novaDespesaSectionTitle {
   font-size: 20px;
   font-weight: 600;
   color: var(--onity-color-text);
@@ -175,9 +174,8 @@
   position: relative;
 }
 
-
 /* ===== SUBSECÇÕES ===== */
-.novaReceitaSubsection {
+.novaDespesaSubsection {
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-m);
@@ -190,12 +188,12 @@
   transition: all 0.2s ease;
 }
 
-.novaReceitaSubsection:hover {
+.novaDespesaSubsection:hover {
   box-shadow: var(--onity-elev-med);
   transform: translateY(-1px);
 }
 
-.novaReceitaSubsectionTitle {
+.novaDespesaSubsectionTitle {
   font-size: var(--onity-type-body-size);
   font-weight: 600;
   color: var(--onity-color-text);
@@ -208,7 +206,7 @@
   position: relative;
 }
 
-.novaReceitaSubsectionTitle::after {
+.novaDespesaSubsectionTitle::after {
   content: '';
   position: absolute;
   bottom: -1px;
@@ -220,26 +218,26 @@
 }
 
 /* ===== GRID LAYOUT ===== */
-.novaReceitaGrid {
+.novaDespesaGrid {
   display: grid;
   gap: var(--onity-space-m);
   grid-template-columns: repeat(3, 1fr);
 }
 
-.novaReceitaGrid4Colunas {
+.novaDespesaGrid4Colunas {
   display: grid;
   gap: var(--onity-space-s);
   grid-template-columns: repeat(4, 1fr);
 }
 
 /* Wrapper do calendário */
-.novaReceitaCalendarWrapper {
+.novaDespesaCalendarWrapper {
   position: relative;
   width: 100%;
 }
 
 /* Trigger do calendário para ter o mesmo tamanho dos ReactSelect */
-.novaReceitaCalendarTrigger {
+.novaDespesaCalendarTrigger {
   width: 100%;
   height: 40px;
   padding: var(--onity-space-s) var(--onity-space-m);
@@ -258,7 +256,7 @@
 }
 
 /* Dropdown do calendário */
-.novaReceitaCalendarDropdown {
+.novaDespesaCalendarDropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -273,79 +271,77 @@
   min-width: 300px;
 }
 
-
-.novaReceitaCalendarTrigger:hover {
+.novaDespesaCalendarTrigger:hover {
   border-color: var(--onity-color-primary);
   transform: translateY(-3px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
-.novaReceitaCalendarTrigger:focus {
+.novaDespesaCalendarTrigger:focus {
   outline: none;
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
 }
 
 /* ===== FLEX LAYOUT ===== */
-.novaReceitaFlexRow {
+.novaDespesaFlexRow {
   display: flex !important;
   gap: var(--onity-space-s);
   margin-bottom: var(--onity-space-s);
 }
 
-.novaReceitaFlexRow > * {
+.novaDespesaFlexRow > * {
   flex: 1;
 }
 
-.novaReceitaFlexRow > *:first-child {
+.novaDespesaFlexRow > *:first-child {
   flex: 0.3;
 }
 
-.novaReceitaFlexRow > *:last-child {
+.novaDespesaFlexRow > *:last-child {
   flex: 0.3;
 }
-
 
 /* Grid com 3 colunas iguais */
-.novaReceitaGrid .novaReceitaField {
+.novaDespesaGrid .novaDespesaField {
   grid-column: span 1;
 }
 
 @media (min-width: 768px) {
-  .novaReceitaGrid.md\\:grid-cols-2 {
+  .novaDespesaGrid.md\\:grid-cols-2 {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .novaReceitaGrid.md\\:grid-cols-3 {
+  .novaDespesaGrid.md\\:grid-cols-3 {
     grid-template-columns: repeat(3, 1fr);
   }
   
-  .novaReceitaGrid.md\\:grid-cols-4 {
+  .novaDespesaGrid.md\\:grid-cols-4 {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
 /* ===== CAMPOS ===== */
-.novaReceitaField {
+.novaDespesaField {
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-xs);
 }
 
-.novaReceitaLabel {
+.novaDespesaLabel {
   font-size: var(--onity-type-body-size);
   font-weight: 500;
   color: var(--onity-color-text);
   margin: 0;
 }
 
-.novaReceitaLabelRequired {
+.novaDespesaLabelRequired {
   color: var(--onity-color-error);
   margin-left: 2px;
 }
 
 /* ===== INPUTS ===== */
-.novaReceitaInput {
+.novaDespesaInput {
   width: 100%;
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 2px solid var(--onity-color-border);
@@ -358,32 +354,32 @@
   font-weight: 500;
 }
 
-.novaReceitaInput:hover {
+.novaDespesaInput:hover {
   border-color: var(--onity-color-primary);
   transform: translateY(-1px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
-.novaReceitaInput:focus {
+.novaDespesaInput:focus {
   outline: none;
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
   transform: translateY(-1px);
 }
 
-.novaReceitaInput::placeholder {
+.novaDespesaInput::placeholder {
   color: var(--onity-icon-secondary);
   font-weight: 400;
 }
 
 /* Input com ícone */
-.novaReceitaInputWithIcon {
+.novaDespesaInputWithIcon {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.novaReceitaInputIcon {
+.novaDespesaInputIcon {
   position: absolute;
   left: var(--onity-space-m);
   color: var(--onity-icon-secondary);
@@ -392,12 +388,12 @@
   z-index: 1;
 }
 
-.novaReceitaInputWithIcon .novaReceitaInput {
+.novaDespesaInputWithIcon .novaDespesaInput {
   padding-left: 40px;
 }
 
 /* ===== TEXTAREA ===== */
-.novaReceitaTextarea {
+.novaDespesaTextarea {
   width: 100%;
   min-height: 120px;
   padding: var(--onity-space-s) var(--onity-space-m);
@@ -413,69 +409,72 @@
   font-weight: 500;
 }
 
-.novaReceitaTextarea:hover {
+.novaDespesaTextarea:hover {
   border-color: var(--onity-color-primary);
   transform: translateY(-1px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
-.novaReceitaTextarea:focus {
+.novaDespesaTextarea:focus {
   outline: none;
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
   transform: translateY(-1px);
 }
 
-.novaReceitaTextarea::placeholder {
+.novaDespesaTextarea::placeholder {
   color: var(--onity-icon-secondary);
   font-weight: 400;
 }
 
 /* ===== CONTAINER DE CLIENTE ===== */
-.novaReceitaClientContainer {
+.novaDespesaClientContainer {
   display: flex;
   gap: calc(var(--onity-space-m) - 8px);
   align-items: flex-end;
 }
 
-.novaReceitaClientField {
+.novaDespesaClientField {
   flex: 1;
   min-width: 0; /* Permite que o campo encolha se necessário */
 }
 
 /* ===== LABEL CONTAINERS ===== */
-.novaReceitaLabelContainer {
+.novaDespesaLabelContainer {
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
 }
 
-.novaReceitaInfoIcon {
+.novaDespesaInfoIcon {
   width: 16px;
   height: 16px;
   color: var(--onity-color-text);
   opacity: 0.7;
 }
 
-.novaReceitaInfoIconInvisible {
+.novaDespesaInfoIconInvisible {
   width: 16px;
   height: 16px;
   visibility: hidden;
 }
 
-.novaReceitaSpacer {
+.novaDespesaSpacer {
   width: 16px;
 }
 
 /* ===== SWITCH CONTAINER ===== */
-.novaReceitaSwitchContainer {
+.novaDespesaSwitchContainer {
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
+  padding: var(--onity-space-s) 0;
+  margin-bottom: -10px;
+  flex-wrap: wrap;
 }
 
 /* Switch personalizado usando variáveis do globals.css */
-.novaReceitaSwitchContainer :global(.switch-root) {
+.novaDespesaSwitchContainer :global(.switch-root) {
   display: inline-flex;
   height: 24px;
   width: 44px;
@@ -489,27 +488,27 @@
   outline: none;
 }
 
-.novaReceitaSwitchContainer :global(.switch-root:focus-visible) {
+.novaDespesaSwitchContainer :global(.switch-root:focus-visible) {
   outline: 2px solid var(--onity-color-primary);
   outline-offset: 2px;
 }
 
-.novaReceitaSwitchContainer :global(.switch-root:disabled) {
+.novaDespesaSwitchContainer :global(.switch-root:disabled) {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.novaReceitaSwitchContainer :global(.switch-root[data-state="checked"]) {
+.novaDespesaSwitchContainer :global(.switch-root[data-state="checked"]) {
   background-color: var(--onity-color-primary);
   border-color: var(--onity-color-primary);
 }
 
-.novaReceitaSwitchContainer :global(.switch-root[data-state="unchecked"]) {
+.novaDespesaSwitchContainer :global(.switch-root[data-state="unchecked"]) {
   background-color: var(--onity-color-border);
   border-color: var(--onity-color-border);
 }
 
-.novaReceitaSwitchContainer :global(.switch-thumb) {
+.novaDespesaSwitchContainer :global(.switch-thumb) {
   pointer-events: none;
   display: block;
   height: 20px;
@@ -521,29 +520,29 @@
   transform: translateX(0);
 }
 
-.novaReceitaSwitchContainer :global(.switch-thumb[data-state="checked"]) {
+.novaDespesaSwitchContainer :global(.switch-thumb[data-state="checked"]) {
   transform: translateX(20px);
 }
 
-.novaReceitaSwitchContainer :global(.switch-thumb[data-state="unchecked"]) {
+.novaDespesaSwitchContainer :global(.switch-thumb[data-state="unchecked"]) {
   transform: translateX(0);
 }
 
 /* ===== PARCELA INFO ===== */
-.novaReceitaParcelaInfo {
+.novaDespesaParcelaInfo {
   font-size: 14px;
   margin-top: 4px;
   color: var(--onity-color-text);
   opacity: 0.7;
 }
 
-.novaReceitaParcelaValor {
+.novaDespesaParcelaValor {
   font-weight: 600;
   color: var(--onity-color-text);
 }
 
 /* ===== CALENDAR BUTTON ===== */
-.novaReceitaCalendarButton {
+.novaDespesaCalendarButton {
   width: 100%;
   justify-content: flex-start;
   text-align: left;
@@ -556,32 +555,32 @@
   transition: all 0.2s ease;
 }
 
-.novaReceitaCalendarButton:hover {
+.novaDespesaCalendarButton:hover {
   border-color: var(--onity-color-primary);
   transform: translateY(-1px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
-.novaReceitaCalendarIcon {
+.novaDespesaCalendarIcon {
   margin-right: var(--onity-space-s);
   width: 16px;
   height: 16px;
 }
 
-.novaReceitaPopoverContent {
+.novaDespesaPopoverContent {
   width: auto;
   padding: 0;
 }
 
 /* ===== CONTA CONTAINER ===== */
-.novaReceitaContaContainer {
+.novaDespesaContaContainer {
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
 }
 
 /* ===== SELECT STYLES ===== */
-.novaReceitaSelectTrigger {
+.novaDespesaSelectTrigger {
   min-height: 48px;
   border: 2px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
@@ -590,20 +589,20 @@
   transition: all 0.2s ease;
 }
 
-.novaReceitaSelectTrigger:hover {
+.novaDespesaSelectTrigger:hover {
   border-color: var(--onity-color-primary);
   transform: translateY(-1px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
-.novaReceitaSelectContent {
+.novaDespesaSelectContent {
   background-color: var(--onity-color-surface);
   border: 2px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-high);
 }
 
-.novaReceitaSelectItem {
+.novaDespesaSelectItem {
   padding: 12px 16px;
   color: var(--onity-color-text);
   cursor: pointer;
@@ -613,12 +612,12 @@
   align-items: center;
 }
 
-.novaReceitaSelectItem:hover {
+.novaDespesaSelectItem:hover {
   background-color: var(--onity-color-bg);
   transform: translateX(4px);
 }
 
-.novaReceitaSelectItem[data-state="selected"] {
+.novaDespesaSelectItem[data-state="selected"] {
   background-color: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
   font-weight: 600;
@@ -626,7 +625,7 @@
 }
 
 /* ===== OPENFINANCE BADGE ===== */
-.novaReceitaOpenFinanceBadge {
+.novaDespesaOpenFinanceBadge {
   margin-left: var(--onity-space-s);
   font-size: 10px;
   padding: 2px 8px;
@@ -638,22 +637,19 @@
 }
 
 /* ===== NO ACCOUNTS MESSAGE ===== */
-.novaReceitaNoAccountsMessage {
+.novaDespesaNoAccountsMessage {
   color: var(--onity-icon-secondary);
   padding: 8px 16px;
   font-size: 14px;
 }
 
-.novaReceitaNoRecurrenceMessage {
+.novaDespesaNoRecurrenceMessage {
   color: var(--onity-icon-secondary);
   padding: 8px 16px;
   font-size: 14px;
 }
 
-
-
-
-.novaReceitaAddButton {
+.novaDespesaAddButton {
   background: var(--onity-color-primary);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
@@ -666,30 +662,13 @@
   justify-content: center;
   min-width: 48px;
   height: 40px;
-  
 }
 
-.novaReceitaAddButton:hover {
+.novaDespesaAddButton:hover {
   background: var(--onity-color-primary-hover);
 }
 
-/* ===== SWITCH CONTAINER ===== */
-.novaReceitaSwitchContainer {
-  display: flex;
-  align-items: center;
-  gap: var(--onity-space-s);
-  padding: var(--onity-space-s) 0;
-  margin-bottom: -10px;
-  flex-wrap: wrap;
-}
-
-.novaReceitaRecurrenceSelect {
-  flex: 1;
-  min-width: 200px;
-  margin-left: var(--onity-space-m);
-}
-
-.novaReceitaSwitchLabel {
+.novaDespesaSwitchLabel {
   font-size: var(--onity-type-body-size);
   font-weight: 500;
   color: var(--onity-color-text);
@@ -697,7 +676,7 @@
 }
 
 /* ===== CONFIGURAÇÃO DE RECORRÊNCIA ===== */
-.novaReceitaRecurrenceConfig {
+.novaDespesaRecurrenceConfig {
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-s);
@@ -708,19 +687,25 @@
   border: 1px solid var(--onity-color-border);
 }
 
-.novaReceitaRecurrenceLabel {
+.novaDespesaRecurrenceLabel {
   font-size: var(--onity-type-body-size);
   font-weight: 500;
   color: var(--onity-color-text);
   margin: 0;
 }
 
+.novaDespesaRecurrenceSelect {
+  flex: 1;
+  min-width: 200px;
+  margin-left: var(--onity-space-m);
+}
+
 /* ===== TABS ===== */
-.novaReceitaTabs {
+.novaDespesaTabs {
   width: 100%;
 }
 
-.novaReceitaTabsList {
+.novaDespesaTabsList {
   display: flex;
   background-color: var(--onity-color-bg);
   border-radius: var(--onity-radius-xs);
@@ -728,7 +713,7 @@
   margin-bottom: var(--onity-space-m);
 }
 
-.novaReceitaTabsTrigger {
+.novaDespesaTabsTrigger {
   flex: 1;
   padding: var(--onity-space-s) var(--onity-space-m);
   border-radius: var(--onity-radius-xs);
@@ -741,17 +726,17 @@
   transition: all 0.2s ease;
 }
 
-.novaReceitaTabsTrigger[data-state="active"] {
+.novaDespesaTabsTrigger[data-state="active"] {
   background-color: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
 }
 
-.novaReceitaTabsContent {
+.novaDespesaTabsContent {
   padding: 0;
 }
 
 /* ===== SEÇÃO DE PDF ===== */
-.novaReceitaPdfSection {
+.novaDespesaPdfSection {
   border: 2px dashed var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
   padding: var(--onity-space-xl);
@@ -761,32 +746,32 @@
   background-color: var(--onity-color-bg);
 }
 
-.novaReceitaPdfSection:hover {
+.novaDespesaPdfSection:hover {
   border-color: var(--onity-color-primary);
   background-color: var(--onity-color-surface);
 }
 
-.novaReceitaPdfIcon {
+.novaDespesaPdfIcon {
   width: 48px;
   height: 48px;
   color: var(--onity-icon-secondary);
   margin: 0 auto var(--onity-space-m);
 }
 
-.novaReceitaPdfTitle {
+.novaDespesaPdfTitle {
   font-size: var(--onity-type-body-size);
   font-weight: 600;
   color: var(--onity-color-text);
   margin: 0 0 var(--onity-space-s) 0;
 }
 
-.novaReceitaPdfSubtitle {
+.novaDespesaPdfSubtitle {
   font-size: var(--onity-type-body-size);
   color: var(--onity-icon-secondary);
   margin: 0;
 }
 
-.novaReceitaPdfSuccess {
+.novaDespesaPdfSuccess {
   background-color: var(--onity-color-success);
   border: 1px solid var(--onity-color-success);
   border-radius: var(--onity-radius-xs);
@@ -795,7 +780,7 @@
   opacity: 0.1;
 }
 
-.novaReceitaPdfSuccessText {
+.novaDespesaPdfSuccessText {
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
@@ -805,35 +790,35 @@
   margin-bottom: var(--onity-space-xs);
 }
 
-.novaReceitaPdfSuccessSubtext {
+.novaDespesaPdfSuccessSubtext {
   color: var(--onity-color-success);
   font-size: var(--onity-type-caption-size);
   margin: 0;
 }
 
 /* ===== INDICADORES DE STATUS ===== */
-.novaReceitaStatusIndicator {
+.novaDespesaStatusIndicator {
   display: flex;
   gap: var(--onity-space-xs);
   margin-left: var(--onity-space-s);
 }
 
-.novaReceitaStatusDot {
+.novaDespesaStatusDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
 
-.novaReceitaStatusDotPrimary {
+.novaDespesaStatusDotPrimary {
   background-color: var(--onity-color-info);
 }
 
-.novaReceitaStatusDotWarning {
+.novaDespesaStatusDotWarning {
   background-color: var(--onity-color-warning);
 }
 
 /* ===== FOOTER ===== */
-.novaReceitaFooter {
+.novaDespesaFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -846,13 +831,13 @@
   flex-shrink: 0;
 }
 
-.novaReceitaFooterActions {
+.novaDespesaFooterActions {
   display: flex;
   gap: var(--onity-space-s);
 }
 
 /* ===== BOTÕES ===== */
-.novaReceitaButtonSecondary {
+.novaDespesaButtonSecondary {
   padding: 12px 24px;
   border-radius: 8px;
   font-size: var(--onity-type-body-size);
@@ -870,7 +855,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.novaReceitaButtonSecondary:hover {
+.novaDespesaButtonSecondary:hover {
   background-color: var(--onity-color-bg);
   border-color: var(--onity-color-primary);
   color: var(--onity-color-primary);
@@ -878,12 +863,12 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.novaReceitaButtonSecondary:active {
+.novaDespesaButtonSecondary:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.novaReceitaButtonPrimary {
+.novaDespesaButtonPrimary {
   padding: 12px 24px;
   border-radius: 8px;
   font-size: var(--onity-type-body-size);
@@ -901,54 +886,54 @@
   box-shadow: 0 2px 4px rgba(68, 84, 100, 0.2);
 }
 
-.novaReceitaButtonPrimary:hover {
+.novaDespesaButtonPrimary:hover {
   background-color: var(--onity-color-primary-hover);
   border-color: var(--onity-color-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(68, 84, 100, 0.3);
 }
 
-.novaReceitaButtonPrimary:active {
+.novaDespesaButtonPrimary:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(68, 84, 100, 0.2);
 }
 
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
-  .novaReceitaModal {
+  .novaDespesaModal {
     width: 95%;
     max-height: 95vh;
   }
   
-  .novaReceitaHeader {
+  .novaDespesaHeader {
     padding: var(--onity-space-m) var(--onity-space-m) 0 var(--onity-space-m);
   }
   
-  .novaReceitaContent {
+  .novaDespesaContent {
     padding: 0 var(--onity-space-m);
   }
   
-  .novaReceitaFooter {
+  .novaDespesaFooter {
     padding: var(--onity-space-m);
     flex-direction: column;
     gap: var(--onity-space-s);
   }
   
-  .novaReceitaFooterActions {
+  .novaDespesaFooterActions {
     width: 100%;
     justify-content: stretch;
   }
   
-  .novaReceitaButton {
+  .novaDespesaButton {
     flex: 1;
   }
   
-  .novaReceitaClientContainer {
+  .novaDespesaClientContainer {
     flex-direction: column;
     gap: var(--onity-space-s);
   }
   
-  .novaReceitaAddButton {
+  .novaDespesaAddButton {
     align-self: flex-start;
   }
 }
