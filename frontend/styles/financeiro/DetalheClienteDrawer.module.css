@@ -1,0 +1,321 @@
+/* DetalheClienteDrawer Component Styles */
+
+.detalheClienteOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 50;
+}
+
+.detalheClienteContainer {
+  width: 100%;
+  background: var(--onity-color-surface);
+  border-top-left-radius: var(--onity-radius-m);
+  border-top-right-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  transition: transform 300ms ease-out;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.detalheClienteContainerOpen {
+  transform: translateY(0);
+}
+
+.detalheClienteContainerClosed {
+  transform: translateY(100%);
+}
+
+.detalheClienteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.detalheClienteHeaderInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.detalheClienteTitle {
+  font-size: var(--onity-type-heading-size);
+  font-weight: var(--onity-type-heading-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.detalheClienteSubtitle {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+}
+
+.detalheClienteHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.detalheClienteButton {
+  padding: var(--onity-space-s) var(--onity-space-l);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: none;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.detalheClienteButtonEdit {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.detalheClienteButtonEdit:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.detalheClienteButtonClose {
+  background: transparent;
+  color: var(--onity-color-text);
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  width: 32px;
+  height: 32px;
+}
+
+.detalheClienteButtonClose:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-icon-secondary);
+}
+
+.detalheClienteContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.detalheClienteContentInner {
+  padding: var(--onity-space-l);
+}
+
+.detalheClienteAccordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.detalheClienteAccordionItem {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+}
+
+.detalheClienteAccordionTrigger {
+  padding: var(--onity-space-m);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+}
+
+.detalheClienteAccordionTrigger:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.detalheClienteAccordionContent {
+  padding: var(--onity-space-m) var(--onity-space-l) var(--onity-space-l);
+}
+
+.detalheClienteField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.detalheClienteFieldLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-icon-secondary);
+}
+
+.detalheClienteFieldValue {
+  padding: var(--onity-space-s);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.detalheClienteFieldValueTextarea {
+  padding: var(--onity-space-s);
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  min-height: 120px;
+  font-family: var(--onity-font-family-sans);
+}
+
+.detalheClienteGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--onity-space-m);
+}
+
+.detalheClienteGrid2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.detalheClienteGrid3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.detalheClienteGrid4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.detalheClienteGrid5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+@media (min-width: 768px) {
+  .detalheClienteGrid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .detalheClienteGrid3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .detalheClienteGrid4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .detalheClienteGrid5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .detalheClienteGrid4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .detalheClienteGrid5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.detalheClienteBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-caption-size);
+  font-weight: var(--onity-type-caption-weight);
+  border: 1px solid;
+}
+
+.detalheClienteBadgeSuccess {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.detalheClienteBadgeError {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.detalheClienteBadgeIcon {
+  width: 12px;
+  height: 12px;
+  margin-right: var(--onity-space-xs);
+}
+
+.detalheClienteRadioGroup {
+  display: flex;
+  gap: var(--onity-space-l);
+}
+
+.detalheClienteRadioItem {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.detalheClienteRadioInput {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--onity-color-primary);
+}
+
+.detalheClienteRadioLabel {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+.detalheClienteFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.detalheClienteFooterButton {
+  padding: var(--onity-space-s) var(--onity-space-l);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid var(--onity-color-border);
+  background: transparent;
+  color: var(--onity-color-text);
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.detalheClienteFooterButton:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}

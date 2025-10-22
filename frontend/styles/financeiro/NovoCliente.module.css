@@ -1,0 +1,535 @@
+/* Novo Cliente Drawer Styles usando tokens Onity */
+
+/* Overlay e Container Principal */
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+}
+
+.drawerContainer {
+  width: 100%;
+  background: var(--onity-color-surface);
+  border-radius: 12px 12px 0 0;
+  box-shadow: var(--onity-elev-high);
+  transition: transform 300ms ease-out;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerContainerOpen {
+  transform: translateY(0);
+}
+
+.drawerContainerClosed {
+  transform: translateY(100%);
+}
+
+/* Header */
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.drawerTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.closeButton {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  color: var(--onity-icon-secondary);
+}
+
+.closeButton:hover {
+  color: var(--onity-color-text);
+}
+
+/* Content */
+.drawerContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.drawerContentInner {
+  padding: 24px;
+  background: var(--onity-color-surface);
+}
+
+/* Accordion */
+.accordionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.accordionItem {
+  background: color-mix(in oklab, var(--onity-color-surface) 60%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 80%, transparent);
+  border-radius: 8px;
+}
+
+.accordionTrigger {
+  padding: 12px 16px;
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.accordionTrigger:hover {
+  text-decoration: none;
+}
+
+.accordionContent {
+  padding: 16px;
+  padding-bottom: 16px;
+}
+
+/* Form Layout */
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.formRowMd2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.formRowMd3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.formRowMd4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (min-width: 768px) {
+  .formRowMd2 { grid-template-columns: repeat(2, 1fr); }
+  .formRowMd3 { grid-template-columns: repeat(3, 1fr); }
+  .formRowMd4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .formRowMd4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Form Fields */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: var(--onity-color-text);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.fieldLabelRequired::after {
+  content: " *";
+  color: var(--onity-color-error);
+}
+
+.fieldInput {
+  background: color-mix(in oklab, var(--onity-color-surface) 40%, transparent);
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 80%, transparent);
+  color: var(--onity-color-text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.fieldInput:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  outline: none;
+}
+
+.fieldInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Select Components */
+.selectTrigger {
+  background: color-mix(in oklab, var(--onity-color-surface) 40%, transparent);
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 80%, transparent);
+  color: var(--onity-color-text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.selectTrigger:hover {
+  background: color-mix(in oklab, var(--onity-color-surface) 60%, transparent);
+}
+
+.selectTrigger:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.selectContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 6px;
+  box-shadow: var(--onity-elev-med);
+}
+
+.selectItem {
+  color: var(--onity-color-text);
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.selectItem:hover {
+  background: color-mix(in oklab, var(--onity-color-primary) 20%, transparent);
+}
+
+.selectItem:focus {
+  background: color-mix(in oklab, var(--onity-color-primary) 20%, transparent);
+}
+
+/* Buttons */
+.buttonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.buttonPrimary:hover {
+  background: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background: transparent;
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.buttonSecondary:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonGhost {
+  background: transparent;
+  color: var(--onity-icon-secondary);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.buttonGhost:hover {
+  color: var(--onity-color-primary);
+}
+
+.buttonDanger {
+  background: transparent;
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-color-error);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.buttonDanger:hover {
+  background: var(--onity-color-error);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonSuccess {
+  background: transparent;
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-color-info);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.buttonSuccess:hover {
+  background: var(--onity-color-info);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Checkbox e Radio */
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkboxLabel {
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 24px;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radioLabel {
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Input Groups */
+.inputGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.inputWithButton {
+  flex: 1;
+}
+
+.inputButton {
+  flex-shrink: 0;
+}
+
+/* Calendar Icon */
+.calendarIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+.inputWithIcon {
+  position: relative;
+}
+
+/* Error Messages */
+.errorMessage {
+  font-size: 12px;
+  color: var(--onity-color-error);
+  margin-top: 4px;
+}
+
+/* Help Text */
+.helpText {
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+}
+
+/* Contact Cards */
+.contactCard {
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contactCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contactCardTitle {
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+
+.contactCardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .contactCardGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .contactCardGrid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* Add Contact Button */
+.addContactButton {
+  width: 100%;
+  border-color: #9C27B0;
+  color: #9C27B0;
+}
+
+.addContactButton:hover {
+  background: #9C27B0;
+  color: var(--onity-color-primary-contrast);
+}
+
+/* Textarea */
+.textareaField {
+  background: color-mix(in oklab, var(--onity-color-surface) 40%, transparent);
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 80%, transparent);
+  color: var(--onity-color-text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  min-height: 120px;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.textareaField:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  outline: none;
+}
+
+.textareaField::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Footer */
+.drawerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-top: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  bottom: 0;
+}
+
+/* Icon Sizes */
+.iconSmall {
+  width: 16px;
+  height: 16px;
+}
+
+.iconSmallWithMargin {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+/* Utility Classes */
+.textWhite {
+  color: var(--onity-color-text);
+}
+
+.textMuted {
+  color: var(--onity-icon-secondary);
+}
+
+.textError {
+  color: var(--onity-color-error);
+}
+
+.textSuccess {
+  color: var(--onity-color-success);
+}
+
+.textInfo {
+  color: var(--onity-color-info);
+}
+
+.textWarning {
+  color: var(--onity-color-warning);
+}
+
+.borderPrimary {
+  border-color: var(--onity-color-primary);
+}
+
+.borderError {
+  border-color: var(--onity-color-error);
+}
+
+.borderSuccess {
+  border-color: var(--onity-color-success);
+}
+
+.borderInfo {
+  border-color: var(--onity-color-info);
+}
+
+.bgPrimary {
+  background-color: var(--onity-color-primary);
+}
+
+.bgError {
+  background-color: var(--onity-color-error);
+}
+
+.bgSuccess {
+  background-color: var(--onity-color-success);
+}
+
+.bgInfo {
+  background-color: var(--onity-color-info);
+}
