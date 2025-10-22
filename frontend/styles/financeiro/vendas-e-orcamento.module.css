@@ -1,0 +1,2086 @@
+/* Estilos específicos para página de Vendas e Orçamentos usando design tokens */
+
+
+/* Card da tabela */
+.transactionsCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+  backdrop-filter: blur(8px);
+}
+
+/* Texto da tabela */
+.tableHeaderText {
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+.tableCellText {
+  color: var(--onity-color-text);
+  opacity: 0.8;
+}
+
+.tableCellSecondary {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+.tableCellPrimary {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+/* Cliente texto */
+.clienteText {
+  color: var(--onity-color-primary);
+  font-weight: 500;
+}
+
+/* Hover da tabela */
+.tableRow {
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+/* Badges de situação */
+.badgeRecebido {
+  background-color: var(--onity-success-20);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-success-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeEmAndamento {
+  background-color: var(--onity-warning-20);
+  color: var(--onity-color-warning);
+  border: 1px solid var(--onity-warning-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeRecusado {
+  background-color: var(--onity-error-20);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeContrato {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeVenda {
+  background-color: var(--onity-info-20);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Footer da tabela */
+.tableFooterBorder {
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.tableFooterText {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.tableFooterSecondary {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.tableFooterAccent {
+  color: var(--onity-color-primary);
+  font-weight: 600;
+}
+
+/* Botões principais */
+.primaryBtn {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.primaryBtn:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões secundários */
+.secondaryBtn {
+  background-color: transparent;
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões específicos */
+.novaVendaBtn {
+  background-color: var(--onity-info-10);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.novaVendaBtn:hover {
+  background-color: var(--onity-info-20);
+  border-color: var(--onity-info-50);
+  color: var(--onity-color-info);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.novoOrcamentoBtn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.novoOrcamentoBtn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões de navegação */
+.navBtn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.navBtn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.navBtn:disabled {
+  opacity: 0.3;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Botões de paginação */
+.paginationBtn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.paginationBtn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.paginationBtn.active {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+/* Cards de estatísticas */
+.statCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.statCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-high);
+  transform: translateY(-2px);
+}
+
+.statCard.active {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-high);
+}
+
+/* Cores dos ícones das estatísticas */
+.statRecusados { 
+  color: var(--onity-color-error); 
+}
+
+.statEmAndamento { 
+  color: var(--onity-color-warning); 
+}
+
+.statRecebidos { 
+  color: var(--onity-color-success); 
+}
+
+.statTotal { 
+  color: var(--onity-color-primary); 
+}
+
+/* Filtros ativos */
+.filtrosAtivosCard {
+  border: 1px solid var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.filtrosAtivosBadge {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 2px 6px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Dropdown de ações */
+.dropdown {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+}
+
+.dropdownItem {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.dropdownItem.danger {
+  color: var(--onity-color-error);
+}
+
+.dropdownItem.danger:hover {
+  background-color: var(--onity-error-10);
+}
+
+.dropdownItem.warning {
+  color: var(--onity-color-warning);
+}
+
+.dropdownItem.warning:hover {
+  background-color: var(--onity-warning-10);
+}
+
+/* Modal de mudança de situação */
+.modalSituacao {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+}
+
+.modalSituacaoWarning {
+  background-color: var(--onity-primary-05);
+  border: 1px solid var(--onity-primary-20);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.modalSituacaoWarningText {
+  color: var(--onity-color-primary);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Modal de exclusão */
+.modalExclusao {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+}
+
+.modalExclusaoWarning {
+  background-color: var(--onity-error-10);
+  border: 1px solid var(--onity-error-20);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.modalExclusaoWarningText {
+  color: var(--onity-color-error);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Botões do modal */
+.modalBtnCancelar {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.modalBtnCancelar:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.modalBtnConfirmar {
+  background-color: var(--onity-error-10);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.modalBtnConfirmar:hover {
+  background-color: var(--onity-error-20);
+  border-color: rgba(234, 84, 85, 0.5);
+  color: var(--onity-color-error);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões de download e ações específicas */
+.downloadBtn {
+  background-color: var(--onity-info-10);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.downloadBtn:hover {
+  background-color: var(--onity-info-20);
+  border-color: var(--onity-info-50);
+  color: var(--onity-color-info);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.nfsBtn {
+  background-color: var(--onity-info-10);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.nfsBtn:hover {
+  background-color: var(--onity-info-20);
+  border-color: var(--onity-info-50);
+  color: var(--onity-color-info);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Inputs e selects */
+.input {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  outline: none;
+}
+
+.input:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px var(--onity-primary-10);
+}
+
+.input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+/* Select */
+.select {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+}
+
+.selectContent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+}
+
+.selectItem {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.selectItem:hover {
+  background-color: var(--onity-color-bg);
+}
+
+/* Classes específicas para vendas e orçamentos */
+.vendas-orcamentos-badge-recebido {
+  background-color: var(--onity-success-20);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-success-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendas-orcamentos-badge-em-andamento {
+  background-color: var(--onity-warning-20);
+  color: var(--onity-color-warning);
+  border: 1px solid var(--onity-warning-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendas-orcamentos-badge-recusado {
+  background-color: var(--onity-error-20);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendas-orcamentos-badge-contrato {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendas-orcamentos-badge-venda {
+  background-color: var(--onity-info-20);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendas-orcamentos-secondary-btn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-secondary-btn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.vendasOrcamentosNovaVendaBtn {
+  background: linear-gradient(135deg, var(--onity-color-primary) 0%, var(--onity-primary-70) 100%);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-s);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.2);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vendasOrcamentosNovaVendaBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosNovaVendaBtn:hover {
+  background: linear-gradient(135deg, var(--onity-primary-70) 0%, var(--onity-color-primary) 100%);
+  border-color: var(--onity-primary-70);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(103, 58, 183, 0.4);
+}
+
+.vendasOrcamentosNovaVendaBtn:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosNovaVendaBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosNovaVendaIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-color-primary-contrast);
+}
+
+.vendas-orcamentos-novo-orcamento-btn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-novo-orcamento-btn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Classes removidas - agora usando vendasOrcamentosStatCard */
+
+.vendas-orcamentos-filtros-ativos-card {
+  border: 1px solid var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.vendas-orcamentos-primary-btn {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-primary-btn:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.vendas-orcamentos-table-row {
+  transition: background-color 0.2s ease;
+}
+
+.vendas-orcamentos-table-row:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.vendas-orcamentos-nfs-btn {
+  background-color: var(--onity-info-10);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-nfs-btn:hover {
+  background-color: var(--onity-info-20);
+  border-color: var(--onity-info-50);
+  color: var(--onity-color-info);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.vendas-orcamentos-dropdown {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+}
+
+.vendas-orcamentos-dropdown-item {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-dropdown-item:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.vendas-orcamentos-dropdown-item.danger {
+  color: var(--onity-color-error);
+}
+
+.vendas-orcamentos-dropdown-item.danger:hover {
+  background-color: var(--onity-error-10);
+}
+
+.vendas-orcamentos-dropdown-item.warning {
+  color: var(--onity-color-warning);
+}
+
+.vendas-orcamentos-dropdown-item.warning:hover {
+  background-color: var(--onity-warning-10);
+}
+
+.vendas-orcamentos-pagination-btn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-pagination-btn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.vendas-orcamentos-pagination-btn.active {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.vendas-orcamentos-modal-exclusao-warning {
+  background-color: var(--onity-error-10);
+  border: 1px solid var(--onity-error-20);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.vendas-orcamentos-modal-exclusao-warning-text {
+  color: var(--onity-color-error);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendas-orcamentos-modal-btn-cancelar {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-modal-btn-cancelar:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.vendas-orcamentos-modal-btn-confirmar {
+  background-color: var(--onity-error-10);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendas-orcamentos-modal-btn-confirmar:hover {
+  background-color: var(--onity-error-20);
+  border-color: rgba(234, 84, 85, 0.5);
+  color: var(--onity-color-error);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões de navegação para filtros - Design Moderno */
+.contas-pagar-nav-btn {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.contas-pagar-nav-btn svg {
+  color: var(--onity-color-text) !important;
+}
+
+.contas-pagar-nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.contas-pagar-nav-btn:hover::before {
+  left: 100%;
+}
+
+.contas-pagar-nav-btn:hover {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(68, 84, 100, 0.15);
+}
+
+.contas-pagar-nav-btn:hover svg {
+  color: var(--onity-color-text) !important;
+}
+
+.contas-pagar-nav-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(68, 84, 100, 0.1);
+}
+
+.contas-pagar-nav-btn:disabled {
+  opacity: 0.4;
+  transform: none;
+  cursor: not-allowed;
+  background: var(--onity-color-bg);
+  color: var(--onity-icon-secondary);
+}
+
+.contas-pagar-dropdown {
+  background: linear-gradient(135deg, var(--onity-color-surface) 0%, rgba(68, 84, 100, 0.02) 100%);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-width: 200px;
+  padding: 8px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 9999;
+}
+
+.contas-pagar-dropdown-item {
+  color: var(--onity-color-text);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.contas-pagar-dropdown-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(103, 58, 183, 0.1), transparent);
+  transition: left 0.3s ease;
+}
+
+.contas-pagar-dropdown-item:hover::before {
+  left: 100%;
+}
+
+.contas-pagar-dropdown-item:hover {
+  background: linear-gradient(135deg, var(--onity-primary-10) 0%, var(--onity-primary-20) 100%);
+  color: var(--onity-color-primary);
+  transform: translateX(4px);
+}
+
+/* Layout principal */
+.vendasOrcamentosPage {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+/* Header */
+.vendasOrcamentosHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vendasOrcamentosHeaderTitle {
+  font-size: var(--onity-type-h2-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.vendasOrcamentosHeaderSubtitle {
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+  margin-bottom: 0;
+}
+
+.vendasOrcamentosHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+/* Cards de estatísticas */
+.vendasOrcamentosStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
+}
+
+/* Filtros - Design Moderno e Elegante */
+.vendasOrcamentosFiltersCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--onity-space-l);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosFiltersCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--onity-color-primary), var(--onity-color-info), var(--onity-color-primary));
+  opacity: 0.6;
+}
+
+.vendasOrcamentosFiltersContent {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.vendasOrcamentosFiltersRow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  margin-left: 20px;
+}
+
+@media (min-width: 1024px) {
+  .vendasOrcamentosFiltersRow {
+    flex-direction: row;
+    align-items: end;
+    gap: 20px;
+  }
+}
+
+.vendasOrcamentosFilterGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vendasOrcamentosFilterLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+
+.vendasOrcamentosPeriodControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.vendasOrcamentosPeriodControls:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.vendasOrcamentosSearchContainer {
+  position: relative;
+  background: transparent;
+  border-radius: 6px;
+  border: 1px solid var(--onity-color-border);
+  transition: all 0.3s ease;
+  box-shadow: none;
+  min-height: 15px;
+  max-height: 50px;
+  max-width: 420px;
+}
+
+
+.vendasOrcamentosSearchIcon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--onity-color-primary);
+  width: 10px;
+  height: 8px;
+  z-index: 2;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+
+.vendasOrcamentosSearchInput {
+  width: 100%;
+  padding: 6px 8px 6px 28px;
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.vendasOrcamentosSearchInput::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.vendasOrcamentosSearchTips {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+  font-style: italic;
+  padding-left: 4px;
+  opacity: 0.8;
+}
+
+.vendasOrcamentosFilterActions {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (min-width: 1024px) {
+  .vendasOrcamentosFilterActions {
+    margin-top: 0;
+  }
+}
+
+/* Botão "Mais filtros" - Design Moderno */
+.vendasOrcamentosFilterActions button {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  height: 36px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vendasOrcamentosFilterActions button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosFilterActions button:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosFilterActions button:hover {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosFilterActions button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.2);
+}
+
+.vendasOrcamentosFilterActions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  background: var(--onity-color-bg);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosFilterActions button:disabled:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tabela */
+.vendasOrcamentosTableCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+}
+
+.vendasOrcamentosTableContent {
+  padding: 0;
+}
+
+.vendasOrcamentosTableContainer {
+  overflow-x: auto;
+}
+
+.vendasOrcamentosTableHeader {
+  border-bottom: 1px solid var(--onity-primary-purple-20);
+}
+
+.vendasOrcamentosTableHeaderCell {
+  width: 48px;
+}
+
+.vendasOrcamentosTableHeaderText {
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+.vendasOrcamentosTableRow {
+  border-bottom: 1px solid var(--onity-primary-purple-20);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.vendasOrcamentosTableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.vendasOrcamentosTableRowEmpty {
+  text-align: center;
+  padding: var(--onity-space-xl);
+}
+
+.vendasOrcamentosTableRowEmptyText {
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosTableCellSecondary {
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosTableCellPrimary {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.vendasOrcamentosClienteContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.vendasOrcamentosClienteName {
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+
+.vendasOrcamentosClienteDetails {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosNfsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.vendasOrcamentosNfsIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+/* Paginação */
+.vendasOrcamentosPagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vendasOrcamentosPaginationInfo {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosPaginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.vendasOrcamentosPaginationGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.vendasOrcamentosPaginationLabel {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosPaginationSelect {
+  width: 80px;
+  height: 32px;
+  padding: 0 8px;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vendasOrcamentosPaginationSelect:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.vendasOrcamentosPaginationSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.15);
+}
+
+.vendasOrcamentosPaginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.vendasOrcamentosPaginationButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.vendasOrcamentosPaginationButton.active {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+/* Botões de seta da paginação */
+.vendasOrcamentosPaginationArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vendasOrcamentosPaginationArrow:hover:not(:disabled) {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(68, 84, 100, 0.1);
+}
+
+.vendasOrcamentosPaginationArrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+}
+
+/* Botão ativo da paginação */
+.vendasOrcamentosPaginationButtonActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-primary-contrast);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vendasOrcamentosPaginationButtonActive:hover {
+  background: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosPaginationInfo {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosPaginationJump {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.vendasOrcamentosPaginationJumpLabel {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosPaginationJumpInput {
+  width: 64px;
+}
+
+.vendasOrcamentosPaginationTotal {
+  text-align: right;
+}
+
+.vendasOrcamentosPaginationTotalLabel {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosPaginationTotalValue {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 600;
+  color: var(--onity-color-primary);
+}
+
+/* Loading */
+.vendasOrcamentosLoading {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendasOrcamentosLoadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xl);
+  gap: var(--onity-space-s);
+}
+
+.vendasOrcamentosLoadingSpinner {
+  width: 80px;
+  height: 80px;
+}
+
+.vendasOrcamentosLoadingSpinnerInner {
+  width: 64px;
+  height: 64px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.vendasOrcamentosLoadingText {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-h3-size);
+}
+
+/* Ações para itens selecionados */
+.vendasOrcamentosSelectedActions {
+  border: 1px solid var(--onity-info-blue-20);
+  background-color: rgba(30, 136, 229, 0.1);
+}
+
+.vendasOrcamentosSelectedActionsContent {
+  padding: var(--onity-space-s);
+}
+
+.vendasOrcamentosSelectedActionsInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.vendasOrcamentosSelectedCount {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-color-text);
+}
+
+/* Estados especiais */
+.vendasOrcamentosStatCardActive {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-high);
+}
+
+.vendasOrcamentosStatCardInactive {
+  border-color: var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+}
+
+.vendasOrcamentosStatCardInactive:hover {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-med);
+}
+
+.vendasOrcamentosStatValueActive {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.vendasOrcamentosStatIconActive {
+  transform: scale(1.1);
+}
+
+/* Modais */
+.vendasOrcamentosModalContent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  color: var(--onity-color-text);
+}
+
+.vendasOrcamentosModalHeader {
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.vendasOrcamentosModalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.vendasOrcamentosModalBody {
+  padding: var(--onity-space-l);
+}
+
+.vendasOrcamentosModalDescription {
+  color: var(--onity-icon-secondary);
+  margin-bottom: var(--onity-space-s);
+  text-align: center;
+}
+
+.vendasOrcamentosModalButtons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalButton {
+  width: 100%;
+  justify-content: flex-start;
+  background-color: rgba(27, 18, 41, 0.5);
+  border: 1px solid var(--onity-primary-purple-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.vendasOrcamentosModalButton:hover {
+  background-color: rgba(27, 18, 41, 0.7);
+  border-color: var(--onity-primary-purple-50);
+}
+
+.vendasOrcamentosModalButtonActive {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: var(--onity-color-success);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.vendasOrcamentosModalButtonActive:hover {
+  background-color: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.vendasOrcamentosModalButtonEmAndamento {
+  background-color: rgba(255, 152, 0, 0.2);
+  color: var(--onity-color-warning);
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+.vendasOrcamentosModalButtonEmAndamento:hover {
+  background-color: rgba(255, 152, 0, 0.3);
+  border-color: rgba(255, 152, 0, 0.5);
+}
+
+.vendasOrcamentosModalButtonAprovado {
+  background-color: var(--onity-info-blue-20);
+  color: var(--onity-color-info);
+  border-color: var(--onity-info-blue-30);
+}
+
+.vendasOrcamentosModalButtonAprovado:hover {
+  background-color: var(--onity-info-blue-30);
+  border-color: var(--onity-info-blue-50);
+}
+
+.vendasOrcamentosModalButtonRecusado {
+  background-color: var(--onity-error-red-20);
+  color: var(--onity-color-error);
+  border-color: var(--onity-error-red-30);
+}
+
+.vendasOrcamentosModalButtonRecusado:hover {
+  background-color: var(--onity-error-red-30);
+  border-color: rgba(245, 0, 87, 0.5);
+}
+
+.vendasOrcamentosModalButtonIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalButtonIndicatorActive {
+  background-color: var(--onity-color-success);
+}
+
+.vendasOrcamentosModalButtonIndicatorEmAndamento {
+  background-color: var(--onity-color-warning);
+}
+
+.vendasOrcamentosModalButtonIndicatorAprovado {
+  background-color: var(--onity-color-info);
+}
+
+.vendasOrcamentosModalButtonIndicatorRecusado {
+  background-color: var(--onity-color-error);
+}
+
+.vendasOrcamentosModalLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--onity-color-primary);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalLoadingText {
+  color: var(--onity-icon-secondary);
+}
+
+.vendasOrcamentosModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+}
+
+.vendasOrcamentosModalWarning {
+  background-color: var(--onity-error-red-10);
+  border: 1px solid var(--onity-error-red-20);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+  margin-top: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalWarningText {
+  color: var(--onity-color-error);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.vendasOrcamentosModalIcon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--onity-error-red-20);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalIconAlert {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-error);
+}
+
+.vendasOrcamentosModalHeaderWithIcon {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-s);
+}
+
+.vendasOrcamentosModalTitleWithIcon {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.vendasOrcamentosModalDescriptionWithIcon {
+  color: var(--onity-icon-secondary);
+  margin-bottom: var(--onity-space-s);
+  text-align: center;
+}
+
+.vendasOrcamentosModalHighlight {
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+/* Cards de estatísticas - Layout e estrutura */
+.vendasOrcamentosStatCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: var(--onity-space-l);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.vendasOrcamentosStatCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-2px);
+}
+
+.vendasOrcamentosStatCard.active {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-high);
+}
+
+.vendasOrcamentosStatCardInactive {
+  border-color: var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+}
+
+.vendasOrcamentosStatCardInactive:hover {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-med);
+}
+
+.vendasOrcamentosStatCardContent {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.vendasOrcamentosStatCardInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 100%;
+  gap: var(--onity-space-s);
+}
+
+.vendasOrcamentosStatCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.vendasOrcamentosStatCardTitle {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.vendasOrcamentosStatCardValue {
+  font-size: var(--onity-type-h2-size);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.vendasOrcamentosStatCardAmount {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.vendasOrcamentosStatCardIcon {
+  width: 32px;
+  height: 32px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-top: var(--onity-space-xs);
+}
+
+/* Cores específicas para cada tipo de card */
+.vendasOrcamentosStatCardValue.recusado {
+  color: var(--onity-color-error);
+}
+
+.vendasOrcamentosStatCardAmount.recusado {
+  color: var(--onity-color-error);
+}
+
+.vendasOrcamentosStatCardValue.em_andamento {
+  color: var(--onity-color-warning);
+}
+
+.vendasOrcamentosStatCardAmount.em_andamento {
+  color: var(--onity-color-warning);
+}
+
+.vendasOrcamentosStatCardValue.aprovado {
+  color: var(--onity-color-info);
+}
+
+.vendasOrcamentosStatCardAmount.aprovado {
+  color: var(--onity-color-info);
+}
+
+.vendasOrcamentosStatCardValue.total {
+  color: var(--onity-color-primary);
+}
+
+.vendasOrcamentosStatCardAmount.total {
+  color: var(--onity-color-primary);
+}
+
+/* Ícones com cores específicas */
+.vendas-orcamentos-stat-recusado {
+  color: var(--onity-color-error);
+}
+
+.vendas-orcamentos-stat-em-andamento {
+  color: var(--onity-color-warning);
+}
+
+.vendas-orcamentos-stat-aprovado {
+  color: var(--onity-color-info);
+}
+
+.vendas-orcamentos-stat-total {
+  color: var(--onity-color-primary);
+}
+
+/* Estados ativos */
+.vendasOrcamentosStatValueActive {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.vendasOrcamentosStatIconActive {
+  transform: scale(1.1);
+}
+
+.vendasOrcamentosNavIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.vendasOrcamentosPeriodButton {
+  min-width: 180px;
+  justify-content: space-between;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosPeriodButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosPeriodButton:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosPeriodButton:hover {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosFiltrosAtivosContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--onity-primary-05);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--onity-primary-20);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosFiltrosAtivosContent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(103, 58, 183, 0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.vendasOrcamentosFiltrosAtivosIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--onity-color-primary);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.vendasOrcamentosFiltrosAtivosText {
+  font-size: 13px;
+  color: var(--onity-color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vendasOrcamentosFiltrosAtivosCount {
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+  background: var(--onity-color-surface);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid var(--onity-color-border);
+}
+
+.vendasOrcamentosActionIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--onity-space-xs);
+}
+
+.vendasOrcamentosActionButton {
+  background-color: transparent;
+  color: var(--onity-icon-secondary);
+  border: none;
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vendasOrcamentosActionButton:hover {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+}
+
+.vendasOrcamentosTableSortIcon {
+  width: 12px;
+  height: 12px;
+  display: inline;
+  margin-left: var(--onity-space-xs);
+}
+
+.vendasOrcamentosTableCellValue {
+  font-weight: 500;
+}
+
+.vendasOrcamentosPaginationSelectContent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+}
+
+.vendasOrcamentosPaginationSelectItem {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.vendasOrcamentosPaginationSelectItem:hover {
+  background-color: var(--onity-primary-20);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .vendasOrcamentosPage {
+    padding: var(--onity-space-s);
+    gap: var(--onity-space-s);
+  }
+  
+  .vendasOrcamentosHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--onity-space-s);
+  }
+  
+  .vendasOrcamentosHeaderActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .vendasOrcamentosStatsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .vendasOrcamentosPagination {
+    flex-direction: column;
+    gap: var(--onity-space-s);
+    align-items: flex-start;
+  }
+  
+  .vendasOrcamentosPaginationControls {
+    flex-wrap: wrap;
+  }
+  
+  .primaryBtn,
+  .secondaryBtn,
+  .novaVendaBtn,
+  .novoOrcamentoBtn {
+    font-size: var(--onity-type-caption-size);
+    padding: 6px 10px;
+  }
+}

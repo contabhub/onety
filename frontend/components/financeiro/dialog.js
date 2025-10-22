@@ -85,6 +85,14 @@ const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
+// Drawer components (alias for Dialog components)
+const Drawer = Dialog;
+const DrawerContent = DialogContent;
+const DrawerHeader = DialogHeader;
+const DrawerTitle = DialogTitle;
+const DrawerDescription = DialogDescription;
+const DrawerFooter = DialogFooter;
+
 export {
   Dialog,
   DialogPortal,
@@ -96,4 +104,11 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
+  // Drawer exports
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
 };

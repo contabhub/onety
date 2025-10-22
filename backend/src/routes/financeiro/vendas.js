@@ -83,9 +83,9 @@ router.get("/", verifyToken, async (req, res) => {
         LEFT JOIN produtos ps ON v.produtos_id = ps.id
         LEFT JOIN straton_categorias ct ON v.categoria_id = ct.id
         LEFT JOIN straton_subcategorias sc ON v.subcategoria_id = sc.id
-        LEFT JOIN companies co ON v.empresa_id = co.id
-        LEFT JOIN centro_de_custo cc ON v.centro_custo_id = cc.id
-        LEFT JOIN users u ON v.usuario_id = u.id
+        LEFT JOIN empresas co ON v.empresa_id = co.id
+        LEFT JOIN centro_custo cc ON v.centro_custo_id = cc.id
+        LEFT JOIN usuarios u ON v.usuario_id = u.id
         LEFT JOIN contas cra ON v.conta_recebimento_api = cra.id
         WHERE 1=1
       `;
@@ -137,9 +137,9 @@ router.get("/form-data", verifyToken, async (req, res) => {
       // tabelas que têm empresa_id diretamente
       const [clientes] = await pool.query("SELECT id, nome_fantasia FROM clientes WHERE empresa_id = ?", [empresa_id]);
       const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos WHERE empresa_id = ?", [empresa_id]);
-      const [companies] = await pool.query("SELECT id, nome FROM companies WHERE id = ?", [empresa_id]);
+      const [companies] = await pool.query("SELECT id, nome FROM empresas WHERE id = ?", [empresa_id]);
       const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE empresa_id = ?", [empresa_id]);
-      const [contas] = await pool.query("SELECT id, descricao_banco FROM caixinha WHERE empresa_id = ?", [empresa_id]);
+      const [contas] = await pool.query("SELECT id, descricao_banco FROM contas WHERE empresa_id = ?", [empresa_id]);
   
       // categorias e subcategorias via tipos
       const [categorias] = await pool.query(
@@ -161,8 +161,8 @@ router.get("/form-data", verifyToken, async (req, res) => {
   
       // usuários filtrados pela tabela pivô user_company
       const [users] = await pool.query(
-        `SELECT u.id, u.name 
-         FROM users u
+        `SELECT u.id, u.nome 
+         FROM usuarios u
          INNER JOIN user_company uc ON uc.user_id = u.id
          WHERE uc.company_id = ?`,
         [empresa_id]
@@ -358,7 +358,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
         co.nome as empresa_nome
       FROM vendas v
       INNER JOIN clientes c ON v.cliente_id = c.id
-      INNER JOIN companies co ON v.empresa_id = co.id
+      INNER JOIN empresas co ON v.empresa_id = co.id
       WHERE v.id = ?
     `, [id]);
 
