@@ -80,7 +80,7 @@ const categoriasFinanceiroRoutes = require('./financeiro/categorias');
 const centroDeCustoRoutes = require('./financeiro/centro_de_custo');
 const clientesFinanceiroRoutes = require('./financeiro/clientes');
 const conciliacoesRoutes = require('./financeiro/conciliacoes');
-const contasRoutes = require('./financeiro/contas');
+const caixinhaRoutes = require('./financeiro/caixinha');
 const contratosFinanceiroRoutes = require('./financeiro/contratos');
 const departamentosFinanceiroRoutes = require('./financeiro/departamentos');
 const exportarRoutes = require('./financeiro/exportar');
@@ -93,7 +93,7 @@ const recorrenciasRoutes = require('./financeiro/recorrencias');
 const subCategoriasRoutes = require('./financeiro/sub_categorias');
 const tiposRoutes = require('./financeiro/tipos');
 const transacoesRoutes = require('./financeiro/transacoes');
-const transferenciasRoutes = require('./financeiro/transferencias');
+const transferenciasCaixinhasRoutes = require('./financeiro/transferencias_caixinha');
 const vendasRoutes = require('./financeiro/vendas');
 
 // Rotas do Onety
@@ -175,7 +175,7 @@ router.use('/financeiro/categorias', categoriasFinanceiroRoutes);
 router.use('/financeiro/centro-de-custo', centroDeCustoRoutes);
 router.use('/financeiro/clientes', clientesFinanceiroRoutes);
 router.use('/financeiro/conciliacoes', conciliacoesRoutes);
-router.use('/financeiro/contas', contasRoutes);
+router.use('/financeiro/caixinha', caixinhaRoutes);
 router.use('/financeiro/contratos', contratosFinanceiroRoutes);
 router.use('/financeiro/departamentos', departamentosFinanceiroRoutes);
 router.use('/financeiro/exportar', exportarRoutes);
@@ -188,7 +188,7 @@ router.use('/financeiro/recorrencias', recorrenciasRoutes);
 router.use('/financeiro/sub-categorias', subCategoriasRoutes);
 router.use('/financeiro/tipos', tiposRoutes);
 router.use('/financeiro/transacoes', transacoesRoutes);
-router.use('/financeiro/transferencias', transferenciasRoutes);
+router.use('/financeiro/transferencias-caixinha', transferenciasCaixinhasRoutes);
 router.use('/financeiro/vendas', vendasRoutes);
 
 router.get("/", (req, res) => {
