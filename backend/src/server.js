@@ -5,6 +5,7 @@ require("dotenv").config();
 const routes = require("./routes");
 const webSocketManager = require("./websocket");
 require("./workers/expireContracts");
+const { startLeadNotifications } = require("./workers/leadNotifications");
 
 
 // Importar cron jobs
@@ -68,6 +69,9 @@ if (require.main === module) {
 
     // Inicializar WebSocket
     webSocketManager.initialize(server);
+
+    // Inicializar sistema de notificações de leads
+    startLeadNotifications();
 
     server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {

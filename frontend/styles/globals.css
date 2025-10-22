@@ -345,4 +345,87 @@ body.has-sidebar.sidebar-expanded {
   margin-left: 0 !important;
 }
 
+/* ===== THEME COMPONENTS ===== */
+/* Input/Select components */
+.theme-input {
+  width: 100%;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  outline: none;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+  font-size: var(--onity-type-body-size);
+  font-weight: 400;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.theme-input:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.theme-input:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.theme-input[aria-invalid="true"] {
+  border-color: var(--onity-color-error);
+}
+
+/* Modal/Dropdown content */
+.theme-modal {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xs);
+  z-index: 1000;
+}
+
+.theme-border-secondary {
+  border-color: var(--onity-color-border);
+}
+
+/* Text colors */
+.theme-text-white {
+  color: var(--onity-color-text);
+}
+
+.theme-text-secondary {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+/* Select items */
+.theme-select-item {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+  margin: 2px 0;
+}
+
+.theme-select-item:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.theme-select-item[data-state="checked"] {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  font-weight: 600;
+}
+
+.theme-select-item[data-state="checked"]:hover {
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
 

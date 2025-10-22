@@ -114,15 +114,25 @@ export default function CRMCard({ data, onEdit }) {
     >
       <div className={styles.crmCardHeaderRow}>
         <div className={styles.cardIconLeft}>
-          {data.fase_nome?.toLowerCase() === 'ganhou' ? (
-            <FontAwesomeIcon icon={faThumbsUp}  style={{ color: '#18c964' }} />
-          ) : data.fase_nome?.toLowerCase() === 'perdeu' ? (
-            <FontAwesomeIcon icon={faThumbsDown}  style={{ color: '#f44' }} />
-          ) : data.hasPendingActivity ? (
-            <FontAwesomeIcon icon={faCalendarAlt} style={{ color: '#F04F4F' }} />
-          ) : (
-            <FontAwesomeIcon icon={faBriefcase} className={styles.iconCase} />
-          )}
+          <div className={styles.cardIconContainer}>
+            {data.fase_nome?.toLowerCase() === 'ganhou' ? (
+              <FontAwesomeIcon icon={faThumbsUp}  style={{ color: '#18c964' }} />
+            ) : data.fase_nome?.toLowerCase() === 'perdeu' ? (
+              <FontAwesomeIcon icon={faThumbsDown}  style={{ color: '#f44' }} />
+            ) : data.hasPendingActivity ? (
+              <FontAwesomeIcon icon={faCalendarAlt} style={{ color: '#F04F4F' }} />
+            ) : (
+              <FontAwesomeIcon icon={faBriefcase} className={styles.iconCase} />
+            )}
+            {data.data_prevista && (
+              <div className={styles.dataPrevistaOverlay}>
+                {new Date(data.data_prevista).toLocaleDateString('pt-BR', { 
+                  day: '2-digit', 
+                  month: '2-digit' 
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.crmCardContent}>

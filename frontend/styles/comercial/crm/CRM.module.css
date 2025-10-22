@@ -133,8 +133,8 @@
 }
 
 /* Ajuste específico para o filtro de responsável */
-.filtersRowBox:last-child {
-  margin-left: -45px;
+.filtersRowBox:nth-child(3) {
+  margin-left: -40px;
 }
 
 .headerRow {
@@ -576,6 +576,40 @@
 .input::placeholder {
   color: var(--onity-icon-secondary);
 }
+
+.faseFunilSelect {
+  width: 102% !important;
+}
+
+.responsavelSelect {
+  width: 102% !important;
+}
+
+/* Estilos para data prevista nos cards */
+.cardIconContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dataPrevistaOverlay {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--onity-color-primary, #007bff);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 3px;
+  min-width: 24px;
+  text-align: center;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
 
 .modalActions {
   display: flex;
