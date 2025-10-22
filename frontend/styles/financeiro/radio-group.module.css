@@ -1,0 +1,58 @@
+.radioGroupRoot {
+  /* Base styles for the radio group container */
+  display: flex; /* flex para colocar lado a lado */
+  gap: 16px; /* gap maior para separar os itens */
+  align-items: center; /* alinhar verticalmente */
+}
+
+.radioGroupItem {
+  /* Base styles for individual radio items */
+  aspect-ratio: 1; /* aspect-square */
+  height: 20px; /* aumentado de 16px para 20px */
+  width: 20px; /* aumentado de 16px para 20px */
+  border-radius: 50%; /* rounded-full */
+  border: 1px solid var(--onity-color-primary); /* border border-primary */
+  color: var(--onity-color-primary); /* text-primary */
+  background-color: var(--onity-color-surface);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.radioGroupItem:focus-visible {
+  outline: 2px solid var(--onity-color-primary); /* focus-visible:ring-2 focus-visible:ring-ring */
+  outline-offset: 2px; /* focus-visible:ring-offset-2 */
+}
+
+.radioGroupItem:disabled {
+  cursor: not-allowed; /* disabled:cursor-not-allowed */
+  opacity: 0.5; /* disabled:opacity-50 */
+}
+
+.radioGroupItem:hover:not(:disabled) {
+  border-color: var(--onity-color-primary);
+  transform: scale(1.05);
+}
+
+.radioGroupItem[data-state="checked"] {
+  background-color: var(--onity-light-primary-deep); /* cor mais forte do globals.css */
+  border-color: var(--onity-light-primary-deep);
+}
+
+.radioGroupIndicator {
+  /* Styles for the indicator (selected state) */
+  display: flex; /* flex */
+  align-items: center; /* items-center */
+  justify-content: center; /* justify-center */
+  width: 100%;
+  height: 100%;
+}
+
+.radioGroupIcon {
+  /* Styles for the circle icon inside the radio button */
+  height: 12px; /* aumentado de 10px para 12px */
+  width: 12px; /* aumentado de 10px para 12px */
+  fill: var(--onity-color-primary-contrast); /* fill-current text-current */
+  color: var(--onity-color-primary-contrast);
+}

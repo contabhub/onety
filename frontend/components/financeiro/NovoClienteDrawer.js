@@ -35,6 +35,7 @@ const cn = (...classes) => {
 import { toast } from "react-toastify";
 import { formatarDataParaMysql } from "../../utils/financeiro/dateUtils";
 import { useEffect } from "react";
+import styles from "../../styles/financeiro/novo-cliente-drawer.module.css";
 // Removido InputMask para evitar warning de findDOMNode
 
 export function NovoClienteDrawer({
@@ -90,6 +91,7 @@ export function NovoClienteDrawer({
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Funções para formatação de campos
   const formatarCNPJ = (valor) => {
@@ -118,6 +120,14 @@ export function NovoClienteDrawer({
     const apenasNumeros = valor.replace(/\D/g, '');
     if (apenasNumeros.length <= 8) {
       return apenasNumeros.replace(/^(\d{5})(\d{3})$/, '$1-$2');
+    }
+    return valor;
+  };
+
+  const formatarData = (valor) => {
+    const apenasNumeros = valor.replace(/\D/g, '');
+    if (apenasNumeros.length <= 8) {
+      return apenasNumeros.replace(/^(\d{2})(\d{2})(\d{4})$/, '$1/$2/$3');
     }
     return valor;
   };
@@ -287,7 +297,21 @@ export function NovoClienteDrawer({
       resetForm();
       onSave(clienteCriado); // Passa os dados do cliente criado para o componente pai
     }
-    onClose();
+    handleClose();
+  };
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 600); // Duração da animação de fechamento
+  };
+
+  // Função para fechar ao clicar no overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -452,57 +476,59 @@ export function NovoClienteDrawer({
     }
   };
 
-  const consultarSerasa = () => {
-    console.log("Consultando no Serasa");
-    // Aqui você implementaria a consulta no Serasa
-  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
+    <div 
+      className={cn(
+        styles.drawerOverlay,
+        isClosing && styles.closing
+      )}
+      onClick={handleOverlayClick}
+    >
       <div
         className={cn(
-          "w-full bg-[#1B1229] rounded-t-lg shadow-xl transition-transform duration-300 ease-out max-h-[90vh] overflow-hidden flex flex-col",
-          isOpen ? "translate-y-0" : "translate-y-full"
+          styles.drawerContainer,
+          isClosing && styles.closing
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#673AB7]/20 bg-[#1B1229] sticky top-0 z-10">
-          <h2 className="text-xl font-semibold text-white">Novo cadastro</h2>
+        <div className={styles.drawerHeader}>
+          <h2 className={styles.drawerTitle}>Novo cadastro</h2>
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0 text-[#B0AFC1] hover:text-white"
+            onClick={handleClose}
+            className={styles.closeButton}
           >
-            <X className="h-4 w-4" />
+            <X className={styles.closeIcon} />
           </Button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 bg-[#1B1229]">
+        <div className={styles.drawerContent}>
+          <div className={styles.drawerContentInner}>
             <Accordion
               type="multiple"
               value={openAccordions}
               onValueChange={setOpenAccordions}
-              className="space-y-4"
+              className={styles.accordionContainer}
             >
               {/* Dados Gerais */}
               <AccordionItem
                 value="dados-gerais"
-                className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 rounded-lg"
+                className={styles.accordionItem}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline text-white">
-                  <span className="font-medium">Dados gerais</span>
+                <AccordionTrigger className={styles.accordionTrigger}>
+                  <span className={styles.fontMedium}>Dados gerais</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-4">
+                <AccordionContent className={styles.accordionContent}>
+                  <div className={styles.spaceY4}>
                     {/* Primeira linha */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                    <div className={cn(styles.grid1Col, styles.mdGrid3Col)}>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Tipo de pessoa *
                         </Label>
                         <Select
@@ -511,19 +537,19 @@ export function NovoClienteDrawer({
                             handleInputChange("tipoPessoa", value)
                           }
                         >
-                          <SelectTrigger className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white hover:bg-[#1B1229]/50 focus:border-[#1E88E5] focus:ring-[#1E88E5]">
-                            <SelectValue className="text-white" />
+                          <SelectTrigger className={styles.selectField}>
+                            <SelectValue className={styles.textWhite} />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1B1229] border-[#673AB7]/30">
+                          <SelectContent className={styles.selectContent}>
                             <SelectItem
                               value="Jurídica"
-                              className="text-white hover:bg-[#673AB7]/20 focus:bg-[#673AB7]/20"
+                              className={styles.selectItem}
                             >
                               Jurídica
                             </SelectItem>
                             <SelectItem
                               value="Física"
-                              className="text-white hover:bg-[#673AB7]/20 focus:bg-[#673AB7]/20"
+                              className={styles.selectItem}
                             >
                               Física
                             </SelectItem>
@@ -531,9 +557,9 @@ export function NovoClienteDrawer({
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">{formData.tipoPessoa === "Jurídica" ? "CNPJ" : "CPF"}</Label>
-                        <div className="flex gap-2">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>{formData.tipoPessoa === "Jurídica" ? "CNPJ" : "CPF"}</Label>
+                        <div className={styles.inputWithButton}>
                           <Input
                             value={formData.cnpj}
                             onChange={(e) => {
@@ -544,7 +570,7 @@ export function NovoClienteDrawer({
                               handleInputChange("cnpj", formatado);
                             }}
                             placeholder={formData.tipoPessoa === "Jurídica" ? "00.000.000/0000-00" : "000.000.000-00"}
-                            className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                            className={cn(styles.inputField, styles.inputFieldLarge)}
                           />
                           {formData.tipoPessoa === "Jurídica" && (
                             <Button
@@ -552,70 +578,46 @@ export function NovoClienteDrawer({
                               size="sm"
                               onClick={buscarDadosCNPJ}
                               disabled={buscandoCnpj}
-                              className="border-[#1E88E5] text-[#1E88E5] hover:bg-[#1E88E5] hover:text-white disabled:opacity-50"
+                              className={cn(styles.buttonOutline, styles.buttonSmall, buscandoCnpj && styles.buttonDisabled)}
                             >
                               {buscandoCnpj ? "Buscando..." : "Buscar dados"}
                             </Button>
                           )}
                         </div>
                         {erroCnpj && (
-                          <p className="text-xs text-red-400 mt-1">
+                          <p className={styles.errorMessage}>
                             {erroCnpj}
                           </p>
                         )}
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           {formData.tipoPessoa === "Jurídica" ? "Nome fantasia *" : "Nome cliente *"}
                         </Label>
-                        <div className="flex gap-2">
+                        <div className={styles.flex} style={{ gap: '8px' }}>
                           <Input
                             value={formData.nomeFantasia}
                             onChange={(e) =>
                               handleInputChange("nomeFantasia", e.target.value)
                             }
                             placeholder={formData.tipoPessoa === "Jurídica" ? "Digite o nome fantasia" : "Digite o nome do cliente"}
-                            className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                            className={cn(styles.inputField, styles.inputFieldExtraWide)}
                           />
-                          <Button
-                            disabled
-                            variant="outline"
-                            size="sm"
-                            onClick={consultarSerasa}
-                            className="border-[#673AB7] text-[#673AB7] hover:bg-[#673AB7] hover:text-white"
-                          >
-                            <Search className="h-4 w-4 mr-1" />
-                            Consultar no Serasa
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#B0AFC1] hover:text-[#1E88E5]"
-                          >
-                            <Info className="h-4 w-4" />
-                          </Button>
                         </div>
                       </div>
                     </div>
 
                     {/* Segunda linha */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-white font-medium">
+                    <div className={cn(styles.grid1Col, styles.mdGrid2Col)}>
+                      <div className={styles.fieldContainer}>
+                        <div className={styles.fieldLabelWithIcon}>
+                          <Label className={styles.fieldLabel}>
                             Tipo de papel *
                           </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#B0AFC1] hover:text-[#1E88E5]"
-                          >
-                            <Info className="h-4 w-4" />
-                          </Button>
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
+                        <div className={styles.checkboxContainer}>
+                          <div className={styles.checkboxItem}>
                             <Checkbox
                               id="cliente"
                               checked={formData.tiposPapel.cliente}
@@ -626,11 +628,11 @@ export function NovoClienteDrawer({
                                 )
                               }
                             />
-                            <Label htmlFor="cliente" className="text-white">
+                            <Label htmlFor="cliente" className={styles.checkboxLabel}>
                               Cliente
                             </Label>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className={styles.checkboxItem}>
                             <Checkbox
                               id="fornecedor"
                               checked={formData.tiposPapel.fornecedor}
@@ -641,11 +643,11 @@ export function NovoClienteDrawer({
                                 )
                               }
                             />
-                            <Label htmlFor="fornecedor" className="text-white">
+                            <Label htmlFor="fornecedor" className={styles.checkboxLabel}>
                               Fornecedor
                             </Label>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className={styles.checkboxItem}>
                             <Checkbox
                               id="transportadora"
                               checked={formData.tiposPapel.transportadora}
@@ -658,29 +660,22 @@ export function NovoClienteDrawer({
                             />
                             <Label
                               htmlFor="transportadora"
-                              className="text-white"
+                              className={styles.checkboxLabel}
                             >
                               Transportadora
                             </Label>
                           </div>
                         </div>
-                        <p className="text-xs text-[#B0AFC1]">
+                        <p className={styles.helpText}>
                           É possível selecionar mais de uma opção
                         </p>
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <div className={styles.fieldLabelWithIcon}>
+                          <Label className={styles.fieldLabel}>
                             Código do cadastro
                           </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#B0AFC1] hover:text-[#1E88E5]"
-                          >
-                            <Info className="h-4 w-4" />
-                          </Button>
                         </div>
                         <Input
                           value={formData.codigoCadastro}
@@ -688,7 +683,7 @@ export function NovoClienteDrawer({
                             handleInputChange("codigoCadastro", e.target.value)
                           }
                           placeholder="Digite o código"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
                     </div>
@@ -699,15 +694,15 @@ export function NovoClienteDrawer({
               {/* Informações Adicionais */}
               <AccordionItem
                 value="informacoes-adicionais"
-                className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 rounded-lg"
+                className={styles.accordionItem}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline text-white">
-                  <span className="font-medium">Informações adicionais</span>
+                <AccordionTrigger className={styles.accordionTrigger}>
+                  <span className={styles.fontMedium}>Informações adicionais</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-white font-medium">
+                <AccordionContent className={styles.accordionContent}>
+                  <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
+                    <div className={styles.fieldContainer}>
+                      <Label className={styles.fieldLabel}>
                         E-mail principal
                       </Label>
                       <Input
@@ -719,12 +714,12 @@ export function NovoClienteDrawer({
                           handleInputChange("emailPrincipal", emailMinusculo);
                         }}
                         placeholder="email@exemplo.com"
-                        className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                        className={cn(styles.inputField, styles.inputFieldLarge)}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-white font-medium">
+                    <div className={styles.fieldContainer}>
+                      <Label className={styles.fieldLabel}>
                         Telefone comercial
                       </Label>
                       <Input
@@ -733,12 +728,12 @@ export function NovoClienteDrawer({
                           handleInputChange("telefoneComercial", e.target.value)
                         }
                         placeholder="(11) 3333-3333"
-                        className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                        className={cn(styles.inputField, styles.inputFieldLarge)}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-white font-medium">
+                    <div className={styles.fieldContainer}>
+                      <Label className={styles.fieldLabel}>
                         Telefone celular
                       </Label>
                       <Input
@@ -747,25 +742,24 @@ export function NovoClienteDrawer({
                           handleInputChange("telefoneCelular", e.target.value)
                         }
                         placeholder="(11) 99999-9999"
-                        className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                        className={cn(styles.inputField, styles.inputFieldLarge)}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-white font-medium">
+                    <div className={styles.fieldContainer}>
+                      <Label className={styles.fieldLabel}>
                         Abertura da empresa
                       </Label>
-                      <div className="relative">
-                        <Input
-                          value={formData.aberturaEmpresa}
-                          onChange={(e) =>
-                            handleInputChange("aberturaEmpresa", e.target.value)
-                          }
-                          placeholder="dd/mm/aaaa"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
-                        />
-                        <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#B0AFC1]" />
-                      </div>
+                      <Input
+                        value={formData.aberturaEmpresa}
+                        onChange={(e) => {
+                          const valor = e.target.value;
+                          const formatado = formatarData(valor);
+                          handleInputChange("aberturaEmpresa", formatado);
+                        }}
+                        placeholder="dd/mm/aaaa"
+                        className={cn(styles.inputField, styles.inputFieldLarge)}
+                      />
                     </div>
                   </div>
                 </AccordionContent>
@@ -774,17 +768,17 @@ export function NovoClienteDrawer({
               {/* Informações Fiscais */}
               <AccordionItem
                 value="informacoes-fiscais"
-                className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 rounded-lg"
+                className={styles.accordionItem}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline text-white">
-                  <span className="font-medium">Informações fiscais</span>
+                <AccordionTrigger className={styles.accordionTrigger}>
+                  <span className={styles.fontMedium}>Informações fiscais</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-4">
+                <AccordionContent className={styles.accordionContent}>
+                  <div className={styles.spaceY4}>
                     {/* Primeira linha */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                    <div className={cn(styles.grid1Col, styles.mdGrid2Col)}>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Razão social
                         </Label>
                         <Input
@@ -793,39 +787,32 @@ export function NovoClienteDrawer({
                             handleInputChange("razaoSocial", e.target.value)
                           }
                           placeholder="Digite a razão social"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <div className={styles.fieldLabelWithIcon}>
+                          <Label className={styles.fieldLabel}>
                             Optante pelo simples?
                           </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#B0AFC1] hover:text-[#1E88E5]"
-                          >
-                            <Info className="h-4 w-4" />
-                          </Button>
                         </div>
                         <RadioGroup
                           value={formData.optanteSimples}
                           onValueChange={(value) =>
                             handleInputChange("optanteSimples", value)
                           }
-                          className="flex gap-6"
+                          className={styles.radioGroup}
                         >
-                          <div className="flex items-center space-x-2">
+                          <div className={styles.radioItem}>
                             <RadioGroupItem value="Não" id="nao" />
-                            <Label htmlFor="nao" className="text-white">
+                            <Label htmlFor="nao" className={styles.radioLabel}>
                               Não
                             </Label>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className={styles.radioItem}>
                             <RadioGroupItem value="Sim" id="sim" />
-                            <Label htmlFor="sim" className="text-white">
+                            <Label htmlFor="sim" className={styles.radioLabel}>
                               Sim
                             </Label>
                           </div>
@@ -834,9 +821,9 @@ export function NovoClienteDrawer({
                     </div>
 
                     {/* Segunda linha */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                    <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Indicador de Inscrição estadual
                         </Label>
                         <Select
@@ -848,28 +835,28 @@ export function NovoClienteDrawer({
                             )
                           }
                         >
-                          <SelectTrigger className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white hover:bg-[#1B1229]/50 focus:border-[#1E88E5] focus:ring-[#1E88E5]">
+                          <SelectTrigger className={styles.selectField}>
                             <SelectValue
                               placeholder="Selecione"
-                              className="text-white"
+                              className={styles.textWhite}
                             />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1B1229] border-[#673AB7]/30">
+                          <SelectContent className={styles.selectContent}>
                             <SelectItem
                               value="contribuinte"
-                              className="text-white hover:bg-[#673AB7]/20 focus:bg-[#673AB7]/20"
+                              className={styles.selectItem}
                             >
                               Contribuinte ICMS
                             </SelectItem>
                             <SelectItem
                               value="isento"
-                              className="text-white hover:bg-[#673AB7]/20 focus:bg-[#673AB7]/20"
+                              className={styles.selectItem}
                             >
                               Isento
                             </SelectItem>
                             <SelectItem
                               value="nao-contribuinte"
-                              className="text-white hover:bg-[#673AB7]/20 focus:bg-[#673AB7]/20"
+                              className={styles.selectItem}
                             >
                               Não contribuinte
                             </SelectItem>
@@ -877,18 +864,11 @@ export function NovoClienteDrawer({
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <div className={styles.fieldLabelWithIcon}>
+                          <Label className={styles.fieldLabel}>
                             Inscrição estadual
                           </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#B0AFC1] hover:text-[#1E88E5]"
-                          >
-                            <Info className="h-4 w-4" />
-                          </Button>
                         </div>
                         <Input
                           value={formData.inscricaoEstadual}
@@ -899,12 +879,12 @@ export function NovoClienteDrawer({
                             )
                           }
                           placeholder="Digite a inscrição"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Inscrição municipal
                         </Label>
                         <Input
@@ -916,12 +896,12 @@ export function NovoClienteDrawer({
                             )
                           }
                           placeholder="Digite a inscrição"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Inscrição suframa
                         </Label>
                         <Input
@@ -933,7 +913,7 @@ export function NovoClienteDrawer({
                             )
                           }
                           placeholder="Digite a inscrição"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
                     </div>
@@ -944,30 +924,30 @@ export function NovoClienteDrawer({
               {/* Endereço */}
               <AccordionItem
                 value="endereco"
-                className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 rounded-lg"
+                className={styles.accordionItem}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline text-white">
-                  <span className="font-medium">Endereço</span>
+                <AccordionTrigger className={styles.accordionTrigger}>
+                  <span className={styles.fontMedium}>Endereço</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-4">
+                <AccordionContent className={styles.accordionContent}>
+                  <div className={styles.spaceY4}>
                     {/* Primeira linha */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">País</Label>
+                    <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>País</Label>
                         <Input
                           value={formData.pais}
                           onChange={(e) =>
                             handleInputChange("pais", e.target.value)
                           }
                           placeholder="Brasil"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">CEP</Label>
-                        <div className="flex gap-2">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>CEP</Label>
+                        <div className={styles.inputWithButton}>
                           <Input
                             value={formData.cep}
                             onChange={(e) => {
@@ -976,22 +956,22 @@ export function NovoClienteDrawer({
                               handleInputChange("cep", formatado);
                             }}
                             placeholder="00000-000"
-                            className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                            className={cn(styles.inputField, styles.inputFieldLarge)}
                           />
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={buscarDadosCEP}
                             disabled={buscandoCep}
-                            className="border-[#1E88E5] text-[#1E88E5] hover:bg-[#1E88E5] hover:text-white disabled:opacity-50"
+                            className={cn(styles.buttonOutline, styles.buttonSmall, buscandoCep && styles.buttonDisabled)}
                           >
                             {buscandoCep ? "Buscando..." : "Buscar dados"}
                           </Button>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Endereço
                         </Label>
                         <Input
@@ -1000,45 +980,45 @@ export function NovoClienteDrawer({
                             handleInputChange("endereco", e.target.value)
                           }
                           placeholder="Digite o endereço"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">Número</Label>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>Número</Label>
                         <Input
                           value={formData.numero}
                           onChange={(e) =>
                             handleInputChange("numero", e.target.value)
                           }
                           placeholder="123"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
                     </div>
 
                     {/* Segunda linha */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">Estado</Label>
+                    <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>Estado</Label>
                         <Select
                           value={formData.estado}
                           onValueChange={(value) =>
                             handleInputChange("estado", value)
                           }
                         >
-                          <SelectTrigger className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white hover:bg-[#1B1229]/50 hover:text-[#1E88E5] focus:border-[#1E88E5] focus:ring-[#1E88E5]">
+                          <SelectTrigger className={styles.selectField}>
                             <SelectValue
                               placeholder="Selecione"
-                              className="text-white"
+                              className={styles.textWhite}
                             />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1B1229] border-[#673AB7]/30">
+                          <SelectContent className={styles.selectContent}>
                             {estados.map((estado) => (
                               <SelectItem
                                 key={estado.id}
                                 value={estado.sigla}
-                                className="text-white hover:bg-[#673AB7]/20 hover:text-[#1E88E5] focus:bg-[#673AB7]/20 focus:text-[#1E88E5]"
+                                className={styles.selectItem}
                               >
                                 {estado.nome}
                               </SelectItem>
@@ -1047,8 +1027,8 @@ export function NovoClienteDrawer({
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">Cidade</Label>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>Cidade</Label>
                         <Select
                           value={formData.cidade}
                           onValueChange={(value) =>
@@ -1057,7 +1037,7 @@ export function NovoClienteDrawer({
                           disabled={!formData.estado}
                         >
                           <SelectTrigger
-                            className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white hover:bg-[#1B1229]/50 hover:text-[#1E88E5] focus:border-[#1E88E5] focus:ring-[#1E88E5]"
+                            className={styles.selectField}
                             disabled={!formData.estado}
                           >
                             <SelectValue
@@ -1066,15 +1046,15 @@ export function NovoClienteDrawer({
                                   ? "Selecione a cidade"
                                   : "Selecione um estado primeiro"
                               }
-                              className="text-white"
+                              className={styles.textWhite}
                             />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1B1229] border-[#673AB7]/30">
+                          <SelectContent className={styles.selectContent}>
                             {cidades.map((cidade) => (
                               <SelectItem
                                 key={cidade.id}
                                 value={cidade.nome}
-                                className="text-white hover:bg-[#673AB7]/20 hover:text-[#1E88E5] focus:bg-[#673AB7]/20 focus:text-[#1E88E5]"
+                                className={styles.selectItem}
                               >
                                 {cidade.nome}
                               </SelectItem>
@@ -1083,20 +1063,20 @@ export function NovoClienteDrawer({
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-white font-medium">Bairro</Label>
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>Bairro</Label>
                         <Input
                           value={formData.bairro}
                           onChange={(e) =>
                             handleInputChange("bairro", e.target.value)
                           }
                           placeholder="Digite o bairro"
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]">
+                      <div className={styles.fieldContainer}>
+                        <Label className={styles.fieldLabel}>
                           Complemento
                         </Label>
                         <Input
@@ -1105,7 +1085,7 @@ export function NovoClienteDrawer({
                             handleInputChange("complemento", e.target.value)
                           }
                           placeholder="Apto, sala, etc."
-                          className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]"
+                          className={cn(styles.inputField, styles.inputFieldLarge)}
                         />
                       </div>
                     </div>
@@ -1116,34 +1096,35 @@ export function NovoClienteDrawer({
               {/* Outros Contatos */}
               <AccordionItem
                 value="outros-contatos"
-                className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 rounded-lg"
+                className={styles.accordionItem}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline text-white">
-                  <span className="font-medium">Outros contatos</span>
+                <AccordionTrigger className={styles.accordionTrigger}>
+                  <span className={styles.fontMedium}>Outros contatos</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-4">
+                <AccordionContent className={styles.accordionContent}>
+                  <div className={styles.spaceY4}>
                     {formData.outrosContatos.map((contato, index) => (
                       <div
                         key={contato.id}
-                        className="border rounded-lg p-4 space-y-4"
+                        className={styles.contactCard}
                       >
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-white">
+                        <div className={styles.contactHeader}>
+                          <h4 className={styles.contactTitle}>
                             Contato {index + 1}
                           </h4>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => removerContato(contato.id)}
+                            className={styles.removeButton}
                           >
-                            <Trash2 className="h-4 w-4 text-[#F50057]" />
+                            <Trash2 className={cn(styles.h4, styles.w4, styles.textRed400)} />
                           </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                          <div className="space-y-2">
-                            <Label className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white placeholder:text-[#B0AFC1] focus:border-[#1E88E5]">
+                        <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid5Col)}>
+                          <div className={styles.fieldContainer}>
+                            <Label className={styles.fieldLabel}>
                               Pessoa de contato
                             </Label>
                             <Input
@@ -1156,11 +1137,12 @@ export function NovoClienteDrawer({
                                 )
                               }
                               placeholder="Nome da pessoa"
+                              className={cn(styles.inputField, styles.inputFieldLarge)}
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-white font-medium">
+                          <div className={styles.fieldContainer}>
+                            <Label className={styles.fieldLabel}>
                               E-mail
                             </Label>
                             <Input
@@ -1176,11 +1158,12 @@ export function NovoClienteDrawer({
                                 );
                               }}
                               placeholder="email@exemplo.com"
+                              className={cn(styles.inputField, styles.inputFieldLarge)}
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-white font-medium">
+                          <div className={styles.fieldContainer}>
+                            <Label className={styles.fieldLabel}>
                               Telefone comercial
                             </Label>
                             <Input
@@ -1193,11 +1176,12 @@ export function NovoClienteDrawer({
                                 )
                               }
                               placeholder="(11) 3333-3333"
+                              className={cn(styles.inputField, styles.inputFieldLarge)}
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-white font-medium">
+                          <div className={styles.fieldContainer}>
+                            <Label className={styles.fieldLabel}>
                               Telefone celular
                             </Label>
                             <Input
@@ -1210,11 +1194,12 @@ export function NovoClienteDrawer({
                                 )
                               }
                               placeholder="(11) 99999-9999"
+                              className={cn(styles.inputField, styles.inputFieldLarge)}
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-white font-medium">
+                          <div className={styles.fieldContainer}>
+                            <Label className={styles.fieldLabel}>
                               Cargo
                             </Label>
                             <Input
@@ -1227,6 +1212,7 @@ export function NovoClienteDrawer({
                                 )
                               }
                               placeholder="Cargo/Função"
+                              className={cn(styles.inputField, styles.inputFieldLarge)}
                             />
                           </div>
                         </div>
@@ -1236,9 +1222,9 @@ export function NovoClienteDrawer({
                     <Button
                       variant="outline"
                       onClick={adicionarContato}
-                      className="w-full border-[#9C27B0] text-[#9C27B0] hover:bg-[#9C27B0] hover:text-white"
+                      className={styles.addContactButton}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className={cn(styles.h4, styles.w4, styles.mr2)} />
                       Adicionar contato
                     </Button>
                   </div>
@@ -1248,14 +1234,14 @@ export function NovoClienteDrawer({
               {/* Observações Gerais */}
               <AccordionItem
                 value="observacoes-gerais"
-                className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 rounded-lg"
+                className={styles.accordionItem}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline text-white">
-                  <span className="font-medium">Observações gerais</span>
+                <AccordionTrigger className={styles.accordionTrigger}>
+                  <span className={styles.fontMedium}>Observações gerais</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-2">
-                    <Label className="text-white font-medium">
+                <AccordionContent className={styles.accordionContent}>
+                  <div className={styles.spaceY2}>
+                    <Label className={styles.fieldLabel}>
                       Observações
                     </Label>
                     <Textarea
@@ -1264,7 +1250,7 @@ export function NovoClienteDrawer({
                         handleInputChange("observacoes", e.target.value)
                       }
                       placeholder="Digite observações sobre o cliente"
-                      className="min-h-[120px]"
+                      className={cn(styles.textareaField, styles.textareaFieldLarge, styles.minH120px)}
                     />
                   </div>
                 </AccordionContent>
@@ -1274,17 +1260,17 @@ export function NovoClienteDrawer({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-[#673AB7]/20 bg-[#1B1229] sticky bottom-0">
+        <div className={styles.drawerFooter}>
           <Button
             variant="outline"
-            onClick={onClose}
-            className="border-[#673AB7] text-[#B0AFC1] hover:bg-[#673AB7]/10"
+            onClick={handleClose}
+            className={styles.cancelButton}
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-[#1E88E5] hover:bg-[#1976D2] text-white"
+            className={styles.saveButton}
           >
             Salvar
           </Button>
