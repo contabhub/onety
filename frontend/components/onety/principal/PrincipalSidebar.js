@@ -207,6 +207,12 @@ const MODULE_REGISTRY = {
         label: 'Contas a Receber',
         icon: <DollarSign size={18} />,
         route: '/financeiro/contas-receber'
+      },
+      {
+        id: 'clientes',
+        label: 'Clientes',
+        icon: <Users size={18} />,
+        route: '/financeiro/cadastro-clientes'
       }
     ]
   },
