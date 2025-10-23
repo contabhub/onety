@@ -1,0 +1,312 @@
+
+/* ExportarFluxoCaixaMensal Component Styles */
+
+/* Modal Container */
+.exportarFluxoCaixaModal {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  padding: 20px 40px;
+  max-height: 100vh;
+}
+
+/* Content Container */
+.exportarFluxoCaixaContent {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Section Container */
+.exportarFluxoCaixaSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Modal Header */
+.exportarFluxoCaixaTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.exportarFluxoCaixaDescription {
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  color: var(--onity-icon-secondary);
+  margin: var(--onity-space-s) 0 0 0;
+}
+
+/* Filters Info Section */
+.exportarFluxoCaixaFiltersInfo {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+  margin-bottom: 5px;
+}
+
+.exportarFluxoCaixaFiltersTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0 0 var(--onity-space-s) 0;
+}
+
+.exportarFluxoCaixaFiltersList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exportarFluxoCaixaFilterItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--onity-space-xs) 0;
+}
+
+.exportarFluxoCaixaFilterLabel {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+}
+
+.exportarFluxoCaixaFilterValue {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+/* Labels */
+.exportarFluxoCaixaLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-s);
+  display: block;
+}
+
+/* Radio Group */
+.exportarFluxoCaixaRadioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.exportarFluxoCaixaRadioItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  background: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.exportarFluxoCaixaRadioItem:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.exportarFluxoCaixaRadioItem[data-state="checked"] {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.exportarFluxoCaixaRadioLabel {
+  flex: 1;
+  cursor: pointer;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.exportarFluxoCaixaRadioTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
+  text-align: left;
+  width: 100%;
+}
+
+.exportarFluxoCaixaRadioDescription {
+  font-size: var(--onity-type-caption-size);
+  line-height: var(--onity-type-caption-line);
+  color: var(--onity-icon-secondary);
+  text-align: left;
+  width: 100%;
+}
+
+/* Info Box */
+.exportarFluxoCaixaInfoBox {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: 10px;
+  margin-top: var(--onity-space-l);
+}
+
+.exportarFluxoCaixaInfoContent {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.exportarFluxoCaixaInfoText {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+/* Modal Footer */
+.exportarFluxoCaixaFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+/* Buttons */
+.exportarFluxoCaixaCancelBtn {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exportarFluxoCaixaCancelBtn:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+}
+
+.exportarFluxoCaixaCancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.exportarFluxoCaixaExportBtn {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.exportarFluxoCaixaExportBtn:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.exportarFluxoCaixaExportBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Icon Container */
+.exportarFluxoCaixaIconContainer {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(103, 58, 183, 0.2);
+  border-radius: var(--onity-radius-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exportarFluxoCaixaIconContainer svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #673AB7;
+}
+
+/* Status Indicator */
+.exportarFluxoCaixaStatusIndicator {
+  width: 1rem;
+  height: 1rem;
+  background: var(--onity-color-success);
+  border-radius: var(--onity-radius-xs);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .exportarFluxoCaixaModal {
+    max-width: 100%;
+    margin: var(--onity-space-m);
+  }
+  
+  .exportarFluxoCaixaFooter {
+    flex-direction: column;
+  }
+  
+  .exportarFluxoCaixaCancelBtn,
+  .exportarFluxoCaixaExportBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Dark Theme Specific Adjustments */
+[data-theme="dark"] .exportarFluxoCaixaIconContainer {
+  background: rgba(103, 58, 183, 0.3);
+}
+
+[data-theme="dark"] .exportarFluxoCaixaIconContainer svg {
+  color: #9C7AE8;
+}
+
+/* Icon Styles */
+.exportarFluxoCaixaLoadingIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-s);
+  animation: spin 1s linear infinite;
+}
+
+.exportarFluxoCaixaDownloadIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-s);
+}
+
+/* Animation for loading state */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
