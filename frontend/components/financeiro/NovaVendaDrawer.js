@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "../../styles/financeiro/vendas.module.css";
+import styles from "../../styles/financeiro/nova-venda.module.css";
 import { Button } from "./botao";
 import { Input } from "./input";
 import { Label } from "./label";
 import { Textarea } from "./textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
+// Select components removidos - agora usando ReactSelect
 import { Calendar } from "./calendar";
 import {
   Popover,
@@ -25,6 +19,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "./accordion";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "./toggle-group";
 import {
   X,
   Calendar as CalendarIcon,
@@ -46,6 +44,7 @@ import { useVendaFormData } from '../../hooks/financeiro/useVendaFormData';
 import { useVendas } from '../../hooks/financeiro/useVenda';
 import NovoProdutoServicoDrawer from "./NovoProdutoServicoDrawer";
 import { toast } from 'react-toastify';
+import ReactSelect from "react-select";
 
 export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
   const { formData: formDataFromAPI, isLoading: isLoadingFormData, error: formDataError } = useVendaFormData();
@@ -422,436 +421,512 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
     <>
       <div 
         className={cn(
-          "fixed inset-0 z-50 bg-black/50 vendas-modal-overlay",
-          isClosing && "closing"
+          styles.novaVendaOverlay,
+          isClosing && styles.closing
         )}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 9999
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            handleClose();
+          }
         }}
       >
         <div
           className={cn(
-            "fixed inset-0 bg-darkPurple shadow-xl overflow-hidden flex flex-col vendas-modal w-full h-full",
-            isClosing && "closing"
+            styles.novaVendaModal,
+            isClosing && styles.closing
           )}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh',
-            zIndex: 10000
-          }}
         >
+          {/* Handle para indicar que pode ser arrastado */}
+          <div className={styles.novaVendaHandle}></div>
+          
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-neonPurple bg-darkPurple sticky top-0 z-10">
+          <div className={styles.novaVendaHeader}>
             <div>
-              <h2 className="text-xl font-semibold vendas-text-primary">Nova Venda</h2>
-              <p className="vendas-text-secondary text-sm">
+              <h2 className={styles.novaVendaTitle}>Nova Venda</h2>
+              <p className={styles.novaVendaTextSecondary}>
                 Preencha as informações da venda
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={handleClose}
-              className="h-8 w-8 p-0 vendas-text-primary hover:vendas-text-secondary"
+              className={styles.novaVendaCloseButton}
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="h-full px-6 py-4 space-y-6">
-              {isLoadingFormData && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin vendas-loading" />
-                  <span className="ml-2 vendas-text-primary">Carregando dados...</span>
-                </div>
-              )}
+          <div className={styles.novaVendaContent}>
+            {isLoadingFormData && (
+              <div className={styles.novaVendaLoading}>
+                <div className={styles.novaVendaLoadingSpinner}></div>
+                <span>Carregando dados...</span>
+              </div>
+            )}
 
           {!isLoadingFormData && (
             <>
               {/* Seção Informações */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-textMain">Informações</h3>
+              <div className={styles.novaVendaSection}>
+                <h3 className={styles.novaVendaSectionTitle}>Informações</h3>
                 
-                {/* Tipo da venda */}
-                {/* <div className="space-y-2">
-                  <Label className="text-sm font-medium text-textMain">Tipo da venda</Label>
-                  <ToggleGroup
-                    type="single"
-                    value={formData.tipoVenda}
-                    onValueChange={(value) => value && handleInputChange('tipoVenda', value)}
-                    className="justify-start bg-darkPurple border-neonPurple"
-                  >
-                    <ToggleGroupItem value="orcamento" className="px-4 py-2 text-textMain data-[state=on]:bg-neonPurple data-[state=on]:text-textMain">
-                      Orçamento
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="venda-avulsa" className="px-4 py-2 text-textMain data-[state=on]:bg-neonPurple data-[state=on]:text-textMain">
-                      Venda avulsa
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="venda-recorrente" className="px-4 py-2 text-textMain data-[state=on]:bg-neonPurple data-[state=on]:text-textMain">
-                      Venda recorrente (contrato)
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div> */}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={styles.novaVendaGrid2Colunas}>
                   {/* Situação da negociação */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Situação da negociação <span className="text-hotPink">*</span>
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Situação da negociação <span className={styles.novaVendaLabelRequired}>*</span>
                     </Label>
-                    <Select
-                      value={formData.situacao}
-                      onValueChange={(value) => handleInputChange('situacao', value)}
-                    >
-                      <SelectTrigger className="vendas-input">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="vendas-dropdown z-[10002]">
-                        <SelectItem value="aprovado" className="text-textMain hover:bg-neonPurple">Venda liberada</SelectItem>
-                        <SelectItem value="em_andamento" className="text-textMain hover:bg-neonPurple">Em andamento</SelectItem>
-                        <SelectItem value="recusado" className="text-textMain hover:bg-neonPurple">Recusado</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione a situação"
+                      value={
+                        formData.situacao
+                          ? {
+                              value: formData.situacao,
+                              label: formData.situacao === "aprovado" ? "Venda liberada" :
+                                     formData.situacao === "em_andamento" ? "Em andamento" :
+                                     formData.situacao === "recusado" ? "Recusado" : formData.situacao
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "situacao",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={[
+                        { value: "aprovado", label: "Venda liberada" },
+                        { value: "em_andamento", label: "Em andamento" },
+                        { value: "recusado", label: "Recusado" }
+                      ]}
+                      isClearable
+                    />
                   </div>
 
                   {/* Número da venda */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Número da venda <span className="text-hotPink">*</span>
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Número da venda <span className={styles.novaVendaLabelRequired}>*</span>
                     </Label>
-                    <div className="relative">
-                      <Input
-                        value={formData.numeroVenda}
-                        onChange={(e) => handleInputChange('numeroVenda', e.target.value)}
-                        className="pr-10 bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-textMain hover:text-textSecondary"
-                      >
-                        <Zap className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <Input
+                      value={formData.numeroVenda}
+                      onChange={(e) => handleInputChange('numeroVenda', e.target.value)}
+                      className={styles.novaVendaInput}
+                    />
                   </div>
 
                   {/* Cliente */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Cliente <span className="text-hotPink">*</span>
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Cliente <span className={styles.novaVendaLabelRequired}>*</span>
                     </Label>
-                    <Select
-                      value={formData.cliente}
-                      onValueChange={(value) => handleInputChange('cliente', value)}
-                    >
-                      <SelectTrigger className="vendas-input">
-                        <SelectValue placeholder="Selecione o cliente" />
-                      </SelectTrigger>
-                                             <SelectContent className="vendas-dropdown z-[10002]">
-                         {formDataFromAPI.clientes.map((cliente) => (
-                            <SelectItem key={cliente.id} value={cliente.id.toString()} className="vendas-dropdown-item">
-                             {cliente.nome_fantasia}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                    </Select>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione o cliente"
+                      value={
+                        formDataFromAPI.clientes.find(
+                          (cliente) => cliente.id.toString() === formData.cliente
+                        )
+                          ? {
+                              value: formData.cliente,
+                              label: formDataFromAPI.clientes.find(
+                                (cliente) => cliente.id.toString() === formData.cliente
+                              )?.nome_fantasia,
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "cliente",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={formDataFromAPI.clientes.map((cliente) => ({
+                        value: cliente.id.toString(),
+                        label: cliente.nome_fantasia,
+                      }))}
+                      isClearable
+                    />
                   </div>
 
                   {/* Data de venda */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Data de venda <span className="text-hotPink">*</span>
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Data de venda <span className={styles.novaVendaLabelRequired}>*</span>
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
+                        <button
                           className={cn(
-                            "w-full justify-start text-left font-normal border-neonPurple bg-darkPurple text-textMain",
-                            !formData.dataVenda && "text-textSecondary"
+                            "theme-input",
+                            styles.novaVendaDateInput,
+                            !formData.dataVenda && styles.novaVendaTextSecondary
                           )}
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          <CalendarIcon className={styles.novaVendaCalendarIcon} />
                           {formData.dataVenda ? (
                             format(formData.dataVenda, "dd/MM/yyyy", { locale: ptBR })
                           ) : (
                             <span>Selecione uma data</span>
                           )}
-                        </Button>
+                        </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 vendas-popover-content z-[10003]">
+                      <PopoverContent className="theme-modal">
                         <Calendar
                           mode="single"
                           selected={formData.dataVenda}
                           onSelect={(date) => handleInputChange('dataVenda', date)}
                           initialFocus
-                          className="vendas-calendar"
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
 
                   {/* Categoria financeira */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Categoria financeira <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" />
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Categoria financeira <HelpCircle className={styles.novaVendaIcon} />
                     </Label>
-                    <Select
-                      value={formData.categoriaFinanceira}
-                      onValueChange={(value) => handleInputChange('categoriaFinanceira', value)}
-                    >
-                      <SelectTrigger className="vendas-input">
-                        <SelectValue placeholder="Selecione a categoria" />
-                      </SelectTrigger>
-                                             <SelectContent className="vendas-dropdown z-[10002]">
-                         {formDataFromAPI.categorias.map((categoria) => (
-                           <SelectItem key={categoria.id} value={categoria.id.toString()} className="text-textMain hover:bg-neonPurple">
-                             {categoria.nome}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                    </Select>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione a categoria"
+                      value={
+                        formDataFromAPI.categorias.find(
+                          (categoria) => categoria.id.toString() === formData.categoriaFinanceira
+                        )
+                          ? {
+                              value: formData.categoriaFinanceira,
+                              label: formDataFromAPI.categorias.find(
+                                (categoria) => categoria.id.toString() === formData.categoriaFinanceira
+                              )?.nome,
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "categoriaFinanceira",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={formDataFromAPI.categorias.map((categoria) => ({
+                        value: categoria.id.toString(),
+                        label: categoria.nome,
+                      }))}
+                      isClearable
+                    />
                   </div>
 
                   {/* Sub-categoria */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Sub-categoria <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" />
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Sub-categoria <HelpCircle className={styles.novaVendaIcon} />
                     </Label>
-                    <Select
-                      value={formData.subCategoria}
-                      onValueChange={(value) => handleInputChange('subCategoria', value)}
-                    >
-                      <SelectTrigger className="vendas-input">
-                        <SelectValue placeholder="Selecione a sub-categoria" />
-                      </SelectTrigger>
-                                             <SelectContent className="vendas-dropdown z-[10002]">
-                         {formDataFromAPI.subCategorias.map((subCategoria) => (
-                           <SelectItem key={subCategoria.id} value={subCategoria.id.toString()} className="text-textMain hover:bg-neonPurple">
-                             {subCategoria.nome}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                   </div>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione a sub-categoria"
+                      value={
+                        formDataFromAPI.subCategorias.find(
+                          (subCategoria) => subCategoria.id.toString() === formData.subCategoria
+                        )
+                          ? {
+                              value: formData.subCategoria,
+                              label: formDataFromAPI.subCategorias.find(
+                                (subCategoria) => subCategoria.id.toString() === formData.subCategoria
+                              )?.nome,
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "subCategoria",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={formDataFromAPI.subCategorias.map((subCategoria) => ({
+                        value: subCategoria.id.toString(),
+                        label: subCategoria.nome,
+                      }))}
+                      isClearable
+                    />
+                  </div>
 
-                   {/* Centro de custo */}
-                   <div className="space-y-2">
-                     <Label className="text-sm font-medium text-textMain">
-                       Centro de custo <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" />
-                     </Label>
-                     <Select
-                       value={formData.centroCusto}
-                       onValueChange={(value) => handleInputChange('centroCusto', value)}
-                     >
-                       <SelectTrigger className="vendas-input">
-                         <SelectValue placeholder="Selecione o centro de custo" />
-                       </SelectTrigger>
-                       <SelectContent className="vendas-dropdown z-[10002]">
-                         {formDataFromAPI.centrosCusto.map((centro) => (
-                           <SelectItem key={centro.id} value={centro.id.toString()} className="text-textMain hover:bg-neonPurple">
-                             {centro.nome}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                   </div>
+                  {/* Centro de custo */}
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Centro de custo <HelpCircle className={styles.novaVendaIcon} />
+                    </Label>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione o centro de custo"
+                      value={
+                        formDataFromAPI.centrosCusto.find(
+                          (centro) => centro.id.toString() === formData.centroCusto
+                        )
+                          ? {
+                              value: formData.centroCusto,
+                              label: formDataFromAPI.centrosCusto.find(
+                                (centro) => centro.id.toString() === formData.centroCusto
+                              )?.nome,
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "centroCusto",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={formDataFromAPI.centrosCusto.map((centro) => ({
+                        value: centro.id.toString(),
+                        label: centro.nome,
+                      }))}
+                      isClearable
+                    />
+                  </div>
 
-                   {/* Vendedor responsável */}
-                   <div className="space-y-2">
-                     <Label className="text-sm font-medium text-textMain">Vendedor responsável</Label>
-                     <Select
-                       value={formData.vendedor}
-                       onValueChange={(value) => handleInputChange('vendedor', value)}
-                     >
-                       <SelectTrigger className="vendas-input">
-                         <SelectValue placeholder="Selecione o vendedor" />
-                       </SelectTrigger>
-                       <SelectContent className="vendas-dropdown z-[10002]">
-                         {formDataFromAPI.users.map((user) => (
-                           <SelectItem key={user.id} value={user.id.toString()} className="text-textMain hover:bg-neonPurple">
-                             {user.name}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                   </div>
+                  {/* Vendedor responsável */}
+                  <div className={cn(styles.novaVendaField, styles.novaVendaVendedorField)}>
+                    <Label className={styles.novaVendaLabel}>Vendedor responsável</Label>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione o vendedor"
+                      value={
+                        formDataFromAPI.users.find(
+                          (user) => user.id.toString() === formData.vendedor
+                        )
+                          ? {
+                              value: formData.vendedor,
+                              label: formDataFromAPI.users.find(
+                                (user) => user.id.toString() === formData.vendedor
+                              )?.name,
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "vendedor",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={formDataFromAPI.users.map((user) => ({
+                        value: user.id.toString(),
+                        label: user.name,
+                      }))}
+                      isClearable
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Seção Itens */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-textMain">Itens</h3>
+              <div className={styles.novaVendaSection}>
+                <h3 className={styles.novaVendaSectionTitle}>Itens</h3>
                 
-                <div className="bg-darkPurple border border-neonPurple p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-textSecondary">
+                <div className={styles.novaVendaCard}>
+                  <div className={styles.novaVendaCardHeader}>
+                    <span className={styles.novaVendaTextSecondary}>
                       Nenhuma tabela de preço aplicada à venda.
                     </span>
-                    <Button className="bg-primary hover:bg-primary/80 text-textMain">
-                      <Diamond className="h-4 w-4 mr-2" />
+                    <button className={styles.novaVendaButtonPrimary}>
+                      <Diamond className={styles.novaVendaIcon} />
                       Aplicar tabela de preços à venda
-                    </Button>
+                    </button>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-12 gap-2 text-sm font-medium text-textMain">
-                      <div className="col-span-3">Detalhes do item <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" /></div>
-                      <div className="col-span-2">Quantidade <span className="text-hotPink">*</span></div>
-                      <div className="col-span-2">Valor unitário <span className="text-hotPink">*</span></div>
-                      <div className="col-span-2">Total <span className="text-hotPink">*</span></div>
+                  <div className={styles.novaVendaCardContent}>
+                    <div className={styles.novaVendaTable}>
+                      <thead>
+                        <tr>
+                          <th>Detalhes do item <HelpCircle className={styles.novaVendaIcon} /></th>
+                          <th>Quantidade <span className={styles.novaVendaLabelRequired}>*</span></th>
+                          <th>Valor unitário <span className={styles.novaVendaLabelRequired}>*</span></th>
+                          <th>Total <span className={styles.novaVendaLabelRequired}>*</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+
+                        {itens.map((item, index) => (
+                          <tr key={item.id} className={styles.novaVendaTableRow}>
+                            <td>
+                              <div className={styles.novaVendaItemContainer}>
+                                <div className={styles.novaVendaItemSelect}>
+                                  <ReactSelect
+                                    className="react-select-container"
+                                    classNamePrefix="react-select"
+                                    placeholder="Selecione produto/serviço"
+                                    value={
+                                      formDataFromAPI.produtosServicos.find(
+                                        (produto) => produto.id.toString() === item.produtoServico
+                                      )
+                                        ? {
+                                            value: item.produtoServico,
+                                            label: formDataFromAPI.produtosServicos.find(
+                                              (produto) => produto.id.toString() === item.produtoServico
+                                            )?.nome,
+                                          }
+                                        : null
+                                    }
+                                    onChange={(selected) => {
+                                      handleItemChange(
+                                        item.id,
+                                        "produtoServico",
+                                        selected ? selected.value : ""
+                                      );
+                                    }}
+                                    options={formDataFromAPI.produtosServicos.map((produto) => ({
+                                      value: produto.id.toString(),
+                                      label: produto.nome,
+                                    }))}
+                                    isClearable
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsNovoProdutoServicoOpen(true)}
+                                  className={styles.novaVendaButton}
+                                  title="Adicionar novo produto/serviço"
+                                >
+                                  <Plus className={styles.novaVendaIcon} />
+                                </button>
+                              </div>
+                            </td>
+                            <td>
+                              <Input
+                                value={item.detalhes}
+                                onChange={(e) => handleItemChange(item.id, 'detalhes', e.target.value)}
+                                placeholder="Detalhes do item"
+                                className={styles.novaVendaInput}
+                              />
+                            </td>
+                            <td>
+                              <Input
+                                value={item.quantidade}
+                                onChange={(e) => handleItemChange(item.id, 'quantidade', e.target.value)}
+                                placeholder="1,00"
+                                className={styles.novaVendaInput}
+                              />
+                            </td>
+                            <td>
+                              <div className={styles.novaVendaInputContainer}>
+                                <Input
+                                  value={item.valorUnitario}
+                                  onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
+                                  placeholder="0,00"
+                                  className={cn(styles.novaVendaInput, styles.novaVendaCurrencyInput)}
+                                />
+                                <span className={styles.novaVendaCurrencySymbol}>R$</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className={styles.novaVendaTotalContainer}>
+                                <Input
+                                  value={item.total}
+                                  onChange={(e) => handleItemChange(item.id, 'total', e.target.value)}
+                                  placeholder="0,00"
+                                  className={cn(styles.novaVendaInput, styles.novaVendaCurrencyInput)}
+                                  readOnly
+                                />
+                                <span className={styles.novaVendaCurrencySymbol}>R$</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
                     </div>
 
-                    {itens.map((item, index) => (
-                      <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
-                        <div className="col-span-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1">
-                              <Select
-                                value={item.produtoServico}
-                                onValueChange={(value) => handleItemChange(item.id, 'produtoServico', value)}
-                              >
-                                <SelectTrigger className="vendas-input">
-                                  <SelectValue placeholder="Selecione produto/serviço" />
-                                </SelectTrigger>
-                                <SelectContent className="vendas-dropdown z-[10002]">
-                                  {formDataFromAPI.produtosServicos.map((produto) => (
-                                    <SelectItem key={produto.id} value={produto.id.toString()} className="text-textMain hover:bg-neonPurple">
-                                      {produto.nome}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsNovoProdutoServicoOpen(true)}
-                              className="h-6 w-6 p-0 text-hotPink hover:bg-hotPink/10 hover:text-textMain flex-shrink-0"
-                              title="Adicionar novo produto/serviço"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="col-span-3">
-                          <Input
-                            value={item.detalhes}
-                            onChange={(e) => handleItemChange(item.id, 'detalhes', e.target.value)}
-                            placeholder="Detalhes do item"
-                            className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <Input
-                            value={item.quantidade}
-                            onChange={(e) => handleItemChange(item.id, 'quantidade', e.target.value)}
-                            placeholder="1,00"
-                            className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <div className="relative">
-                            <Input
-                              value={item.valorUnitario}
-                              onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
-                              placeholder="0,00"
-                              className="pl-8 bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                            />
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">R$</span>
-                          </div>
-                        </div>
-                        <div className="col-span-2">
-                          <div className="relative">
-                            <Input
-                              value={item.total}
-                              onChange={(e) => handleItemChange(item.id, 'total', e.target.value)}
-                              placeholder="0,00"
-                              className="pl-8 pr-8 bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                              readOnly
-                            />
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">R$</span>
-                            <Diamond className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <Button
-                      variant="outline"
+                    <button
                       onClick={addItem}
-                      className="w-full border-dashed border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain"
+                      className={styles.novaVendaAddItemButton}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className={styles.novaVendaIcon} />
                       Adicionar nova linha
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
 
               {/* Seção Configurações de recorrência (apenas para venda recorrente) */}
               {formData.tipoVenda === "venda-recorrente" && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-textMain">Configurações de recorrência</h3>
+                <div className={styles.novaVendaSection}>
+                  <h3 className={styles.novaVendaSectionTitle}>Configurações de recorrência</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className={styles.novaVendaGrid2Colunas}>
                     {/* Tipo de intervalo */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">
-                        Tipo de intervalo <span className="text-hotPink">*</span>
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>
+                        Tipo de intervalo <span className={styles.novaVendaLabelRequired}>*</span>
                       </Label>
-                      <Select
-                        value={formData.tipoIntervalo}
-                        onValueChange={(value) => handleInputChange('tipoIntervalo', value)}
-                      >
-                        <SelectTrigger className="vendas-input">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="vendas-dropdown z-[10002]">
-                          <SelectItem value="dias" className="text-textMain hover:bg-neonPurple">Dias</SelectItem>
-                          <SelectItem value="semanas" className="text-textMain hover:bg-neonPurple">Semanas</SelectItem>
-                          <SelectItem value="meses" className="text-textMain hover:bg-neonPurple">Meses</SelectItem>
-                          <SelectItem value="anos" className="text-textMain hover:bg-neonPurple">Anos</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <ReactSelect
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        placeholder="Selecione o tipo"
+                        value={
+                          formData.tipoIntervalo
+                            ? {
+                                value: formData.tipoIntervalo,
+                                label: formData.tipoIntervalo === "dias" ? "Dias" :
+                                       formData.tipoIntervalo === "semanas" ? "Semanas" :
+                                       formData.tipoIntervalo === "meses" ? "Meses" :
+                                       formData.tipoIntervalo === "anos" ? "Anos" : formData.tipoIntervalo
+                              }
+                            : null
+                        }
+                        onChange={(selected) => {
+                          handleInputChange(
+                            "tipoIntervalo",
+                            selected ? selected.value : ""
+                          );
+                        }}
+                        options={[
+                          { value: "dias", label: "Dias" },
+                          { value: "semanas", label: "Semanas" },
+                          { value: "meses", label: "Meses" },
+                          { value: "anos", label: "Anos" }
+                        ]}
+                        isClearable
+                      />
                     </div>
 
                     {/* Intervalo */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">
-                        Intervalo <span className="text-hotPink">*</span>
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>
+                        Intervalo <span className={styles.novaVendaLabelRequired}>*</span>
                       </Label>
                       <Input
                         value={formData.intervalo}
                         onChange={(e) => handleInputChange('intervalo', e.target.value)}
                         placeholder="1"
-                        className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
+                        className={styles.novaVendaInput}
                       />
                     </div>
 
                     {/* Término da recorrência */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">
-                        Término da recorrência <span className="text-hotPink">*</span>
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>
+                        Término da recorrência <span className={styles.novaVendaLabelRequired}>*</span>
                       </Label>
-                      <Select
-                        value={formData.terminoRecorrencia}
-                        onValueChange={(value) => {
+                      <ReactSelect
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        placeholder="Selecione o término"
+                        value={
+                          formData.terminoRecorrencia
+                            ? {
+                                value: formData.terminoRecorrencia,
+                                label: formData.terminoRecorrencia === "indeterminado" ? "Indeterminado" :
+                                       formData.terminoRecorrencia === "personalizado" ? "Personalizado" : formData.terminoRecorrencia
+                              }
+                            : null
+                        }
+                        onChange={(selected) => {
+                          const value = selected ? selected.value : "";
                           handleInputChange('terminoRecorrencia', value);
                           if (value === 'indeterminado') {
                             handleInputChange('indeterminado', true);
@@ -859,62 +934,58 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                             handleInputChange('indeterminado', false);
                           }
                         }}
-                      >
-                        <SelectTrigger className="vendas-input">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="vendas-dropdown z-[10002]">
-                          <SelectItem value="indeterminado" className="text-textMain hover:bg-neonPurple">Indeterminado</SelectItem>
-                          <SelectItem value="personalizado" className="text-textMain hover:bg-neonPurple">Personalizado</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        options={[
+                          { value: "indeterminado", label: "Indeterminado" },
+                          { value: "personalizado", label: "Personalizado" }
+                        ]}
+                        isClearable
+                      />
                     </div>
 
                     {/* Total de ciclos (apenas se não for indeterminado) */}
                     {!formData.indeterminado && (
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-textMain">
-                          Total de ciclos <span className="text-hotPink">*</span>
+                      <div className={styles.novaVendaField}>
+                        <Label className={styles.novaVendaLabel}>
+                          Total de ciclos <span className={styles.novaVendaLabelRequired}>*</span>
                         </Label>
                         <Input
                           value={formData.totalCiclos}
                           onChange={(e) => handleInputChange('totalCiclos', e.target.value)}
                           placeholder="12"
-                          className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
+                          className={styles.novaVendaInput}
                         />
                       </div>
                     )}
 
                     {/* Data de término (apenas se for personalizado) */}
                     {formData.terminoRecorrencia === 'personalizado' && (
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-textMain">
+                      <div className={styles.novaVendaField}>
+                        <Label className={styles.novaVendaLabel}>
                           Data de término
                         </Label>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
+                            <button
                               className={cn(
-                                "w-full justify-start text-left font-normal border-neonPurple bg-darkPurple text-textMain",
-                                !formData.dataTermino && "text-textSecondary"
+                                "theme-input",
+                                styles.novaVendaDateInput,
+                                !formData.dataTermino && styles.novaVendaTextSecondary
                               )}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <CalendarIcon className={styles.novaVendaCalendarIcon} />
                               {formData.dataTermino ? (
                                 format(formData.dataTermino, "dd/MM/yyyy", { locale: ptBR })
                               ) : (
                                 <span>Selecione uma data</span>
                               )}
-                            </Button>
+                            </button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 vendas-popover-content z-[10003]">
+                          <PopoverContent className="theme-modal">
                             <Calendar
                               mode="single"
                               selected={formData.dataTermino || undefined}
                               onSelect={(date) => handleInputChange('dataTermino', date)}
                               initialFocus
-                              className="vendas-calendar"
                             />
                           </PopoverContent>
                         </Popover>
@@ -922,9 +993,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                     )}
 
                     {/* Vigência total */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">Vigência total</Label>
-                      <div className="bg-neonPurple text-textMain px-3 py-2 rounded text-sm font-medium">
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>Vigência total</Label>
+                      <div className={styles.novaVendaInfoBox}>
                         {formData.indeterminado ? "Indeterminado" : `${formData.totalCiclos || 0} ciclos`}
                       </div>
                     </div>
@@ -933,34 +1004,34 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
               )}
 
               {/* Seção Valor */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-textMain">Valor</h3>
+              <div className={styles.novaVendaSection}>
+                <h3 className={styles.novaVendaSectionTitle}>Valor</h3>
                 
-                <div className="space-y-4">
+                <div className={styles.novaVendaValueContainer}>
                   {/* Desconto */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">Desconto</Label>
-                    <div className="flex items-center gap-2">
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>Desconto</Label>
+                    <div className={styles.novaVendaDiscountContainer}>
                       <ToggleGroup
                         type="single"
                         value={formData.descontoTipo}
                         onValueChange={(value) => value && handleInputChange('descontoTipo', value)}
-                        className="bg-darkPurple border-neonPurple"
+                        className={styles.novaVendaToggleGroup}
                       >
-                        <ToggleGroupItem value="reais" className="px-3 py-1 text-textMain data-[state=on]:bg-neonPurple data-[state=on]:text-textMain">
+                        <ToggleGroupItem value="reais" className={styles.novaVendaToggleItem}>
                           R$
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="percentual" className="px-3 py-1 text-textMain data-[state=on]:bg-neonPurple data-[state=on]:text-textMain">
+                        <ToggleGroupItem value="percentual" className={styles.novaVendaToggleItem}>
                           %
                         </ToggleGroupItem>
                       </ToggleGroup>
-                      <div className="relative">
+                      <div className={styles.novaVendaDiscountInputContainer}>
                         <Input
                           value={formData.descontoValor}
                           onChange={(e) => handleInputChange('descontoValor', e.target.value)}
-                          className="w-32 pl-8 bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
+                          className={styles.novaVendaDiscountInput}
                         />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">
+                        <span className={styles.novaVendaDiscountSymbol}>
                           {formData.descontoTipo === 'reais' ? 'R$' : '%'}
                         </span>
                       </div>
@@ -968,17 +1039,17 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                   </div>
 
                   {/* Total da venda */}
-                  <div className="bg-darkPurple border border-neonPurple p-4 rounded-lg">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between text-textMain">
+                  <div className={styles.novaVendaTotalBox}>
+                    <div className={styles.novaVendaTotalContent}>
+                      <div className={styles.novaVendaTotalRow}>
                         <span>Itens (R$)</span>
                         <span>{calcularTotalItens().toFixed(2).replace('.', ',')}</span>
                       </div>
-                      <div className="flex justify-between text-hotPink">
+                      <div className={styles.novaVendaTotalRowDiscount}>
                         <span>- Desconto (R$)</span>
                         <span>{calcularDesconto().toFixed(2).replace('.', ',')}</span>
                       </div>
-                      <div className="flex justify-between font-semibold text-lg border-t border-neonPurple pt-2 text-textMain">
+                      <div className={styles.novaVendaTotalRowFinal}>
                         <span>= Total (R$)</span>
                         <span>{calcularTotalFinal().toFixed(2).replace('.', ',')}</span>
                       </div>
@@ -988,345 +1059,187 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
               </div>
 
               {/* Seção Informações de pagamento */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-textMain">Informações de pagamento</h3>
+              <div className={styles.novaVendaSection}>
+                <h3 className={styles.novaVendaSectionTitle}>Informações de pagamento</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">Forma de pagamento</Label>
-                    <Select
-                      value={formData.formaPagamento}
-                      onValueChange={(value) => handleInputChange('formaPagamento', value)}
-                    >
-                      <SelectTrigger className="vendas-input">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent className="vendas-dropdown z-[10002]">
-                        <SelectItem value="dinheiro" className="text-textMain hover:bg-neonPurple">Dinheiro</SelectItem>
-                        <SelectItem value="pix" className="text-textMain hover:bg-neonPurple">PIX</SelectItem>
-                        <SelectItem value="cartao" className="text-textMain hover:bg-neonPurple">Cartão</SelectItem>
-                        <SelectItem value="boleto" className="text-textMain hover:bg-neonPurple">Boleto</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className={styles.novaVendaPaymentGrid}>
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>Forma de pagamento</Label>
+                    <ReactSelect
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      placeholder="Selecione a forma de pagamento"
+                      value={
+                        formData.formaPagamento
+                          ? {
+                              value: formData.formaPagamento,
+                              label: formData.formaPagamento === "dinheiro" ? "Dinheiro" :
+                                     formData.formaPagamento === "pix" ? "PIX" :
+                                     formData.formaPagamento === "cartao" ? "Cartão" :
+                                     formData.formaPagamento === "boleto" ? "Boleto" : formData.formaPagamento
+                            }
+                          : null
+                      }
+                      onChange={(selected) => {
+                        handleInputChange(
+                          "formaPagamento",
+                          selected ? selected.value : ""
+                        );
+                      }}
+                      options={[
+                        { value: "dinheiro", label: "Dinheiro" },
+                        { value: "pix", label: "PIX" },
+                        { value: "cartao", label: "Cartão" },
+                        { value: "boleto", label: "Boleto" }
+                      ]}
+                      isClearable
+                    />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Conta de recebimento <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" />
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Conta de recebimento <HelpCircle className={styles.novaVendaIcon} />
                     </Label>
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={formData.contaRecebimento}
-                        onValueChange={(value) => handleInputChange('contaRecebimento', value)}
-                      >
-                        <SelectTrigger className="vendas-input">
-                          <SelectValue placeholder="Selecione a conta" />
-                        </SelectTrigger>
-                        <SelectContent className="vendas-dropdown z-[10002]">
-                          {/* Contas ERP */}
-                          {formDataFromAPI.contas
+                    <div className={styles.novaVendaAccountContainer}>
+                      <ReactSelect
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        placeholder="Selecione a conta"
+                        value={
+                          formData.contaRecebimento
+                            ? (() => {
+                                const isApi = formData.contaRecebimento.startsWith('api:');
+                                const isErp = formData.contaRecebimento.startsWith('erp:');
+                                if (isErp) {
+                                  const contaId = parseInt(formData.contaRecebimento.split(':')[1]);
+                                  const conta = formDataFromAPI.contas.find(c => c.id === contaId);
+                                  return conta ? {
+                                    value: formData.contaRecebimento,
+                                    label: conta.descricao_banco
+                                  } : null;
+                                } else if (isApi) {
+                                  const contaId = parseInt(formData.contaRecebimento.split(':')[1]);
+                                  const conta = contasApi.find(c => c.id === contaId);
+                                  return conta ? {
+                                    value: formData.contaRecebimento,
+                                    label: conta.descricao_banco
+                                  } : null;
+                                }
+                                return null;
+                              })()
+                            : null
+                        }
+                        onChange={(selected) => {
+                          handleInputChange(
+                            "contaRecebimento",
+                            selected ? selected.value : ""
+                          );
+                        }}
+                        options={[
+                          // Contas ERP
+                          ...formDataFromAPI.contas
                             .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`erp-${conta.id}`}
-                                value={`erp:${conta.id}`}
-                                className="text-textMain hover:bg-neonPurple flex justify-between items-center"
-                              >
-                                <span>{conta.descricao_banco}</span>
-                              </SelectItem>
-                            ))}
-
-                          {/* Contas API (OpenFinance) */}
-                          {contasApi
+                            .map((conta) => ({
+                              value: `erp:${conta.id}`,
+                              label: conta.descricao_banco
+                            })),
+                          // Contas API (OpenFinance)
+                          ...contasApi
                             .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`api-${conta.id}`}
-                                value={`api:${conta.id}`}
-                                className="text-textMain hover:bg-neonPurple flex justify-between items-center"
-                              >
-                                <span>{conta.descricao_banco}</span>
-                                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
-                              </SelectItem>
-                            ))}
-
-                          {formDataFromAPI.contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                           contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
-                            <div className="text-textSecondary px-2 py-1">
-                              Nenhuma conta encontrada
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <div className="w-2 h-2 bg-warning rounded-full"></div>
+                            .map((conta) => ({
+                              value: `api:${conta.id}`,
+                              label: `${conta.descricao_banco} (OpenFinance)`
+                            }))
+                        ]}
+                        isClearable
+                        noOptionsMessage={() => "Nenhuma conta encontrada"}
+                      />
+                      <div className={styles.novaVendaAccountIndicators}>
+                        <div className={styles.novaVendaAccountIndicator}></div>
+                        <div className={styles.novaVendaAccountIndicator}></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">Percentual</Label>
-                    <div className="text-sm font-medium text-textMain bg-darkPurple border border-neonPurple px-3 py-2 rounded">
-                      100 %
-                    </div>
-                  </div> */}
-
-                  {/* <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">Valor a receber</Label>
-                    <div className="relative">
-                      <Input
-                        value={formData.valorReceber}
-                        onChange={(e) => handleInputChange('valorReceber', e.target.value)}
-                        className="pl-8 bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                      />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">R$</span>
-                    </div>
-                  </div> */}
-
-                  {/* <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Condição de pagamento <span className="text-hotPink">*</span> <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" />
-                    </Label>
-                    <Select
-                      value={formData.condicaoPagamento}
-                      onValueChange={(value) => handleInputChange('condicaoPagamento', value)}
-                    >
-                      <SelectTrigger className="vendas-input">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="vendas-dropdown z-[10002]">
-                        <SelectItem value="a-vista" className="text-textMain hover:bg-neonPurple">À vista</SelectItem>
-                        <SelectItem value="30-dias" className="text-textMain hover:bg-neonPurple">30 dias</SelectItem>
-                        <SelectItem value="60-dias" className="text-textMain hover:bg-neonPurple">60 dias</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Vencimento <span className="text-hotPink">*</span> <HelpCircle className="inline h-4 w-4 ml-1 text-textSecondary" />
+                  <div className={styles.novaVendaField}>
+                    <Label className={styles.novaVendaLabel}>
+                      Vencimento <span className={styles.novaVendaLabelRequired}>*</span> <HelpCircle className={styles.novaVendaIcon} />
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
+                        <button
                           className={cn(
-                            "w-full justify-start text-left font-normal border-neonPurple bg-darkPurple text-textMain",
-                            !formData.vencimento && "text-textSecondary"
+                            "theme-input",
+                            styles.novaVendaDateInput,
+                            !formData.vencimento && styles.novaVendaTextSecondary
                           )}
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          <CalendarIcon className={styles.novaVendaCalendarIcon} />
                           {formData.vencimento ? (
                             format(formData.vencimento, "dd/MM/yyyy", { locale: ptBR })
                           ) : (
                             <span>Selecione</span>
                           )}
-                        </Button>
+                        </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 vendas-popover-content z-[10003]">
+                      <PopoverContent className="theme-modal">
                         <Calendar
                           mode="single"
                           selected={formData.vencimento}
                           onSelect={(date) => handleInputChange('vencimento', date)}
                           initialFocus
-                          className="vendas-calendar"
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
-
-                  {/* <div className="space-y-2">
-                    <Button variant="outline" className="w-full border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain">
-                      Editar parcelas
-                    </Button>
-                  </div> */}
                 </div>
               </div>
 
-              {/* Seção Boleto e E-mail */}
-              {/* <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-textMain">Boleto e E-mail</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Gerar boleto
-                    </Label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="gerarBoleto"
-                        checked={formData.gerarBoleto}
-                        onChange={(e) => handleInputChange('gerarBoleto', e.target.checked)}
-                        className="rounded border-neonPurple bg-darkPurple text-textMain"
-                      />
-                      <Label htmlFor="gerarBoleto" className="text-sm text-textMain">
-                        Gerar boleto automaticamente
-                      </Label>
-                    </div>
-                  </div>
-
-                  {formData.gerarBoleto && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">
-                        Conta corrente <span className="text-hotPink">*</span>
-                      </Label>
-                      <Input
-                        value={formData.contaCorrente}
-                        onChange={(e) => handleInputChange('contaCorrente', e.target.value)}
-                        placeholder="269127208"
-                        className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-textMain">
-                      Enviar e-mail
-                    </Label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="enviarEmail"
-                        checked={formData.enviarEmail}
-                        onChange={(e) => handleInputChange('enviarEmail', e.target.checked)}
-                        className="rounded border-neonPurple bg-darkPurple text-textMain"
-                      />
-                      <Label htmlFor="enviarEmail" className="text-sm text-textMain">
-                        Enviar e-mail com boleto
-                      </Label>
-                    </div>
-                  </div>
-
-                  {formData.enviarEmail && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">
-                        E-mail do cliente <span className="text-hotPink">*</span>
-                      </Label>
-                      <Input
-                        value={formData.clienteEmail}
-                        onChange={(e) => handleInputChange('clienteEmail', e.target.value)}
-                        placeholder="cliente@email.com"
-                        type="email"
-                        className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {(formData.gerarBoleto || formData.enviarEmail) && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-sm text-blue-800">
-                          {formData.gerarBoleto && formData.enviarEmail && 
-                            "O boleto será gerado automaticamente e enviado por e-mail para o cliente."}
-                          {formData.gerarBoleto && !formData.enviarEmail && 
-                            "O boleto será gerado automaticamente. Você pode baixá-lo após a criação da venda."}
-                          {!formData.gerarBoleto && formData.enviarEmail && 
-                            "Um e-mail será enviado para o cliente com as informações da venda."}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div> */}
 
               {/* Seções colapsáveis */}
-              <Accordion type="multiple" className="space-y-4">
-                {/* Observações de pagamento */}
-                <AccordionItem value="observacoes-pagamento" className="border border-neonPurple rounded-lg bg-darkPurple">
-                  <AccordionTrigger className="px-4 py-3 text-textMain hover:text-textSecondary">
-                    <span className="text-lg font-semibold text-textMain">Observações de pagamento</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">Observações</Label>
-                      <Textarea
-                        value={formData.observacoesPagamento}
-                        onChange={(e) => handleInputChange('observacoesPagamento', e.target.value)}
-                        placeholder="Inclua informações sobre o pagamento..."
-                        rows={3}
-                        className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                      />
-                      <p className="text-xs text-textSecondary">
-                        Inclua informações sobre o pagamento que podem ser relevantes para você e seu cliente.
-                      </p>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                {/* Informações fiscais */}
-                {/* <AccordionItem value="informacoes-fiscais" className="border border-neonPurple rounded-lg bg-darkPurple">
-                  <AccordionTrigger className="px-4 py-3 text-textMain hover:text-textSecondary">
-                    <span className="text-lg font-semibold text-textMain">Informações fiscais</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">
-                        Natureza de operação <span className="text-hotPink">*</span>
-                      </Label>
-                      <Select
-                        value={formData.naturezaOperacao}
-                        onValueChange={(value) => handleInputChange('naturezaOperacao', value)}
-                      >
-                        <SelectTrigger className="vendas-input">
-                          <SelectValue placeholder="Selecione a natureza da operação" />
-                        </SelectTrigger>
-                        <SelectContent className="vendas-dropdown z-[10002]">
-                          <SelectItem value="venda" className="text-textMain hover:bg-neonPurple">Venda</SelectItem>
-                          <SelectItem value="prestacao-servicos" className="text-textMain hover:bg-neonPurple">Prestação de Serviços</SelectItem>
-                          <SelectItem value="transferencia" className="text-textMain hover:bg-neonPurple">Transferência</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem> */}
-
-                {/* Observações complementares da nota fiscal */}
-                {/* <AccordionItem value="observacoes-fiscais" className="border border-neonPurple rounded-lg bg-darkPurple">
-                  <AccordionTrigger className="px-4 py-3 text-textMain hover:text-textSecondary">
-                    <span className="text-lg font-semibold text-textMain">Observações complementares da nota fiscal</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-textMain">Observações</Label>
-                      <Textarea
-                        value={formData.observacoesFiscais}
-                        onChange={(e) => handleInputChange('observacoesFiscais', e.target.value)}
-                        placeholder="Inclua informações relevantes para seu cliente..."
-                        rows={3}
-                        className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
-                      />
-                      <p className="text-xs text-textSecondary">
-                        Inclua informações relevantes para seu cliente. Elas aparecerão na nota fiscal, nos campos &quot;Descrição do serviço&quot; ou &quot;Informações Complementares Contribuinte&quot;, visíveis no XML, PDF e DANFE.
-                      </p>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem> */}
-              </Accordion>
+              <div className={styles.novaVendaSection}>
+                <Accordion type="multiple">
+                  {/* Observações de pagamento */}
+                  <AccordionItem value="observacoes-pagamento" className={styles.novaVendaAccordion}>
+                    <AccordionTrigger className={styles.novaVendaAccordionTrigger}>
+                      <span>Observações de pagamento</span>
+                    </AccordionTrigger>
+                    <AccordionContent className={styles.novaVendaAccordionContent}>
+                      <div className={styles.novaVendaField}>
+                        <Label className={styles.novaVendaLabel}>Observações</Label>
+                        <Textarea
+                          value={formData.observacoesPagamento}
+                          onChange={(e) => handleInputChange('observacoesPagamento', e.target.value)}
+                          placeholder="Inclua informações sobre o pagamento..."
+                          rows={3}
+                          className={styles.novaVendaTextarea}
+                        />
+                        <p className={styles.novaVendaTextSecondary}>
+                          Inclua informações sobre o pagamento que podem ser relevantes para você e seu cliente.
+                        </p>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
             </>
           )}
-            </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-3 border-t border-neonPurple bg-darkPurple mt-auto">
-            <Button variant="outline" onClick={handleClose} className="vendas-outline-btn">
+          <div className={styles.novaVendaFooter}>
+            <button onClick={handleClose} className={styles.novaVendaButtonSecondary}>
               Cancelar
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button
+            </button>
+            <div className={styles.novaVendaFooterActions}>
+              <button
                 onClick={handleSave}
                 disabled={isSaving || isLoadingFormData}
-                className="vendas-primary-btn"
+                className={styles.novaVendaButtonPrimary}
               >
-                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isSaving && <div className={styles.novaVendaLoadingSpinner}></div>}
                 {isSaving ? "Salvando..." : "Salvar"}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -1341,3 +1254,4 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
     </>
   );
 }
+

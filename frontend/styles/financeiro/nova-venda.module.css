@@ -1,0 +1,846 @@
+/* ===== ANIMAÇÕES ===== */
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* ===== OVERLAY E DRAWER PRINCIPAL ===== */
+.novaVendaOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.novaVendaOverlay.closing {
+  opacity: 0;
+}
+
+.novaVendaModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: var(--onity-color-surface);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  border-bottom: none;
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.novaVendaModal.closing {
+  animation: slideOutDown 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform: translateY(100%);
+}
+
+/* Handle para indicar que pode ser arrastado */
+.novaVendaHandle {
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  position: relative;
+}
+
+.novaVendaHandle:active {
+  cursor: grabbing;
+}
+
+.novaVendaHandle::before {
+  content: '';
+  width: 40px;
+  height: 4px;
+  background: var(--onity-icon-secondary);
+  border-radius: 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.novaVendaHandle:hover::before {
+  opacity: 1;
+  background: var(--onity-color-primary);
+}
+
+/* ===== HEADER ===== */
+.novaVendaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.novaVendaTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.novaVendaCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaVendaCloseButton:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+/* ===== CONTENT ===== */
+.novaVendaContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ===== SECTIONS ===== */
+.novaVendaSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaVendaSectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+/* ===== FIELDS ===== */
+.novaVendaField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.novaVendaLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.novaVendaLabelRequired {
+  color: var(--onity-color-error);
+}
+
+.novaVendaInput {
+  width: 96%;
+  padding: 6px 12px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 6px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  max-height: 23px;
+  transition: all 0.2s ease;
+}
+
+.novaVendaInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.15);
+}
+
+.novaVendaInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.novaVendaTextarea {
+  width: 97%;
+  min-height: 80px;
+  padding: 12px 16px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 8px;
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.novaVendaTextarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.15);
+}
+
+.novaVendaTextarea::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* ===== GRID LAYOUTS ===== */
+.novaVendaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.novaVendaGrid2Colunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.novaVendaGrid3Colunas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.novaVendaGrid4Colunas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* ===== FLEX LAYOUTS ===== */
+.novaVendaFlexRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.novaVendaFlexRow > div {
+  flex: 1;
+}
+
+/* ===== SELECTS ===== */
+.novaVendaSelectTrigger {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.novaVendaSelectTrigger:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.novaVendaSelectContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-med);
+  z-index: 10002;
+}
+
+.novaVendaSelectItem {
+  padding: 12px 16px;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaVendaSelectItem:hover {
+  background: var(--onity-color-bg);
+}
+
+/* ===== BUTTONS ===== */
+.novaVendaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaVendaButton:hover {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+}
+
+.novaVendaButtonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.novaVendaButtonPrimary:hover {
+  background: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+}
+
+.novaVendaButtonSecondary {
+  background: transparent;
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.novaVendaButtonSecondary:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* ===== CALENDAR ===== */
+.novaVendaCalendarWrapper {
+  position: relative;
+}
+
+.novaVendaCalendarTrigger {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.novaVendaCalendarTrigger:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.novaVendaCalendarIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+.novaVendaCalendarDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-med);
+  z-index: 10003;
+  margin-top: 4px;
+}
+
+/* ===== ACCORDION ===== */
+.novaVendaAccordion {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-bg);
+}
+
+.novaVendaAccordionTrigger {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  color: var(--onity-color-text);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.novaVendaAccordionTrigger:hover {
+  background: var(--onity-color-surface);
+}
+
+.novaVendaAccordionContent {
+  padding: 0 16px 16px 16px;
+}
+
+/* ===== LOADING ===== */
+.novaVendaLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--onity-icon-secondary);
+}
+
+.novaVendaLoadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--onity-color-border);
+  border-top: 2px solid var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== FOOTER ===== */
+.novaVendaFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.novaVendaFooterActions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .novaVendaGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .novaVendaGrid2Colunas {
+    grid-template-columns: 1fr;
+  }
+  
+  .novaVendaGrid3Colunas {
+    grid-template-columns: 1fr;
+  }
+  
+  .novaVendaGrid4Colunas {
+    grid-template-columns: 1fr;
+  }
+  
+  .novaVendaFlexRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .novaVendaContent {
+    padding: 16px;
+    gap: 24px;
+  }
+  
+  .novaVendaHeader {
+    padding: 16px;
+  }
+  
+  .novaVendaFooter {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .novaVendaFooterActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .novaVendaFooterActions .novaVendaButton {
+    flex: 1;
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+.novaVendaTextSecondary {
+  color: var(--onity-icon-secondary);
+}
+
+.novaVendaTextError {
+  color: var(--onity-color-error);
+}
+
+.novaVendaTextSuccess {
+  color: var(--onity-color-success);
+}
+
+.novaVendaTextWarning {
+  color: var(--onity-color-warning);
+}
+
+.novaVendaTextInfo {
+  color: var(--onity-color-info);
+}
+
+/* ===== CUSTOM COMPONENTS ===== */
+.novaVendaToggleGroup {
+  display: flex;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  overflow: hidden;
+}
+
+.novaVendaToggleItem {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaVendaToggleItem:hover {
+  background: var(--onity-color-surface);
+}
+
+.novaVendaToggleItem[data-state="on"] {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.novaVendaToggleItemActive {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.novaVendaCard {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  padding: 16px;
+}
+
+.novaVendaCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.novaVendaCardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.novaVendaCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.novaVendaTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.novaVendaTable th,
+.novaVendaTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.novaVendaTable th {
+  background: var(--onity-color-bg);
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.novaVendaTable td {
+  color: var(--onity-color-text);
+}
+
+.novaVendaTableRow:hover {
+  background: var(--onity-color-bg);
+}
+
+/* ===== ICONS ===== */
+.novaVendaIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+.novaVendaIconPrimary {
+  color: var(--onity-color-primary);
+}
+
+.novaVendaIconError {
+  color: var(--onity-color-error);
+}
+
+.novaVendaIconSuccess {
+  color: var(--onity-color-success);
+}
+
+.novaVendaIconWarning {
+  color: var(--onity-color-warning);
+}
+
+.novaVendaIconInfo {
+  color: var(--onity-color-info);
+}
+
+/* ===== VALUE SECTION ===== */
+.novaVendaValueContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaVendaDiscountContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.novaVendaDiscountInputContainer {
+  position: relative;
+}
+
+.novaVendaDiscountInput {
+  width: 100px;
+  padding-left: 32px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 7px;
+  max-height: 24px;
+}
+
+.novaVendaDiscountSymbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--onity-icon-secondary);
+}
+
+.novaVendaTotalBox {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.novaVendaTotalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.novaVendaTotalRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--onity-color-text);
+}
+
+.novaVendaTotalRowDiscount {
+  display: flex;
+  justify-content: space-between;
+  color: var(--onity-color-error);
+}
+
+.novaVendaTotalRowFinal {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 18px;
+  border-top: 1px solid var(--onity-color-primary);
+  padding-top: 8px;
+  color: var(--onity-color-text);
+}
+
+/* ===== PAYMENT SECTION ===== */
+.novaVendaPaymentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.novaVendaAccountContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.novaVendaApiBadge {
+  margin-left: 8px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(var(--onity-color-primary-rgb), 0.2);
+  color: var(--onity-color-primary);
+  border: 1px solid rgba(var(--onity-color-primary-rgb), 0.4);
+}
+
+.novaVendaNoAccountsMessage {
+  color: var(--onity-icon-secondary);
+  padding: 8px;
+}
+
+.novaVendaAccountIndicators {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.novaVendaAccountIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--onity-color-primary);
+}
+
+.novaVendaAccountIndicator:last-child {
+  background: var(--onity-color-warning);
+}
+
+/* ===== ADD ITEM BUTTON ===== */
+.novaVendaAddItemButton {
+  width: 100%;
+  border: 2px dashed var(--onity-color-primary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaVendaAddItemButton:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-text);
+}
+
+/* ===== INFO BOX ===== */
+.novaVendaInfoBox {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-text);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ===== INPUT CONTAINER ===== */
+/* Classes removidas - input do número da venda agora é simples */
+
+/* ===== CUSTOM DATE INPUT STYLES ===== */
+.novaVendaDateInput {
+  min-height: 39px !important; /* 42px - 2px = 40px */
+  border: 2px solid var(--onity-color-border) !important;
+  border-radius: 5px !important; /* 4px + 1px = 5px */
+}
+
+.novaVendaDateInput:focus {
+  border-color: var(--onity-color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15) !important;
+}
+
+/* ===== VENDEDOR RESPONSÁVEL ===== */
+.novaVendaVendedorField {
+  margin-top: 4px;
+}
+
+/* ===== ITEMS SECTION ===== */
+.novaVendaItemContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.novaVendaItemSelect {
+  flex: 1;
+}
+
+.novaVendaInputContainer {
+  position: relative;
+}
+
+.novaVendaTotalContainer {
+  position: relative;
+}
+
+.novaVendaCurrencySymbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-40%);
+  font-size: 14px;
+  color: var(--onity-icon-secondary);
+  pointer-events: none;
+}
+
+.novaVendaCurrencyInput {
+  text-align: right;
+  padding-right: 12px;
+}
+
+/* Classe removida - ícone do diamante não é mais usado */
