@@ -14,9 +14,6 @@ import { Download, FileText, Info } from "lucide-react";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
-// Função cn para combinar classes CSS
-const cn = (...classes) => classes.filter(Boolean).join(' ');
-
 export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
   const handleDownload = async (filename, displayName) => {
     try {
@@ -40,10 +37,10 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn(styles.downloadPlanilhasModal, "max-w-2xl max-h-[90vh] overflow-y-auto backdrop-blur-sm")}>
+      <DialogContent className={styles.downloadPlanilhasModal}>
         <DialogHeader>
-          <DialogTitle className={cn(styles.downloadPlanilhasTitle, "flex items-center gap-2")}>
-            <FileText className={cn(styles.downloadPlanilhasIcon, "h-5 w-5")} />
+          <DialogTitle className={styles.downloadPlanilhasTitle}>
+            <FileText className={styles.downloadPlanilhasIcon} />
             Download de Planilhas
           </DialogTitle>
           <DialogDescription className={styles.downloadPlanilhasDescription}>
@@ -51,22 +48,22 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className={styles.downloadPlanilhasContainer}>
           {/* Planilha Modelo */}
           <Card className={styles.downloadPlanilhasCardModelo}>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <FileText className={cn(styles.downloadPlanilhasIconModelo, "h-5 w-5 mt-0.5")} />
-                <div className="flex-1">
-                  <h4 className={cn(styles.downloadPlanilhasCardTitle, "font-medium mb-2")}>
+            <CardContent className={styles.downloadPlanilhasCardContent}>
+              <div className={styles.downloadPlanilhasCardInner}>
+                <FileText className={styles.downloadPlanilhasCardIconModelo} />
+                <div className={styles.downloadPlanilhasCardFlex1}>
+                  <h4 className={styles.downloadPlanilhasCardTitle}>
                     Planilha Modelo
                   </h4>
-                  <p className={cn(styles.downloadPlanilhasCardText, "text-sm mb-3")}>
+                  <p className={styles.downloadPlanilhasCardText}>
                     Template em branco com as colunas corretas para importar contas.
                     Use esta planilha como base para criar seus próprios dados.
                   </p>
-                  <div className={cn(styles.downloadPlanilhasCardText, "flex items-center gap-2 text-xs")}>
-                    <Info className="h-3 w-3" />
+                  <div className={styles.downloadPlanilhasFileInfo}>
+                    <Info className={styles.downloadPlanilhasFileInfoIcon} />
                     <span>Arquivo: planilha-modelo-contas.xlsx</span>
                   </div>
                 </div>
@@ -76,7 +73,7 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
                   onClick={() => handleDownload('planilha-modelo-contas.xlsx', 'Planilha Modelo')}
                   className={styles.downloadPlanilhasBtnModelo}
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className={styles.downloadPlanilhasBtnIcon} />
                   Baixar
                 </Button>
               </div>
@@ -85,19 +82,19 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
 
           {/* Planilha Exemplo */}
           <Card className={styles.downloadPlanilhasCardExemplo}>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <FileText className={cn(styles.downloadPlanilhasIconExemplo, "h-5 w-5 mt-0.5")} />
-                <div className="flex-1">
-                  <h4 className={cn(styles.downloadPlanilhasCardTitle, "font-medium mb-2")}>
+            <CardContent className={styles.downloadPlanilhasCardContent}>
+              <div className={styles.downloadPlanilhasCardInner}>
+                <FileText className={styles.downloadPlanilhasCardIconExemplo} />
+                <div className={styles.downloadPlanilhasCardFlex1}>
+                  <h4 className={styles.downloadPlanilhasCardTitle}>
                     Planilha Exemplo
                   </h4>
-                  <p className={cn(styles.downloadPlanilhasCardText, "text-sm mb-3")}>
+                  <p className={styles.downloadPlanilhasCardText}>
                     Exemplo preenchido com dados fictícios para demonstrar o formato correto.
                     Use como referência para entender como preencher a planilha modelo.
                   </p>
-                  <div className={cn(styles.downloadPlanilhasCardText, "flex items-center gap-2 text-xs")}>
-                    <Info className="h-3 w-3" />
+                  <div className={styles.downloadPlanilhasFileInfo}>
+                    <Info className={styles.downloadPlanilhasFileInfoIcon} />
                     <span>Arquivo: exemplo-planilha-contas.xlsx</span>
                   </div>
                 </div>
@@ -107,7 +104,7 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
                   onClick={() => handleDownload('exemplo-planilha-contas.xlsx', 'Planilha Exemplo')}
                   className={styles.downloadPlanilhasBtnExemplo}
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className={styles.downloadPlanilhasBtnIcon} />
                   Baixar
                 </Button>
               </div>
@@ -116,14 +113,14 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
 
           {/* Informações Adicionais */}
           <Card className={styles.downloadPlanilhasCardInfo}>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <Info className={cn(styles.downloadPlanilhasIconInfo, "h-5 w-5 mt-0.5")} />
-                <div>
-                  <h4 className={cn(styles.downloadPlanilhasCardTitle, "font-medium mb-2")}>
+            <CardContent className={styles.downloadPlanilhasCardContent}>
+              <div className={styles.downloadPlanilhasCardInner}>
+                <Info className={styles.downloadPlanilhasCardIconInfo} />
+                <div className={styles.downloadPlanilhasCardFlex1}>
+                  <h4 className={styles.downloadPlanilhasCardTitle}>
                     Como usar as planilhas
                   </h4>
-                  <ul className={cn(styles.downloadPlanilhasCardText, "text-sm space-y-1")}>
+                  <ul className={styles.downloadPlanilhasCardInfoList}>
                     <li>• <strong>Planilha Modelo:</strong> Use como base para criar seus dados</li>
                     <li>• <strong>Planilha Exemplo:</strong> Consulte para ver exemplos de preenchimento</li>
                     <li>• Mantenha as colunas na ordem correta</li>
@@ -136,7 +133,7 @@ export function DownloadPlanilhasContasModal({ isOpen, onClose }) {
           </Card>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className={styles.downloadPlanilhasFooter}>
           <Button 
             variant="outline" 
             onClick={onClose}

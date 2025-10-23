@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../components/financeiro/dialog';
-import { botao } from '../../components/financeiro/botao';
+import { Button } from './botao';
 import { AlertTriangle, Trash2 } from "lucide-react";
 import "../../styles/financeiro/confirmar-exclusao.module.css";
 

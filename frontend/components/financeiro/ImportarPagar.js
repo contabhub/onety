@@ -209,31 +209,31 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={cn(styles.importarPagarModal, "max-w-4xl max-h-[90vh] overflow-y-auto")}>
+      <DialogContent className={styles.importarPagarModal}>
         <DialogHeader>
-          <DialogTitle className={cn(styles.importarPagarTitle, "flex items-center gap-2")}>
-            <Upload className={cn(styles.importarPagarIcon, "h-5 w-5")} />
+          <DialogTitle className={styles.importarPagarTitle}>
+            <Upload className={styles.importarPagarIcon} />
             Importar Contas a Pagar
           </DialogTitle>
           <DialogDescription className={styles.importarPagarDescription}>
             Faça upload de uma planilha Excel ou CSV para importar contas a pagar.
             <br />
-            <span className={cn(styles.importarPagarDescription, "text-xs")}>
+            <span className={styles.importarPagarDescription}>
               Formatos aceitos: .xlsx, .xls, .csv (máximo 10MB)
             </span>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className={styles.importarPagarSpaceY}>
           {/* Upload Section */}
           <Card className={styles.importarPagarCard}>
             <CardHeader>
-              <CardTitle className={cn(styles.importarPagarCardTitle, "text-lg")}>1. Selecionar Arquivo</CardTitle>
+              <CardTitle className={styles.importarPagarCardTitle}>1. Selecionar Arquivo</CardTitle>
             </CardHeader>
             <CardContent>
               {!selectedFile ? (
                 <div 
-                  className={cn(styles.importarPagarUploadArea, "rounded-lg p-8 text-center transition-colors")}
+                  className={styles.importarPagarUploadArea}
                   onDragOver={(e) => {
                     e.preventDefault();
                     e.currentTarget.classList.add('border-primary', 'bg-neonPurple/20');
@@ -252,12 +252,12 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
                     }
                   }}
                 >
-                  <Upload className={cn(styles.importarPagarIcon, "h-12 w-12 mx-auto mb-4")} />
+                  <Upload className={styles.importarPagarIcon} />
                   <Label htmlFor="file-upload" className="cursor-pointer">
-                    <div className={cn(styles.importarPagarLabel, "text-lg font-medium mb-2")}>
+                    <div className={styles.importarPagarLabel}>
                       Clique para selecionar um arquivo
                     </div>
-                    <div className={cn(styles.importarPagarDescription, "text-sm")}>
+                    <div className={styles.importarPagarDescription}>
                       ou arraste e solte aqui
                     </div>
                   </Label>
@@ -267,16 +267,16 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
                     type="file"
                     accept=".xlsx,.xls,.csv"
                     onChange={handleFileSelect}
-                    className="hidden"
+                    className={styles.importarPagarHidden}
                   />
                 </div>
               ) : (
-                <div className={cn(styles.importarPagarFileSelected, "flex items-center justify-between p-4 rounded-lg")}>
-                  <div className="flex items-center gap-3">
-                    <FileText className={cn(styles.importarPagarIcon, "h-8 w-8")} />
+                <div className={styles.importarPagarFileSelected}>
+                  <div className={styles.importarPagarFlex}>
+                    <FileText className={styles.importarPagarIcon} />
                     <div>
-                      <p className={cn(styles.importarPagarLabel, "font-medium")}>{fileName}</p>
-                      <p className={cn(styles.importarPagarDescription, "text-sm")}>
+                      <p className={styles.importarPagarLabel}>{fileName}</p>
+                      <p className={styles.importarPagarDescription}>
                         {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
@@ -285,9 +285,9 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
                     variant="ghost"
                     size="sm"
                     onClick={handleRemoveFile}
-                    className="text-hotPink hover:text-hotPink/80"
+                    className={styles.importarPagarCancelBtn}
                   >
-                    <X className="h-4 w-4" />
+                    <X className={styles.importarPagarIcon} />
                   </Button>
                 </div>
               )}
@@ -298,11 +298,11 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
           {selectedFile && (
             <Card className={styles.importarPagarCard}>
               <CardHeader>
-                <CardTitle className={cn(styles.importarPagarCardTitle, "text-lg flex items-center gap-2")}>
-                  <Eye className={cn(styles.importarPagarIcon, "h-5 w-5")} />
+                <CardTitle className={styles.importarPagarCardTitle}>
+                  <Eye className={styles.importarPagarIcon} />
                   2. Visualizar Dados
                   {hasPreview && (
-                    <Badge variant="secondary" className={cn(styles.importarPagarBadge, "ml-2")}>
+                    <Badge variant="secondary" className={styles.importarPagarBadge}>
                       {totalRows} registros
                     </Badge>
                   )}
@@ -310,27 +310,27 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
               </CardHeader>
               <CardContent>
                 {!hasPreview ? (
-                  <div className="text-center py-8">
-                    <p className={cn(styles.importarPagarDescription, "mb-4")}>
+                  <div className={styles.importarPagarTextCenter}>
+                    <p className={styles.importarPagarDescription}>
                       Clique em &quot;Visualizar&quot; para ver os dados do arquivo antes de importar
                     </p>
                     <Button 
                       onClick={handlePreview} 
                       disabled={isLoading}
-                      className={cn(styles.importarPagarPreviewBtn, "gap-2")}
+                      className={styles.importarPagarPreviewBtn}
                     >
                       {isLoading ? (
-                        <Loader2 className={cn(styles.importarPagarIcon, "h-4 w-4 animate-spin")} />
+                        <Loader2 className={styles.importarPagarIcon} />
                       ) : (
-                        <Eye className={cn(styles.importarPagarIcon, "h-4 w-4")} />
+                        <Eye className={styles.importarPagarIcon} />
                       )}
                       {isLoading ? "Processando..." : "Visualizar Dados"}
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className={cn(styles.importarPagarDescription, "text-sm")}>
+                  <div className={styles.importarPagarSpaceY}>
+                    <div className={styles.importarPagarFlexBetween}>
+                      <p className={styles.importarPagarDescription}>
                         Mostrando os primeiros 5 registros de {totalRows} total
                       </p>
                       <Button 
@@ -341,35 +341,35 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
                         className={styles.importarPagarPreviewBtn}
                       >
                         {isLoading ? (
-                          <Loader2 className={cn(styles.importarPagarIcon, "h-4 w-4 animate-spin")} />
+                          <Loader2 className={styles.importarPagarIcon} />
                         ) : (
-                          <Eye className={cn(styles.importarPagarIcon, "h-4 w-4")} />
+                          <Eye className={styles.importarPagarIcon} />
                         )}
                         Atualizar Preview
                       </Button>
                     </div>
                     
-                    <div className="overflow-x-auto">
-                      <table className={cn(styles.importarPagarTable, "w-full text-sm")}>
+                    <div className={styles.importarPagarOverflowX}>
+                      <table className={styles.importarPagarTable}>
                         <thead>
                           <tr>
-                            <th className={cn(styles.importarPagarTableHeader, "text-left p-2 font-medium")}>Vencimento</th>
-                            <th className={cn(styles.importarPagarTableHeader, "text-left p-2 font-medium")}>Pagamento</th>
-                            <th className={cn(styles.importarPagarTableHeader, "text-left p-2 font-medium")}>Valor</th>
-                            <th className={cn(styles.importarPagarTableHeader, "text-left p-2 font-medium")}>Descrição</th>
-                            <th className={cn(styles.importarPagarTableHeader, "text-left p-2 font-medium")}>Categoria</th>
-                            <th className={cn(styles.importarPagarTableHeader, "text-left p-2 font-medium")}>Cliente/Fornecedor</th>
+                            <th className={styles.importarPagarTableHeader}>Vencimento</th>
+                            <th className={styles.importarPagarTableHeader}>Pagamento</th>
+                            <th className={styles.importarPagarTableHeader}>Valor</th>
+                            <th className={styles.importarPagarTableHeader}>Descrição</th>
+                            <th className={styles.importarPagarTableHeader}>Categoria</th>
+                            <th className={styles.importarPagarTableHeader}>Cliente/Fornecedor</th>
                           </tr>
                         </thead>
                         <tbody>
                           {previewData.map((row, index) => (
                             <tr key={index} className={styles.importarPagarTableRow}>
-                              <td className={cn(styles.importarPagarTableCell, "p-2")}>{formatValue(row.Vencimento)}</td>
-                              <td className={cn(styles.importarPagarTableCell, "p-2")}>{formatValue(row.Pagamento)}</td>
-                              <td className={cn(styles.importarPagarTableCell, "p-2 font-medium")}>{formatValue(row.Valor)}</td>
-                              <td className={cn(styles.importarPagarTableCell, "p-2")}>{formatValue(row.Descrição)}</td>
-                              <td className={cn(styles.importarPagarTableCell, "p-2")}>{formatValue(row.Categoria)}</td>
-                              <td className={cn(styles.importarPagarTableCell, "p-2")}>{formatValue(row["Cliente/Fornecedor"])}</td>
+                              <td className={styles.importarPagarTableCell}>{formatValue(row.Vencimento)}</td>
+                              <td className={styles.importarPagarTableCell}>{formatValue(row.Pagamento)}</td>
+                              <td className={styles.importarPagarTableCell}>{formatValue(row.Valor)}</td>
+                              <td className={styles.importarPagarTableCell}>{formatValue(row.Descrição)}</td>
+                              <td className={styles.importarPagarTableCell}>{formatValue(row.Categoria)}</td>
+                              <td className={styles.importarPagarTableCell}>{formatValue(row["Cliente/Fornecedor"])}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -383,26 +383,25 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
 
           {/* Instructions */}
           <Card className={styles.importarPagarInstructions}>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <AlertCircle className={cn(styles.importarPagarIcon, "h-5 w-5 mt-0.5")} />
+            <CardContent>
+              <div className={styles.importarPagarFlexStart}>
                 <div>
-                  <h4 className={cn(styles.importarPagarInstructionsText, "font-medium mb-2")}>
+                  <h4 className={styles.importarPagarInstructionsText}>
                     Formato esperado da planilha:
                   </h4>
-                  <ul className={cn(styles.importarPagarInstructionsSecondary, "text-sm space-y-1")}>
-                    <li>• <strong>Vencimento:</strong> Data de vencimento (dd/mm/yyyy)</li>
-                    <li>• <strong>Pagamento:</strong> Data de pagamento (dd/mm/yyyy) - opcional</li>
-                    <li>• <strong>Valor:</strong> Valor da conta (R$ 1.234,56)</li>
-                    <li>• <strong>Categoria:</strong> Nome da categoria</li>
-                    <li>• <strong>Subcategoria:</strong> Nome da subcategoria - opcional</li>
-                    <li>• <strong>Cliente/Fornecedor:</strong> Nome do fornecedor</li>
-                    <li>• <strong>Conta:</strong> Nome da conta bancária</li>
-                    <li>• <strong>Centro de Custo:</strong> Nome do centro de custo - opcional</li>
-                    <li>• <strong>Descrição:</strong> Descrição da conta</li>
-                    <li>• <strong>Observações:</strong> Observações adicionais - opcional</li>
-                    <li>• <strong>Origem:</strong> Origem da conta - opcional</li>
-                    <li>• <strong>Situação:</strong> Situação da conta - opcional</li>
+                  <ul className={styles.importarPagarInstructionsSecondary}>
+                    <li><strong>Vencimento:</strong> Data de vencimento (dd/mm/yyyy)</li>
+                    <li><strong>Pagamento:</strong> Data de pagamento (dd/mm/yyyy) - opcional</li>
+                    <li><strong>Valor:</strong> Valor da conta (R$ 1.234,56)</li>
+                    <li><strong>Categoria:</strong> Nome da categoria</li>
+                    <li><strong>Subcategoria:</strong> Nome da subcategoria - opcional</li>
+                    <li><strong>Cliente/Fornecedor:</strong> Nome do fornecedor</li>
+                    <li><strong>Conta:</strong> Nome da conta bancária</li>
+                    <li><strong>Centro de Custo:</strong> Nome do centro de custo - opcional</li>
+                    <li><strong>Descrição:</strong> Descrição da conta</li>
+                    <li><strong>Observações:</strong> Observações adicionais - opcional</li>
+                    <li><strong>Origem:</strong> Origem da conta - opcional</li>
+                    <li><strong>Situação:</strong> Situação da conta - opcional</li>
                   </ul>
                 </div>
               </div>
@@ -410,19 +409,19 @@ export function ImportarPagar({ isOpen, onClose, onImportSuccess }) {
           </Card>
         </div>
 
-        <DialogFooter className="flex gap-2">
+        <DialogFooter className={styles.importarPagarFlex}>
           <Button variant="outline" onClick={handleClose} disabled={isImporting} className={styles.importarPagarCancelBtn}>
             Cancelar
           </Button>
           <Button 
             onClick={handleImport} 
             disabled={!selectedFile || !hasPreview || isImporting}
-            className={cn(styles.importarPagarImportBtn, "gap-2")}
+            className={styles.importarPagarImportBtn}
           >
             {isImporting ? (
-              <Loader2 className={cn(styles.importarPagarIcon, "h-4 w-4 animate-spin")} />
+              <Loader2 className={styles.importarPagarIcon} />
             ) : (
-              <CheckCircle className={cn(styles.importarPagarIcon, "h-4 w-4")} />
+              <CheckCircle className={styles.importarPagarIcon} />
             )}
             {isImporting ? "Importando..." : "Importar Dados"}
           </Button>
