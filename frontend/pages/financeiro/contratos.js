@@ -25,13 +25,6 @@ import {
   Printer,
 } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/financeiro/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -47,11 +40,7 @@ import { DetalhesContratoDrawer } from "../../components/financeiro/DetalhesCont
 import EditarContratoDrawer from "../../components/financeiro/EditarContratoDrawer";
 import { useContratos } from "../../hooks/financeiro/useContratos";
 
-// Tipos para filtros de data
-// PeriodFilter: "month" | "week" | "year" | "all"
 
-// Interface para os dados do contrato baseada na estrutura real da tabela
-// ContratoLocal: objeto com propriedades do contrato
 
 export default function ContratosPage() {
   const [selectedItems, setSelectedItems] = useState([]);
@@ -243,6 +232,22 @@ export default function ContratosPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredContratos.slice(startIndex, endIndex);
+
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
+
+  // Função para resetar página quando mudar quantidade de itens
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset para primeira página
+  };
 
   const handleSelectAll = (checked) => {
     if (checked) {
@@ -520,40 +525,6 @@ export default function ContratosPage() {
     return <p className={`${styles.animatedNumber} ${color}`}>{isLoading ? 0 : displayValue}</p>;
   };
 
-  const stats = [
-    {
-      title: "Cancelados",
-      value: totalCancelados,
-      amount: formatCurrency(valorCancelados),
-      color: "text-[#F50057]",
-      borderColor: "border-[#F50057]/30",
-      status: "cancelado",
-    },
-    {
-      title: "Inativos",
-      value: totalInativos,
-      amount: formatCurrency(valorInativos),
-      color: "text-[#FF9800]",
-      borderColor: "border-[#FF9800]/30",
-      status: "inativo",
-    },
-    {
-      title: "Ativos",
-      value: totalAtivos,
-      amount: formatCurrency(valorAtivos),
-      color: "text-[#1E88E5]",
-      borderColor: "border-[#1E88E5]/30",
-      status: "ativo",
-    },
-    {
-      title: "Todos",
-      value: totalTodos,
-      amount: formatCurrency(valorTodos),
-      color: "text-[#673AB7]",
-      borderColor: "border-[#673AB7]/30",
-      status: "todos",
-    },
-  ];
 
   // Se estiver carregando, mostra o estado de loading
   if (isLoading) {
@@ -585,15 +556,6 @@ export default function ContratosPage() {
         </div>
         <div className={styles.headerActions}>
           <Button
-            variant="outline"
-            size="sm"
-            className={styles.btnExport}
-            disabled
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Imprimir
-          </Button>
-          <Button
             size="sm"
             className={styles.btnNew}
             onClick={() => setIsNovoContratoOpen(true)}
@@ -609,30 +571,85 @@ export default function ContratosPage() {
         <StatsCardSkeleton />
       ) : (
         <div className={styles.statsGrid}>
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className={`${styles.statusCard} ${
-                statusFilter === stat.status ? styles.statusCardSelected : ""
-              }`}
-              onClick={() => handleStatusFilter(stat.status)}
-            >
-              {statusFilter === stat.status && (
-                <div className={styles.cardCheckIconWrap}>
-                  <CheckCircle className={styles.iconSelected} />
-                </div>
-              )}
-              <CardContent className={styles.cardContentPadded}>
-                <div className={styles.textCenter}>
-                  <p className={styles.textMutedSmall}>{stat.title}</p>
-                  <AnimatedNumber value={stat.value} color={stat.color} />
-                  <p className={`${styles.textAmount} ${stat.color}`}>
-                    {stat.amount}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <Card 
+            className={`${styles.statusCard} ${statusFilter === "cancelado" ? styles.statusCardCanceladoSelected : ""}`}
+            onClick={() => handleStatusFilter("cancelado")}
+          >
+            {statusFilter === "cancelado" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconCancelado} />
+              </div>
+            )}
+            <CardContent className={styles.cardContentPadded}>
+              <div className={styles.textCenter}>
+                <p className={styles.textMutedSmall}>Cancelados</p>
+                <AnimatedNumber value={totalCancelados} color={styles.textCancelado} />
+                <p className={`${styles.textAmount} ${styles.textCancelado}`}>
+                  {formatCurrency(valorCancelados)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className={`${styles.statusCard} ${statusFilter === "inativo" ? styles.statusCardInativoSelected : ""}`}
+            onClick={() => handleStatusFilter("inativo")}
+          >
+            {statusFilter === "inativo" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconInativo} />
+              </div>
+            )}
+            <CardContent className={styles.cardContentPadded}>
+              <div className={styles.textCenter}>
+                <p className={styles.textMutedSmall}>Inativos</p>
+                <AnimatedNumber value={totalInativos} color={styles.textInativo} />
+                <p className={`${styles.textAmount} ${styles.textInativo}`}>
+                  {formatCurrency(valorInativos)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className={`${styles.statusCard} ${statusFilter === "ativo" ? styles.statusCardAtivoSelected : ""}`}
+            onClick={() => handleStatusFilter("ativo")}
+          >
+            {statusFilter === "ativo" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconAtivo} />
+              </div>
+            )}
+            <CardContent className={styles.cardContentPadded}>
+              <div className={styles.textCenter}>
+                <p className={styles.textMutedSmall}>Ativos</p>
+                <AnimatedNumber value={totalAtivos} color={styles.textAtivo} />
+                <p className={`${styles.textAmount} ${styles.textAtivo}`}>
+                  {formatCurrency(valorAtivos)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className={`${styles.statusCard} ${statusFilter === "todos" ? styles.statusCardTodosSelected : ""}`}
+            onClick={() => handleStatusFilter("todos")}
+          >
+            {statusFilter === "todos" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconTodos} />
+              </div>
+            )}
+            <CardContent className={styles.cardContentPadded}>
+              <div className={styles.textCenter}>
+                <p className={styles.textMutedSmall}>Todos</p>
+                <AnimatedNumber value={totalTodos} color={styles.textTodos} />
+                <p className={`${styles.textAmount} ${styles.textTodos}`}>
+                  {formatCurrency(valorTodos)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -733,18 +750,6 @@ export default function ContratosPage() {
                 />
               </div>
             </div>
-
-            <div className={styles.filtersRight}>
-              <Button
-                variant="outline"
-                className={styles.btnSecondary}
-                disabled
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Mais filtros
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
           </div>
           
           {/* Filtros Ativos */}
@@ -757,7 +762,7 @@ export default function ContratosPage() {
                   className={styles.badgeFilter}
                   onClick={() => setStatusFilter("todos")}
                 >
-                  Status: {stats.find((s) => s.status === statusFilter)?.title}
+                  Status: {statusFilter === "ativo" ? "Ativos" : statusFilter === "inativo" ? "Inativos" : statusFilter === "cancelado" ? "Cancelados" : statusFilter}
                   <X className={styles.badgeCloseIcon} />
                 </Badge>
               )}
@@ -1011,74 +1016,70 @@ export default function ContratosPage() {
               </div>
 
               {/* Pagination */}
-              <div className={styles.paginationBar}>
-                <div className={styles.paginationLeft}>
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(value) => setItemsPerPage(Number(value))}
-                  >
-                    <SelectTrigger className={styles.perPageSelectTrigger}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={styles.selectContent}>
-                      <SelectItem value="10" className={styles.selectItem}>10</SelectItem>
-                      <SelectItem value="25" className={styles.selectItem}>25</SelectItem>
-                      <SelectItem value="50" className={styles.selectItem}>50</SelectItem>
-                      <SelectItem value="100" className={styles.selectItem}>100</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className={styles.textMutedSmall}>Registros por página</span>
-                </div>
-
-                <div className={styles.paginationCenter}>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} 
-                    disabled={currentPage === 1} 
-                    className={styles.pageNavBtn}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Anterior
-                  </Button>
-
-                  <div className={styles.pageNumbers}>
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const pageNum = i + 1;
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`${styles.pageBtn} ${
-                            currentPage === pageNum ? styles.pageBtnActive : ""
-                          }`}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
+              {filteredContratos.length > 0 && (
+                <div className={styles.pagination}>
+                  <span className={styles.paginationInfo}>
+                    Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                    {" - "}
+                    {Math.min(currentPage * itemsPerPage, filteredContratos.length)} de {filteredContratos.length}
+                  </span>
+                  <div className={styles.paginationButtons}>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      className={styles.paginationSelect}
+                      style={{ marginRight: 16 }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      aria-label="Primeira página"
+                    >
+                      {"<<"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Página anterior"
+                    >
+                      {"<"}
+                    </button>
+                    {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Próxima página"
+                    >
+                      {">"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Última página"
+                    >
+                      {">>"}
+                    </button>
                   </div>
-
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} 
-                    disabled={currentPage === totalPages} 
-                    className={styles.pageNavBtn}
-                  >
-                    Próximo
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
                 </div>
-
-                <p className={styles.textMutedSmall}>
-                  Mostrando {startIndex + 1} -{" "}
-                  {Math.min(endIndex, filteredContratos.length)} de{" "}
-                  {filteredContratos.length} registros
-                </p>
-              </div>
+              )}
             </>
           )}
         </CardContent>

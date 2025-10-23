@@ -35,15 +35,8 @@ import { Calendar } from "./calendar";
 import {
   X,
   Plus,
-  Zap,
   CalendarIcon,
-  HelpCircle,
   Loader2,
-  ChevronDown,
-  DollarSign,
-  Search,
-  Diamond,
-  Info,
   RefreshCw,
 } from "lucide-react";
 import NovoProdutoServicoDrawer from "./NovoProdutoServicoDrawer";
@@ -52,66 +45,88 @@ import { useContratos } from "../../hooks/financeiro/useContratos";
 import ReactSelect from "react-select";
 
 
-// Estilos customizados para o ReactSelect
+// Estilos customizados para o ReactSelect baseados no globals.css
 const customSelectStyles = {
   control: (provided, state) => ({
     ...provided,
-    backgroundColor: 'var(--onety-bg-dark-purple)',
-    borderColor: state.isFocused ? 'var(--onety-primary)' : 'var(--onety-neon-purple-border)',
-    borderWidth: '1px',
-    borderRadius: 'var(--onety-border-radius-sm)',
-    boxShadow: state.isFocused ? '0 0 0 3px rgba(99, 102, 241, 0.1)' : 'none',
+    backgroundColor: 'var(--onity-color-surface)',
+    border: '2px solid var(--onity-color-border)',
+    borderRadius: '5px',
     minHeight: '40px',
-    transition: 'var(--onety-transition)',
+    height: '40px',
+    boxShadow: 'none',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
     '&:hover': {
-      borderColor: 'var(--onety-primary)',
+      borderColor: 'var(--onity-color-primary)',
+      transform: 'translateY(-1px)',
+      boxShadow: '0 0 0 3px rgba(68, 84, 100, 0.1)',
     },
   }),
-  menu: (provided) => ({
+  'control--is-focused': (provided) => ({
     ...provided,
-    backgroundColor: 'var(--onety-bg-dark-purple)',
-    border: '1px solid var(--onety-neon-purple-border)',
-    borderRadius: 'var(--onety-border-radius-sm)',
-    zIndex: 'var(--onety-z-dropdown)',
-    boxShadow: 'var(--onety-shadow-lg)',
+    borderColor: 'var(--onity-color-primary)',
+    boxShadow: '0 0 0 3px rgba(68, 84, 100, 0.15)',
   }),
-  option: (provided, state) => ({
+  valueContainer: (provided) => ({
     ...provided,
-    backgroundColor: state.isFocused ? 'var(--onety-neon-purple-light)' : 'transparent',
-    color: state.isFocused ? 'var(--onety-text-main)' : 'var(--onety-text-secondary)',
-    transition: 'var(--onety-transition)',
-    '&:hover': {
-      backgroundColor: 'var(--onety-neon-purple-light)',
-      color: 'var(--onety-text-main)',
-    },
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    color: 'var(--onety-text-main)',
-  }),
-  input: (provided) => ({
-    ...provided,
-    color: 'var(--onety-text-main)',
+    padding: '0 12px',
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: 'var(--onety-text-secondary)',
+    color: 'var(--onity-color-text)',
+    opacity: '0.6',
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+    fontWeight: '500',
+  }),
+  inputContainer: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-surface)',
+    border: '1px solid var(--onity-color-border)',
+    borderRadius: '5px',
+    boxShadow: 'var(--onity-elev-high)',
+    zIndex: '1000',
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused ? 'var(--onity-color-bg)' : 'var(--onity-color-surface)',
+    color: 'var(--onity-color-text)',
+    padding: '12px 16px',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: 'var(--onity-color-bg)',
+      color: 'var(--onity-color-text)',
+    },
+  }),
+  'option--is-selected': (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-primary)',
+    color: 'var(--onity-color-primary-contrast)',
+  }),
+  'option--is-focused': (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-bg)',
+    color: 'var(--onity-color-text)',
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-border)',
   }),
   dropdownIndicator: (provided) => ({
     ...provided,
-    color: 'var(--onety-text-secondary)',
-    transition: 'var(--onety-transition)',
-    '&:hover': {
-      color: 'var(--onety-text-main)',
-    },
+    color: 'var(--onity-color-text)',
   }),
   clearIndicator: (provided) => ({
     ...provided,
-    color: 'var(--onety-text-secondary)',
-    transition: 'var(--onety-transition)',
-    '&:hover': {
-      color: 'var(--onety-error)',
-    },
+    color: 'var(--onity-color-text)',
   }),
 };
 
@@ -765,7 +780,7 @@ export default function NovoContratoDrawer({
               onClick={handleClose}
               className={styles.closeButton}
             >
-              <X className="h-4 w-4" />
+              <X className={styles.iconMedium} />
             </Button>
           </div>
 
@@ -774,7 +789,7 @@ export default function NovoContratoDrawer({
             <div className={styles.contentInner}>
             {isLoadingFormData && (
               <div className={styles.loadingContainer}>
-                <Loader2 className="h-6 w-6 animate-spin text-textMain" />
+                <Loader2 className={`${styles.iconLarge} ${styles.iconSpin}`} />
                 <span className={styles.loadingText}>Carregando dados...</span>
               </div>
             )}
@@ -792,11 +807,11 @@ export default function NovoContratoDrawer({
                       <Label className={styles.label}>
                         Número do contrato <span className={styles.required}>*</span>
                       </Label>
-                      <div className="relative">
+                      <div className={styles.relative}>
                         <Input
                           value={formData.numeroContrato}
                           onChange={(e) => handleInputChange('numeroContrato', e.target.value)}
-                          className={`${styles.input} pr-10`}
+                          className={`${styles.input} ${styles.inputWithReloadIcon}`}
                           placeholder="Digite ou gere automaticamente"
                         />
                         <Button
@@ -804,13 +819,13 @@ export default function NovoContratoDrawer({
                           size="sm"
                           onClick={gerarNumeroContratoAutomatico}
                           disabled={isGeneratingNumber}
-                          className={`${styles.buttonIcon} absolute right-1 top-1/2 -translate-y-1/2`}
+                          className={styles.reloadButton}
                           title="Gerar número automaticamente"
                         >
                           {isGeneratingNumber ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <Loader2 className={styles.reloadIcon} />
                           ) : (
-                            <RefreshCw className="h-3 w-3" />
+                            <RefreshCw className={styles.reloadIcon} />
                           )}
                         </Button>
                       </div>
@@ -824,8 +839,8 @@ export default function NovoContratoDrawer({
                       <Label className={styles.label}>
                         Cliente <span className={styles.required}>*</span>
                       </Label>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
+                      <div className={styles.flexGap2}>
+                        <div className={styles.flex1}>
                           <ReactSelect
                             options={(formDataFromAPI.clientes || []).map((cliente) => ({
                               value: cliente.id.toString(),
@@ -842,22 +857,13 @@ export default function NovoContratoDrawer({
                             noOptionsMessage={() => "Nenhum cliente encontrado"}
                           />
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={styles.buttonOutline}
-                        >
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          <Search className="h-4 w-4 mr-1" />
-                          ?
-                        </Button>
                       </div>
                     </div>
 
                     {/* Data de início */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>
-                        Data de início <span className={styles.required}>*</span> <HelpCircle className={styles.helpIcon} />
+                        Data de início <span className={styles.required}>*</span>
                       </Label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -865,7 +871,7 @@ export default function NovoContratoDrawer({
                             variant="outline"
                             className={`${styles.calendarButton} ${!formData.dataInicio ? styles.placeholder : ''}`}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
                             {formData.dataInicio ? (
                               format(formData.dataInicio, "dd/MM/yyyy", { locale: ptBR })
                             ) : (
@@ -873,7 +879,7 @@ export default function NovoContratoDrawer({
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-darkPurple border-neonPurple">
+                        <PopoverContent className={styles.popoverContent}>
                           <Calendar
                             mode="single"
                             selected={formData.dataInicio || undefined}
@@ -887,7 +893,7 @@ export default function NovoContratoDrawer({
                     {/* Data da primeira venda */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>
-                        Data da primeira venda <span className={styles.required}>*</span> <HelpCircle className={styles.helpIcon} />
+                        Data da primeira venda <span className={styles.required}>*</span> 
                       </Label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -895,7 +901,7 @@ export default function NovoContratoDrawer({
                             variant="outline"
                             className={`${styles.calendarButton} ${!formData.dataPrimeiraVenda ? styles.placeholder : ''}`}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
                             {formData.dataPrimeiraVenda ? (
                               format(formData.dataPrimeiraVenda, "dd/MM/yyyy", { locale: ptBR })
                             ) : (
@@ -903,7 +909,7 @@ export default function NovoContratoDrawer({
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-darkPurple border-neonPurple">
+                        <PopoverContent className={styles.popoverContent}>
                           <Calendar
                             mode="single"
                             selected={formData.dataPrimeiraVenda || undefined}
@@ -1008,7 +1014,7 @@ export default function NovoContratoDrawer({
                               variant="outline"
                               className={`${styles.calendarButton} ${!formData.dataTermino ? styles.placeholder : ''}`}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
                               {formData.dataTermino ? (
                                 format(formData.dataTermino, "dd/MM/yyyy", { locale: ptBR })
                               ) : (
@@ -1016,7 +1022,7 @@ export default function NovoContratoDrawer({
                               )}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className={`w-auto p-0 ${styles.bgDarkPurple} ${styles.borderNeonPurple}`}>
+                          <PopoverContent className={styles.popoverContent}>
                             <Calendar
                               mode="single"
                               selected={formData.dataTermino || undefined}
@@ -1031,7 +1037,7 @@ export default function NovoContratoDrawer({
                     {/* Vigência total */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>Vigência total</Label>
-                      <div className={`${styles.bgNeonPurple} ${styles.textMain} px-3 py-2 rounded text-sm font-medium`}>
+                      <div className={styles.infoBadge}>
                         {formData.indeterminado ? "Indeterminado" : `${formData.totalCiclos || 0} ciclos`}
                       </div>
                     </div>
@@ -1046,7 +1052,7 @@ export default function NovoContratoDrawer({
                     {/* Subcategoria de Receita */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>
-                        Subcategoria de Receita <span className={styles.required}>*</span> <HelpCircle className={styles.helpIcon} />
+                        Subcategoria de Receita <span className={styles.required}>*</span> 
                       </Label>
                       <ReactSelect
                         options={getSubCategoriasReceita().map((item) => ({
@@ -1071,7 +1077,7 @@ export default function NovoContratoDrawer({
                     {/* Centro de custo */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>
-                        Centro de custo <HelpCircle className={styles.helpIcon} />
+                        Centro de custo 
                       </Label>
                       <ReactSelect
                         options={(formDataFromAPI.centrosCusto || []).map((centro) => ({
@@ -1123,20 +1129,33 @@ export default function NovoContratoDrawer({
                       </span>
                     </div>
 
-                    <div className="space-y-4">
-                      <div className={styles.itemsGrid}>
-                        <div className="col-span-2">Produtos/Serviços <span className={styles.required}>*</span></div>
-                        <div className="col-span-2">Departamento</div>
-                        <div className="col-span-2">Detalhes do item <HelpCircle className={styles.helpIcon} /></div>
-                        <div className="col-span-2">Quantidade <span className={styles.required}>*</span></div>
-                        <div className="col-span-2">Valor unitário <span className={styles.required}>*</span></div>
-                        <div className="col-span-2">Total <span className={styles.required}>*</span></div>
+                    <div className={styles.spaceY4}>
+                      {/* Labels dos campos */}
+                      <div className={styles.itemsLabelsGrid}>
+                        <div className={styles.itemLabel}>
+                          Produtos/Serviços <span className={styles.required}>*</span>
+                        </div>
+                        <div className={styles.itemLabel}>
+                          Departamento
+                        </div>
+                        <div className={styles.itemLabel}>
+                          Detalhes do item 
+                        </div>
+                        <div className={styles.itemLabel}>
+                          Quantidade <span className={styles.required}>*</span>
+                        </div>
+                        <div className={styles.itemLabel}>
+                          Valor unitário <span className={styles.required}>*</span>
+                        </div>
+                        <div className={styles.itemLabel}>
+                          Total <span className={styles.required}>*</span>
+                        </div>
                       </div>
 
                       {itens.map((item, index) => (
                         <div key={item.id} className={styles.itemsRow}>
                           {/* Produto/Serviço */}
-                          <div className="col-span-2">
+                          <div className={styles.itemFieldContainer}>
                             <div className={styles.itemField}>
                               <div className={styles.itemFieldFlex}>
                                 <ReactSelect
@@ -1153,8 +1172,10 @@ export default function NovoContratoDrawer({
                                     ...customSelectStyles,
                                     control: (provided, state) => ({
                                       ...customSelectStyles.control(provided, state),
+                                      height: '32px',
                                       minHeight: '32px',
                                       fontSize: '12px',
+                                      border: '1px solid var(--onity-color-border)',
                                     }),
                                   }}
                                   isClearable
@@ -1170,13 +1191,13 @@ export default function NovoContratoDrawer({
                                 className={`${styles.itemFieldIcon} ${styles.itemFieldIconSmall}`}
                                 title="Adicionar novo produto/serviço"
                               >
-                                <Plus className="h-3 w-3" />
+                                <Plus className={styles.iconSmall} />
                               </Button>
                             </div>
                           </div>
 
                           {/* Departamento */}
-                          <div className="col-span-2">
+                          <div className={styles.itemFieldContainer}>
                             <div className={styles.itemField}>
                               <div className={styles.itemFieldFlex}>
                                 <ReactSelect
@@ -1193,8 +1214,10 @@ export default function NovoContratoDrawer({
                                     ...customSelectStyles,
                                     control: (provided, state) => ({
                                       ...customSelectStyles.control(provided, state),
+                                      height: '32px',
                                       minHeight: '32px',
                                       fontSize: '12px',
+                                      border: '1px solid var(--onity-color-border)',
                                     }),
                                   }}
                                   isClearable
@@ -1210,13 +1233,13 @@ export default function NovoContratoDrawer({
                                 className={`${styles.itemFieldIcon} ${styles.itemFieldIconSmall}`}
                                 title="Adicionar novo departamento"
                               >
-                                <Plus className="h-3 w-3" />
+                                <Plus className={styles.iconSmall} />
                               </Button>
                             </div>
                           </div>
 
                           {/* Detalhes */}
-                          <div className="col-span-2">
+                          <div className={styles.itemFieldContainer}>
                             <Input
                               value={item.detalhes}
                               onChange={(e) => handleItemChange(item.id, 'detalhes', e.target.value)}
@@ -1226,7 +1249,7 @@ export default function NovoContratoDrawer({
                           </div>
 
                           {/* Quantidade */}
-                          <div className="col-span-2">
+                          <div className={styles.itemFieldContainer}>
                             <Input
                               value={item.quantidade}
                               onChange={(e) => handleItemChange(item.id, 'quantidade', e.target.value)}
@@ -1236,30 +1259,27 @@ export default function NovoContratoDrawer({
                           </div>
 
                           {/* Valor unitário */}
-                          <div className="col-span-2">
-                            <div className="relative">
-                              <Input
-                                value={item.valorUnitario}
-                                onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
-                                placeholder="0,00"
-                                className={`${styles.input} ${styles.inputSmall} ${styles.inputWithIcon}`}
-                              />
-                              <span className={`absolute left-2 top-1/2 -translate-y-1/2 text-xs ${styles.textSecondary}`}>R$</span>
+                          <div className={styles.itemFieldContainer}>
+                          <div className={styles.relative}>
+                            <Input
+                              value={item.valorUnitario}
+                              onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
+                              placeholder="R$ 0,00"
+                              className={`${styles.input} ${styles.inputSmall} ${styles.inputWithIcon}`}
+                            />
                             </div>
                           </div>
 
                           {/* Total */}
-                          <div className="col-span-2">
-                            <div className="relative flex items-center gap-1">
-                              <div className="flex-1 relative">
+                          <div className={styles.itemFieldContainer}>
+                            <div className={styles.relativeFlexItemsCenterGap1}>
+                              <div className={styles.flex1Relative}>
                                 <Input
                                   value={item.total}
-                                  placeholder="0,00"
+                                  placeholder="R$ 0,00"
                                   className={`${styles.input} ${styles.inputSmall} ${styles.inputWithIcon} ${styles.inputReadOnly}`}
                                   readOnly
                                 />
-                                <span className={`absolute left-2 top-1/2 -translate-y-1/2 text-xs ${styles.textSecondary}`}>R$</span>
-                                <Diamond className={`absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 ${styles.textPrimary}`} />
                               </div>
                               {itens.length > 1 && (
                                 <Button
@@ -1270,7 +1290,7 @@ export default function NovoContratoDrawer({
                                   className={`${styles.itemFieldIcon} ${styles.itemFieldIconSmall}`}
                                   title="Remover item"
                                 >
-                                  <X className="h-3 w-3" />
+                                  <X className={styles.iconSmall} />
                                 </Button>
                               )}
                             </div>
@@ -1283,7 +1303,7 @@ export default function NovoContratoDrawer({
                         onClick={addItem}
                         className={`${styles.buttonOutline} ${styles.borderDashed} w-full`}
                       >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
                         Adicionar nova linha
                       </Button>
                     </div>
@@ -1298,9 +1318,9 @@ export default function NovoContratoDrawer({
                   
                   <div className={styles.valueContainer}>
                     {/* Desconto */}
-                    <div className={styles.fieldContainer}>
+                    <div className={styles.valueField}>
                       <Label className={styles.label}>Desconto</Label>
-                      <div className="flex items-center gap-2">
+                      <div className={styles.flexItemsCenterGap2}>
                         <ToggleGroup
                           type="single"
                           value={formData.descontoTipo}
@@ -1314,13 +1334,13 @@ export default function NovoContratoDrawer({
                             %
                           </ToggleGroupItem>
                         </ToggleGroup>
-                        <div className="relative">
+                        <div className={styles.relative}>
                           <Input
                             value={formData.descontoValor}
                             onChange={(e) => handleInputChange('descontoValor', e.target.value)}
-                            className={`${styles.input} w-32 pl-8`}
+                            className={`${styles.input} w-32 ${formData.descontoTipo === 'reais' ? styles.inputWithPrefix : styles.inputWithSuffix}`}
                           />
-                          <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-sm ${styles.textSecondary}`}>
+                          <span className={`${formData.descontoTipo === 'reais' ? styles.symbolPrefix : styles.symbolSuffix}`}>
                             {formData.descontoTipo === 'reais' ? 'R$' : '%'}
                           </span>
                         </div>
@@ -1384,7 +1404,7 @@ export default function NovoContratoDrawer({
                     {/* Conta de recebimento */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>
-                        Conta de recebimento <span className={styles.required}>*</span> <HelpCircle className={styles.helpIcon} />
+                        Conta de recebimento <span className={styles.required}>*</span> 
                       </Label>
                       <div className={styles.paymentField}>
                         <Select
@@ -1418,7 +1438,7 @@ export default function NovoContratoDrawer({
                                   className={styles.selectItem}
                                 >
                                   <span>{conta.descricao_banco}</span>
-                                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
+                                  <span className={styles.openFinanceBadge}>OpenFinance</span>
                                 </SelectItem>
                               ))}
 
@@ -1440,7 +1460,7 @@ export default function NovoContratoDrawer({
                     {/* Vencimento */}
                     <div className={styles.fieldContainer}>
                       <Label className={styles.label}>
-                        Vencimento <span className={styles.required}>*</span> <HelpCircle className={styles.helpIcon} />
+                        Vencimento <span className={styles.required}>*</span> 
                       </Label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -1448,7 +1468,7 @@ export default function NovoContratoDrawer({
                             variant="outline"
                             className={`${styles.calendarButton} ${!formData.vencimento ? styles.placeholder : ''}`}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
                             {formData.vencimento ? (
                               format(formData.vencimento, "dd/MM/yyyy", { locale: ptBR })
                             ) : (
@@ -1456,7 +1476,7 @@ export default function NovoContratoDrawer({
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className={`w-auto p-0 ${styles.bgDarkPurple} ${styles.borderNeonPurple}`}>
+                        <PopoverContent className={styles.popoverContent}>
                           <Calendar
                             mode="single"
                             selected={formData.vencimento || undefined}
@@ -1472,7 +1492,7 @@ export default function NovoContratoDrawer({
                 </div>
 
                 {/* Seções colapsáveis */}
-                <Accordion type="multiple" className={styles.section}>
+                <Accordion type="multiple">
                   {/* Observações de pagamento */}
                   <AccordionItem value="observacoes-pagamento" className={styles.accordionItem}>
                     <AccordionTrigger className={styles.accordionTrigger}>
@@ -1512,7 +1532,7 @@ export default function NovoContratoDrawer({
                 disabled={isSaving || isLoadingFormData}
                 className={`${styles.buttonPrimary} ${styles.footerButton}`}
               >
-                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isSaving && <Loader2 className={`${styles.iconMedium} ${styles.iconWithMargin} ${styles.iconSpin}`} />}
                 {isSaving ? "Salvando..." : "Salvar"}
               </Button>
             </div>

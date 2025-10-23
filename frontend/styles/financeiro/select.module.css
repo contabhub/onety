@@ -1,0 +1,170 @@
+/* Select Component - CSS Module com Tokens Onety */
+
+/* ===== SELECT TRIGGER ===== */
+.selectTrigger {
+  display: flex;
+  height: 40px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  transition: all 120ms ease;
+  cursor: pointer;
+}
+
+.selectTrigger:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.selectTrigger:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary);
+}
+
+.selectTrigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.selectIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  color: var(--onity-icon-secondary);
+}
+
+/* ===== SELECT CONTENT ===== */
+.selectContent {
+  position: relative;
+  z-index: 50;
+  max-height: 384px;
+  min-width: 128px;
+  overflow: hidden;
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  box-shadow: var(--onity-elev-high);
+  animation: selectContentShow 150ms ease-out;
+}
+
+@keyframes selectContentShow {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.selectViewport {
+  padding: var(--onity-space-xs);
+}
+
+/* ===== SELECT SCROLL BUTTONS ===== */
+.selectScrollButton {
+  display: flex;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xs) 0;
+}
+
+.scrollIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+/* ===== SELECT LABEL ===== */
+.selectLabel {
+  padding: var(--onity-space-s) var(--onity-space-s) var(--onity-space-s) var(--onity-space-l);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+}
+
+/* ===== SELECT ITEM ===== */
+.selectItem {
+  position: relative;
+  display: flex;
+  width: 100%;
+  cursor: default;
+  user-select: none;
+  align-items: center;
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-s) var(--onity-space-s) var(--onity-space-l);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  outline: none;
+  transition: all 120ms ease;
+}
+
+.selectItem:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.selectItem:focus {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.selectItem[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.selectItemIndicator {
+  position: absolute;
+  left: var(--onity-space-s);
+  display: flex;
+  height: 14px;
+  width: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-color-primary);
+}
+
+/* ===== SELECT SEPARATOR ===== */
+.selectSeparator {
+  margin: var(--onity-space-xs) calc(-1 * var(--onity-space-xs));
+  height: 1px;
+  background: var(--onity-color-border);
+}
+
+/* ===== STATES ===== */
+.selectTrigger[data-state="open"] {
+  border-color: var(--onity-color-primary);
+}
+
+.selectTrigger[data-state="open"] .selectIcon {
+  transform: rotate(180deg);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .selectTrigger {
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .selectItem {
+    padding: var(--onity-space-xs) var(--onity-space-xs) var(--onity-space-xs) var(--onity-space-m);
+    font-size: 14px;
+  }
+}
