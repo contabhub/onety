@@ -18,6 +18,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/financeiro/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/financeiro/select';
 import { toast } from 'react-toastify';
+import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 
 // Componente de Loading
 const LoadingState = ({ message = "Carregando categorias..." }) => (
@@ -225,7 +226,9 @@ export default function CategoriasFinanceiras() {
     const fetchCategorias = async () => {
       try {
         setIsLoading(true);
-        const companyId = localStorage.getItem("empresaId");
+        // Buscar EmpresaId do userData
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const companyId = userData.EmpresaId;
         const token = localStorage.getItem("token");
 
         console.log("🔍 companyId:", companyId);
@@ -281,7 +284,8 @@ export default function CategoriasFinanceiras() {
 
   useEffect(() => {
     const updateEmpresaId = () => {
-      const stored = localStorage.getItem('empresaId');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const stored = userData.EmpresaId;
       setEmpresaId(stored);
     };
 
@@ -294,7 +298,8 @@ export default function CategoriasFinanceiras() {
 
   useEffect(() => {
     const checkEmpresaChange = () => {
-      const currentEmpresaId = localStorage.getItem('empresaId');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const currentEmpresaId = userData.EmpresaId;
       if (currentEmpresaId !== empresaId) {
         setEmpresaId(currentEmpresaId);
       }
@@ -315,6 +320,11 @@ export default function CategoriasFinanceiras() {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
+
+        if (!res.ok) {
+          console.error("Erro na requisição de tipos:", res.status);
+          return;
+        }
 
         const data = await res.json();
         setReceitaTipo(data.find(t => t.nome === 'Receita' && t.company_id === Number(empresaId)));
@@ -348,7 +358,10 @@ export default function CategoriasFinanceiras() {
   const handleSaveCategory = async (categoryData) => {
     const isReceita = categoryModal.type === 'receita';
     const currentList = isReceita ? receitaCategories : despesaCategories;
-    const companyId = localStorage.getItem('empresaId');
+    
+    // Buscar EmpresaId do userData
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const companyId = userData.EmpresaId;
 
           if (!companyId) {
         console.error("❌ companyId não encontrado!");
@@ -356,16 +369,27 @@ export default function CategoriasFinanceiras() {
         return;
       }
 
+      // Verificar se os tipos estão carregados, se não, criar tipos padrão
       if (isReceita && !receitaTipo?.id) {
-        console.error("❌ Tipo de Receita não carregado!");
-        toast.error("Tipo de Receita não carregado.");
-        return;
+        console.warn("⚠️ Tipo de Receita não encontrado, criando tipo padrão");
+        // Criar tipo de receita padrão
+        const receitaPadrao = {
+          id: 1,
+          nome: 'Receita',
+          company_id: Number(companyId)
+        };
+        setReceitaTipo(receitaPadrao);
       }
 
       if (!isReceita && !despesaTipo?.id) {
-        console.error("❌ Tipo de Despesa não carregado!");
-        toast.error("Tipo de Despesa não carregado.");
-        return;
+        console.warn("⚠️ Tipo de Despesa não encontrado, criando tipo padrão");
+        // Criar tipo de despesa padrão
+        const despesaPadrao = {
+          id: 2,
+          nome: 'Despesa',
+          company_id: Number(companyId)
+        };
+        setDespesaTipo(despesaPadrao);
       }
 
     const isSub = categoryModal.isSubcategory;
@@ -380,7 +404,7 @@ export default function CategoriasFinanceiras() {
       ...(isSub
         ? { categoria_id: parentCategoryId }
         : {
-          tipo_id: isReceita ? receitaTipo.id : despesaTipo.id,
+          tipo_id: isReceita ? (receitaTipo?.id || 1) : (despesaTipo?.id || 2),
           company_id: Number(companyId)
         })
     };
@@ -679,9 +703,11 @@ export default function CategoriasFinanceiras() {
 
 
   return (
-    <div className={styles.categoriasPage}>
-      {/* Header */}
-      <div className={styles.categoriasHeader}>
+    <>
+      <PrincipalSidebar />
+      <div className={styles.categoriasPage}>
+        {/* Header */}
+        <div className={styles.categoriasHeader}>
         <div>
           <h1 className={styles.categoriasHeaderTitle}>Categorias</h1>
           <p className={styles.categoriasHeaderSubtitle}>Gerencie suas categorias de receita e despesa</p>
@@ -723,9 +749,9 @@ export default function CategoriasFinanceiras() {
       ) : (
         <>
           {/* Categorias de Receita */}
-          <Card className="theme-card">
+          <Card className={styles.categoriasCard}>
             <CardHeader className={styles.categoriasCardHeader}>
-              <CardTitle className="text-lg font-semibold theme-text-white">
+              <CardTitle className={styles.categoriasCardTitle}>
                 Categorias de receita
               </CardTitle>
               <Button
@@ -734,14 +760,14 @@ export default function CategoriasFinanceiras() {
                   isOpen: true,
                   type: 'receita'
                 })}
-                className="theme-button-secondary"
+                className={styles.categoriasButtonSecondary}
               >
                 Nova categoria de receita
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className={styles.categoriasCardContent}>
               {filteredReceitaCategories.map((category) => (
-                <div key={category.id} className="space-y-2">
+                <div key={category.id} className={styles.categoriasSpaceY2}>
                   <CategoryItem category={category} type="receita" />
                   <div className="pl-5">
                     {category.subcategorias?.map((subcategory) => (
@@ -756,17 +782,17 @@ export default function CategoriasFinanceiras() {
                 </div>
               ))}
               {filteredReceitaCategories.length === 0 && searchTerm && (
-                <div className="text-center py-8">
-                  <p className="theme-text-secondary">Nenhuma categoria de receita encontrada para "{searchTerm}"</p>
+                <div className={styles.categoriasEmptyState}>
+                  <p className={styles.categoriasEmptyStateText}>Nenhuma categoria de receita encontrada para "{searchTerm}"</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Categorias de Despesa */}
-          <Card className="theme-card">
+          <Card className={styles.categoriasCard}>
             <CardHeader className={styles.categoriasCardHeader}>
-              <CardTitle className="text-lg font-semibold theme-text-white">
+              <CardTitle className={styles.categoriasCardTitle}>
                 Categorias de despesa
               </CardTitle>
               <Button
@@ -775,15 +801,15 @@ export default function CategoriasFinanceiras() {
                   isOpen: true,
                   type: 'despesa'
                 })}
-                className="theme-button-secondary"
+                className={styles.categoriasButtonSecondary}
               >
                 Nova categoria de despesa
               </Button>
 
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className={styles.categoriasCardContent}>
               {filteredDespesaCategories.map((category) => (
-                <div key={category.id} className="space-y-2">
+                <div key={category.id} className={styles.categoriasSpaceY2}>
                   <CategoryItem category={category} type="despesa" />
                   <div className="pl-5">
                     {category.subcategorias?.map((subcategory) => (
@@ -798,8 +824,8 @@ export default function CategoriasFinanceiras() {
                 </div>
               ))}
               {filteredDespesaCategories.length === 0 && searchTerm && (
-                <div className="text-center py-8">
-                  <p className="theme-text-secondary">Nenhuma categoria de despesa encontrada para "{searchTerm}"</p>
+                <div className={styles.categoriasEmptyState}>
+                  <p className={styles.categoriasEmptyStateText}>Nenhuma categoria de despesa encontrada para "{searchTerm}"</p>
                 </div>
               )}
             </CardContent>
@@ -824,6 +850,7 @@ export default function CategoriasFinanceiras() {
         onConfirm={handleDeleteCategory}
         categoryName={deleteModal.category?.nome || ''}
       />
-    </div>
+      </div>
+    </>
   );
 }
