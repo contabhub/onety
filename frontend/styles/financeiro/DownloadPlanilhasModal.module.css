@@ -1,0 +1,229 @@
+/* DownloadPlanilhasModal.module.css */
+
+.dialogContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-l);
+  max-width: 2xl;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.dialogTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.dialogIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-primary);
+}
+
+.dialogDescription {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  margin: var(--onity-space-s) 0 0 0;
+  opacity: 0.8;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.card {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+}
+
+.cardContent {
+  padding: var(--onity-space-l) var(--onity-space-l) 0;
+}
+
+.cardContentFull {
+  padding: var(--onity-space-l);
+}
+
+.cardInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--onity-space-s);
+}
+
+.cardIcon {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.cardDetails {
+  flex: 1;
+}
+
+.cardTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  line-height: var(--onity-type-body-line);
+  margin-bottom: var(--onity-space-s);
+}
+
+.cardDescription {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+  line-height: var(--onity-type-caption-line);
+  margin-bottom: var(--onity-space-s);
+  opacity: 0.8;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+  line-height: var(--onity-type-caption-line);
+  opacity: 0.8;
+}
+
+.cardMetaIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.downloadButton {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  cursor: pointer;
+  transition: all 120ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.downloadButton:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.downloadButtonIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--onity-space-xs);
+}
+
+.dialogFooter {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+  margin-top: var(--onity-space-l);
+}
+
+.button {
+  align-items: center;
+  border-radius: var(--onity-radius-xs);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  gap: var(--onity-space-xs);
+  justify-content: center;
+  line-height: var(--onity-type-body-line);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: all 120ms ease;
+  outline: none;
+  border: 1px solid transparent;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonOutline {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.buttonOutline:hover:not(:disabled) {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* Card variants com cores específicas */
+.cardModel {
+  background: rgba(30, 136, 229, 0.1);
+  border: 1px solid rgba(30, 136, 229, 0.3);
+}
+
+.cardModel .cardIcon {
+  color: #1E88E5;
+}
+
+.cardModel .downloadButton {
+  border-color: #1E88E5;
+  color: #1E88E5;
+}
+
+.cardModel .downloadButton:hover {
+  background: #1E88E5;
+  color: white;
+}
+
+.cardExample {
+  background: rgba(245, 0, 87, 0.1);
+  border: 1px solid rgba(245, 0, 87, 0.3);
+}
+
+.cardExample .cardIcon {
+  color: #F50057;
+}
+
+.cardExample .downloadButton {
+  border-color: #F50057;
+  color: #F50057;
+}
+
+.cardExample .downloadButton:hover {
+  background: #F50057;
+  color: white;
+}
+
+.cardInfo {
+  background: rgba(103, 58, 183, 0.1);
+  border: 1px solid rgba(103, 58, 183, 0.3);
+}
+
+.cardInfo .cardIcon {
+  color: #673AB7;
+}
+
+.buttonInfo {
+  background: var(--onity-color-surface);
+  border-color: #673AB7;
+  color: var(--onity-color-text);
+}
+
+.buttonInfo:hover:not(:disabled) {
+  background: rgba(103, 58, 183, 0.2);
+  border-color: #673AB7;
+}

@@ -259,6 +259,12 @@ const MODULE_REGISTRY = {
         label: 'Captura Fácil',
         icon: <Upload size={18} />,
         route: '/financeiro/captura-facil'
+      },
+      {
+        id: 'extrato-movimentacoes',
+        label: 'Extrato de movimentações',
+        icon: <FileText size={18} />,
+        route: '/financeiro/extrato-movimentacoes'
       }
     ]
   },
