@@ -25,7 +25,10 @@ import {
   ExternalLink,
   Mic,
   LayoutDashboard,
-  ShoppingCart
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
+  Upload
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -232,6 +235,30 @@ const MODULE_REGISTRY = {
         label: 'Centros de Custo',
         icon: <DollarSign size={18} />,
         route: '/financeiro/centro-custo'
+      },
+      {
+        id: 'contas-a-pagar',
+        label: 'Contas a Pagar',
+        icon: <TrendingDown size={18} />,
+        route: '/financeiro/contas-a-pagar'
+      },
+      {
+        id: 'contas-a-receber',
+        label: 'Contas a Receber',
+        icon: <TrendingUp size={18} />,
+        route: '/financeiro/contas-a-receber'
+      },
+      {
+        id: 'outras-contas',
+        label: 'Outras Contas',
+        icon: <Settings size={18} />,
+        route: '/financeiro/outras-contas'
+      },
+      {
+        id: 'captura-facil',
+        label: 'Captura Fácil',
+        icon: <Upload size={18} />,
+        route: '/financeiro/captura-facil'
       }
     ]
   },
