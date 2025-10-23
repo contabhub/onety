@@ -28,7 +28,8 @@ import {
   ShoppingCart,
   TrendingDown,
   TrendingUp,
-  Upload
+  Upload,
+  FileBarChart
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -265,6 +266,12 @@ const MODULE_REGISTRY = {
         label: 'Extrato de movimentações',
         icon: <FileText size={18} />,
         route: '/financeiro/extrato-movimentacoes'
+      },
+      {
+        id: 'fluxo-caixa-mensal',
+        label: 'Fluxo de Caixa Mensal',
+        icon: <FileBarChart size={18} />,
+        route: '/financeiro/fluxo-caixa-mensal'
       }
     ]
   },

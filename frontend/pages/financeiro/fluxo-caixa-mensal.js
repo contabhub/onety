@@ -21,6 +21,7 @@ import {
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ExportarFluxoCaixaMensal } from '../../components/financeiro/ExportarFluxoCaixaMensal';
+import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 import styles from '../../styles/financeiro/fluxo-caixa-mensal.module.css';
 
 // 📊 Interfaces para tipagem dos dados da API
@@ -462,7 +463,9 @@ export default function FluxoCaixaMensalPage() {
   }, [data, showRealizadoOnly, selectedTipo]);
 
   return (
-    <div className={styles.fluxoCaixaContainer}>
+    <>
+      <PrincipalSidebar />
+      <div className={styles.fluxoCaixaContainer}>
       {/* 📋 Header */}
       <div className={styles.headerContainer}>
         <div>
@@ -975,6 +978,7 @@ export default function FluxoCaixaMensalPage() {
         enableDayFilter={enableDayFilter}
         selectedDay={selectedDay}
       />
-    </div>
+      </div>
+    </>
   );
 }
