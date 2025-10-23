@@ -1,0 +1,998 @@
+/* Estilos específicos para página de Contas a Pagar usando design tokens */
+
+/* Layout principal */
+.contasPagarContainer {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+/* Header */
+.contasPagarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contasPagarHeaderLeft {
+  display: flex;
+  flex-direction: column;
+}
+
+.contasPagarTitle {
+  font-size: var(--onity-type-h2-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.contasPagarSubtitle {
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+  margin-bottom: 0;
+}
+
+.contasPagarHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.contasPagarActionContainer {
+  padding: 1;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões principais */
+.contasPagarPrimaryBtn {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarPrimaryBtn:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões secundários */
+.contasPagarSecondaryBtn {
+  background-color: transparent;
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarSecondaryBtn:hover {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.contasPagarExportBtn {
+  background-color: var(--onity-info-10);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarExportBtn:hover {
+  background-color: var(--onity-info-20);
+  border-color: var(--onity-info-50);
+  color: var(--onity-color-info);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.contasPagarImportBtn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarImportBtn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.contasPagarOfxBtn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarOfxBtn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Botões de navegação */
+.contasPagarNavBtn {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.contasPagarNavBtn svg {
+  color: var(--onity-color-text) !important;
+}
+
+.contasPagarNavBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.contasPagarNavBtn:hover::before {
+  left: 100%;
+}
+
+.contasPagarNavBtn:hover {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(68, 84, 100, 0.15);
+}
+
+.contasPagarNavBtn:hover svg {
+  color: var(--onity-color-text) !important;
+}
+
+.contasPagarNavBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(68, 84, 100, 0.1);
+}
+
+.contasPagarNavBtn:disabled {
+  opacity: 0.4;
+  transform: none;
+  cursor: not-allowed;
+  background: var(--onity-color-bg);
+  color: var(--onity-icon-secondary);
+}
+
+/* Botões de paginação */
+.contasPagarActionBtn {
+  background-color: transparent;
+  color: var(--onity-icon-secondary);
+  border: none;
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarActionBtn:hover {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+}
+
+.contasPagarPaginationBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contasPagarPaginationBtn:hover:not(:disabled) {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(68, 84, 100, 0.1);
+}
+
+.contasPagarPaginationBtn.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-primary-contrast);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contasPagarPaginationBtn.active:hover {
+  background: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
+}
+
+/* Grid de estatísticas */
+.contasPagarStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-l);
+}
+
+/* Cards de estatísticas */
+.contasPagarStatCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: var(--onity-space-m);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.contasPagarStatCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-2px);
+}
+
+.contasPagarStatCard.active {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-high);
+}
+
+.contasPagarStatCardContent {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.contasPagarStatCardInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 100%;
+  gap: var(--onity-space-s);
+}
+
+.contasPagarStatCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.contasPagarStatCardTitle {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.contasPagarStatCardValue {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.contasPagarStatCardAmount {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.contasPagarStatCardIcon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-top: var(--onity-space-xs);
+}
+
+.statVencidos {
+  color: var(--onity-color-error);
+}
+
+.statVencemHoje {
+  color: var(--onity-color-warning);
+}
+
+.statAVencer {
+  color: var(--onity-color-info);
+}
+
+.statPagos {
+  color: var(--onity-color-success);
+}
+
+.statTotal {
+  color: var(--onity-color-primary);
+}
+
+/* Filtros - Design Moderno e Elegante */
+.contasPagarFiltersCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--onity-space-l);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.contasPagarFiltersCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--onity-color-primary), var(--onity-color-info), var(--onity-color-primary));
+  opacity: 0.6;
+}
+
+.contasPagarFiltersContainer {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.contasPagarFilterRow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  margin-left: 20px;
+}
+
+@media (min-width: 1024px) {
+  .contasPagarFilterRow {
+    flex-direction: row;
+    align-items: end;
+    gap: 20px;
+  }
+}
+
+.contasPagarFilterGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contasPagarFilterLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+
+.contasPagarFilterInput {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+}
+
+.contasPagarFilterInput:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  outline: none;
+}
+
+.contasPagarFilterInput:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px var(--onity-primary-10);
+}
+
+.contasPagarFilterInput::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+.contasPagarSearchContainer {
+  position: relative;
+  background: transparent;
+  border-radius: 6px;
+  border: 1px solid var(--onity-color-border);
+  transition: all 0.3s ease;
+  box-shadow: none;
+  min-height: 15px;
+  max-height: 50px;
+  max-width: 420px;
+}
+
+.contasPagarSearchIcon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--onity-color-primary);
+  width: 10px;
+  height: 8px;
+  z-index: 2;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.contasPagarSearchInput {
+  width: 100%;
+  padding: 6px 8px 6px 28px;
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.contasPagarSearchInput::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.contasPagarPeriodContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+/* Filtros ativos */
+.filtrosAtivosCard {
+  border: 1px solid var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.filtrosAtivosContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filtrosAtivosLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.filtrosAtivosBadge {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 2px 6px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Tabela */
+.contasPagarTransactionsCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+}
+
+.contasPagarTableContent {
+  padding: 0;
+}
+
+.contasPagarTableContainer {
+  overflow-x: auto;
+}
+
+.contasPagarTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.contasPagarTableHeader {
+  border-bottom: 1px solid var(--onity-primary-purple-20);
+}
+
+.contasPagarTableHeaderCell {
+  width: 48px;
+  text-align: left;
+  padding: var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+.contasPagarTableHeaderText {
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+.contasPagarTableRow {
+  border-bottom: 1px solid var(--onity-primary-purple-20);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.contasPagarTableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.contasPagarTableCell {
+  padding: var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}
+
+.contasPagarTableCellPrimary {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.contasPagarTableCellSecondary {
+  color: var(--onity-icon-secondary);
+}
+
+.contasPagarTableCellText {
+  color: var(--onity-color-text);
+}
+
+.contasPagarTableRowEmpty {
+  text-align: center;
+  padding: var(--onity-space-xl);
+}
+
+.contasPagarTableRowEmptyText {
+  color: var(--onity-icon-secondary);
+}
+
+.contasPagarTableCellValue {
+  font-weight: 500;
+}
+
+.contasPagarTableSortIcon {
+  width: 12px;
+  height: 12px;
+  display: inline;
+  margin-left: var(--onity-space-xs);
+}
+
+/* Badges de situação */
+.badgePago {
+  background-color: var(--onity-success-20);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-success-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeVencido {
+  background-color: var(--onity-error-20);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeEmAberto {
+  background-color: var(--onity-warning-20);
+  color: var(--onity-color-warning);
+  border: 1px solid var(--onity-warning-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgePluggy {
+  background-color: var(--onity-info-20);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeOfx {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.badgeConciliado {
+  background-color: var(--onity-success-20);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-success-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Dropdown de ações */
+.contasPagarDropdown {
+  background: linear-gradient(135deg, var(--onity-color-surface) 0%, rgba(68, 84, 100, 0.02) 100%);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-width: 200px;
+  padding: 8px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 9999;
+}
+
+.contasPagarDropdownItem {
+  color: var(--onity-color-text);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.contasPagarDropdownItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(103, 58, 183, 0.1), transparent);
+  transition: left 0.3s ease;
+}
+
+.contasPagarDropdownItem:hover::before {
+  left: 100%;
+}
+
+.contasPagarDropdownItem:hover {
+  background: linear-gradient(135deg, var(--onity-primary-10) 0%, var(--onity-primary-20) 100%);
+  color: var(--onity-color-primary);
+  transform: translateX(4px);
+}
+
+.contasPagarDropdownItem.warning {
+  color: var(--onity-color-warning);
+}
+
+.contasPagarDropdownItem.warning:hover {
+  background-color: var(--onity-warning-10);
+}
+
+.contasPagarDropdownItem.danger {
+  color: var(--onity-color-error);
+}
+
+.contasPagarDropdownItem.danger:hover {
+  background-color: var(--onity-error-10);
+}
+
+/* Footer da tabela */
+.contasPagarTableFooter {
+  border-top: 1px solid var(--onity-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+}
+
+.contasPagarTableFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.contasPagarTableFooterRight {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.contasPagarTableFooterText {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.contasPagarTableFooterSecondary {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.contasPagarTableFooterAccent {
+  color: var(--onity-color-primary);
+  font-weight: 600;
+}
+
+/* Paginação */
+.contasPagarPagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+  width: 100%;
+}
+
+.contasPagarPaginationContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.contasPagarPaginationInfo {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.contasPagarPaginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.contasPagarPaginationGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.contasPagarPaginationLabel {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.contasPagarPaginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.contasPagarPaginationButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.contasPagarPaginationButton.active {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+/* Botões de seta da paginação */
+.contasPagarPaginationArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contasPagarPaginationArrow:hover:not(:disabled) {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(68, 84, 100, 0.1);
+}
+
+.contasPagarPaginationArrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+}
+
+/* Botão ativo da paginação */
+.contasPagarPaginationButtonActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-primary-contrast);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contasPagarPaginationButtonActive:hover {
+  background: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
+}
+
+/* Loading */
+.contasPagarLoadingContainer {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contasPagarLoadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xl);
+  gap: var(--onity-space-s);
+}
+
+.contasPagarLoadingSpinner {
+  width: 80px;
+  height: 80px;
+}
+
+.contasPagarLoadingSpinnerInner {
+  width: 64px;
+  height: 64px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.contasPagarLoadingText {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-h3-size);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .contasPagarContainer {
+    padding: var(--onity-space-s);
+    gap: var(--onity-space-s);
+  }
+  
+  .contasPagarHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--onity-space-s);
+  }
+  
+  .contasPagarHeaderRight {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .contasPagarStatsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .contasPagarFilterRow {
+    flex-direction: column;
+  }
+  
+  .primaryBtn,
+  .secondaryBtn,
+  .contasPagarExportBtn,
+  .contasPagarImportBtn {
+    font-size: var(--onity-type-caption-size);
+    padding: 6px 10px;
+  }
+}

@@ -3,11 +3,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/financeiro/card";
-import '../../styles/contas-a-pagar-theme.css';
-import '../../styles/toastify-theme.css';
+import 'react-toastify/dist/ReactToastify.css';
 import { Button } from "../../components/financeiro/botao";
 import { Input } from "../../components/financeiro/input";
 import { Badge } from "../../components/financeiro/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/financeiro/table';
+import { Checkbox } from '../../components/financeiro/checkbox';
+import styles from "../../styles/financeiro/contas-a-pagar.module.css";
+
+// Função cn para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 import {
   Search,
   Plus,
@@ -39,6 +51,7 @@ import { ImportarPagar } from "../../components/financeiro/ImportarPagar";
 import { ImportarOFXModal } from "../../components/financeiro/ImportarOFXModal";
 import { DownloadPlanilhasContasModal } from "../../components/financeiro/DownloadPlanilhasContasModal";
 import { ModalConfirmarExclusaoConta } from "../../components/financeiro/ModalConfirmarExclusaoConta";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import {
   isToday,
   isAfter,
@@ -70,7 +83,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/financeiro/dialog";
-import Lottie from "lottie-react";
+// Removido import do Lottie - usando CSS spinner
 // Removido import do loader - usando CSS spinner
 import { toast } from "react-toastify";
 import Image from "next/image";
@@ -1396,68 +1409,61 @@ export default function ContasAPagar() {
 
   // Componente de Loading
   const LoadingState = () => (
-    <div className="flex flex-col items-center justify-center py-12 space-y-4">
-      <div className="w-20 h-20">
-        <Lottie animationData={loaderAnimation} loop={true} />
+    <div className={styles.contasPagarLoadingContainer}>
+      <div className={styles.contasPagarLoadingContent}>
+        <div className={styles.contasPagarLoadingSpinner}>
+          <div className={styles.contasPagarLoadingSpinnerInner}></div>
+        </div>
+        <p className={styles.contasPagarLoadingText}>Carregando contas a pagar...</p>
       </div>
-      <p className="theme-text-secondary text-lg">Carregando contas a pagar...</p>
     </div>
   );
 
   // Se estiver carregando, mostra o estado de loading
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6 theme-bg-primary min-h-screen">
+      <div className={styles.contasPagarContainer}>
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold theme-text-white">Contas a pagar</h1>
-            <p className="theme-text-secondary mt-1">
+        <div className={styles.contasPagarHeader}>
+          <div className={styles.contasPagarHeaderLeft}>
+            <h1 className={styles.contasPagarTitle}>Contas a pagar</h1>
+            <p className={styles.contasPagarSubtitle}>
               Gerencie suas contas a pagar e fluxo de caixa
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className={styles.contasPagarHeaderRight}>
             <Button
               variant="outline"
               size="sm"
               disabled
-              className="theme-button-secondary"
+              className={styles.contasPagarSecondaryBtn}
             >
-              <FileText className="h-4 w-4 mr-2" />
-              Relatórios
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              className="theme-button-secondary"
-            >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className={styles.contasPagarActionIcon} />
               Exportar
             </Button>
             <Button
               variant="outline"
               size="sm"
               disabled
-              className="theme-button-secondary"
+              className={styles.contasPagarSecondaryBtn}
             >
-              <Upload className="h-4 w-4 mr-2" />
+              <Upload className={styles.contasPagarActionIcon} />
               Importar planilha
             </Button>
             <Button
               size="sm"
               disabled
-              className="theme-button-primary"
+              className={styles.contasPagarPrimaryBtn}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className={styles.contasPagarActionIcon} />
               Nova despesa
             </Button>
           </div>
         </div>
 
         {/* Loading State */}
-        <Card className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20">
-          <CardContent className="pt-6">
+        <Card className={styles.contasPagarTransactionsCard}>
+          <CardContent className={styles.contasPagarTableContent}>
             <LoadingState />
           </CardContent>
         </Card>
@@ -1466,67 +1472,68 @@ export default function ContasAPagar() {
   }
 
   return (
-    <div className="p-6 space-y-6 theme-bg-primary min-h-screen">
+    <>
+      <PrincipalSidebar />
+      <div className={styles.contasPagarContainer}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold theme-text-white">Contas a pagar</h1>
-          <p className="theme-text-secondary mt-1">
+      <div className={styles.contasPagarHeader}>
+        <div className={styles.contasPagarHeaderLeft}>
+          <h1 className={styles.contasPagarTitle}>Contas a pagar</h1>
+          <p className={styles.contasPagarSubtitle}>
             Gerencie suas contas a pagar e fluxo de caixa
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            className="theme-button-secondary"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Relatórios
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportar}
-            className="contas-pagar-export-btn"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleImportar}
-            className="contas-pagar-import-btn"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Importar planilha
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleImportarOFX}
-            className="contas-pagar-ofx-btn"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Importar OFX
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDownloadPlanilhasModal(true)}
-            className="contas-pagar-secondary-btn"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Planilhas
-          </Button>
+        <div className={styles.contasPagarHeaderRight}>
+          <div className={styles.contasPagarActionContainer}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportar}
+              className={styles.contasPagarExportBtn}
+            >
+              <Download className={styles.contasPagarActionIcon} />
+              Exportar
+            </Button>
+          </div>
+          <div className={styles.contasPagarActionContainer}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImportar}
+              className={styles.contasPagarImportBtn}
+            >
+              <Upload className={styles.contasPagarActionIcon} />
+              Importar planilha
+            </Button>
+          </div>
+          <div className={styles.contasPagarActionContainer}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImportarOFX}
+              className={styles.contasPagarOfxBtn}
+            >
+              <FileText className={styles.contasPagarActionIcon} />
+              Importar OFX
+            </Button>
+          </div>
+          <div className={styles.contasPagarActionContainer}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDownloadPlanilhasModal(true)}
+              className={styles.contasPagarSecondaryBtn}
+            >
+              <FileText className={styles.contasPagarActionIcon} />
+              Planilhas
+            </Button>
+          </div>
           <Button
             size="sm"
             onClick={handleNovaDespesa}
-            className="contas-pagar-primary-btn"
+            className={styles.contasPagarPrimaryBtn}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className={styles.contasPagarActionIcon} />
             Nova despesa
           </Button>
         </div>
@@ -1557,23 +1564,26 @@ export default function ContasAPagar() {
       </Card> */}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className={styles.contasPagarStatsGrid}>
         {stats.map((stat, index) => (
           <Card
             key={index}
-            className="contas-pagar-stat-card"
+            className={styles.contasPagarStatCard}
           >
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium theme-text-secondary">
+            <CardContent className={styles.contasPagarStatCardContent}>
+              <div className={styles.contasPagarStatCardInner}>
+                <div className={styles.contasPagarStatCardInfo}>
+                  <p className={styles.contasPagarStatCardTitle}>
                     {stat.title}
                   </p>
-                  <p className={`text-2xl font-bold ${stat.color}`}>
+                  <p className={cn(styles.contasPagarStatCardValue, styles[stat.color])}>
                     {stat.value}
                   </p>
+                  <p className={cn(styles.contasPagarStatCardAmount, styles[stat.color])}>
+                    {stat.amount}
+                  </p>
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                <stat.icon className={cn(styles.contasPagarStatCardIcon, styles[stat.color])} />
               </div>
             </CardContent>
           </Card>
@@ -1582,18 +1592,18 @@ export default function ContasAPagar() {
 
       {/* Indicador de Filtros Ativos */}
       {hasActiveFilters && (
-        <Card className="filtros-ativos-card">
+        <Card className={styles.filtrosAtivosCard}>
           <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-[#673AB7]" />
-                <span className="text-sm font-medium theme-text-white">
+            <div className={styles.filtrosAtivosContainer}>
+              <div className={styles.filtrosAtivosLeft}>
+                <Filter className={styles.filtrosAtivosIcon} />
+                <span className={styles.filtrosAtivosText}>
                   Filtros ativos:
                 </span>
                 {status && (
                   <Badge
                     variant="secondary"
-                    className="filtros-ativos-badge"
+                    className={styles.filtrosAtivosBadge}
                   >
                     Status: {rawStatus}
                   </Badge>
@@ -1601,7 +1611,7 @@ export default function ContasAPagar() {
                 {vencimento && (
                   <Badge
                     variant="secondary"
-                    className="filtros-ativos-badge"
+                    className={styles.filtrosAtivosBadge}
                   >
                     Vencimento: {vencimento}
                   </Badge>
@@ -1609,7 +1619,7 @@ export default function ContasAPagar() {
                 {subcategoria && (
                   <Badge
                     variant="secondary"
-                    className="filtros-ativos-badge"
+                    className={styles.filtrosAtivosBadge}
                   >
                     Subcategoria: {subcategoria}
                   </Badge>
@@ -1617,7 +1627,7 @@ export default function ContasAPagar() {
                 {dataInicio && dataFim && (
                   <Badge
                     variant="secondary"
-                    className="filtros-ativos-badge"
+                    className={styles.filtrosAtivosBadge}
                   >
                     Período: {dataInicio} a {dataFim}
                   </Badge>
@@ -1627,7 +1637,7 @@ export default function ContasAPagar() {
                 variant="outline"
                 size="sm"
                 onClick={clearFilters}
-                className="contas-pagar-secondary-btn"
+                className={styles.contasPagarSecondaryBtn}
               >
                 Limpar filtros
               </Button>
@@ -1637,197 +1647,191 @@ export default function ContasAPagar() {
       )}
 
       {/* Filters */}
-      <Card className="theme-card">
+      <Card className={styles.contasPagarFiltersCard}>
         <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-white mb-2 block">
-                Vencimento
-              </label>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateMonth("prev")}
-                  className="contas-pagar-nav-btn"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
+          <div className={styles.contasPagarFiltersContainer}>
+            <div className={styles.contasPagarFilterRow}>
+              <div className={styles.contasPagarFilterGroup}>
+                <label className={styles.contasPagarFilterLabel}>
+                  Vencimento
+                </label>
+                <div className={styles.contasPagarPeriodContainer}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateMonth("prev")}
+                    className={styles.contasPagarNavBtn}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Select
+                    value={selectedPeriod}
+                    onValueChange={handlePeriodChange}
+                  >
+                    <SelectTrigger className="min-w-[150px] theme-input">
+                      <SelectValue>
+                        {selectedPeriod === "Este mês" 
+                          ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
+                          : selectedPeriod
+                        }
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="theme-modal theme-border-secondary">
+                      {periodOptions.map((option) => (
+                        <SelectItem
+                          key={option}
+                          value={option}
+                          className="theme-text-white hover:bg-[#673AB7]/20"
+                        >
+                          {option === "Este mês" 
+                            ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
+                            : option
+                          }
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateMonth("next")}
+                    className={styles.contasPagarNavBtn}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className={styles.contasPagarFilterGroup}>
+                <label className={styles.contasPagarFilterLabel}>
+                  Pesquisar no período selecionado
+                </label>
+                <div className={styles.contasPagarSearchContainer}>
+                  <Search className={styles.contasPagarSearchIcon} />
+                  <Input
+                    placeholder="Pesquisar por descrição, categoria, cliente, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
+                    className={styles.contasPagarSearchInput}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className={styles.contasPagarFilterGroup}>
+                <label className={styles.contasPagarFilterLabel}>
+                  Conta
+                </label>
                 <Select
-                  value={selectedPeriod}
-                  onValueChange={handlePeriodChange}
+                  value={selectedAccount}
+                  onValueChange={setSelectedAccount}
+                  disabled
                 >
-                  <SelectTrigger className="min-w-[150px] theme-input">
-                    <SelectValue>
-                      {selectedPeriod === "Este mês" 
-                        ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
-                        : selectedPeriod
-                      }
-                    </SelectValue>
+                  <SelectTrigger className="theme-input">
+                    <SelectValue placeholder="Selecionar todas" />
                   </SelectTrigger>
                   <SelectContent className="theme-modal theme-border-secondary">
-                    {periodOptions.map((option) => (
+                    <SelectItem
+                      value="all"
+                      className="theme-text-white hover:bg-[#673AB7]/20"
+                    >
+                      Selecionar todas
+                    </SelectItem>
+                    <SelectItem
+                      value="bradesco"
+                      className="theme-text-white hover:bg-[#673AB7]/20"
+                    >
+                      Banco Bradesco
+                    </SelectItem>
+                    <SelectItem
+                      value="conta-azul"
+                      className="theme-text-white hover:bg-[#673AB7]/20"
+                    >
+                      Conta Azul
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className={styles.contasPagarFilterGroup}>
+                <label className={styles.contasPagarFilterLabel}>
+                  Subcategoria
+                </label>
+                <Select
+                  value={selectedSubcategoria}
+                  onValueChange={setSelectedSubcategoria}
+                >
+                  <SelectTrigger className="theme-input">
+                    <SelectValue placeholder="Todas as subcategorias" />
+                  </SelectTrigger>
+                  <SelectContent className="theme-modal theme-border-secondary">
+                    <SelectItem
+                      value="all"
+                      className="theme-text-white hover:bg-[#673AB7]/20"
+                    >
+                      Todas as subcategorias
+                    </SelectItem>
+                    {subcategoriasDisponiveis.map((subcategoria) => (
                       <SelectItem
-                        key={option}
-                        value={option}
+                        key={subcategoria}
+                        value={subcategoria}
                         className="theme-text-white hover:bg-[#673AB7]/20"
                       >
-                        {option === "Este mês" 
-                          ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
-                          : option
-                        }
+                        {subcategoria}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateMonth("next")}
-                  className="contas-pagar-nav-btn"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
               </div>
-            </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-white mb-2 block">
-                Pesquisar no período selecionado
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 theme-text-muted" />
-                <Input
-                  placeholder="Pesquisar por descrição, categoria, cliente, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
-                  className="pl-10 theme-input"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="flex items-end">
+                
+                
               </div>
-            </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-white mb-2 block">
-                Conta
-              </label>
-              <Select
-                value={selectedAccount}
-                onValueChange={setSelectedAccount}
-                disabled
-              >
-                <SelectTrigger className="theme-input">
-                  <SelectValue placeholder="Selecionar todas" />
-                </SelectTrigger>
-                <SelectContent className="theme-modal theme-border-secondary">
-                  <SelectItem
-                    value="all"
-                    className="theme-text-white hover:bg-[#673AB7]/20"
-                  >
-                    Selecionar todas
-                  </SelectItem>
-                  <SelectItem
-                    value="bradesco"
-                    className="theme-text-white hover:bg-[#673AB7]/20"
-                  >
-                    Banco Bradesco
-                  </SelectItem>
-                  <SelectItem
-                    value="conta-azul"
-                    className="theme-text-white hover:bg-[#673AB7]/20"
-                  >
-                    Conta Azul
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-white mb-2 block">
-                Subcategoria
-              </label>
-              <Select
-                value={selectedSubcategoria}
-                onValueChange={setSelectedSubcategoria}
-              >
-                <SelectTrigger className="theme-input">
-                  <SelectValue placeholder="Todas as subcategorias" />
-                </SelectTrigger>
-                <SelectContent className="theme-modal theme-border-secondary">
-                  <SelectItem
-                    value="all"
-                    className="theme-text-white hover:bg-[#673AB7]/20"
-                  >
-                    Todas as subcategorias
-                  </SelectItem>
-                  {subcategoriasDisponiveis.map((subcategoria) => (
-                    <SelectItem
-                      key={subcategoria}
-                      value={subcategoria}
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      {subcategoria}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                disabled
-                className="theme-button-secondary"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Mais filtros
-              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Transactions Table */}
-      <Card className="contas-pagar-transactions-card">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <p className="text-sm theme-text-secondary">
-                {selectedItems.size} registro(s) selecionado(s)
-              </p>
-              {selectedItems.size > 0 && (
-                <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="contas-pagar-secondary-btn"
-                      >
-                        Alterar Status
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="contas-pagar-dropdown">
-                      <DropdownMenuItem 
-                        onClick={() => handleBatchStatusChange('recebido')}
-                        className="contas-pagar-dropdown-item"
-                      >
-                        Marcar como Pago
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleBatchStatusChange('em_aberto')}
-                        className="contas-pagar-dropdown-item"
-                      >
-                        Marcar como Em Aberto
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleBatchStatusChange('vencidos')}
-                        className="contas-pagar-dropdown-item"
-                      >
-                        Marcar como Vencido
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+      <Card className={styles.contasPagarTransactionsCard}>
+        <CardContent className={styles.contasPagarTableContent}>
+          <div className={styles.contasPagarTableContainer}>
+            <div className={styles.contasPagarPaginationControls}>
+             
+                {selectedItems.size > 0 && (
+                  <>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={styles.contasPagarSecondaryBtn}
+                        >
+                          Alterar Status
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className={styles.contasPagarDropdown}>
+                        <DropdownMenuItem 
+                          onClick={() => handleBatchStatusChange('recebido')}
+                          className={styles.contasPagarDropdownItem}
+                        >
+                          Marcar como Pago
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleBatchStatusChange('em_aberto')}
+                          className={styles.contasPagarDropdownItem}
+                        >
+                          Marcar como Em Aberto
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleBatchStatusChange('vencidos')}
+                          className={styles.contasPagarDropdownItem}
+                        >
+                          Marcar como Vencido
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   <Button
                     variant="outline"
                     size="sm"
                     disabled
-                    className="theme-button-secondary"
+                    className={styles.contasPagarSecondaryBtn}
                   >
                     Renegociar
                   </Button>
@@ -1835,7 +1839,7 @@ export default function ContasAPagar() {
                     variant="outline"
                     size="sm"
                     onClick={clearSelection}
-                    className="contas-pagar-secondary-btn"
+                    className={styles.contasPagarSecondaryBtn}
                   >
                     Limpar seleção
                   </Button>
@@ -1844,11 +1848,11 @@ export default function ContasAPagar() {
                     size="sm"
                     onClick={handleDeleteMultiple}
                     disabled={isDeletingMultiple}
-                    className="contas-pagar-secondary-btn disabled:opacity-50"
+                    className={styles.contasPagarSecondaryBtn}
                   >
                     {isDeletingMultiple ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className={styles.contasPagarActionIcon} />
                         Processando...
                       </>
                     ) : (
@@ -1859,169 +1863,161 @@ export default function ContasAPagar() {
                   </Button>
                 </>
               )}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            {paginatedSaidas.length === 0 ? (
-              <div className="text-center py-8 theme-text-secondary">
-                <div className="flex flex-col items-center">
-                  <Image
-                    src="/nenhuma.png"
-                    alt="Nenhuma transação"
-                    width={128}
-                    height={128}
-                    className="w-32 h-32"
-                  />
-                  <p>Nenhuma transação encontrada</p>
-                </div>
               </div>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b theme-border-primary">
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
-                      <input 
-                        type="checkbox" 
-                        className="rounded"
-                        checked={selectAll}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
+            </div>
+
+            <div className={styles.contasPagarTableContainer}>
+              <Table>
+                <TableHeader className={styles.contasPagarTableHeader}>
+                  <TableRow>
+                    <TableHead className={styles.contasPagarTableHeaderCell}>
+                      <Checkbox
+                        checked={
+                          selectedItems.size === paginatedSaidas.length &&
+                          paginatedSaidas.length > 0
+                        }
+                        onCheckedChange={handleSelectAll}
                       />
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       Venci.
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       Paga.
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       Descrição
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       Total (R$)
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       A pagar
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       Situação
-                    </th>
-                    <th className="text-left p-3 text-sm font-medium table-header-text">
+                    </TableHead>
+                    <TableHead className={styles.contasPagarTableHeaderText}>
                       Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedSaidas.map((saida, index) => (
-                    <tr
-                      key={index}
-                      className="contas-pagar-table-row border-b theme-border-primary"
-                    >
-                      <td className="p-3">
-                        <input 
-                          type="checkbox" 
-                          className="rounded"
-                          checked={selectedItems.has(saida.id)}
-                          onChange={(e) => handleSelectItem(saida.id, e.target.checked)}
-                        />
-                      </td>
-                      <td className="p-3 text-sm table-cell-secondary">
-                        {saida.origem === "Importação OFX" && saida.data_transacao
-                          ? new Date(saida.data_transacao).toLocaleDateString()
-                          : new Date(saida.data_vencimento).toLocaleDateString()}
-                      </td>
-                      <td className="p-3 text-sm table-cell-secondary">
-                        {(() => {
-                          // Debug: log para entender o problema
-                          if (saida.situacao === "recebido") {
-                            console.log("🔍 Despesa recebida:", {
-                              id: saida.id,
-                              situacao: saida.situacao,
-                              data_transacao: saida.data_transacao,
-                              descricao: saida.descricao
-                            });
-                          }
-                          
-                          return saida.situacao === "recebido" && saida.data_transacao
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedSaidas.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className={styles.contasPagarTableRowEmpty}>
+                        <div className={styles.contasPagarTableRowEmptyText}>
+                          Nenhuma transação encontrada
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedSaidas.map((saida, index) => (
+                      <TableRow
+                        key={index}
+                        className={styles.contasPagarTableRow}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedItems.has(saida.id)}
+                            onCheckedChange={(checked) =>
+                              handleSelectItem(saida.id, checked)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className={styles.contasPagarTableCellSecondary}>
+                          {saida.origem === "Importação OFX" && saida.data_transacao
                             ? new Date(saida.data_transacao).toLocaleDateString()
-                            : saida.situacao === "vencidos" && saida.data_transacao
-                            ? new Date(saida.data_transacao).toLocaleDateString()
-                            : <Clock className="h-4 w-4" />;
-                        })()}
-                      </td>
-                      <td className="p-3">
+                            : new Date(saida.data_vencimento).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className={styles.contasPagarTableCellSecondary}>
+                          {(() => {
+                            // Debug: log para entender o problema
+                            if (saida.situacao === "recebido") {
+                              console.log("🔍 Despesa recebida:", {
+                                id: saida.id,
+                                situacao: saida.situacao,
+                                data_transacao: saida.data_transacao,
+                                descricao: saida.descricao
+                              });
+                            }
+                            
+                            return saida.situacao === "recebido" && saida.data_transacao
+                              ? new Date(saida.data_transacao).toLocaleDateString()
+                              : saida.situacao === "vencidos" && saida.data_transacao
+                              ? new Date(saida.data_transacao).toLocaleDateString()
+                              : <Clock className="h-4 w-4" />;
+                          })()}
+                        </TableCell>
+                        <TableCell>
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="text-sm font-medium table-cell-primary">{saida.descricao}</p>
+                          <div>
+                            <p className={styles.contasPagarTableCellPrimary}>{saida.descricao}</p>
                             {saida.origem === "pluggy" && (
-                              <Badge className="badge-pluggy text-xs">
+                              <Badge className={styles.badgePluggy}>
                                 Pluggy
                               </Badge>
                             )}
                             {saida.origem === "Importação OFX" && (
-                              <Badge className="badge-ofx text-xs">
+                              <Badge className={styles.badgeOfx}>
                                 OFX
                               </Badge>
                             )}
                             {/* Badge para transações conciliadas */}
                             {saida.situacao === "conciliado" && (
-                              <Badge className="badge-conciliado text-xs">
+                              <Badge className={styles.badgeConciliado}>
                                 Conciliada
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs table-cell-secondary">{saida.categoria}</p>
+                          <p className={styles.contasPagarTableCellSecondary}>{saida.categoria}</p>
                           {saida.cliente && (
-                            <p className="text-xs cliente-text">{saida.cliente}</p>
+                            <p className={styles.contasPagarTableCellSecondary}>{saida.cliente}</p>
                           )}
                         </div>
-                      </td>
-                      <td className="p-3 text-sm font-medium table-cell-text">
-                        R$ {Number(saida.a_pagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="p-3 text-sm table-cell-text">
-                        R$ {Number(saida.a_pagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            saida.situacao === "recebido"
-                              ? "badge-pago"
+                        </TableCell>
+                        <TableCell className={styles.contasPagarTableCellValue}>
+                          R$ {Number(saida.a_pagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className={styles.contasPagarTableCellValue}>
+                          R$ {Number(saida.a_pagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={cn({
+                              [styles.badgePago]: saida.situacao === "recebido" || saida.situacao === "conciliado",
+                              [styles.badgeVencido]: saida.situacao === "vencidos",
+                              [styles.badgeEmAberto]: saida.situacao === "em_aberto"
+                            })}
+                          >
+                            {saida.situacao === "recebido"
+                              ? "Pago"
                               : saida.situacao === "conciliado"
-                              ? "badge-pago"
+                              ? "Pago"
                               : saida.situacao === "vencidos"
-                              ? "badge-vencido"
-                              : "badge-em-aberto"
-                          }`}
-                        >
-                          {saida.situacao === "recebido"
-                            ? "Pago"
-                            : saida.situacao === "conciliado"
-                            ? "Pago"
-                            : saida.situacao === "vencidos"
-                            ? "Vencidos"
-                            : "Em Aberto"}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <DropdownMenu>
+                              ? "Vencidos"
+                              : "Em Aberto"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="contas-pagar-action-btn"
+                              className={styles.contasPagarActionBtn}
                               >
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="contas-pagar-dropdown">
+                          <DropdownMenuContent className={styles.contasPagarDropdown}>
                             {saida.situacao === "em_aberto" && (
                               <>
                                 <DropdownMenuItem
                                   onClick={() =>
                                     handleUpdateSituacao(saida.id, "recebido")
                                   }
-                                  className="contas-pagar-dropdown-item"
+                                  className={styles.contasPagarDropdownItem}
                                 >
                                   Marcar como Pago
                                 </DropdownMenuItem>
@@ -2029,7 +2025,7 @@ export default function ContasAPagar() {
                                   onClick={() =>
                                     handleUpdateSituacao(saida.id, "vencidos")
                                   }
-                                  className="contas-pagar-dropdown-item"
+                                  className={styles.contasPagarDropdownItem}
                                 >
                                   Marcar como Vencido
                                 </DropdownMenuItem>
@@ -2041,7 +2037,7 @@ export default function ContasAPagar() {
                                 onClick={() =>
                                   handleUpdateSituacao(saida.id, "em_aberto")
                                 }
-                                className="contas-pagar-dropdown-item"
+                                className={styles.contasPagarDropdownItem}
                               >
                                 Voltar para Em Aberto
                               </DropdownMenuItem>
@@ -2053,7 +2049,7 @@ export default function ContasAPagar() {
                                   onClick={() =>
                                     handleUpdateSituacao(saida.id, "em_aberto")
                                   }
-                                  className="contas-pagar-dropdown-item"
+                                  className={styles.contasPagarDropdownItem}
                                 >
                                   Voltar para Em Aberto
                                 </DropdownMenuItem>
@@ -2061,7 +2057,7 @@ export default function ContasAPagar() {
                                   onClick={() =>
                                     handleUpdateSituacao(saida.id, "recebido")
                                   }
-                                  className="contas-pagar-dropdown-item"
+                                  className={styles.contasPagarDropdownItem}
                                 >
                                   Marcar como Pago
                                 </DropdownMenuItem>
@@ -2074,11 +2070,7 @@ export default function ContasAPagar() {
                                 setIsEditDespesaOpen(true);
                               }}
                               disabled={saida.origem === "pluggy"}
-                              className={`${
-                                saida.origem === "pluggy"
-                                  ? "theme-text-muted opacity-50 cursor-not-allowed"
-                                  : "contas-pagar-dropdown-item"
-                              }`}
+                              className={styles.contasPagarDropdownItem}
                             >
                               Editar
                               {saida.origem === "pluggy" &&
@@ -2087,7 +2079,7 @@ export default function ContasAPagar() {
 
                             <DropdownMenuItem
                               onClick={() => handleDuplicarDespesa(saida)}
-                              className="contas-pagar-dropdown-item"
+                              className={styles.contasPagarDropdownItem}
                             >
                               Duplicar Lançamento
                             </DropdownMenuItem>
@@ -2096,135 +2088,100 @@ export default function ContasAPagar() {
                             {saida.situacao === "conciliado" && (
                               <DropdownMenuItem
                                 onClick={() => handleRevogarConciliacao(saida)}
-                                className="contas-pagar-dropdown-item warning"
+                                className={styles.contasPagarDropdownItem}
                               >
                                 Revogar Conciliação
                               </DropdownMenuItem>
                             )}
 
                             <DropdownMenuItem
-                              className="contas-pagar-dropdown-item danger"
+                              className={styles.contasPagarDropdownItem}
                               onClick={() => handleConfirmarExclusao(saida)}
                             >
                               Excluir Lançamento
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
           </div>
 
           {/* Footer with totals and pagination */}
-          <div className="flex items-center justify-between mt-6 pt-4 table-footer-border">
-            <div className="flex items-center gap-4">
-              <div className="text-sm">
-                <strong className="table-footer-text">Totais do período</strong>
-                <p className="table-footer-secondary">{periodRange.label}</p>
-              </div>
-              <div className="text-sm">
-                <strong className="table-footer-text">Totais do período (R$)</strong>
-                <p className="table-footer-accent font-bold">
-                  R$ {totalPeriodo.toLocaleString("pt-BR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Select
-                  value={itemsPerPage.toString()}
-                  onValueChange={(value) => setItemsPerPage(Number(value))}
+          <div className={styles.contasPagarPagination}>
+            <span className={styles.contasPagarPaginationInfo}>
+              {filteredSaidas.length > 0 ? (
+                <>
+                  Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                  {" - "}
+                  {Math.min(currentPage * itemsPerPage, filteredSaidas.length)} de {filteredSaidas.length}
+                </>
+              ) : (
+                "Nenhum registro encontrado"
+              )}
+            </span>
+            <div className={styles.contasPagarPaginationControls}>
+              <div className={styles.contasPagarPaginationButtons}>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className={styles.contasPagarPaginationSelect}
+                style={{ marginRight: 16 }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <button
+                className={styles.contasPagarPaginationArrow}
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1 || totalPages === 0}
+                aria-label="Primeira página"
+              >
+                {"<<"}
+              </button>
+              <button
+                className={styles.contasPagarPaginationArrow}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1 || totalPages === 0}
+                aria-label="Página anterior"
+              >
+                {"<"}
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const startPage = Math.max(1, currentPage - 2);
+                return startPage + i;
+              }).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={page === currentPage ? styles.contasPagarPaginationButtonActive : styles.contasPagarPaginationArrow}
                 >
-                  <SelectTrigger className="w-20 theme-input">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="theme-modal theme-border-secondary">
-                    <SelectItem
-                      value="10"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      10
-                    </SelectItem>
-                    <SelectItem
-                      value="25"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      25
-                    </SelectItem>
-                    <SelectItem
-                      value="50"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      50
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="text-sm table-footer-secondary">
-                  Registros por página
-                </span>
+                  {page}
+                </button>
+              ))}
+              <button
+                className={styles.contasPagarPaginationArrow}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                aria-label="Próxima página"
+              >
+                {">"}
+              </button>
+              <button
+                className={styles.contasPagarPaginationArrow}
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages || totalPages === 0}
+                aria-label="Última página"
+              >
+                {">>"}
+                </button>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="contas-pagar-nav-btn"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Anterior
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from(
-                    { length: Math.min(5, totalPages) },
-                    (_, i) => i + 1
-                  ).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 p-0 ${
-                        currentPage === page
-                          ? "contas-pagar-pagination-btn active"
-                          : "contas-pagar-pagination-btn"
-                      }`}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="contas-pagar-nav-btn"
-                >
-                  Próximo
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <p className="text-sm table-footer-secondary">
-                Mostrando{" "}
-                {filteredSaidas.length > 0
-                  ? (currentPage - 1) * itemsPerPage + 1
-                  : 0}{" "}
-                - {Math.min(currentPage * itemsPerPage, filteredSaidas.length)}{" "}
-                de {filteredSaidas.length} registros
-              </p>
             </div>
           </div>
         </CardContent>
@@ -2394,6 +2351,7 @@ export default function ContasAPagar() {
         itemValue={saidaParaExcluir?.a_pagar}
         itemType="pagar"
       />
-    </div>
+      </div>
+    </>
   );
 }

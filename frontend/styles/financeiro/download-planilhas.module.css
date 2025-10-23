@@ -1,218 +1,308 @@
-/* Estilos específicos para modal DownloadPlanilhasContasModal */
+/* ===== ANIMAÇÕES ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
-/* Modal principal - modo dark (padrão) */
-.download-planilhas-modal {
-    background-color: rgba(27, 18, 41, 0.95);
-    border: 1px solid rgba(103, 58, 183, 0.2);
-    color: #ffffff;
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
   }
-  
-  /* Modal principal - modo light */
-  [data-theme="light"] .download-planilhas-modal {
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(229, 231, 235, 0.8);
-    color: #1f2937;
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
-  
-  /* Título - modo dark (padrão) */
-  .download-planilhas-title {
-    color: #ffffff;
-  }
-  
-  /* Título - modo light */
-  [data-theme="light"] .download-planilhas-title {
-    color: #1f2937;
-  }
-  
-  /* Descrição - modo dark (padrão) */
-  .download-planilhas-description {
-    color: #b0afc1;
-  }
-  
-  /* Descrição - modo light */
-  [data-theme="light"] .download-planilhas-description {
-    color: #6b7280;
-  }
-  
-  /* Card Planilha Modelo - modo dark (padrão) */
-  .download-planilhas-card-modelo {
-    border: 1px solid rgba(30, 136, 229, 0.3);
-    background-color: rgba(30, 136, 229, 0.1);
-  }
-  
-  /* Card Planilha Modelo - modo light */
-  [data-theme="light"] .download-planilhas-card-modelo {
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    background-color: rgba(59, 130, 246, 0.1);
-  }
-  
-  /* Card Planilha Exemplo - modo dark (padrão) */
-  .download-planilhas-card-exemplo {
-    border: 1px solid rgba(245, 0, 87, 0.3);
-    background-color: rgba(245, 0, 87, 0.1);
-  }
-  
-  /* Card Planilha Exemplo - modo light */
-  [data-theme="light"] .download-planilhas-card-exemplo {
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    background-color: rgba(239, 68, 68, 0.1);
-  }
-  
-  /* Card Informações - modo dark (padrão) */
-  .download-planilhas-card-info {
-    border: 1px solid rgba(103, 58, 183, 0.3);
-    background-color: rgba(103, 58, 183, 0.1);
-  }
-  
-  /* Card Informações - modo light */
-  [data-theme="light"] .download-planilhas-card-info {
-    border: 1px solid rgba(147, 51, 234, 0.3);
-    background-color: rgba(147, 51, 234, 0.1);
-  }
-  
-  /* Título do Card - modo dark (padrão) */
-  .download-planilhas-card-title {
-    color: #ffffff;
-  }
-  
-  /* Título do Card - modo light */
-  [data-theme="light"] .download-planilhas-card-title {
-    color: #1f2937;
-  }
-  
-  /* Texto do Card - modo dark (padrão) */
-  .download-planilhas-card-text {
-    color: #b0afc1;
-  }
-  
-  /* Texto do Card - modo light */
-  [data-theme="light"] .download-planilhas-card-text {
-    color: #6b7280;
-  }
-  
-  /* Ícone Modelo - modo dark (padrão) */
-  .download-planilhas-icon-modelo {
-    color: #1E88E5;
-  }
-  
-  /* Ícone Modelo - modo light */
-  [data-theme="light"] .download-planilhas-icon-modelo {
-    color: #3b82f6;
-  }
-  
-  /* Ícone Exemplo - modo dark (padrão) */
-  .download-planilhas-icon-exemplo {
-    color: #F50057;
-  }
-  
-  /* Ícone Exemplo - modo light */
-  [data-theme="light"] .download-planilhas-icon-exemplo {
-    color: #ef4444;
-  }
-  
-  /* Ícone Info - modo dark (padrão) */
-  .download-planilhas-icon-info {
-    color: #673AB7;
-  }
-  
-  /* Ícone Info - modo light */
-  [data-theme="light"] .download-planilhas-icon-info {
-    color: #9333ea;
-  }
-  
-  /* Botão Baixar Modelo - modo dark (padrão) */
-  .download-planilhas-btn-modelo {
-    background-color: rgba(30, 136, 229, 0.1);
-    color: #1E88E5;
-    border: 1px solid rgba(30, 136, 229, 0.5);
+}
+
+/* ===== MODAL PRINCIPAL ===== */
+.downloadPlanilhasModal {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideInFromBottom 0.3s ease;
+}
+
+/* ===== HEADER ===== */
+.downloadPlanilhasTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.downloadPlanilhasIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-primary);
+}
+
+.downloadPlanilhasDescription {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ===== CONTAINER PRINCIPAL ===== */
+.downloadPlanilhasContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+/* ===== CARDS ===== */
+.downloadPlanilhasCardModelo,
+.downloadPlanilhasCardExemplo,
+.downloadPlanilhasCardInfo {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.2s ease;
+}
+
+.downloadPlanilhasCardModelo {
+  border-left: 4px solid var(--onity-color-primary);
+}
+
+.downloadPlanilhasCardExemplo {
+  border-left: 4px solid var(--onity-color-warning);
+}
+
+.downloadPlanilhasCardInfo {
+  border-left: 4px solid var(--onity-color-success);
+}
+
+.downloadPlanilhasCardModelo:hover,
+.downloadPlanilhasCardExemplo:hover,
+.downloadPlanilhasCardInfo:hover {
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-1px);
+}
+
+.downloadPlanilhasCardContent {
+  padding: var(--onity-space-l) var(--onity-space-l) 0 var(--onity-space-l);
+}
+
+.downloadPlanilhasCardInner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--onity-space-m);
+}
+
+.downloadPlanilhasCardIconModelo,
+.downloadPlanilhasCardIconExemplo,
+.downloadPlanilhasCardIconInfo {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.downloadPlanilhasCardIconModelo {
+  color: var(--onity-color-primary);
+}
+
+.downloadPlanilhasCardIconExemplo {
+  color: var(--onity-color-warning);
+}
+
+.downloadPlanilhasCardIconInfo {
+  color: var(--onity-color-success);
+}
+
+.downloadPlanilhasCardFlex1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.downloadPlanilhasCardTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0 0 var(--onity-space-s) 0;
+}
+
+.downloadPlanilhasCardText {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin: 0 0 var(--onity-space-m) 0;
+  line-height: 1.5;
+}
+
+.downloadPlanilhasCardInfoText {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.downloadPlanilhasCardInfoList {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  line-height: 1.5;
+}
+
+.downloadPlanilhasCardInfoList li {
+  margin-bottom: var(--onity-space-xs);
+}
+
+.downloadPlanilhasCardInfoList strong {
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+.downloadPlanilhasFileInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin-bottom: var(--onity-space-m);
+}
+
+.downloadPlanilhasFileInfoIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--onity-icon-secondary);
+}
+
+/* ===== BOTÕES ===== */
+.downloadPlanilhasBtnModelo,
+.downloadPlanilhasBtnExemplo,
+.downloadPlanilhasCloseBtn {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-m);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
     transition: all 0.2s ease;
+  border: 1px solid var(--onity-color-border);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  min-width: 100px;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(68, 84, 100, 0.1);
+}
+
+.downloadPlanilhasBtnModelo {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.downloadPlanilhasBtnModelo:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.2);
+}
+
+.downloadPlanilhasBtnExemplo {
+  background-color: var(--onity-color-warning);
+  color: var(--onity-color-warning-contrast);
+  border-color: var(--onity-color-warning);
+}
+
+.downloadPlanilhasBtnExemplo:hover {
+  background-color: var(--onity-color-warning-hover);
+  border-color: var(--onity-color-warning-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.2);
+}
+
+.downloadPlanilhasCloseBtn {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.downloadPlanilhasCloseBtn:hover {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.2);
+}
+
+.downloadPlanilhasBtnIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== FOOTER ===== */
+.downloadPlanilhasFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  margin-top: var(--onity-space-l);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .downloadPlanilhasModal {
+    max-width: 95vw;
+    max-height: 95vh;
   }
   
-  .download-planilhas-btn-modelo:hover {
-    background-color: rgba(30, 136, 229, 0.2);
-    border-color: rgba(30, 136, 229, 0.7);
-    color: #ffffff !important;
-    transform: scale(1.05);
+  .downloadPlanilhasCardContent {
+    padding: var(--onity-space-m) var(--onity-space-m) 0 var(--onity-space-m);
   }
   
-  /* Botão Baixar Modelo - modo light */
-  [data-theme="light"] .download-planilhas-btn-modelo {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-    border: 1px solid rgba(59, 130, 246, 0.5);
+  .downloadPlanilhasCardInner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
   
-  [data-theme="light"] .download-planilhas-btn-modelo:hover {
-    background-color: rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.7);
-    color: #ffffff !important;
-    transform: scale(1.05);
+  .downloadPlanilhasBtnModelo,
+  .downloadPlanilhasBtnExemplo,
+  .downloadPlanilhasCloseBtn {
+    width: 100%;
+    min-width: auto;
   }
   
-  /* Botão Baixar Exemplo - modo dark (padrão) */
-  .download-planilhas-btn-exemplo {
-    background-color: rgba(245, 0, 87, 0.1);
-    color: #F50057;
-    border: 1px solid rgba(245, 0, 87, 0.5);
-    transition: all 0.2s ease;
+  .downloadPlanilhasFooter {
+    padding: var(--onity-space-m);
+    flex-direction: column;
+    gap: var(--onity-space-s);
+  }
+}
+
+@media (max-width: 480px) {
+  .downloadPlanilhasModal {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
   }
   
-  .download-planilhas-btn-exemplo:hover {
-    background-color: rgba(245, 0, 87, 0.2);
-    border-color: rgba(245, 0, 87, 0.7);
-    color: #ffffff !important;
-    transform: scale(1.05);
+  .downloadPlanilhasCardContent {
+    padding: var(--onity-space-s) var(--onity-space-s) 0 var(--onity-space-s);
   }
   
-  /* Botão Baixar Exemplo - modo light */
-  [data-theme="light"] .download-planilhas-btn-exemplo {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.5);
+  .downloadPlanilhasFooter {
+    padding: var(--onity-space-s);
   }
-  
-  [data-theme="light"] .download-planilhas-btn-exemplo:hover {
-    background-color: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.7);
-    color: #ffffff !important;
-    transform: scale(1.05);
-  }
-  
-  /* Botão Fechar - modo dark (padrão) - seguindo paleta contas a pagar */
-  .download-planilhas-close-btn {
-    background-color: rgba(156, 39, 176, 0.1);
-    color: #9C27B0;
-    border: 1px solid rgba(156, 39, 176, 0.5);
-    transition: all 0.2s ease;
-  }
-  
-  .download-planilhas-close-btn:hover {
-    background-color: rgba(156, 39, 176, 0.2);
-    border-color: rgba(156, 39, 176, 0.7);
-    color: #9C27B0 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Botão Fechar - modo light */
-  [data-theme="light"] .download-planilhas-close-btn {
-    background-color: transparent;
-    border-color: #d1d5db;
-    color: #374151;
-  }
-  
-  [data-theme="light"] .download-planilhas-close-btn:hover {
-    background-color: rgba(209, 213, 219, 0.2);
-    border-color: #9ca3af;
-    color: #1f2937 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Ícones de Download - modo dark (padrão) */
-  .download-planilhas-icon {
-    color: #673AB7;
-  }
-  
-  /* Ícones de Download - modo light */
-  [data-theme="light"] .download-planilhas-icon {
-    color: #9333ea;
   }

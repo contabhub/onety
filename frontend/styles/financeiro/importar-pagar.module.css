@@ -1,274 +1,256 @@
 /* Estilos específicos para modal ImportarPagar */
 
-/* Modal principal - modo dark (padrão) */
-.importar-pagar-modal {
-    background-color: #1B1229;
-    border-color: #673AB7;
-    color: #ffffff;
+/* Modal principal */
+.importarPagarModal {
+  max-width: 45rem;
+  max-height: 40rem;
+  overflow-y: auto;
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 11px;
+  box-shadow: var(--onity-shadow-lg);
+}
+
+/* Título do modal */
+.importarPagarTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h2-size);
+  font-weight: var(--onity-type-h2-weight);
+}
+
+/* Descrição do modal */
+.importarPagarDescription {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line-height);
+}
+
+/* Ícones */
+.importarPagarIcon {
+  color: var(--onity-color-primary);
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Cards */
+.importarPagarCard {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-lg);
+  box-shadow: var(--onity-shadow-sm);
+}
+
+.importarPagarCardTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+}
+
+/* Área de upload */
+.importarPagarUploadArea {
+  border: 2px dashed var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-lg);
+  padding: var(--onity-space-l);
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.importarPagarUploadArea:hover {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-color-primary-surface);
+}
+
+.importarPagarLabel {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h4-size);
+  font-weight: var(--onity-type-h4-weight);
+  margin-bottom: var(--onity-space-xs);
+}
+
+/* Arquivo selecionado */
+.importarPagarFileSelected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-m);
+  border-radius: var(--onity-radius-lg);
+  background-color: var(--onity-color-primary-surface);
+  border: 1px solid var(--onity-color-primary-border);
+}
+
+/* Badge de registros */
+.importarPagarBadge {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  font-size: var(--onity-type-caption-size);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-sm);
+  font-weight: var(--onity-type-caption-weight);
+}
+
+/* Botões */
+.importarPagarPreviewBtn {
+  background-color: var(--onity-color-primary-surface);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary-border);
+  border-radius: var(--onity-radius-md);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.importarPagarPreviewBtn:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-shadow-md);
+}
+
+.importarPagarCancelBtn {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-icon-secondary);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-md);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  transition: all 0.2s ease;
+}
+
+.importarPagarCancelBtn:hover {
+  background-color: var(--onity-color-hover);
+  border-color: var(--onity-color-border-hover);
+  color: var(--onity-color-text);
+}
+
+.importarPagarImportBtn {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-md);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.importarPagarImportBtn:hover {
+  background-color: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-shadow-lg);
+}
+
+/* Tabela de preview */
+.importarPagarTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--onity-type-body-size);
+}
+
+.importarPagarTableHeader {
+  color: var(--onity-color-text);
+  border-bottom: 1px solid var(--onity-color-border);
+  text-align: left;
+  padding: var(--onity-space-xs);
+  font-weight: var(--onity-type-body-weight);
+}
+
+.importarPagarTableRow {
+  transition: background-color 0.2s ease;
+}
+
+.importarPagarTableRow:hover {
+  background-color: var(--onity-color-hover);
+}
+
+.importarPagarTableCell {
+  color: var(--onity-icon-secondary);
+  padding: var(--onity-space-xs);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+/* Seção de instruções */
+.importarPagarInstructions {
+  background-color: var(--onity-color-primary-surface);
+  border: 1px solid var(--onity-color-primary-border);
+  border-radius: var(--onity-radius-lg);
+}
+
+.importarPagarInstructionsText {
+  color: var(--onity-color-text);
+  font-weight: var(--onity-type-body-weight);
+  margin-bottom: var(--onity-space-xs);
+}
+
+.importarPagarInstructionsSecondary {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line-height);
+}
+
+/* Espaçamento e layout */
+.importarPagarSpaceY {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+.importarPagarFlex {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.importarPagarFlexBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.importarPagarFlexStart {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--onity-space-s);
+}
+
+.importarPagarTextCenter {
+  text-align: center;
+  padding: var(--onity-space-l) 0;
+}
+
+.importarPagarOverflowX {
+  overflow-x: auto;
+}
+
+.importarPagarHidden {
+  display: none;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .importarPagarModal {
+    max-width: 95vw;
+    max-height: 95vh;
   }
   
-  /* Modal principal - modo light */
-  [data-theme="light"] .importar-pagar-modal {
-    background-color: #ffffff;
-    border-color: #e5e7eb;
-    color: #1f2937;
+  .importarPagarTable {
+    font-size: var(--onity-type-caption-size);
   }
   
-  /* Título - modo dark (padrão) */
-  .importar-pagar-title {
-    color: #ffffff;
+  .importarPagarUploadArea {
+    padding: var(--onity-space-m);
   }
-  
-  /* Título - modo light */
-  [data-theme="light"] .importar-pagar-title {
-    color: #1f2937;
-  }
-  
-  /* Descrição - modo dark (padrão) */
-  .importar-pagar-description {
-    color: #9ca3af;
-  }
-  
-  /* Descrição - modo light */
-  [data-theme="light"] .importar-pagar-description {
-    color: #6b7280;
-  }
-  
-  /* Ícones SVG - modo dark (padrão) */
-  .importar-pagar-icon {
-    color: #673AB7;
-  }
-  
-  /* Ícones SVG - modo light */
-  [data-theme="light"] .importar-pagar-icon {
-    color: #9333ea;
-  }
-  
-  /* Cards - modo dark (padrão) */
-  .importar-pagar-card {
-    background-color: #1B1229;
-    border-color: #673AB7;
-  }
-  
-  /* Cards - modo light */
-  [data-theme="light"] .importar-pagar-card {
-    background-color: #ffffff;
-    border-color: #e5e7eb;
-  }
-  
-  /* Título do Card - modo dark (padrão) */
-  .importar-pagar-card-title {
-    color: #ffffff;
-  }
-  
-  /* Título do Card - modo light */
-  [data-theme="light"] .importar-pagar-card-title {
-    color: #1f2937;
-  }
-  
-  /* Área de Upload - modo dark (padrão) */
-  .importar-pagar-upload-area {
-    border: 2px dashed #673AB7;
-    background-color: rgba(27, 18, 41, 0.5);
-  }
-  
-  .importar-pagar-upload-area:hover {
-    border-color: #9C27B0;
-    background-color: rgba(103, 58, 183, 0.2);
-  }
-  
-  /* Área de Upload - modo light */
-  [data-theme="light"] .importar-pagar-upload-area {
-    border: 2px dashed #d1d5db;
-    background-color: rgba(243, 244, 246, 0.5);
-  }
-  
-  [data-theme="light"] .importar-pagar-upload-area:hover {
-    border-color: #9ca3af;
-    background-color: rgba(229, 231, 235, 0.5);
-  }
-  
-  /* Label da área de upload - modo dark (padrão) */
-  .importar-pagar-label {
-    color: #ffffff;
-  }
-  
-  /* Label da área de upload - modo light */
-  [data-theme="light"] .importar-pagar-label {
-    color: #1f2937;
-  }
-  
-  /* Arquivo selecionado - modo dark (padrão) */
-  .importar-pagar-file-selected {
-    background-color: rgba(103, 58, 183, 0.1);
-    border-color: rgba(103, 58, 183, 0.3);
-  }
-  
-  /* Arquivo selecionado - modo light */
-  [data-theme="light"] .importar-pagar-file-selected {
-    background-color: rgba(147, 51, 234, 0.1);
-    border-color: rgba(147, 51, 234, 0.3);
-  }
-  
-  /* Badge de registros - modo dark (padrão) */
-  .importar-pagar-badge {
-    background-color: #673AB7;
-    color: #ffffff;
-  }
-  
-  /* Badge de registros - modo light */
-  [data-theme="light"] .importar-pagar-badge {
-    background-color: #9333ea;
-    color: #ffffff;
-  }
-  
-  /* Botão Visualizar/Atualizar Preview - modo dark (padrão) */
-  .importar-pagar-preview-btn {
-    background-color: rgba(103, 58, 183, 0.1);
-    color: #673AB7;
-    border: 1px solid rgba(103, 58, 183, 0.5);
-    transition: all 0.2s ease;
-  }
-  
-  .importar-pagar-preview-btn:hover {
-    background-color: rgba(103, 58, 183, 0.2);
-    border-color: rgba(103, 58, 183, 0.7);
-    color: #673AB7 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Botão Visualizar/Atualizar Preview - modo light */
-  [data-theme="light"] .importar-pagar-preview-btn {
-    background-color: transparent;
-    border-color: #d1d5db;
-    color: #374151;
-  }
-  
-  [data-theme="light"] .importar-pagar-preview-btn:hover {
-    background-color: rgba(209, 213, 219, 0.2);
-    border-color: #9ca3af;
-    color: #1f2937 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Tabela de Preview - modo dark (padrão) */
-  .importar-pagar-table {
-    border-collapse: collapse;
-  }
-  
-  .importar-pagar-table-header {
-    color: #ffffff;
-    border-bottom: 1px solid #673AB7;
-  }
-  
-  .importar-pagar-table-row {
-    transition: background-color 0.2s ease;
-  }
-  
-  .importar-pagar-table-row:hover {
-    background-color: rgba(103, 58, 183, 0.1);
-  }
-  
-  .importar-pagar-table-cell {
-    color: #b0afc1;
-  }
-  
-  /* Tabela de Preview - modo light */
-  [data-theme="light"] .importar-pagar-table-header {
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  [data-theme="light"] .importar-pagar-table-row:hover {
-    background-color: rgba(147, 51, 234, 0.05);
-  }
-  
-  [data-theme="light"] .importar-pagar-table-cell {
-    color: #4b5563;
-  }
-  
-  /* Seção de Instruções - modo dark (padrão) */
-  .importar-pagar-instructions {
-    background-color: rgba(103, 58, 183, 0.1);
-    border-color: rgba(103, 58, 183, 0.3);
-  }
-  
-  .importar-pagar-instructions-text {
-    color: #ffffff;
-  }
-  
-  .importar-pagar-instructions-secondary {
-    color: #b0afc1;
-  }
-  
-  /* Seção de Instruções - modo light */
-  [data-theme="light"] .importar-pagar-instructions {
-    background-color: rgba(147, 51, 234, 0.1);
-    border-color: rgba(147, 51, 234, 0.3);
-  }
-  
-  [data-theme="light"] .importar-pagar-instructions-text {
-    color: #1f2937;
-  }
-  
-  [data-theme="light"] .importar-pagar-instructions-secondary {
-    color: #6b7280;
-  }
-  
-  /* Botão Cancelar - modo dark (padrão) */
-  .importar-pagar-cancel-btn {
-    background-color: rgba(156, 39, 176, 0.1);
-    color: #9C27B0;
-    border: 1px solid rgba(156, 39, 176, 0.5);
-    transition: all 0.2s ease;
-  }
-  
-  .importar-pagar-cancel-btn:hover {
-    background-color: rgba(156, 39, 176, 0.2);
-    border-color: rgba(156, 39, 176, 0.7);
-    color: #9C27B0 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Botão Cancelar - modo light */
-  [data-theme="light"] .importar-pagar-cancel-btn {
-    background-color: transparent;
-    border-color: #d1d5db;
-    color: #374151;
-  }
-  
-  [data-theme="light"] .importar-pagar-cancel-btn:hover {
-    background-color: rgba(209, 213, 219, 0.2);
-    border-color: #9ca3af;
-    color: #1f2937 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Botão Importar - modo dark (padrão) */
-  .importar-pagar-import-btn {
-    background-color: rgba(123, 31, 162, 0.1);
-    color: #7B1FA2;
-    border: 1px solid rgba(123, 31, 162, 0.5);
-    transition: all 0.2s ease;
-  }
-  
-  .importar-pagar-import-btn:hover {
-    background-color: rgba(123, 31, 162, 0.2);
-    border-color: rgba(123, 31, 162, 0.7);
-    color: #7B1FA2 !important;
-    transform: scale(1.05);
-  }
-  
-  /* Botão Importar - modo light */
-  [data-theme="light"] .importar-pagar-import-btn {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
-    color: #ffffff;
-  }
-  
-  [data-theme="light"] .importar-pagar-import-btn:hover {
-    background-color: #2563eb;
-    border-color: #2563eb;
-    color: #ffffff !important;
-    transform: scale(1.05);
-  }
+}
