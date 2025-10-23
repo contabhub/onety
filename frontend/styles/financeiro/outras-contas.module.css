@@ -1,0 +1,830 @@
+/* Estilos específicos para página de Outras Contas */
+
+/* Background principal - modo dark (padrão) */
+.outras-contas-bg {
+    background-color: var(--onity-color-bg);
+    padding: var(--onity-space-l);
+    min-height: 100vh;
+  }
+
+/* Mapeamento das classes CSS modules */
+.outrasContasBg {
+    background-color: var(--onity-color-bg);
+    padding: var(--onity-space-l);
+    min-height: 100vh;
+  }
+
+.outrasContasHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+.outrasContasHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-m);
+  }
+
+.outrasContasHeaderRight {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+  }
+
+.outrasContasActionIcon {
+    width: 16px;
+    height: 16px;
+    margin-right: var(--onity-space-xs);
+    color: var(--onity-icon-primary);
+  }
+
+.outrasContasSearchContent {
+    padding-top: var(--onity-space-l);
+  }
+
+.outrasContasSearchContainer {
+    position: relative;
+    max-width: 300px;
+    margin-left: 30px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+  }
+
+.outrasContasTableContent {
+    padding-top: var(--onity-space-l);
+  }
+
+.outrasContasTableWrapper {
+    overflow-x: auto;
+  }
+
+.outrasContasTable {
+    width: 100%;
+  }
+
+.outrasContasTableCell {
+    padding: var(--onity-space-s);
+  }
+
+.outrasContasAccountInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+  }
+
+.outrasContasActionButtons {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+  }
+
+.outrasContasLoadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--onity-space-xl) 0;
+    gap: var(--onity-space-m);
+  }
+
+.outrasContasLoadingSpinner {
+    width: 32px;
+    height: 32px;
+    border: 4px solid var(--onity-color-primary);
+    border-top: 4px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+.outrasContasSyncSpinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--onity-color-primary);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+/* Classes adicionais para mapeamento */
+.outrasContasBackBtn {
+    background-color: var(--onity-color-bg);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    transition: all 0.2s ease;
+  }
+
+.outrasContasHeaderTitle {
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-h2-size);
+    font-weight: var(--onity-type-h2-weight);
+  }
+
+.outrasContasHeaderSubtitle {
+    color: var(--onity-icon-secondary);
+    margin-top: var(--onity-space-xs);
+    font-size: var(--onity-type-body-size);
+  }
+
+.outrasContasSyncIndicator {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background-color: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+  }
+
+.outrasContasSyncText {
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-caption-size);
+    font-weight: 500;
+  }
+
+.outrasContasSyncSuccess {
+    color: var(--onity-color-success);
+    font-size: var(--onity-type-caption-size);
+  }
+
+.outrasContasSyncError {
+    color: var(--onity-color-error);
+    font-size: var(--onity-type-caption-size);
+  }
+
+.outrasContasSyncBtn {
+    background-color: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    transition: all 0.2s ease;
+  }
+
+.outrasContasPrimaryBtn {
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: 1px solid var(--onity-color-primary);
+    border-radius: var(--onity-radius-xs);
+    transition: all 0.2s ease;
+  }
+
+.outrasContasSearchCard {
+    background-color: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+  }
+
+.outrasContasSearchIcon {
+    position: absolute;
+    left: var(--onity-space-m);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--onity-icon-secondary);
+  }
+
+.outrasContasSearchInput {
+    background-color: var(--onity-color-surface);
+    border: 2px solid var(--onity-color-border);
+    color: var(--onity-color-text);
+    padding-left: 40px;
+    border-radius: 11px
+  }
+
+.outrasContasTableCard {
+    background-color: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+    margin-top: 50px;
+  }
+
+.outrasContasTableBorder {
+    border-bottom: 1px solid var(--onity-color-border);
+  }
+
+.outrasContasTableHeader {
+    color: var(--onity-color-text);
+    text-align: left;
+    padding: var(--onity-space-s);
+    font-size: var(--onity-type-caption-size);
+    font-weight: 500;
+  }
+
+.outrasContasEmptyText {
+    color: var(--onity-icon-secondary);
+    text-align: center;
+    padding: var(--onity-space-m);
+  }
+
+.outrasContasTableRow {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
+
+.outrasContasTableRow:hover {
+    background-color: var(--onity-color-bg);
+  }
+
+.outrasContasAccountIcon {
+    width: 24px;
+    height: 24px;
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border-radius: var(--onity-radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--onity-type-caption-size);
+    font-weight: bold;
+  }
+
+.outrasContasTableCellPrimary {
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-caption-size);
+    font-weight: 500;
+  }
+
+.outrasContasTableCellSecondary {
+    color: var(--onity-icon-secondary);
+    font-size: var(--onity-type-caption-size);
+  }
+
+.outrasContasActionBtnEdit {
+    background-color: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    transition: all 0.2s ease;
+  }
+
+.outrasContasActionBtnDelete {
+    background-color: var(--onity-color-surface);
+    color: var(--onity-color-error);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    transition: all 0.2s ease;
+  }
+
+.outrasContasLoadingText {
+    color: var(--onity-icon-secondary);
+    font-size: var(--onity-type-body-size);
+  }
+
+/* Container principal */
+.outras-contas-bg > * + * {
+    margin-top: var(--onity-space-xl);
+  }
+
+/* Header */
+.outras-contas-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+.outras-contas-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+.outras-contas-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+/* Ícones */
+.outras-contas-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+  }
+
+.outras-contas-action-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+  }
+
+/* Search */
+.outras-contas-search-content {
+    padding-top: 24px;
+  }
+
+.outras-contas-search-container {
+    position: relative;
+    max-width: 384px;
+  }
+
+/* Table */
+.outras-contas-table-content {
+    padding-top: 24px;
+  }
+
+.outras-contas-table-wrapper {
+    overflow-x: auto;
+  }
+
+.outras-contas-table {
+    width: 100%;
+  }
+
+.outras-contas-table-cell {
+    padding: 12px;
+  }
+
+.outras-contas-account-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+.outras-contas-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+/* Loading */
+.outras-contas-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+    gap: 16px;
+  }
+
+.outras-contas-loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 4px solid #1E88E5;
+    border-top: 4px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sync indicator */
+.outras-contas-sync-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #1E88E5;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  /* Background principal no modo light */
+  [data-theme="light"] .outras-contas-bg {
+    background-color: #f8fafc;
+  }
+  
+  /* Header - modo dark (padrão) */
+  .outras-contas-header-title {
+    color: #ffffff;
+  }
+  
+  .outras-contas-header-subtitle {
+    color: #B0AFC1;
+  }
+  
+  /* Header no modo light */
+  [data-theme="light"] .outras-contas-header-title {
+    color: #111827;
+  }
+  
+  [data-theme="light"] .outras-contas-header-subtitle {
+    color: #6b7280;
+  }
+  
+  /* Botão voltar - modo dark (padrão) */
+  .outras-contas-back-btn {
+    background-color: rgba(103, 58, 183, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(103, 58, 183, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .outras-contas-back-btn:hover {
+    background-color: rgba(103, 58, 183, 0.2);
+    border-color: rgba(103, 58, 183, 0.7);
+    color: #B0AFC1;
+    transform: scale(1.05);
+  }
+  
+  /* Botão voltar no modo light */
+  [data-theme="light"] .outras-contas-back-btn {
+    background-color: rgba(147, 51, 234, 0.1);
+    color: #374151;
+    border: 1px solid rgba(147, 51, 234, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-back-btn:hover {
+    background-color: rgba(147, 51, 234, 0.2);
+    border-color: rgba(147, 51, 234, 0.5);
+    color: #6b7280;
+  }
+  
+  /* Botão sincronizar - modo dark (padrão) */
+  .outras-contas-sync-btn {
+    background-color: rgba(30, 136, 229, 0.1);
+    color: #1E88E5;
+    border: 1px solid rgba(30, 136, 229, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .outras-contas-sync-btn:hover {
+    background-color: rgba(30, 136, 229, 0.2);
+    border-color: rgba(30, 136, 229, 0.7);
+    color: #1E88E5;
+    transform: scale(1.05);
+  }
+  
+  .outras-contas-sync-btn:disabled {
+    opacity: 0.5;
+    transform: none;
+  }
+  
+  /* Botão sincronizar no modo light */
+  [data-theme="light"] .outras-contas-sync-btn {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-sync-btn:hover {
+    background-color: rgba(37, 99, 235, 0.2);
+    border-color: rgba(37, 99, 235, 0.5);
+    color: #2563eb;
+  }
+  
+  /* Botão nova conta - modo dark (padrão) - SEM GRADIENTE */
+  .outras-contas-primary-btn {
+    background-color: #673AB7;
+    color: #ffffff;
+    border: 1px solid #673AB7;
+    transition: all 0.2s ease;
+  }
+  
+  .outras-contas-primary-btn:hover {
+    background-color: #7B1FA2;
+    border-color: #7B1FA2;
+    color: #ffffff;
+    transform: scale(1.05);
+  }
+  
+  /* Botão nova conta no modo light */
+  [data-theme="light"] .outras-contas-primary-btn {
+    background-color: #9333ea;
+    color: #ffffff;
+    border: 1px solid #9333ea;
+  }
+  
+  [data-theme="light"] .outras-contas-primary-btn:hover {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+    color: #ffffff;
+  }
+  
+  /* Card de busca - modo dark (padrão) */
+  .outras-contas-search-card {
+    background-color: rgba(27, 18, 41, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(103, 58, 183, 0.2);
+  }
+  
+  /* Card de busca no modo light */
+  [data-theme="light"] .outras-contas-search-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Input de busca - modo dark (padrão) */
+  .outras-contas-search-input {
+    background-color: rgba(27, 18, 41, 0.3);
+    border: 1px solid rgba(103, 58, 183, 0.3);
+    color: #ffffff;
+  }
+  
+  .outras-contas-search-input::placeholder {
+    color: #B0AFC1;
+  }
+  
+  .outras-contas-search-input:focus {
+    border-color: #9C27B0;
+    box-shadow: 0 0 0 1px #9C27B0;
+  }
+  
+  /* Input de busca no modo light */
+  [data-theme="light"] .outras-contas-search-input {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #111827;
+  }
+  
+  [data-theme="light"] .outras-contas-search-input::placeholder {
+    color: #6b7280;
+  }
+  
+  [data-theme="light"] .outras-contas-search-input:focus {
+    border-color: #9333ea;
+    box-shadow: 0 0 0 1px #9333ea;
+  }
+  
+  /* Ícone de busca - modo dark (padrão) */
+  .outras-contas-search-icon {
+    color: #B0AFC1;
+  }
+  
+  /* Ícone de busca no modo light */
+  [data-theme="light"] .outras-contas-search-icon {
+    color: #6b7280;
+  }
+  
+  /* Card da tabela - modo dark (padrão) */
+  .outras-contas-table-card {
+    background-color: rgba(27, 18, 41, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(103, 58, 183, 0.2);
+  }
+  
+  /* Card da tabela no modo light */
+  [data-theme="light"] .outras-contas-table-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Cabeçalho da tabela - modo dark (padrão) */
+  .outras-contas-table-header {
+    color: #ffffff;
+  }
+  
+  .outras-contas-table-border {
+    border-bottom: 1px solid rgba(103, 58, 183, 0.2);
+  }
+  
+  /* Cabeçalho da tabela no modo light */
+  [data-theme="light"] .outras-contas-table-header {
+    color: #374151;
+  }
+  
+  [data-theme="light"] .outras-contas-table-border {
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* Linhas da tabela - modo dark (padrão) */
+  .outras-contas-table-row {
+    transition: background-color 0.2s ease;
+  }
+  
+  .outras-contas-table-row:hover {
+    background-color: rgba(103, 58, 183, 0.1);
+  }
+  
+  /* Linhas da tabela no modo light */
+  [data-theme="light"] .outras-contas-table-row:hover {
+    background-color: rgba(147, 51, 234, 0.05);
+  }
+  
+  /* Texto das células - modo dark (padrão) */
+  .outras-contas-table-cell-primary {
+    color: #ffffff;
+  }
+  
+  .outras-contas-table-cell-secondary {
+    color: #B0AFC1;
+  }
+  
+  /* Texto das células no modo light */
+  [data-theme="light"] .outras-contas-table-cell-primary {
+    color: #111827;
+  }
+  
+  [data-theme="light"] .outras-contas-table-cell-secondary {
+    color: #6b7280;
+  }
+  
+  /* Ícones das contas - modo dark (padrão) */
+  .outras-contas-account-icon {
+    background-color: #1E88E5;
+    color: #ffffff;
+  }
+  
+  /* Ícones das contas no modo light */
+  [data-theme="light"] .outras-contas-account-icon {
+    background-color: #2563eb;
+    color: #ffffff;
+  }
+  
+  /* Badges de status - modo dark (padrão) */
+  .outras-contas-badge-pendentes {
+    background-color: rgba(245, 0, 87, 0.2);
+    color: #F50057;
+    border: 1px solid rgba(245, 0, 87, 0.3);
+  }
+  
+  .outras-contas-badge-em-dia {
+    background-color: rgba(176, 175, 193, 0.2);
+    color: #B0AFC1;
+    border: 1px solid rgba(176, 175, 193, 0.3);
+  }
+  
+  .outras-contas-badge-automatica {
+    background-color: rgba(30, 136, 229, 0.2);
+    color: #1E88E5;
+    border: 1px solid rgba(30, 136, 229, 0.3);
+  }
+  
+  .outras-contas-badge-openfinance {
+    background-color: rgba(30, 136, 229, 0.2);
+    color: #1E88E5;
+    border: 1px solid rgba(30, 136, 229, 0.3);
+  }
+  
+  .outras-contas-badge-manual {
+    background-color: rgba(176, 175, 193, 0.2);
+    color: #B0AFC1;
+    border: 1px solid rgba(176, 175, 193, 0.3);
+  }
+  
+  .outras-contas-badge-nao-configurada {
+    background-color: rgba(245, 0, 87, 0.2);
+    color: #F50057;
+    border: 1px solid rgba(245, 0, 87, 0.3);
+  }
+  
+  /* Badges de status no modo light */
+  [data-theme="light"] .outras-contas-badge-pendentes {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-badge-em-dia {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-badge-automatica {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-badge-openfinance {
+    
+    background: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  
+  }
+  
+  [data-theme="light"] .outras-contas-badge-manual {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-badge-nao-configurada {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  /* Botões de ação da tabela - modo dark (padrão) */
+  .outras-contas-action-btn-edit {
+    background-color: rgba(30, 136, 229, 0.1);
+    color: #1E88E5;
+    border: 1px solid rgba(30, 136, 229, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .outras-contas-action-btn-edit:hover {
+    background-color: rgba(30, 136, 229, 0.2);
+    border-color: rgba(30, 136, 229, 0.7);
+    color: #1E88E5;
+    transform: scale(1.05);
+  }
+  
+  .outras-contas-action-btn-delete {
+    background-color: rgba(245, 0, 87, 0.1);
+    color: #F50057;
+    border: 1px solid rgba(245, 0, 87, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .outras-contas-action-btn-delete:hover {
+    background-color: rgba(245, 0, 87, 0.2);
+    border-color: rgba(245, 0, 87, 0.7);
+    color: #F50057;
+    transform: scale(1.05);
+  }
+  
+  /* Botões de ação da tabela no modo light */
+  [data-theme="light"] .outras-contas-action-btn-edit {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  [data-theme="light"] .outras-contas-action-btn-edit:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.7);
+    color: #9C27B0 !important;
+    transform: scale(1.05);
+  }
+  
+  [data-theme="light"] .outras-contas-action-btn-delete {
+    background-color: rgba(103, 58, 183, 0.1);
+    color: #673AB7;
+    border: 1px solid rgba(103, 58, 183, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  [data-theme="light"] .outras-contas-action-btn-delete:hover {
+    background-color: rgba(103, 58, 183, 0.2);
+    border-color: rgba(103, 58, 183, 0.7);
+    color: #673AB7 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Indicador de sincronização - modo dark (padrão) */
+  .outras-contas-sync-indicator {
+    background-color: rgba(30, 136, 229, 0.1);
+    border: 1px solid rgba(30, 136, 229, 0.3);
+  }
+  
+  .outras-contas-sync-text {
+    color: #1E88E5;
+  }
+  
+  .outras-contas-sync-success {
+    color: #22c55e;
+  }
+  
+  .outras-contas-sync-error {
+    color: #ef4444;
+  }
+  
+  /* Indicador de sincronização no modo light */
+  [data-theme="light"] .outras-contas-sync-indicator {
+    background-color: rgba(37, 99, 235, 0.1);
+    border: 1px solid rgba(37, 99, 235, 0.3);
+  }
+  
+  [data-theme="light"] .outras-contas-sync-text {
+    color: #2563eb;
+  }
+  
+  [data-theme="light"] .outras-contas-sync-success {
+    color: #16a34a;
+  }
+  
+  [data-theme="light"] .outras-contas-sync-error {
+    color: #dc2626;
+  }
+  
+  /* Loading state - modo dark (padrão) */
+  .outras-contas-loading-text {
+    color: #B0AFC1;
+  }
+  
+  /* Loading state no modo light */
+  [data-theme="light"] .outras-contas-loading-text {
+    color: #6b7280;
+  }
+  
+  /* Mensagem de nenhuma conta encontrada - modo dark (padrão) */
+  .outras-contas-empty-text {
+    color: #B0AFC1;
+  }
+  
+  /* Mensagem de nenhuma conta encontrada no modo light */
+  [data-theme="light"] .outras-contas-empty-text {
+    color: #6b7280;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .outras-contas-primary-btn,
+    .outras-contas-sync-btn,
+    .outras-contas-back-btn {
+      font-size: 0.875rem;
+      padding: 8px 12px;
+    }
+  }

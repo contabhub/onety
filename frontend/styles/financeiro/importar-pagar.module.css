@@ -1,0 +1,274 @@
+/* Estilos específicos para modal ImportarPagar */
+
+/* Modal principal - modo dark (padrão) */
+.importar-pagar-modal {
+    background-color: #1B1229;
+    border-color: #673AB7;
+    color: #ffffff;
+  }
+  
+  /* Modal principal - modo light */
+  [data-theme="light"] .importar-pagar-modal {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    color: #1f2937;
+  }
+  
+  /* Título - modo dark (padrão) */
+  .importar-pagar-title {
+    color: #ffffff;
+  }
+  
+  /* Título - modo light */
+  [data-theme="light"] .importar-pagar-title {
+    color: #1f2937;
+  }
+  
+  /* Descrição - modo dark (padrão) */
+  .importar-pagar-description {
+    color: #9ca3af;
+  }
+  
+  /* Descrição - modo light */
+  [data-theme="light"] .importar-pagar-description {
+    color: #6b7280;
+  }
+  
+  /* Ícones SVG - modo dark (padrão) */
+  .importar-pagar-icon {
+    color: #673AB7;
+  }
+  
+  /* Ícones SVG - modo light */
+  [data-theme="light"] .importar-pagar-icon {
+    color: #9333ea;
+  }
+  
+  /* Cards - modo dark (padrão) */
+  .importar-pagar-card {
+    background-color: #1B1229;
+    border-color: #673AB7;
+  }
+  
+  /* Cards - modo light */
+  [data-theme="light"] .importar-pagar-card {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+  }
+  
+  /* Título do Card - modo dark (padrão) */
+  .importar-pagar-card-title {
+    color: #ffffff;
+  }
+  
+  /* Título do Card - modo light */
+  [data-theme="light"] .importar-pagar-card-title {
+    color: #1f2937;
+  }
+  
+  /* Área de Upload - modo dark (padrão) */
+  .importar-pagar-upload-area {
+    border: 2px dashed #673AB7;
+    background-color: rgba(27, 18, 41, 0.5);
+  }
+  
+  .importar-pagar-upload-area:hover {
+    border-color: #9C27B0;
+    background-color: rgba(103, 58, 183, 0.2);
+  }
+  
+  /* Área de Upload - modo light */
+  [data-theme="light"] .importar-pagar-upload-area {
+    border: 2px dashed #d1d5db;
+    background-color: rgba(243, 244, 246, 0.5);
+  }
+  
+  [data-theme="light"] .importar-pagar-upload-area:hover {
+    border-color: #9ca3af;
+    background-color: rgba(229, 231, 235, 0.5);
+  }
+  
+  /* Label da área de upload - modo dark (padrão) */
+  .importar-pagar-label {
+    color: #ffffff;
+  }
+  
+  /* Label da área de upload - modo light */
+  [data-theme="light"] .importar-pagar-label {
+    color: #1f2937;
+  }
+  
+  /* Arquivo selecionado - modo dark (padrão) */
+  .importar-pagar-file-selected {
+    background-color: rgba(103, 58, 183, 0.1);
+    border-color: rgba(103, 58, 183, 0.3);
+  }
+  
+  /* Arquivo selecionado - modo light */
+  [data-theme="light"] .importar-pagar-file-selected {
+    background-color: rgba(147, 51, 234, 0.1);
+    border-color: rgba(147, 51, 234, 0.3);
+  }
+  
+  /* Badge de registros - modo dark (padrão) */
+  .importar-pagar-badge {
+    background-color: #673AB7;
+    color: #ffffff;
+  }
+  
+  /* Badge de registros - modo light */
+  [data-theme="light"] .importar-pagar-badge {
+    background-color: #9333ea;
+    color: #ffffff;
+  }
+  
+  /* Botão Visualizar/Atualizar Preview - modo dark (padrão) */
+  .importar-pagar-preview-btn {
+    background-color: rgba(103, 58, 183, 0.1);
+    color: #673AB7;
+    border: 1px solid rgba(103, 58, 183, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .importar-pagar-preview-btn:hover {
+    background-color: rgba(103, 58, 183, 0.2);
+    border-color: rgba(103, 58, 183, 0.7);
+    color: #673AB7 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Visualizar/Atualizar Preview - modo light */
+  [data-theme="light"] .importar-pagar-preview-btn {
+    background-color: transparent;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+  
+  [data-theme="light"] .importar-pagar-preview-btn:hover {
+    background-color: rgba(209, 213, 219, 0.2);
+    border-color: #9ca3af;
+    color: #1f2937 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Tabela de Preview - modo dark (padrão) */
+  .importar-pagar-table {
+    border-collapse: collapse;
+  }
+  
+  .importar-pagar-table-header {
+    color: #ffffff;
+    border-bottom: 1px solid #673AB7;
+  }
+  
+  .importar-pagar-table-row {
+    transition: background-color 0.2s ease;
+  }
+  
+  .importar-pagar-table-row:hover {
+    background-color: rgba(103, 58, 183, 0.1);
+  }
+  
+  .importar-pagar-table-cell {
+    color: #b0afc1;
+  }
+  
+  /* Tabela de Preview - modo light */
+  [data-theme="light"] .importar-pagar-table-header {
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  [data-theme="light"] .importar-pagar-table-row:hover {
+    background-color: rgba(147, 51, 234, 0.05);
+  }
+  
+  [data-theme="light"] .importar-pagar-table-cell {
+    color: #4b5563;
+  }
+  
+  /* Seção de Instruções - modo dark (padrão) */
+  .importar-pagar-instructions {
+    background-color: rgba(103, 58, 183, 0.1);
+    border-color: rgba(103, 58, 183, 0.3);
+  }
+  
+  .importar-pagar-instructions-text {
+    color: #ffffff;
+  }
+  
+  .importar-pagar-instructions-secondary {
+    color: #b0afc1;
+  }
+  
+  /* Seção de Instruções - modo light */
+  [data-theme="light"] .importar-pagar-instructions {
+    background-color: rgba(147, 51, 234, 0.1);
+    border-color: rgba(147, 51, 234, 0.3);
+  }
+  
+  [data-theme="light"] .importar-pagar-instructions-text {
+    color: #1f2937;
+  }
+  
+  [data-theme="light"] .importar-pagar-instructions-secondary {
+    color: #6b7280;
+  }
+  
+  /* Botão Cancelar - modo dark (padrão) */
+  .importar-pagar-cancel-btn {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .importar-pagar-cancel-btn:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.7);
+    color: #9C27B0 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Cancelar - modo light */
+  [data-theme="light"] .importar-pagar-cancel-btn {
+    background-color: transparent;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+  
+  [data-theme="light"] .importar-pagar-cancel-btn:hover {
+    background-color: rgba(209, 213, 219, 0.2);
+    border-color: #9ca3af;
+    color: #1f2937 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Importar - modo dark (padrão) */
+  .importar-pagar-import-btn {
+    background-color: rgba(123, 31, 162, 0.1);
+    color: #7B1FA2;
+    border: 1px solid rgba(123, 31, 162, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .importar-pagar-import-btn:hover {
+    background-color: rgba(123, 31, 162, 0.2);
+    border-color: rgba(123, 31, 162, 0.7);
+    color: #7B1FA2 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Importar - modo light */
+  [data-theme="light"] .importar-pagar-import-btn {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+  }
+  
+  [data-theme="light"] .importar-pagar-import-btn:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff !important;
+    transform: scale(1.05);
+  }

@@ -1,0 +1,236 @@
+/* Estilos específicos para modal ImportarOFXModal */
+
+/* Modal principal - modo dark (padrão) */
+.importar-ofx-modal {
+    background-color: #1B1229;
+    border: 1px solid #673AB7;
+    color: #ffffff;
+  }
+  
+  /* Modal principal - modo light */
+  [data-theme="light"] .importar-ofx-modal {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #1f2937;
+  }
+  
+  /* Header - modo dark (padrão) */
+  .importar-ofx-header {
+    border-bottom: 1px solid #673AB7;
+  }
+  
+  /* Header - modo light */
+  [data-theme="light"] .importar-ofx-header {
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  /* Título - modo dark (padrão) */
+  .importar-ofx-title {
+    color: #ffffff;
+  }
+  
+  /* Título - modo light */
+  [data-theme="light"] .importar-ofx-title {
+    color: #1f2937;
+  }
+  
+  /* Descrição - modo dark (padrão) */
+  .importar-ofx-description {
+    color: #9ca3af;
+  }
+  
+  /* Descrição - modo light */
+  [data-theme="light"] .importar-ofx-description {
+    color: #6b7280;
+  }
+  
+  /* Cards - modo dark (padrão) */
+  .importar-ofx-card {
+    background-color: #1B1229;
+    border: 1px solid #673AB7;
+  }
+  
+  /* Cards - modo light */
+  [data-theme="light"] .importar-ofx-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+  }
+  
+  /* Ícone do card - modo dark (padrão) */
+  .importar-ofx-card-icon-bg {
+    background-color: #1B1229;
+  }
+  
+  /* Ícone do card - modo light */
+  [data-theme="light"] .importar-ofx-card-icon-bg {
+    background-color: #ffffff;
+  }
+  
+  /* Título do card - modo dark (padrão) */
+  .importar-ofx-card-title {
+    color: #ffffff;
+  }
+  
+  /* Título do card - modo light */
+  [data-theme="light"] .importar-ofx-card-title {
+    color: #1f2937;
+  }
+  
+  /* Texto do card - modo dark (padrão) */
+  .importar-ofx-card-text {
+    color: #9ca3af;
+  }
+  
+  /* Texto do card - modo light */
+  [data-theme="light"] .importar-ofx-card-text {
+    color: #6b7280;
+  }
+  
+  /* Arquivo selecionado - modo dark (padrão) */
+  .importar-ofx-file-selected {
+    background-color: rgba(103, 58, 183, 0.1);
+    border: 1px solid rgba(103, 58, 183, 0.3);
+  }
+  
+  /* Arquivo selecionado - modo light */
+  [data-theme="light"] .importar-ofx-file-selected {
+    background-color: rgba(147, 51, 234, 0.1);
+    border: 1px solid rgba(147, 51, 234, 0.3);
+  }
+  
+  /* Texto do arquivo selecionado - modo dark (padrão) */
+  .importar-ofx-file-text {
+    color: #ffffff;
+  }
+  
+  /* Texto do arquivo selecionado - modo light */
+  [data-theme="light"] .importar-ofx-file-text {
+    color: #1f2937;
+  }
+  
+  /* Seção de dica - modo dark (padrão) */
+  .importar-ofx-tip {
+    background-color: rgba(103, 58, 183, 0.1);
+    border: 1px solid rgba(103, 58, 183, 0.3);
+  }
+  
+  /* Seção de dica - modo light */
+  [data-theme="light"] .importar-ofx-tip {
+    background-color: rgba(147, 51, 234, 0.1);
+    border: 1px solid rgba(147, 51, 234, 0.3);
+  }
+  
+  /* Ícone da dica - modo dark (padrão) */
+  .importar-ofx-tip-icon {
+    background-color: #673AB7;
+  }
+  
+  /* Ícone da dica - modo light */
+  [data-theme="light"] .importar-ofx-tip-icon {
+    background-color: #9333ea;
+  }
+  
+  /* Título da dica - modo dark (padrão) */
+  .importar-ofx-tip-title {
+    color: #673AB7;
+  }
+  
+  /* Título da dica - modo light */
+  [data-theme="light"] .importar-ofx-tip-title {
+    color: #9333ea;
+  }
+  
+  /* Footer - modo dark (padrão) */
+  .importar-ofx-footer {
+    border-top: 1px solid #673AB7;
+    background-color: rgba(27, 18, 41, 0.5);
+  }
+  
+  /* Footer - modo light */
+  [data-theme="light"] .importar-ofx-footer {
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+  }
+  
+  /* Botão Cancelar - modo dark (padrão) - seguindo paleta contas a pagar */
+  .importar-ofx-cancel-btn {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .importar-ofx-cancel-btn:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.7);
+    color: #9C27B0 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Importar - modo dark (padrão) - seguindo paleta contas a pagar */
+  .importar-ofx-import-btn {
+    background-color: rgba(74, 20, 140, 0.1);
+    color: #4A148C;
+    border: 1px solid rgba(74, 20, 140, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .importar-ofx-import-btn:hover {
+    background-color: rgba(74, 20, 140, 0.2);
+    border-color: rgba(74, 20, 140, 0.7);
+    color: #4A148C !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Importar - modo light */
+  [data-theme="light"] .importar-ofx-import-btn {
+    background-color: #9333ea;
+    border-color: #9333ea;
+    color: #ffffff;
+  }
+  
+  [data-theme="light"] .importar-ofx-import-btn:hover {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+    color: #ffffff !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Selecionar Arquivo - modo dark (padrão) */
+  .importar-ofx-select-btn {
+    background-color: rgba(103, 58, 183, 0.1);
+    color: #673AB7;
+    border: 1px solid rgba(103, 58, 183, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .importar-ofx-select-btn:hover {
+    background-color: rgba(103, 58, 183, 0.2);
+    border-color: rgba(103, 58, 183, 0.7);
+    color: #673AB7 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Selecionar Arquivo - modo light */
+  [data-theme="light"] .importar-ofx-select-btn {
+    background-color: transparent;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+  
+  [data-theme="light"] .importar-ofx-select-btn:hover {
+    background-color: rgba(209, 213, 219, 0.2);
+    border-color: #9ca3af;
+    color: #1f2937 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Ícones SVG - modo dark (padrão) */
+  .importar-ofx-icon {
+    color: #673AB7;
+  }
+  
+  /* Ícones SVG - modo light */
+  [data-theme="light"] .importar-ofx-icon {
+    color: #9333ea;
+  }

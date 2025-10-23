@@ -1,0 +1,173 @@
+/* Estilos específicos para modal ExportarPagar */
+
+/* Modal principal - modo dark (padrão) */
+.exportar-pagar-modal {
+    background-color: #1B1229;
+    border-color: #673AB7;
+    color: #ffffff;
+  }
+  
+  /* Modal principal - modo light */
+  [data-theme="light"] .exportar-pagar-modal {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    color: #1f2937;
+  }
+  
+  /* Título do modal - modo dark (padrão) */
+  .exportar-pagar-title {
+    color: #ffffff;
+  }
+  
+  /* Título do modal - modo light */
+  [data-theme="light"] .exportar-pagar-title {
+    color: #1f2937;
+  }
+  
+  /* Descrição do modal - modo dark (padrão) */
+  .exportar-pagar-description {
+    color: #9ca3af;
+  }
+  
+  /* Descrição do modal - modo light */
+  [data-theme="light"] .exportar-pagar-description {
+    color: #6b7280;
+  }
+  
+  /* Labels - modo dark (padrão) */
+  .exportar-pagar-label {
+    color: #ffffff;
+  }
+  
+  /* Labels - modo light */
+  [data-theme="light"] .exportar-pagar-label {
+    color: #1f2937;
+  }
+  
+  /* Select Trigger - modo dark (padrão) */
+  .exportar-pagar-select-trigger {
+    background-color: #1B1229;
+    border-color: #673AB7;
+    color: #ffffff;
+  }
+  
+  /* Select Trigger - modo light */
+  [data-theme="light"] .exportar-pagar-select-trigger {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+    color: #1f2937;
+  }
+  
+  /* Select Content - modo dark (padrão) */
+  .exportar-pagar-select-content {
+    background-color: #1B1229;
+    border-color: #673AB7;
+  }
+  
+  /* Select Content - modo light */
+  [data-theme="light"] .exportar-pagar-select-content {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+  }
+  
+  /* Select items - modo dark (padrão) */
+  .exportar-pagar-select-item {
+    color: #ffffff;
+  }
+  
+  /* Select items - modo light */
+  [data-theme="light"] .exportar-pagar-select-item {
+    color: #1f2937;
+  }
+  
+  /* Radio buttons - modo dark (padrão) */
+  .exportar-pagar-radio {
+    border-color: #673AB7;
+    color: #673AB7;
+  }
+  
+  .exportar-pagar-radio[data-state="checked"] {
+    background-color: #673AB7;
+    border-color: #673AB7;
+  }
+  
+  /* Radio buttons - modo light */
+  [data-theme="light"] .exportar-pagar-radio {
+    border-color: #9333ea;
+    color: #9333ea;
+  }
+  
+  [data-theme="light"] .exportar-pagar-radio[data-state="checked"] {
+    background-color: #9333ea;
+    border-color: #9333ea;
+  }
+  
+  /* Ícones SVG - modo dark (padrão) */
+  .exportar-pagar-icon {
+    color: #673AB7;
+  }
+  
+  /* Ícones SVG - modo light */
+  [data-theme="light"] .exportar-pagar-icon {
+    color: #9333ea;
+  }
+  
+  /* Botão Cancelar - modo dark (padrão) - seguindo paleta contas a pagar */
+  .exportar-pagar-cancel-btn {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .exportar-pagar-cancel-btn:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.7);
+    color: #9C27B0 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Cancelar - modo light */
+  [data-theme="light"] .exportar-pagar-cancel-btn {
+    background-color: transparent;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+  
+  [data-theme="light"] .exportar-pagar-cancel-btn:hover {
+    background-color: rgba(209, 213, 219, 0.2);
+    border-color: #9ca3af;
+    color: #1f2937 !important;
+    transform: scale(1.05);
+  }
+  
+  
+  /* Botão Cancelar - modo dark (padrão) - seguindo paleta contas a pagar */
+  .exportar-pagar-cancel-btn {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .exportar-pagar-cancel-btn:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.7);
+    color: #9C27B0 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Exportar - modo dark (padrão) - seguindo paleta contas a pagar */
+  .exportar-pagar-export-btn {
+    background-color: rgba(103, 58, 183, 0.1);
+    color: #673AB7;
+    border: 1px solid rgba(103, 58, 183, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .exportar-pagar-export-btn:hover {
+    background-color: rgba(103, 58, 183, 0.2);
+    border-color: rgba(103, 58, 183, 0.7);
+    color: #673AB7 !important;
+    transform: scale(1.05);
+  }

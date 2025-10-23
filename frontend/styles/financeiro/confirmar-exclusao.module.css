@@ -1,0 +1,221 @@
+/* Estilos específicos para modal ModalConfirmarExclusaoConta */
+
+/* Modal principal - modo dark (padrão) */
+.modal-confirmar-exclusao {
+    background-color: #1B1229;
+    border-color: #673AB7;
+    color: #ffffff;
+  }
+  
+  /* Modal principal - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    color: #1f2937;
+  }
+  
+  /* Título - modo dark (padrão) */
+  .modal-confirmar-exclusao-title {
+    color: #ffffff;
+  }
+  
+  /* Título - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-title {
+    color: #1f2937;
+  }
+  
+  /* Descrição - modo dark (padrão) */
+  .modal-confirmar-exclusao-description {
+    color: #9ca3af;
+  }
+  
+  /* Descrição - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-description {
+    color: #6b7280;
+  }
+  
+  /* Conteúdo - modo dark (padrão) */
+  .modal-confirmar-exclusao-content {
+    background-color: rgba(27, 18, 41, 0.5);
+  }
+  
+  /* Conteúdo - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-content {
+    background-color: rgba(243, 244, 246, 0.5);
+  }
+  
+  /* Ícones - modo dark (padrão) */
+  .modal-confirmar-exclusao-icon {
+    color: #FF9800;
+  }
+  
+  /* Ícones - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-icon {
+    color: #f59e0b;
+  }
+  
+  /* Fundo do ícone - modo dark (padrão) */
+  .modal-confirmar-exclusao-icon-bg {
+    background-color: rgba(255, 152, 0, 0.1);
+  }
+  
+  /* Fundo do ícone - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-icon-bg {
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+  
+  /* Informações do item - modo dark (padrão) */
+  .modal-confirmar-exclusao-item-info {
+    background-color: rgba(255, 152, 0, 0.05);
+    border: 1px solid rgba(255, 152, 0, 0.2);
+  }
+  
+  /* Informações do item - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-item-info {
+    background-color: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  
+  /* Nome do item - modo dark (padrão) */
+  .modal-confirmar-exclusao-item-name {
+    color: #ffffff;
+  }
+  
+  /* Nome do item - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-item-name {
+    color: #1f2937;
+  }
+  
+  /* Valor do item - modo dark (padrão) */
+  .modal-confirmar-exclusao-item-value {
+    color: #9ca3af;
+  }
+  
+  /* Valor do item - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-item-value {
+    color: #6b7280;
+  }
+  
+  /* Aviso - modo dark (padrão) */
+  .modal-confirmar-exclusao-warning {
+    color: #FF9800;
+  }
+  
+  /* Aviso - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-warning {
+    color: #f59e0b;
+  }
+  
+  /* Alerta - modo dark (padrão) */
+  .modal-confirmar-exclusao-alert {
+    background-color: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  /* Alerta - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-alert {
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  
+  /* Título do alerta - modo dark (padrão) */
+  .modal-confirmar-exclusao-alert-title {
+    color: #FF9800;
+  }
+  
+  /* Título do alerta - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-alert-title {
+    color: #f59e0b;
+  }
+  
+  /* Texto do alerta - modo dark (padrão) */
+  .modal-confirmar-exclusao-alert-text {
+    color: #9ca3af;
+  }
+  
+  /* Texto do alerta - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-alert-text {
+    color: #6b7280;
+  }
+  
+  /* Ícone do alerta - modo dark (padrão) */
+  .modal-confirmar-exclusao-alert-icon {
+    color: #FF9800;
+  }
+  
+  /* Ícone do alerta - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-alert-icon {
+    color: #f59e0b;
+  }
+  
+  /* Footer - modo dark (padrão) */
+  .modal-confirmar-exclusao-footer {
+    border-top: 1px solid rgba(103, 58, 183, 0.3);
+    padding-top: 1rem;
+  }
+  
+  /* Footer - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-footer {
+    border-top: 1px solid rgba(229, 231, 235, 0.5);
+  }
+  
+  /* Botão Cancelar - modo dark (padrão) - seguindo paleta contas a pagar */
+  .modal-confirmar-exclusao-cancel-btn {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+    border: 1px solid rgba(156, 39, 176, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .modal-confirmar-exclusao-cancel-btn:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+    border-color: rgba(156, 39, 176, 0.7);
+    color: #9C27B0 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Cancelar - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-cancel-btn {
+    background-color: transparent;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+  
+  [data-theme="light"] .modal-confirmar-exclusao-cancel-btn:hover {
+    background-color: rgba(209, 213, 219, 0.2);
+    border-color: #9ca3af;
+    color: #1f2937 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Confirmar - modo dark (padrão) */
+  .modal-confirmar-exclusao-confirm-btn {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .modal-confirmar-exclusao-confirm-btn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.7);
+    color: #ef4444 !important;
+    transform: scale(1.05);
+  }
+  
+  /* Botão Confirmar - modo light */
+  [data-theme="light"] .modal-confirmar-exclusao-confirm-btn {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+  }
+  
+  [data-theme="light"] .modal-confirmar-exclusao-confirm-btn:hover {
+    background-color: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff !important;
+    transform: scale(1.05);
+  }
+  
