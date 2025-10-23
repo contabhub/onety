@@ -1,0 +1,706 @@
+
+/* Layout principal */
+.centroCustoPage {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+/* Header */
+.centroCustoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.centroCustoHeaderTitle {
+  font-size: var(--onity-type-h2-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.centroCustoHeaderSubtitle {
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+  margin-bottom: 0;
+}
+
+.centroCustoHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+/* Botão novo centro de custo */
+.centroCustoNovaCentroBtn {
+  background: linear-gradient(135deg, var(--onity-color-primary) 0%, var(--onity-primary-70) 100%);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-s);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.2);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.centroCustoNovaCentroBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.centroCustoNovaCentroBtn:hover {
+  background: linear-gradient(135deg, var(--onity-primary-70) 0%, var(--onity-color-primary) 100%);
+  border-color: var(--onity-primary-70);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(103, 58, 183, 0.4);
+}
+
+.centroCustoNovaCentroBtn:hover::before {
+  left: 100%;
+}
+
+.centroCustoNovaCentroBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.3);
+}
+
+.centroCustoNovaCentroIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-color-primary-contrast);
+}
+
+/* Cards de estatísticas */
+.centroCustoStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
+}
+
+.centroCustoStatCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: var(--onity-space-l);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.centroCustoStatCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-2px);
+}
+
+.centroCustoStatCard.active {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-high);
+}
+
+.centroCustoStatCardInactive {
+  border-color: var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+}
+
+.centroCustoStatCardInactive:hover {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  box-shadow: var(--onity-elev-med);
+}
+
+.centroCustoStatCardContent {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.centroCustoStatCardInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  height: 100%;
+  gap: var(--onity-space-s);
+}
+
+.centroCustoStatCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.centroCustoStatCardTitle {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.centroCustoStatCardValue {
+  font-size: var(--onity-type-h2-size);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.centroCustoStatCardIcon {
+  width: 32px;
+  height: 32px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-top: var(--onity-space-xs);
+}
+
+/* Cores específicas para cada tipo de card */
+.centroCustoStatCardValue.ativo {
+  color: var(--onity-color-success);
+}
+
+.centroCustoStatCardValue.inativo {
+  color: var(--onity-color-error);
+}
+
+.centroCustoStatCardValue.todos {
+  color: var(--onity-color-primary);
+}
+
+/* Ícones com cores específicas */
+.centro-custo-stat-ativo {
+  color: var(--onity-color-success);
+}
+
+.centro-custo-stat-inativo {
+  color: var(--onity-color-error);
+}
+
+.centro-custo-stat-todos {
+  color: var(--onity-color-primary);
+}
+
+/* Estados ativos */
+.centroCustoStatValueActive {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.centroCustoStatIconActive {
+  transform: scale(1.1);
+}
+
+/* Filtros */
+.centroCustoFiltersCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--onity-space-l);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.centroCustoFiltersCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--onity-color-primary), var(--onity-color-info), var(--onity-color-primary));
+  opacity: 0.6;
+}
+
+.centroCustoFiltersContent {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.centroCustoFiltersRow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+@media (min-width: 1024px) {
+  .centroCustoFiltersRow {
+    flex-direction: row;
+    align-items: end;
+    gap: 20px;
+  }
+}
+
+.centroCustoFilterGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.centroCustoFilterLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin: 0;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+}
+
+.centroCustoSearchContainer {
+  position: relative;
+  background: transparent;
+  border-radius: 6px;
+  border: 1px solid var(--onity-color-border);
+  transition: all 0.3s ease;
+  box-shadow: none;
+  min-height: 15px;
+  max-height: 50px;
+  max-width: 420px;
+}
+
+.centroCustoSearchIcon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--onity-color-primary);
+  width: 10px;
+  height: 8px;
+  z-index: 2;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.centroCustoSearchInput {
+  width: 100%;
+  padding: 6px 8px 6px 28px;
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.centroCustoSearchInput::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.centroCustoFilterActions {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (min-width: 1024px) {
+  .centroCustoFilterActions {
+    margin-top: 0;
+  }
+}
+
+/* Filtros ativos */
+.centroCustoFiltrosAtivosCard {
+  border: 1px solid var(--onity-color-primary);
+  background-color: var(--onity-primary-05);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s);
+}
+
+.centroCustoFiltrosAtivosContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--onity-primary-05);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--onity-primary-20);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.centroCustoFiltrosAtivosContent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(103, 58, 183, 0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.centroCustoFiltrosAtivosIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--onity-color-primary);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.centroCustoFiltrosAtivosText {
+  font-size: 13px;
+  color: var(--onity-color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.centroCustoFiltrosAtivosCount {
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+  background: var(--onity-color-surface);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid var(--onity-color-border);
+}
+
+/* Botão limpar filtro */
+.centroCustoSecondaryBtn {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.centroCustoSecondaryBtn:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+/* Tabela */
+.centroCustoTableCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+}
+
+.centroCustoTableContent {
+  padding: 0;
+}
+
+.centroCustoTableContainer {
+  overflow-x: auto;
+}
+
+.centroCustoTableHeader {
+  border-bottom: 1px solid var(--onity-primary-purple-20);
+}
+
+.centroCustoTableHeaderCell {
+  color: var(--onity-color-text);
+  cursor: pointer;
+  font-weight: 600;
+  padding: var(--onity-space-m);
+  transition: color 0.2s ease;
+}
+
+.centroCustoTableHeaderCell:hover {
+  color: var(--onity-color-primary);
+}
+
+.centroCustoTableRow {
+  border-bottom: 1px solid var(--onity-primary-purple-20);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.centroCustoTableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.centroCustoTableCell {
+  padding: var(--onity-space-m);
+  color: var(--onity-color-text);
+}
+
+.centroCustoTableCellSecondary {
+  color: var(--onity-icon-secondary);
+}
+
+/* Badges de situação */
+.centroCustoBadgeAtivo {
+  background-color: var(--onity-success-20);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-success-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.centroCustoBadgeInativo {
+  background-color: var(--onity-error-20);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+/* Dropdown de ações */
+.centroCustoDropdown {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+}
+
+.centroCustoDropdownItem {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.centroCustoDropdownItem:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.centroCustoDropdownItem.danger {
+  color: var(--onity-color-error);
+}
+
+.centroCustoDropdownItem.danger:hover {
+  background-color: var(--onity-error-10);
+}
+
+/* Botão de ação */
+.centroCustoActionButton {
+  background-color: transparent;
+  color: var(--onity-icon-secondary);
+  border: none;
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.centroCustoActionButton:hover {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+}
+
+.centroCustoActionIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--onity-space-xs);
+}
+
+/* Estado vazio */
+.centroCustoEmptyState {
+  text-align: center;
+  padding: var(--onity-space-xl);
+}
+
+.centroCustoEmptyStateText {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+}
+
+/* Modais */
+.centroCustoModalContent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  color: var(--onity-color-text);
+}
+
+.centroCustoModalHeader {
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.centroCustoModalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.centroCustoModalBody {
+  padding: var(--onity-space-l);
+}
+
+.centroCustoModalDescription {
+  color: var(--onity-icon-secondary);
+  margin-bottom: var(--onity-space-s);
+  text-align: center;
+}
+
+.centroCustoModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+}
+
+.centroCustoModalBtnCancelar {
+  background-color: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+  border: 1px solid var(--onity-primary-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.centroCustoModalBtnCancelar:hover {
+  background-color: var(--onity-primary-20);
+  border-color: var(--onity-primary-50);
+  color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.centroCustoModalBtnConfirmar {
+  background-color: var(--onity-error-10);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.centroCustoModalBtnConfirmar:hover {
+  background-color: var(--onity-error-20);
+  border-color: rgba(234, 84, 85, 0.5);
+  color: var(--onity-color-error);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.centroCustoModalHighlight {
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+/* Loading */
+.centroCustoLoading {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.centroCustoLoadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xl);
+  gap: var(--onity-space-s);
+}
+
+.centroCustoLoadingSpinner {
+  width: 80px;
+  height: 80px;
+}
+
+.centroCustoLoadingSpinnerInner {
+  width: 64px;
+  height: 64px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.centroCustoLoadingText {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-h3-size);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .centroCustoPage {
+    padding: var(--onity-space-s);
+    gap: var(--onity-space-s);
+  }
+  
+  .centroCustoHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--onity-space-s);
+  }
+  
+  .centroCustoHeaderActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .centroCustoStatsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .centroCustoNovaCentroBtn {
+    font-size: var(--onity-type-caption-size);
+    padding: 6px 10px;
+  }
+}
