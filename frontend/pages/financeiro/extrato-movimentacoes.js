@@ -63,15 +63,21 @@ import {
  * @property {Date} end
  */
 import { toast } from "react-toastify";
-import { EditReceitaDrawer } from "@/components/EditReceitaDrawer";
-import { EditDespesaDrawer } from "@/components/EditDespesaDrawer";
-import { NovaReceitaDrawer } from "@/components/NovaReceitaDrawer.js";
-import { NovaDespesaDrawer } from "@/components/NovaDespesaDrawer.js";
-import { NovaTransferenciaModal } from "@/components/financeiro/NovaTransferenciaModal";
-import { ExportarMovimentacoes } from "@/components/financeiro/ExportarMovimentacoes";
-import { ImportarMovimentacoes } from "@/components/financeiro/ImportarMovimentacoes";
-import { DownloadPlanilhasModal } from "@/components/financeiro/DownloadPlanilhasModal";
+import { EditReceitaDrawer } from "../../components/financeiro/EditReceitaDrawer";
+import { EditDespesaDrawer } from "../../components/financeiro/EditDespesaDrawer";
+import NovaReceitaDrawer from "../../components/financeiro/NovaReceitaDrawer";
+import { NovaDespesaDrawer } from "../../components/financeiro/NovaDespesaDrawer";
+import { NovaTransferenciaModal } from "../../components/financeiro/NovaTransferenciaModal";
+import { ExportarMovimentacoes } from "../../components/financeiro/ExportarMovimentacoes";
+import { ImportarMovimentacoes } from "../../components/financeiro/ImportarMovimentacoes";
+import { DownloadPlanilhasModal } from "../../components/financeiro/DownloadPlanilhasModal";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import Image from "next/image";
+
+// Função para combinar classes CSS
+const cn = (...classes) => {
+  return classes.filter(Boolean).join(' ');
+};
 
 /**
  * @typedef {Object} TransacaoAPI
@@ -164,7 +170,6 @@ export default function ExtratoMovimentacoesPage() {
   // Estados para filtros de data
   const [currentDate, setCurrentDate] = useState(new Date());
   const [periodFilter, setPeriodFilter] = useState("month");
-  const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
 
   // Função para buscar transações da API
   const fetchTransacoes = async () => {
@@ -798,37 +803,37 @@ export default function ExtratoMovimentacoesPage() {
     switch (situacao) {
       case "Recebido":
         return (
-          <Badge className="badge-recebido-extrato">
+          <Badge className={styles.extratoMovimentacoesBadgePago}>
             Recebido
           </Badge>
         );
       case "Vencido":
         return (
-          <Badge className="badge-vencido-extrato">
+          <Badge className={styles.extratoMovimentacoesBadgeVencido}>
             Vencido
           </Badge>
         );
       case "Pago":
         return (
-          <Badge className="badge-pago-extrato">
+          <Badge className={styles.extratoMovimentacoesBadgePago}>
             Pago
           </Badge>
         );
       case "Transferido":
         return (
-          <Badge className="badge-transferido-extrato">
+          <Badge className={styles.extratoMovimentacoesBadgeConciliado}>
             Transferido
           </Badge>
         );
       case "Em Aberto":
         return (
-          <Badge className="badge-em-aberto-extrato">
+          <Badge className={styles.extratoMovimentacoesBadgeEmAberto}>
             Em Aberto
           </Badge>
         );
       default:
         return (
-          <Badge className="badge-em-aberto-extrato">
+          <Badge className={styles.extratoMovimentacoesBadgeEmAberto}>
             {situacao}
           </Badge>
         );
@@ -1050,53 +1055,36 @@ export default function ExtratoMovimentacoesPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6 theme-bg-primary min-h-screen">
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <div className="w-20 h-20">
+      <div className={styles.extratoMovimentacoesPage}>
+        <div className={styles.extratoMovimentacoesLoading}>
+          <div className={styles.extratoMovimentacoesLoadingContent}>
             <div className={styles.extratoMovimentacoesLoadingSpinner}>
               <div className={styles.extratoMovimentacoesLoadingSpinnerInner}></div>
             </div>
+            <p className={styles.extratoMovimentacoesLoadingText}>Carregando movimentações...</p>
           </div>
-          <p className="theme-text-secondary text-lg">Carregando movimentações...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6 space-y-6 theme-bg-primary min-h-screen">
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <div className="text-[#F50057] mb-4">
-            <X className="h-12 w-12 mx-auto" />
-          </div>
-          <p className="theme-text-secondary text-lg mb-4">{error}</p>
-          <Button
-            onClick={fetchTransacoes}
-            variant="outline"
-            className="extrato-secondary-btn"
-          >
-            Tentar novamente
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6 space-y-6 theme-bg-primary min-h-screen">
+    <>
+      <PrincipalSidebar />
+      <div className={styles.extratoMovimentacoesPage}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className={styles.extratoMovimentacoesHeader}>
         <div>
-          <h1 className="text-2xl font-bold theme-text-white">
+          <h1 className={styles.extratoMovimentacoesHeaderTitle}>
             Extrato de movimentações
           </h1>
-          <p className="theme-text-secondary mt-1">
+          <p className={styles.extratoMovimentacoesHeaderSubtitle}>
             Visualize todas as movimentações financeiras
             {movimentacoes.some((m) => m.origem === "pluggy") && (
               <span className="ml-2">
                 •{" "}
-                <Badge className="badge-pluggy-extrato text-xs">
+                <Badge className={styles.extratoMovimentacoesBadgePluggy}>
                   OpenFinance
                 </Badge>
                 {movimentacoes.filter((m) => m.origem === "pluggy").length}{" "}
@@ -1105,170 +1093,141 @@ export default function ExtratoMovimentacoesPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className={styles.extratoMovimentacoesHeaderActions}>
           <Button
             size="sm"
             variant="outline"
             onClick={fetchTransacoes}
             disabled={isLoading}
-            className="extrato-outline-btn"
+            className={styles.extratoMovimentacoesSecondaryBtn}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className={styles.extratoMovimentacoesActionIcon} />
             {isLoading ? "Carregando..." : "Atualizar"}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
-                className="extrato-primary-btn"
+                variant="outline"
+                className={styles.extratoMovimentacoesSecondaryBtn}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className={styles.extratoMovimentacoesActionIcon} />
                 Nova
-                <ChevronDown className="h-4 w-4 ml-2" />
+                <ChevronDown className={styles.extratoMovimentacoesActionIcon} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="extrato-dropdown"
+              className={styles.extratoMovimentacoesDropdown}
             >
               <DropdownMenuItem
                 onClick={handleOpenNovaReceita}
-                className="extrato-dropdown-item"
+                className={styles.extratoMovimentacoesDropdownItem}
               >
-                <TrendingUp className="h-4 w-4 mr-2 text-[#1E88E5]" />
+                <TrendingUp className={styles.extratoMovimentacoesActionIcon} />
                 Receita
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleOpenNovaDespesa}
-                className="extrato-dropdown-item"
+                className={styles.extratoMovimentacoesDropdownItem}
               >
-                <TrendingDown className="h-4 w-4 mr-2 text-[#F50057]" />
+                <TrendingDown className={styles.extratoMovimentacoesActionIcon} />
                 Despesa
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setNovaTransferenciaModal(true)}
-                className="extrato-dropdown-item"
+                className={styles.extratoMovimentacoesDropdownItem}
               >
-                <ArrowRight className="h-4 w-4 mr-2 text-[#9C27B0]" />
+                <ArrowRight className={styles.extratoMovimentacoesActionIcon} />
                 Transferência
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            variant="outline"
-            size="sm"
-            className="extrato-outline-btn opacity-50"
-            disabled
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Relatórios
-            <ChevronDown className="h-4 w-4 ml-2" />
-          </Button>
+
           <Button
             variant="outline"
             size="sm"
             onClick={() => setExportarMovimentacoesModal(true)}
-            className="extrato-outline-btn"
+            className={styles.extratoMovimentacoesExportBtn}
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className={styles.extratoMovimentacoesActionIcon} />
             Exportar
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setImportarMovimentacoesModal(true)}
-            className="extrato-outline-btn"
+            className={styles.extratoMovimentacoesImportBtn}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className={styles.extratoMovimentacoesActionIcon} />
             Importar planilha
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setDownloadPlanilhasModal(true)}
-            className="extrato-outline-btn"
+            className={styles.extratoMovimentacoesOfxBtn}
           >
-            <FileText className="h-4 w-4 mr-2" />
+            <FileText className={styles.extratoMovimentacoesActionIcon} />
             Planilhas
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            className="extrato-outline-btn opacity-50"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Imprimir
           </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="extrato-filters-card">
-        <CardContent className="pt-6">
-          <div className="flex flex-col lg:flex-row gap-4 mb-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-secondary mb-2 block">
+      <Card className={styles.extratoMovimentacoesFiltersCard}>
+        <CardContent className={styles.extratoMovimentacoesFiltersContent}>
+          <div className={styles.extratoMovimentacoesFiltersRow}>
+            <div className={styles.extratoMovimentacoesFilterGroup}>
+              <label className={styles.extratoMovimentacoesFilterLabel}>
                 Período
               </label>
-              <div className="flex items-center gap-2">
+              <div className={styles.extratoMovimentacoesPeriodContainer}>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigateMonth("prev")}
-                  className="extrato-outline-btn"
+                  className={styles.extratoMovimentacoesNavBtn}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className={styles.extratoMovimentacoesNavIcon} />
                 </Button>
                 
-                <DropdownMenu open={isPeriodDropdownOpen} onOpenChange={setIsPeriodDropdownOpen}>
+                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="extrato-outline-btn min-w-[140px] justify-between"
+                      className={styles.extratoMovimentacoesPeriodButton}
                     >
                       <span>{formatCurrentPeriod()}</span>
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className={styles.extratoMovimentacoesNavIcon} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="center"
-                    className="extrato-dropdown min-w-[160px]"
+                    className={styles.extratoMovimentacoesDropdown}
                   >
                     <DropdownMenuItem 
-                      className="extrato-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("week");
-                        setIsPeriodDropdownOpen(false);
-                      }}
+                      className={styles.extratoMovimentacoesDropdownItem}
+                      onClick={() => setPeriodFilter("week")}
                     >
                       Esta semana
                     </DropdownMenuItem>
                     <DropdownMenuItem 
-                      className="extrato-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("month");
-                        setIsPeriodDropdownOpen(false);
-                      }}
+                      className={styles.extratoMovimentacoesDropdownItem}
+                      onClick={() => setPeriodFilter("month")}
                     >
                       Este mês
                     </DropdownMenuItem>
                     <DropdownMenuItem 
-                      className="extrato-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("year");
-                        setIsPeriodDropdownOpen(false);
-                      }}
+                      className={styles.extratoMovimentacoesDropdownItem}
+                      onClick={() => setPeriodFilter("year")}
                     >
                       Este ano
                     </DropdownMenuItem>
                     <DropdownMenuItem 
-                      className="extrato-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("all");
-                        setIsPeriodDropdownOpen(false);
-                      }}
+                      className={styles.extratoMovimentacoesDropdownItem}
+                      onClick={() => setPeriodFilter("all")}
                     >
                       Todo o período
                     </DropdownMenuItem>
@@ -1279,35 +1238,33 @@ export default function ExtratoMovimentacoesPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigateMonth("next")}
-                  className="extrato-outline-btn"
+                  className={styles.extratoMovimentacoesNavBtn}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className={styles.extratoMovimentacoesNavIcon} />
                 </Button>
               </div>
             </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-secondary mb-2 block">
+            <div className={styles.extratoMovimentacoesFilterGroup}>
+              <label className={styles.extratoMovimentacoesFilterLabel}>
                 Pesquisar no período selecionado
               </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 theme-text-secondary" />
+              <div className={styles.extratoMovimentacoesSearchContainer}>
                 <Input
                   placeholder="Pesquisar por descrição, categoria, cliente, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
-                  className="pl-10 extrato-input"
+                  className={styles.extratoMovimentacoesSearchInput}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 theme-text-secondary hover:theme-text-accent hover:bg-[#673AB7]/10"
+                  className={styles.extratoMovimentacoesActionBtn}
                 >
-                  <Search className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium theme-text-secondary mb-2 block">
+            <div className={styles.extratoMovimentacoesFilterGroup}>
+              <label className={styles.extratoMovimentacoesFilterLabel}>
                 Conta
               </label>
               <Select
@@ -1315,183 +1272,183 @@ export default function ExtratoMovimentacoesPage() {
                 onValueChange={setSelectedAccount}
                 disabled
               >
-                <SelectTrigger className="extrato-select">
+                <SelectTrigger className={styles.extratoMovimentacoesSearchInput}>
                   <SelectValue placeholder="Selecionar todas" />
                 </SelectTrigger>
-                <SelectContent className="extrato-dropdown">
+                <SelectContent className={styles.extratoMovimentacoesDropdown}>
                   <SelectItem
                     value="all"
-                    className="extrato-select-option"
+                    className={styles.extratoMovimentacoesDropdownItem}
                   >
                     Selecionar todas
                   </SelectItem>
                   <SelectItem
                     value="bradesco"
-                    className="extrato-select-option"
+                    className={styles.extratoMovimentacoesDropdownItem}
                   >
                     Banco Bradesco
                   </SelectItem>
                   <SelectItem
                     value="conta-azul"
-                    className="extrato-select-option"
+                    className={styles.extratoMovimentacoesDropdownItem}
                   >
                     Conta Azul
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
-              <Button
-                disabled
-                variant="outline"
-                className="extrato-outline-btn opacity-50"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Mais filtros
-                <ChevronDown className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+      <div className={styles.extratoMovimentacoesStatsGrid}>
         <Card
-          className={`cursor-pointer extrato-card ${
+          className={`${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "receitas-aberto"
-              ? "extrato-card-active"
-              : ""
+              ? styles.extratoMovimentacoesStatCardActive
+              : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("receitas-aberto")}
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium theme-text-secondary">
-                Receitas em aberto (R$)
-              </p>
-              <p className="text-2xl font-bold theme-text-secondary">
-                R$ {formatNumberWithThousands(receitasEmAberto)}
-              </p>
+          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+            <div className={styles.extratoMovimentacoesStatCardInner}>
+              <div className={styles.extratoMovimentacoesStatCardInfo}>
+                <p className={styles.extratoMovimentacoesStatCardTitle}>
+                  Receitas em aberto (R$)
+                </p>
+                <p className={styles.extratoMovimentacoesStatCardValue}>
+                  R$ {formatNumberWithThousands(receitasEmAberto)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer extrato-card ${
+          className={`${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "receitas-realizadas"
-              ? "extrato-card-active"
-              : ""
+              ? styles.extratoMovimentacoesStatCardActive
+              : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("receitas-realizadas")}
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium theme-text-secondary">
-                Receitas realizadas (R$)
-              </p>
-              <p className="text-2xl font-bold text-[#1E88E5]">
-                R$ {formatNumberWithThousands(receitasRealizadas)}
-              </p>
+          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+            <div className={styles.extratoMovimentacoesStatCardInner}>
+              <div className={styles.extratoMovimentacoesStatCardInfo}>
+                <p className={styles.extratoMovimentacoesStatCardTitle}>
+                  Receitas realizadas (R$)
+                </p>
+                <p className={`${styles.extratoMovimentacoesStatCardValue} ${styles.extratoMovimentacoesStatValueActive}`}>
+                  R$ {formatNumberWithThousands(receitasRealizadas)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer extrato-card ${
+          className={`${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "despesas-aberto"
-              ? "extrato-card-active"
-              : ""
+              ? styles.extratoMovimentacoesStatCardActive
+              : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("despesas-aberto")}
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium theme-text-secondary">
-                Despesas em aberto (R$)
-              </p>
-              <p className="text-2xl font-bold theme-text-secondary">
-                R$ {formatNumberWithThousands(despesasEmAberto)}
-              </p>
+          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+            <div className={styles.extratoMovimentacoesStatCardInner}>
+              <div className={styles.extratoMovimentacoesStatCardInfo}>
+                <p className={styles.extratoMovimentacoesStatCardTitle}>
+                  Despesas em aberto (R$)
+                </p>
+                <p className={styles.extratoMovimentacoesStatCardValue}>
+                  R$ {formatNumberWithThousands(despesasEmAberto)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer extrato-card ${
+          className={`${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "despesas-realizadas"
-              ? "extrato-card-active"
-              : ""
+              ? styles.extratoMovimentacoesStatCardActive
+              : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("despesas-realizadas")}
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium theme-text-secondary">
-                Despesas realizadas (R$)
-              </p>
-              <p className="text-2xl font-bold text-[#F50057]">
-                R$ {formatNumberWithThousands(despesasRealizadas)}
-              </p>
+          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+            <div className={styles.extratoMovimentacoesStatCardInner}>
+              <div className={styles.extratoMovimentacoesStatCardInfo}>
+                <p className={styles.extratoMovimentacoesStatCardTitle}>
+                  Despesas realizadas (R$)
+                </p>
+                <p className={`${styles.extratoMovimentacoesStatCardValue} ${styles.extratoMovimentacoesStatValueActive}`}>
+                  R$ {formatNumberWithThousands(despesasRealizadas)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer extrato-card ${
+          className={`${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "vencidas"
-              ? "extrato-card-active"
-              : ""
+              ? styles.extratoMovimentacoesStatCardActive
+              : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("vencidas")}
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm font-medium theme-text-secondary">
-                Transações vencidas (R$)
-              </p>
-              <p className="text-2xl font-bold text-[#FFD600]">
-                R$ {formatNumberWithThousands(transacoesVencidas)}
-              </p>
+          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+            <div className={styles.extratoMovimentacoesStatCardInner}>
+              <div className={styles.extratoMovimentacoesStatCardInfo}>
+                <p className={styles.extratoMovimentacoesStatCardTitle}>
+                  Transações vencidas (R$)
+                </p>
+                <p className={`${styles.extratoMovimentacoesStatCardValue} ${styles.extratoMovimentacoesStatValueActive}`}>
+                  R$ {formatNumberWithThousands(transacoesVencidas)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer extrato-card ${
+          className={`${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "total"
-              ? "extrato-card-active"
-              : ""
+              ? styles.extratoMovimentacoesStatCardActive
+              : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("total")}
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1">
-                <p className="text-sm font-medium theme-text-secondary">
-                  Total do período (R$)
+          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+            <div className={styles.extratoMovimentacoesStatCardInner}>
+              <div className={styles.extratoMovimentacoesStatCardInfo}>
+                <div className="flex items-center justify-center gap-1">
+                  <p className={styles.extratoMovimentacoesStatCardTitle}>
+                    Total do período (R$)
+                  </p>
+                </div>
+                <p className={`${styles.extratoMovimentacoesStatCardValue} ${styles.extratoMovimentacoesStatValueActive}`}>
+                  R$ {formatNumberWithThousands(totalPeriodo)}
                 </p>
-                <Info className="h-4 w-4 theme-text-secondary" />
               </div>
-              <p className="text-2xl font-bold text-[#9C27B0]">
-                R$ {formatNumberWithThousands(totalPeriodo)}
-              </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="text-sm theme-text-secondary">
+      <div className={styles.extratoMovimentacoesActions}>
+        <div className={styles.extratoMovimentacoesActionsLeft}>
+          <span className={styles.extratoMovimentacoesTableFooterSecondary}>
             {selectedItems.length} registro(s) selecionado(s)
           </span>
           <Button
             variant="outline"
             size="sm"
             disabled={selectedItems.length === 0}
-            className="extrato-outline-btn"
+            className={styles.extratoMovimentacoesSecondaryBtn}
           >
             Pagar pelo CA de Bolso
           </Button>
@@ -1499,17 +1456,17 @@ export default function ExtratoMovimentacoesPage() {
             variant="outline"
             size="sm"
             disabled={selectedItems.length === 0}
-            className="extrato-outline-btn"
+            className={styles.extratoMovimentacoesSecondaryBtn}
           >
             Ações em lote
-            <ChevronDown className="h-4 w-4 ml-2" />
+            <ChevronDown className={styles.extratoMovimentacoesActionIcon} />
           </Button>
         </div>
 
         {/* Botão para limpar filtros */}
         {(activeFilter !== "total" || periodFilter !== "month") && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm theme-text-secondary">
+          <div className={styles.extratoMovimentacoesActionsRight}>
+            <span className={styles.extratoMovimentacoesTableFooterSecondary}>
               Filtros ativos:{" "}
               {activeFilter !== "total" && (
                 activeFilter === "receitas-realizadas"
@@ -1539,9 +1496,9 @@ export default function ExtratoMovimentacoesPage() {
                 setPeriodFilter("month");
                 setCurrentDate(new Date());
               }}
-              className="extrato-outline-btn"
+              className={styles.extratoMovimentacoesSecondaryBtn}
             >
-              <X className="h-4 w-4 mr-1" />
+              <X className={styles.extratoMovimentacoesActionIcon} />
               Limpar filtros
             </Button>
           </div>
@@ -1549,13 +1506,13 @@ export default function ExtratoMovimentacoesPage() {
       </div>
 
       {/* Table */}
-      <Card className="extrato-table">
-        <CardContent className="pt-6">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+      <div className={styles.extratoMovimentacoesTableCard}>
+        <div className={styles.extratoMovimentacoesTableContent}>
+          <div className={styles.extratoMovimentacoesTableContainer}>
+            <table className={styles.extratoMovimentacoesTable}>
               <thead>
-                <tr className="extrato-table-header">
-                  <th className="text-left p-3 text-sm font-medium table-header-text-extrato">
+                <tr className={styles.extratoMovimentacoesTableHeader}>
+                  <th className={styles.extratoMovimentacoesTableHeaderCell}>
                     <input
                       type="checkbox"
                       className="rounded"
@@ -1567,25 +1524,25 @@ export default function ExtratoMovimentacoesPage() {
                       onChange={handleSelectAll}
                     />
                   </th>
-                  <th className="text-left p-3 text-sm font-medium table-header-text-extrato">
+                  <th className={styles.extratoMovimentacoesTableHeaderText}>
                     <div className="flex items-center gap-1">
                       Data
                       <div className="flex flex-col">
-                        <ArrowUp className="h-3 w-3 theme-text-secondary" />
-                        <ArrowDown className="h-3 w-3 theme-text-secondary" />
+                        <ArrowUp className={styles.extratoMovimentacoesTableSortIcon} />
+                        <ArrowDown className={styles.extratoMovimentacoesTableSortIcon} />
                       </div>
                     </div>
                   </th>
-                  <th className="text-left p-3 text-sm font-medium table-header-text-extrato">
+                  <th className={styles.extratoMovimentacoesTableHeaderCell}>
                     Descrição
                   </th>
-                  <th className="text-left p-3 text-sm font-medium table-header-text-extrato">
+                  <th className={styles.extratoMovimentacoesTableHeaderCell}>
                     Situação
                   </th>
-                  <th className="text-right p-3 text-sm font-medium table-header-text-extrato">
+                  <th className={styles.extratoMovimentacoesTableHeaderCell}>
                     Valor (R$)
                   </th>
-                  <th className="text-left p-3 text-sm font-medium table-header-text-extrato">
+                  <th className={styles.extratoMovimentacoesTableHeaderCell}>
                     Ações
                   </th>
                 </tr>
@@ -1593,16 +1550,12 @@ export default function ExtratoMovimentacoesPage() {
               <tbody>
                 {paginatedMovimentacoes.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 theme-text-secondary">
+                    <td colSpan={6} className={styles.extratoMovimentacoesTableRowEmpty}>
                       <div className="flex flex-col items-center ">
-                        <Image
-                          src="/nenhuma.png"
-                          alt="Nenhuma movimentação"
-                          width={128}
-                          height={128}
-                          className="w-32 h-32"
-                        />
-                        <p>Nenhuma movimentação encontrada</p>
+                        <div className={styles.extratoMovimentacoesEmptyIcon}>
+                          ?
+                        </div>
+                        <p className={styles.extratoMovimentacoesTableRowEmptyText}>Nenhuma movimentação encontrada</p>
                       </div>
                     </td>
                   </tr>
@@ -1610,9 +1563,9 @@ export default function ExtratoMovimentacoesPage() {
                   paginatedMovimentacoes.map((movimentacao) => (
                     <tr
                       key={movimentacao.id}
-                      className="extrato-table-row"
+                      className={styles.extratoMovimentacoesTableRow}
                     >
-                      <td className="p-3">
+                      <td className={styles.extratoMovimentacoesTableCell}>
                         <input
                           type="checkbox"
                           className="rounded"
@@ -1620,40 +1573,40 @@ export default function ExtratoMovimentacoesPage() {
                           onChange={() => handleSelectItem(movimentacao.id)}
                         />
                       </td>
-                      <td className="p-3 text-sm table-cell-primary-extrato">
+                      <td className={styles.extratoMovimentacoesTableCellPrimary}>
                         {movimentacao.data}
                       </td>
-                      <td className="p-3">
+                      <td className={styles.extratoMovimentacoesTableCell}>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="text-sm font-medium table-cell-primary-extrato">
+                            <p className={styles.extratoMovimentacoesTableCellPrimary}>
                               {movimentacao.descricao}
                             </p>
                             {movimentacao.origem === "pluggy" && (
-                              <Badge className="badge-pluggy-extrato text-xs">
+                              <Badge className={styles.extratoMovimentacoesBadgePluggy}>
                                 OpenFinance
                               </Badge>
                             )}
                             {movimentacao.origem === "Importação OFX" && (
-                              <Badge className="badge-ofx-extrato text-xs">
+                              <Badge className={styles.extratoMovimentacoesBadgeOfx}>
                                 OFX
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs table-cell-secondary-extrato">
+                          <p className={styles.extratoMovimentacoesTableCellSecondary}>
                           {movimentacao.cliente}
                           </p>
                           {movimentacao.cliente && (
-                            <p className="text-xs cliente-text-extrato">
+                            <p className={styles.extratoMovimentacoesTableCellSecondary}>
                               {movimentacao.categoria}
                             </p>
                           )}
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className={styles.extratoMovimentacoesTableCell}>
                         {getStatusBadge(movimentacao.situacao)}
                       </td>
-                      <td className="p-3 text-right">
+                      <td className={styles.extratoMovimentacoesTableCellValue}>
                         <div className="flex items-center justify-end gap-2">
                           <span
                             className={`text-sm font-medium ${getValueColor(
@@ -1667,36 +1620,36 @@ export default function ExtratoMovimentacoesPage() {
                             )}
                           </span>
                           {movimentacao.hasEmail && (
-                            <Mail className="h-4 w-4 theme-text-secondary" />
+                            <Mail className={styles.extratoMovimentacoesActionIcon} />
                           )}
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className={styles.extratoMovimentacoesTableCell}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
                               size="sm"
                               disabled={isUpdatingSituacao === movimentacao.id}
-                              className="extrato-action-btn"
+                              className={styles.extratoMovimentacoesActionBtn}
                             >
-                              <MoreVertical className="h-4 w-4" />
+                              <MoreVertical className={styles.extratoMovimentacoesActionIcon} />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent
                             align="end"
-                            className="extrato-dropdown"
+                            className={styles.extratoMovimentacoesDropdown}
                           >
                             <DropdownMenuItem
                               onClick={() => handleEditTransacao(movimentacao)}
                               disabled={movimentacao.origem === "pluggy" || movimentacao.origem === "Importação OFX"}
                               className={`${
                                 movimentacao.origem === "pluggy" || movimentacao.origem === "Importação OFX"
-                                  ? "extrato-dropdown-item opacity-50 cursor-not-allowed"
-                                  : "extrato-dropdown-item"
+                                  ? `${styles.extratoMovimentacoesDropdownItem} opacity-50 cursor-not-allowed`
+                                  : styles.extratoMovimentacoesDropdownItem
                               }`}
                             >
-                              <Edit className="h-4 w-4 mr-2" />
+                              <Edit className={styles.extratoMovimentacoesActionIcon} />
                               Editar
                               {movimentacao.origem === "pluggy" &&
                                 " (não disponível)"}
@@ -1721,13 +1674,13 @@ export default function ExtratoMovimentacoesPage() {
                                 disabled={
                                   isUpdatingSituacao === movimentacao.id
                                 }
-                                className="extrato-dropdown-item"
+                                className={styles.extratoMovimentacoesDropdownItem}
                               >
                                 <div className="flex items-center">
                                   {isUpdatingSituacao === movimentacao.id ? (
                                     <div className="h-4 w-4 mr-2 animate-spin rounded border-2 border-[#1E88E5] border-t-transparent" />
                                   ) : (
-                                    <CheckCircle className="h-4 w-4 mr-2 text-[#1E88E5]" />
+                                    <CheckCircle className={styles.extratoMovimentacoesActionIcon} />
                                   )}
                                   Mudar para {situacao}
                                 </div>
@@ -1741,9 +1694,9 @@ export default function ExtratoMovimentacoesPage() {
                                   transacao: movimentacao,
                                 })
                               }
-                              className="extrato-dropdown-item"
+                              className={`${styles.extratoMovimentacoesDropdownItem} danger`}
                             >
-                              <Trash2 className="h-4 w-4 mr-2 text-[#F50057]" />
+                              <Trash2 className={styles.extratoMovimentacoesActionIcon} />
                               Excluir
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -1757,163 +1710,99 @@ export default function ExtratoMovimentacoesPage() {
           </div>
 
           {/* Footer with totals and pagination */}
-          <div className="mt-6 pt-4 table-footer-border-extrato space-y-4">
+          <div className={styles.extratoMovimentacoesFooter}>
             {/* Totals */}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium table-footer-text-extrato">
+            <div className={styles.extratoMovimentacoesTotals}>
+              <div className={styles.extratoMovimentacoesTotalsLeft}>
+                <p className={styles.extratoMovimentacoesTotalsTitle}>
                   Totais do período
                 </p>
-                <p className="text-xs table-footer-secondary-extrato">
+                <p className={styles.extratoMovimentacoesTotalsDate}>
                   {selectedDate} a {selectedDate}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium table-footer-secondary-extrato">
+              <div className={styles.extratoMovimentacoesTotalsRight}>
+                <p className={styles.extratoMovimentacoesTotalsLabel}>
                   Valor total do período (R$)
                 </p>
-                <p className="text-lg font-bold table-footer-accent-extrato">
+                <p className={styles.extratoMovimentacoesTotalsValue}>
                   R$ {formatNumberWithThousands(totalPeriodo)}
                 </p>
               </div>
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(value) => setItemsPerPage(Number(value))}
+            {filteredMovimentacoes.length > 0 && (
+              <div className={styles.extratoMovimentacoesPagination}>
+                <span className={styles.extratoMovimentacoesPaginationInfo}>
+                  Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                  {" - "}
+                  {Math.min(currentPage * itemsPerPage, filteredMovimentacoes.length)} de {filteredMovimentacoes.length}
+                  {activeFilter !== "total" && (
+                    <span className={styles.extratoMovimentacoesStatValueActive}> (filtrado)</span>
+                  )}
+                </span>
+                <div className={styles.extratoMovimentacoesPaginationButtons}>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className={styles.extratoMovimentacoesPaginationSelect}
+                    style={{ marginRight: 16 }}
                   >
-                    <SelectTrigger className="w-16 extrato-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="extrato-dropdown">
-                      <SelectItem
-                        value="25"
-                        className="extrato-select-option"
-                      >
-                        25
-                      </SelectItem>
-                      <SelectItem
-                        value="50"
-                        className="extrato-select-option"
-                      >
-                        50
-                      </SelectItem>
-                      <SelectItem
-                        value="100"
-                        className="extrato-select-option"
-                      >
-                        100
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="text-sm table-footer-secondary-extrato">
-                    Registros por página
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                  <button
+                    className={styles.extratoMovimentacoesPaginationArrow}
+                    onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="extrato-pagination-btn disabled:opacity-30"
+                    aria-label="Primeira página"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Anterior
-                  </Button>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from(
-                      { length: Math.min(5, totalPages) },
-                      (_, i) => i + 1
-                    ).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className={`w-8 h-8 p-0 ${
-                          currentPage === page
-                            ? "extrato-pagination-btn-active"
-                            : "extrato-pagination-btn"
-                        }`}
-                      >
-                        {page}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setCurrentPage(Math.min(totalPages, currentPage + 1))
-                    }
+                    {"<<"}
+                  </button>
+                  <button
+                    className={styles.extratoMovimentacoesPaginationArrow}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    aria-label="Página anterior"
+                  >
+                    {"<"}
+                  </button>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={p === currentPage ? styles.extratoMovimentacoesPaginationButtonActive : styles.extratoMovimentacoesPaginationArrow}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    className={styles.extratoMovimentacoesPaginationArrow}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="extrato-pagination-btn disabled:opacity-30"
+                    aria-label="Próxima página"
                   >
-                    Próximo
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-[#1E88E5] hover:text-[#1E88E5] hover:bg-[#1E88E5]/10"
+                    {">"}
+                  </button>
+                  <button
+                    className={styles.extratoMovimentacoesPaginationArrow}
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    aria-label="Última página"
                   >
-                    <ArrowUp className="h-4 w-4 mr-1" />
-                    Voltar ao topo
-                  </Button>
-                  <Select value="1 - 25 de 140" onValueChange={() => {}}>
-                    <SelectTrigger className="w-32 extrato-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="extrato-dropdown">
-                      <SelectItem
-                        value="1 - 25 de 140"
-                        className="extrato-select-option"
-                      >
-                        1 - 25 de 140
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    placeholder="Ir para página"
-                    className="w-24 extrato-input"
-                  />
-                  <Button
-                    size="sm"
-                    className="extrato-primary-btn"
-                  >
-                    Ok
-                  </Button>
+                    {">>"}
+                  </button>
                 </div>
               </div>
-
-              <p className="text-sm table-footer-secondary-extrato">
-                Mostrando {startIndex + 1} -{" "}
-                {Math.min(
-                  startIndex + itemsPerPage,
-                  filteredMovimentacoes.length
-                )}{" "}
-                de {filteredMovimentacoes.length} registros
-                {activeFilter !== "total" && (
-                  <span className="table-footer-accent-extrato ml-1">(filtrado)</span>
-                )}
-              </p>
-            </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Modal de Confirmação de Exclusão */}
       <Dialog
@@ -1924,34 +1813,34 @@ export default function ExtratoMovimentacoesPage() {
           }
         }}
       >
-        <DialogContent className="extrato-modal">
-          <DialogHeader className="extrato-modal-header">
-            <DialogTitle className="theme-text-white">Confirmar Exclusão</DialogTitle>
-            <DialogDescription className="theme-text-secondary">
+        <DialogContent className={styles.extratoMovimentacoesDropdown}>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription>
               <p>
                 Você tem certeza que quer excluir &ldquo;
                 {deleteModal.transacao?.descricao}&rdquo;?
               </p>
               {deleteModal.transacao?.origem === "pluggy" && (
-                <p className="mt-2 text-sm theme-text-secondary">
+                <p className="mt-2 text-sm">
                   Esta transação foi sincronizada do OpenFinance e será removida
                   permanentemente.
                 </p>
               )}
               {deleteModal.transacao?.origem === "Importação OFX" && (
-                <p className="mt-2 text-sm theme-text-secondary">
+                <p className="mt-2 text-sm">
                   Esta transação foi importada via OFX e será removida
                   permanentemente.
                 </p>
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="extrato-modal-footer">
+          <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setDeleteModal({ isOpen: false, transacao: null })}
               disabled={isDeleting}
-              className="extrato-outline-btn"
+              className={styles.extratoMovimentacoesSecondaryBtn}
             >
               Cancelar
             </Button>
@@ -1959,7 +1848,7 @@ export default function ExtratoMovimentacoesPage() {
               variant="destructive"
               onClick={handleDeleteTransacao}
               disabled={isDeleting}
-              className="bg-[#F50057] hover:bg-[#D1004E] text-white"
+              className={`${styles.extratoMovimentacoesDropdownItem} danger`}
             >
               {isDeleting ? "Excluindo..." : "Excluir"}
             </Button>
@@ -2016,6 +1905,7 @@ export default function ExtratoMovimentacoesPage() {
         isOpen={downloadPlanilhasModal}
         onClose={() => setDownloadPlanilhasModal(false)}
       />
-    </div>
+      </div>
+    </>
   );
 }

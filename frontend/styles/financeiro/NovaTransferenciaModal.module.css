@@ -1,0 +1,223 @@
+/* NovaTransferenciaModal.module.css */
+
+.dialogContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-l);
+  max-width: 500px;
+  width: 100%;
+}
+
+.dialogTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin: 0 0 var(--onity-space-m);
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.fieldContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.label {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  line-height: var(--onity-type-body-line);
+}
+
+.input {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  outline: none;
+  width: 100%;
+}
+
+.input:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.input:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.8;
+}
+
+.fileInput {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  outline: none;
+  width: 100%;
+}
+
+.fileInput:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.fileInput:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.fileInput::file-selector-button {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  margin-right: var(--onity-space-s);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.fileInput::file-selector-button:hover {
+  background: var(--onity-color-primary-hover);
+}
+
+.selectTrigger {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  outline: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.selectTrigger:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.selectTrigger:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.selectContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xs);
+  z-index: 1000;
+}
+
+.selectItem {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  margin: 2px 0;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.selectItem:hover {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.selectItem[data-state="checked"] {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  font-weight: 600;
+}
+
+.selectItem[data-state="checked"]:hover {
+  background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
+.fileName {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+  line-height: var(--onity-type-caption-line);
+  margin-top: var(--onity-space-xs);
+}
+
+.dialogFooter {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+  margin-top: var(--onity-space-l);
+}
+
+.button {
+  align-items: center;
+  border-radius: var(--onity-radius-xs);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  gap: var(--onity-space-xs);
+  justify-content: center;
+  line-height: var(--onity-type-body-line);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  transition: all 120ms ease;
+  outline: none;
+  border: 1px solid transparent;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonOutline {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.buttonOutline:hover:not(:disabled) {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: var(--onity-color-primary-hover);
+}
