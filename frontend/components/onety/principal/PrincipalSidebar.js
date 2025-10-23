@@ -203,12 +203,6 @@ const MODULE_REGISTRY = {
         route: '/financeiro/visao-geral'
       },
       {
-        id: 'contas-receber',
-        label: 'Contas a Receber',
-        icon: <DollarSign size={18} />,
-        route: '/financeiro/contas-receber'
-      },
-      {
         id: 'clientes',
         label: 'Clientes',
         icon: <Users size={18} />,
@@ -219,6 +213,12 @@ const MODULE_REGISTRY = {
         label: 'Produtos',
         icon: <DollarSign size={18} />,
         route: '/financeiro/cadastro-produtos'
+      },
+      {
+        id: 'contratos',
+        label: 'Contratos',
+        icon: <FileText size={18} />,
+        route: '/financeiro/contratos'
       }
     ]
   },

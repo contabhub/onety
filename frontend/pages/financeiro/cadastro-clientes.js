@@ -124,46 +124,22 @@ export default function ClientesPage() {
     startIndex + itemsPerPage
   );
 
-  // Função para gerar números das páginas dinamicamente
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      // Se temos 5 páginas ou menos, mostra todas
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Se temos mais de 5 páginas, mostra páginas inteligentemente
-      if (currentPage <= 3) {
-        // Páginas iniciais: 1, 2, 3, 4, 5, ..., última
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        // Páginas finais: 1, ..., penúltima, antepenúltima, última
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        // Páginas do meio: 1, ..., anterior, atual, próximo, ..., última
-        pages.push(1);
-        pages.push('...');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      }
-    }
-    
-    return pages;
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
+
+  // Função para resetar página quando mudar quantidade de itens
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset para primeira página
   };
+
 
   const handleSaveCliente = async (clienteData) => {
     console.log("Salvando cliente:", clienteData);
@@ -696,48 +672,70 @@ export default function ClientesPage() {
               </div>
 
               {/* Pagination */}
-              <div className={styles.paginationBar}>
-                <div className={styles.paginationLeft}>
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(value) => setItemsPerPage(Number(value))}
-                  >
-                    <SelectTrigger className={styles.perPageSelectTrigger}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={styles.selectContent}>
-                      <SelectItem value="10" className={styles.selectItem}>10</SelectItem>
-                      <SelectItem value="25" className={styles.selectItem}>25</SelectItem>
-                      <SelectItem value="50" className={styles.selectItem}>50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className={styles.textMutedSmall}>Registros por página</span>
-                </div>
-
-                <div className={styles.paginationCenter}>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={styles.pageNavBtn}>
-                    <ChevronLeft className="h-4 w-4" />
-                    Anterior
-                  </Button>
-
-                  <div className={styles.pageNumbers}>
-                    {getPageNumbers().map((page, index) => (
-                      <Button key={index} variant={currentPage === page ? "default" : "outline"} size="sm" onClick={() => (typeof page === 'number' ? setCurrentPage(page) : null)} disabled={typeof page === 'string'} className={`${styles.pageBtn} ${typeof page === 'string' ? styles.pageEllipsis : currentPage === page ? styles.pageBtnActive : ''}`}>
-                        {page}
-                      </Button>
+              {filteredClientes.length > 0 && (
+                <div className={styles.pagination}>
+                  <span className={styles.paginationInfo}>
+                    Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                    {" - "}
+                    {Math.min(currentPage * itemsPerPage, filteredClientes.length)} de {filteredClientes.length}
+                  </span>
+                  <div className={styles.paginationButtons}>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      className={styles.paginationSelect}
+                      style={{ marginRight: 16 }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      aria-label="Primeira página"
+                    >
+                      {"<<"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Página anterior"
+                    >
+                      {"<"}
+                    </button>
+                    {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                      >
+                        {p}
+                      </button>
                     ))}
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Próxima página"
+                    >
+                      {">"}
+                    </button>
+                    <button
+                      className={styles.paginationArrow}
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Última página"
+                    >
+                      {">>"}
+                    </button>
                   </div>
-
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={styles.pageNavBtn}>
-                    Próximo
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
                 </div>
-
-                <p className={styles.textMutedSmall}>
-                  Mostrando {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredClientes.length)} de {filteredClientes.length} registros
-                </p>
-              </div>
+              )}
             </>
           )}
         </CardContent>

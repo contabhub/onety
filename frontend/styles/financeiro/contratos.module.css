@@ -118,9 +118,21 @@
   box-shadow: var(--onity-elev-medium);
 }
 
-.statusCardSelected {
-  border-color: var(--onity-color-primary);
-  box-shadow: var(--onity-elev-medium);
+/* Estados específicos dos cards */
+.statusCardAtivoSelected {
+  border-color: var(--onity-color-success);
+}
+
+.statusCardInativoSelected {
+  border-color: var(--onity-color-warning);
+}
+
+.statusCardCanceladoSelected {
+  border-color: var(--onity-color-error);
+}
+
+.statusCardTodosSelected {
+  border-color: var(--onity-color-info);
 }
 
 .cardCheckIconWrap {
@@ -129,8 +141,26 @@
   right: var(--onity-space-s);
 }
 
-.iconSelected {
-  color: var(--onity-color-primary);
+.iconAtivo {
+  color: var(--onity-color-success);
+  width: 20px;
+  height: 20px;
+}
+
+.iconInativo {
+  color: var(--onity-color-warning);
+  width: 20px;
+  height: 20px;
+}
+
+.iconCancelado {
+  color: var(--onity-color-error);
+  width: 20px;
+  height: 20px;
+}
+
+.iconTodos {
+  color: var(--onity-color-info);
   width: 20px;
   height: 20px;
 }
@@ -143,6 +173,22 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--onity-icon-secondary);
+}
+
+.textAtivo {
+  color: var(--onity-color-success);
+}
+
+.textInativo {
+  color: var(--onity-color-warning);
+}
+
+.textCancelado {
+  color: var(--onity-color-error);
+}
+
+.textTodos {
+  color: var(--onity-color-info);
 }
 
 .textAmount {
@@ -289,8 +335,8 @@
 }
 
 .searchInput {
-  padding: 10px 10px 10px 40px;
-  width: 100%;
+  padding: 2px 2px 2px 24px;
+  width: 90%;
   background: transparent;
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
@@ -415,6 +461,18 @@
 .btnSecondary:hover {
   background: var(--onity-color-bg);
   border-color: var(--onity-color-primary);
+}
+
+.btnDangerOutline {
+  background: transparent;
+  border: 1px solid var(--onity-color-error);
+  color: var(--onity-color-error);
+  transition: all 120ms ease;
+}
+
+.btnDangerOutline:hover {
+  background: var(--onity-color-error);
+  color: var(--onity-color-error-contrast);
 }
 
 .btnDanger {

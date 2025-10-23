@@ -17,7 +17,6 @@ import {
   Package,
   Wrench
 } from 'lucide-react';
-import Image from 'next/image';
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/financeiro/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/financeiro/dropdown-menu';
@@ -87,6 +86,22 @@ export default function ProdutosServicosPage() {
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
+
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
+
+  // Função para resetar página quando mudar quantidade de itens
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset para primeira página
+  };
 
   // Funções para seleção múltipla
   const handleSelectAll = (checked) => {
@@ -486,49 +501,70 @@ export default function ProdutosServicosPage() {
         </div>
         
         {/* Pagination */}
-        <div className={styles.paginationBar}>
-          <div className={styles.paginationLeft}>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={styles.pageNavBtn}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <div className={styles.pageNumbers}>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className={`${styles.pageBtn} ${
-                    currentPage === page ? styles.pageBtnActive : ''
-                  }`}
+        {filteredItems.length > 0 && (
+          <div className={styles.pagination}>
+            <span className={styles.paginationInfo}>
+              Mostrando {(currentPage - 1) * itemsPerPage + 1}
+              {" - "}
+              {Math.min(currentPage * itemsPerPage, filteredItems.length)} de {filteredItems.length}
+            </span>
+            <div className={styles.paginationButtons}>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className={styles.paginationSelect}
+                style={{ marginRight: 16 }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                aria-label="Primeira página"
+              >
+                {"<<"}
+              </button>
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                aria-label="Página anterior"
+              >
+                {"<"}
+              </button>
+              {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
                 >
-                  {page}
-                </Button>
+                  {p}
+                </button>
               ))}
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                aria-label="Próxima página"
+              >
+                {">"}
+              </button>
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                aria-label="Última página"
+              >
+                {">>"}
+              </button>
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className={styles.pageNavBtn}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
           </div>
-          
-          <p className={styles.textMutedSmall}>
-            Mostrando {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredItems.length)} de {filteredItems.length} registros
-          </p>
-        </div>
+        )}
       </div>
 
       {/* Novo Produto/Serviço Drawer */}

@@ -271,7 +271,7 @@
 }
 
 .searchInput {
-  padding: 10px 10px 10px 40px;
+  padding: 2px 2px 2px 30px;
   width: 90%;
   background: transparent;
   border: 1px solid var(--onity-color-border);
