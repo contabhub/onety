@@ -1,24 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "@/styles/extrato-movimentacoes-theme.css";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button.js";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge.js";
+import styles from "../../styles/financeiro/extrato-movimentacoes.module.css";
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/financeiro/card';
+import { Button } from '../../components/financeiro/botao';
+import { Input } from '../../components/financeiro/input';
+import { Badge } from '../../components/financeiro/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '../../components/financeiro/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '../../components/financeiro/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '../../components/financeiro/dialog';
 import {
   Search,
   Plus,
@@ -63,8 +63,6 @@ import {
  * @property {Date} end
  */
 import { toast } from "react-toastify";
-import loaderAnimation from "@/assets/loader.json";
-import Lottie from "lottie-react";
 import { EditReceitaDrawer } from "@/components/EditReceitaDrawer";
 import { EditDespesaDrawer } from "@/components/EditDespesaDrawer";
 import { NovaReceitaDrawer } from "@/components/NovaReceitaDrawer.js";
@@ -1055,7 +1053,9 @@ export default function ExtratoMovimentacoesPage() {
       <div className="p-6 space-y-6 theme-bg-primary min-h-screen">
         <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <div className="w-20 h-20">
-            <Lottie animationData={loaderAnimation} loop={true} />
+            <div className={styles.extratoMovimentacoesLoadingSpinner}>
+              <div className={styles.extratoMovimentacoesLoadingSpinnerInner}></div>
+            </div>
           </div>
           <p className="theme-text-secondary text-lg">Carregando movimentações...</p>
         </div>
