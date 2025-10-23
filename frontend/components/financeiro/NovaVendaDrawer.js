@@ -510,11 +510,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                     <Label className={styles.novaVendaLabel}>
                       Número da venda <span className={styles.novaVendaLabelRequired}>*</span>
                     </Label>
-                    <Input
-                      value={formData.numeroVenda}
-                      onChange={(e) => handleInputChange('numeroVenda', e.target.value)}
-                      className={styles.novaVendaInput}
-                    />
+                      <Input
+                        value={formData.numeroVenda}
+                        onChange={(e) => handleInputChange('numeroVenda', e.target.value)}
+                        className={styles.novaVendaInput}
+                      />
                   </div>
 
                   {/* Cliente */}
@@ -655,11 +655,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                     />
                   </div>
 
-                  {/* Centro de custo */}
+                   {/* Centro de custo */}
                   <div className={styles.novaVendaField}>
                     <Label className={styles.novaVendaLabel}>
                       Centro de custo <HelpCircle className={styles.novaVendaIcon} />
-                    </Label>
+                     </Label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -688,9 +688,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                       }))}
                       isClearable
                     />
-                  </div>
+                   </div>
 
-                  {/* Vendedor responsável */}
+                   {/* Vendedor responsável */}
                   <div className={cn(styles.novaVendaField, styles.novaVendaVendedorField)}>
                     <Label className={styles.novaVendaLabel}>Vendedor responsável</Label>
                     <ReactSelect
@@ -721,7 +721,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
                       }))}
                       isClearable
                     />
-                  </div>
+                   </div>
                 </div>
               </div>
 

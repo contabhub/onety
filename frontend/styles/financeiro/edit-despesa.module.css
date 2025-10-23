@@ -1,0 +1,263 @@
+/* ===== ANIMAÇÕES ===== */
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* ===== OVERLAY E DRAWER PRINCIPAL ===== */
+.editDespesaOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.editDespesaOverlay.closing {
+  opacity: 0;
+}
+
+.editDespesaModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: var(--onity-color-surface);
+  border-radius: 0;
+  box-shadow: var(--onity-elev-high);
+  display: flex;
+  flex-direction: column;
+  animation: slideInUp 0.4s ease;
+  overflow: hidden;
+}
+
+.editDespesaModal.closing {
+  animation: slideOutDown 0.4s ease;
+}
+
+/* ===== HEADER ===== */
+.editDespesaHeader {
+  background: var(--onity-color-surface);
+  border-bottom: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-l);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.editDespesaTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ===== LOADING ===== */
+.editDespesaLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xl);
+  color: var(--onity-color-text-secondary);
+}
+
+/* ===== SEÇÕES ===== */
+.editDespesaSectionTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h4-size);
+  font-weight: 600;
+  margin-bottom: var(--onity-space-m);
+}
+
+/* ===== FOOTER ===== */
+.editDespesaFooter {
+  background: var(--onity-color-surface);
+  border-top: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-l);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+/* ===== BOTÕES ===== */
+.editDespesaCancelBtn {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editDespesaCancelBtn:hover {
+  background: var(--onity-color-bg-hover);
+  border-color: var(--onity-color-primary);
+}
+
+.editDespesaSaveBtn {
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  color: var(--onity-color-surface);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editDespesaSaveBtn:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+/* ===== REACT SELECT ===== */
+.editDespesaReactSelect {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  color: var(--onity-color-text);
+}
+
+.editDespesaReactSelect .react-select__control {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  min-height: 40px;
+  box-shadow: none;
+}
+
+.editDespesaReactSelect .react-select__control:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.editDespesaReactSelect .react-select__control--is-focused {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 1px var(--onity-color-primary);
+}
+
+.editDespesaReactSelect .react-select__menu {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-high);
+}
+
+.editDespesaReactSelect .react-select__option {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+}
+
+.editDespesaReactSelect .react-select__option:hover {
+  background: var(--onity-color-bg-hover);
+}
+
+.editDespesaReactSelect .react-select__option--is-selected {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-surface);
+}
+
+.editDespesaReactSelect .react-select__single-value {
+  color: var(--onity-color-text);
+}
+
+.editDespesaReactSelect .react-select__placeholder {
+  color: var(--onity-color-text-secondary);
+}
+
+/* ===== POPOVER ===== */
+.editDespesaPopover {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+}
+
+/* ===== TABS ===== */
+.editDespesaTabs {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  padding: var(--onity-space-xs);
+}
+
+.editDespesaTabTrigger {
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text-secondary);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editDespesaTabTrigger[data-state="active"] {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-surface);
+}
+
+/* ===== PDF SECTION ===== */
+.editDespesaPdfSection {
+  background: var(--onity-color-bg);
+  border: 2px dashed var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-xl);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.editDespesaPdfSection:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg-hover);
+}
+
+.editDespesaPdfSuccess {
+  background: var(--onity-color-success-bg);
+  border: 1px solid var(--onity-color-success);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+}
+
+.editDespesaPdfSuccessText {
+  color: var(--onity-color-success);
+  font-weight: 500;
+}
+
+.editDespesaPdfViewer {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  overflow: hidden;
+}

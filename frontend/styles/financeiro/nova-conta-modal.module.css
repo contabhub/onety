@@ -1,0 +1,926 @@
+/* Estilos específicos para modal de Nova Conta Financeira */
+
+/* Modal principal */
+.novaContaOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.novaContaModal {
+  width: 60%;
+  max-width: 60rem;
+  min-height: 500px;
+  max-height: 85vh;
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+  
+/* Header do modal */
+.novaContaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.novaContaTitle {
+  font-size: var(--onity-type-h4-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.novaContaCloseButton {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  border-radius: var(--onity-radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.novaContaCloseButton:hover {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaIcon {
+  width: 16px;
+  height: 16px;
+}
+  
+/* Content do modal */
+.novaContaContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Footer do modal */
+.novaContaFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+}
+
+.novaContaPrimaryButton {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-text-inverse);
+  border: 1px solid var(--onity-color-primary);
+  padding: 16px 24px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  border-radius: var(--onity-radius-s);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaContaPrimaryButton:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.novaContaPrimaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.novaContaSecondaryButton {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  padding: 16px 24px;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  border-radius: var(--onity-radius-s);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaContaSecondaryButton:hover {
+  background-color: var(--onity-color-surface-hover);
+  border-color: var(--onity-color-border-hover);
+}
+  
+/* Loading state */
+.novaContaLoading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin-left: 16px;
+}
+
+.novaContaLoadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--onity-color-primary);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+  
+/* Stepper */
+.novaContaStepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.novaContaStepperItem {
+  display: flex;
+  align-items: center;
+}
+
+.novaContaStepperStepContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.novaContaStepperStep {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.novaContaStepperStepActive {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-text-inverse);
+}
+
+.novaContaStepperStepInactive {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaStepperIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.novaContaStepperLabel {
+  font-size: var(--onity-type-caption-size);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.novaContaStepperLabelActive {
+  color: var(--onity-color-primary);
+}
+
+.novaContaStepperLabelInactive {
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaStepperLine {
+  width: 64px;
+  height: 2px;
+  margin: 0 8px;
+  margin-top: -16px;
+}
+
+.novaContaStepperLineActive {
+  background-color: var(--onity-color-primary);
+}
+
+.novaContaStepperLineInactive {
+  background-color: var(--onity-color-border);
+}
+  
+/* Step containers */
+.novaContaStepContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.novaContaStepHeader {
+  text-align: center;
+}
+
+.novaContaStepTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin-bottom: 8px;
+}
+
+.novaContaStepSubtitle {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+}
+
+.novaContaStepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+  
+/* Category sections */
+.novaContaCategorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaContaCategoryTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin-bottom: 12px;
+}
+
+.novaContaTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.novaContaTypeCard {
+  padding: 12px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  background-color: var(--onity-color-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+  
+.novaContaTypeCard:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.novaContaTypeCardSelected {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-color-primary-alpha);
+}
+
+.novaContaTypeIcon {
+  width: 36px;
+  height: 36px;
+  color: var(--onity-color-primary);
+}
+
+.novaContaTypeText {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--onity-color-text);
+}
+  
+/* Integration container */
+.novaContaIntegrationContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  text-align: center;
+}
+
+.novaContaIntegrationContent {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  text-align: center;
+}
+
+.novaContaInterStatus {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: var(--onity-color-primary-alpha);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-primary-border);
+}
+
+.novaContaInterStatusHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.novaContaInterIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-primary);
+}
+
+.novaContaInterTitle {
+  font-size: var(--onity-type-h4-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+
+.novaContaInterDetails {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.novaContaBackButtonContainer {
+  margin-top: 16px;
+}
+
+.novaContaBackButton {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.novaContaBackButton:hover {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-text-inverse);
+}
+  
+/* Integration buttons */
+.novaContaIntegrationTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin-bottom: 8px;
+}
+
+.novaContaIntegrationButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+}
+
+@media (min-width: 768px) {
+  .novaContaIntegrationButtons {
+    flex-direction: row;
+  }
+}
+
+.novaContaIntegrationButton {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-text-inverse);
+  border: 1px solid var(--onity-color-primary);
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-med);
+  font-size: var(--onity-type-body-size);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaContaIntegrationButton:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: scale(1.05);
+}
+
+.novaContaIntegrationButtonOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.novaContaIntegrationButtonOutline:hover {
+  background-color: var(--onity-color-surface-hover);
+  border-color: var(--onity-color-border-hover);
+  transform: scale(1.05);
+}
+
+.novaContaIntegrationSubtitle {
+  font-size: var(--onity-type-caption-size);
+  margin-top: 4px;
+  }
+  
+/* Form containers */
+.novaContaFormContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.novaContaIconContainer {
+  flex-shrink: 0;
+}
+
+.novaContaAccountIconBg {
+  width: 96px;
+  height: 96px;
+  background-color: var(--onity-color-primary-alpha);
+  border-radius: var(--onity-radius-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.novaContaCaixinhaIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.novaContaCaixinhaIconInner {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.novaContaBankIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.novaContaDefaultIcon {
+  width: 48px;
+  height: 48px;
+  color: var(--onity-color-primary);
+}
+
+.novaContaFormContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaContaDescription {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaDescriptionSpacing {
+  margin-top: 8px;
+}
+
+.novaContaFormFields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaContaFormSectionTitle {
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+
+.novaContaFormGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .novaContaFormGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+  
+/* Form fields */
+.novaContaField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.novaContaLabel {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+}
+
+.novaContaInput {
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: 8px 12px;
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+}
+
+.novaContaInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaInput:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 1px var(--onity-color-primary);
+  outline: none;
+}
+
+.novaContaSelect {
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.novaContaSelectContent {
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+}
+
+.novaContaReactSelect {
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.novaContaCheckboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.novaContaCheckbox {
+  border-color: var(--onity-color-border);
+}
+
+.novaContaCheckbox:checked {
+  background-color: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.novaContaCheckboxLabel {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-color-text);
+}
+  
+/* Inter section */
+.novaContaInterSection {
+  margin-top: 24px;
+  padding: 20px;
+  background-color: var(--onity-color-primary-alpha);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-primary-border);
+}
+
+.novaContaInterHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.novaContaInterTitleContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.novaContaInterDescription {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin-bottom: 16px;
+}
+
+.novaContaInterForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaContaInterGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .novaContaInterGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.novaContaInterOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.novaContaFileInput {
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.novaContaFileDescription {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+  
+/* Upload section */
+.novaContaUploadContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.novaContaUploadIcon {
+  width: 80px;
+  height: 64px;
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.novaContaUploadIconInner {
+  width: 32px;
+  height: 32px;
+  color: var(--onity-color-primary);
+}
+
+.novaContaUploadContent {
+  flex: 1;
+}
+
+.novaContaButtonGroup {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.novaContaPrimaryButtonSelected {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.novaContaButtonIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.novaContaSaldoFields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.novaContaSaldoFieldsVisible {
+  max-height: 384px;
+  opacity: 1;
+}
+
+.novaContaSaldoFieldsHidden {
+  max-height: 0;
+  opacity: 0;
+}
+
+.novaContaSaldoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .novaContaSaldoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.novaContaFieldDescription {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaHideButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.novaContaHideButton {
+  background: transparent;
+  border: none;
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.novaContaHideButton:hover {
+  color: var(--onity-color-text);
+}
+
+.novaContaHideButtonIcon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.novaContaHideButton:hover .novaContaHideButtonIcon {
+  transform: scale(1.1);
+}
+  
+/* Info card */
+.novaContaInfoCard {
+  background-color: var(--onity-color-primary-alpha);
+  border: 1px solid var(--onity-color-primary-border);
+  border-radius: var(--onity-radius-m);
+  padding: 20px;
+}
+
+.novaContaInfoText {
+  color: var(--onity-color-text);
+  margin-bottom: 16px;
+}
+
+/* Success section */
+.novaContaSuccessContainer {
+  text-align: center;
+}
+
+.novaContaSuccessIcon {
+  width: 64px;
+  height: 64px;
+  background-color: var(--onity-color-primary-alpha);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.novaContaSuccessIconInner {
+  width: 32px;
+  height: 32px;
+  color: var(--onity-color-primary);
+}
+
+.novaContaSuccessTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: 700;
+  color: var(--onity-color-text);
+  margin-bottom: 8px;
+}
+
+.novaContaSuccessSubtitle {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+}
+
+/* Summary card */
+.novaContaSummaryCard {
+  max-width: 24rem;
+  margin: 0 auto;
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: 20px;
+}
+
+.novaContaSummaryTitle {
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin-bottom: 12px;
+}
+
+.novaContaSummaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--onity-type-caption-size);
+}
+
+.novaContaSummaryRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.novaContaSummaryLabel {
+  color: var(--onity-icon-secondary);
+}
+
+.novaContaSummaryValue {
+  font-weight: 500;
+  color: var(--onity-color-text);
+}
+  
+/* Open Finance */
+.novaContaOpenFinanceContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  text-align: center;
+}
+
+.novaContaOpenFinanceButton {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-text-inverse);
+  border: 1px solid var(--onity-color-primary);
+  margin-top: 32px;
+}
+
+.novaContaOpenFinanceButton:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+  
+/* Responsividade */
+@media (max-width: 768px) {
+  .novaContaModal {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 16px;
+  }
+  
+  .novaContaHeader {
+    padding: 16px;
+  }
+  
+  .novaContaContent {
+    padding: 16px;
+  }
+  
+  .novaContaFooter {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .novaContaPrimaryButton,
+  .novaContaSecondaryButton {
+    font-size: var(--onity-type-caption-size);
+    padding: 12px 16px;
+  }
+  
+  .novaContaFormContainer {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .novaContaIntegrationButtons {
+    flex-direction: column;
+  }
+  
+  .novaContaTypeGrid {
+    grid-template-columns: 1fr;
+  }
+}
+  
+  
