@@ -1,0 +1,451 @@
+/* EditReceitaDrawer.module.css */
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-color: rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease-in-out;
+}
+
+.overlay.closing {
+  opacity: 0;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background-color: var(--theme-bg-primary);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease-in-out;
+}
+
+.modal.closing {
+  transform: translateY(100%);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--theme-border-primary);
+  background-color: var(--theme-bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--theme-text-white);
+}
+
+.closeButton {
+  height: 2rem;
+  width: 2rem;
+  padding: 0;
+  color: var(--theme-text-white);
+}
+
+.closeButton:hover {
+  color: var(--theme-text-secondary);
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.contentInner {
+  height: 100%;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  color: var(--theme-text-secondary);
+}
+
+/* Section */
+.section {
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--theme-text-white);
+  margin-bottom: 1rem;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Form Fields */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fieldLabel {
+  color: var(--theme-text-white);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.fieldLabelRequired {
+  color: #F50057;
+}
+
+.fieldInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fieldInfoIcon {
+  height: 1rem;
+  width: 1rem;
+  color: var(--theme-text-secondary);
+}
+
+.fieldInfoIcon.invisible {
+  visibility: hidden;
+}
+
+/* Input Styles */
+.input {
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+  color: var(--theme-text-white);
+}
+
+.input::placeholder {
+  color: var(--theme-text-secondary);
+}
+
+.input:disabled {
+  background-color: rgba(var(--theme-bg-modal-rgb), 0.5);
+}
+
+.inputWithIcon {
+  padding-left: 2.5rem;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--theme-text-secondary);
+}
+
+/* Select Styles */
+.selectTrigger {
+  width: 100%;
+  height: 2.5rem;
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+  color: var(--theme-text-white);
+}
+
+.selectTrigger:disabled {
+  background-color: rgba(var(--theme-bg-modal-rgb), 0.5);
+}
+
+.selectContent {
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+}
+
+.selectItem {
+  color: var(--theme-text-white);
+}
+
+.selectItem:hover {
+  background-color: var(--theme-bg-secondary);
+}
+
+.selectItemDisabled {
+  color: var(--theme-text-secondary);
+  padding: 0.5rem;
+}
+
+/* Calendar Button */
+.calendarButton {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: normal;
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+  color: var(--theme-text-white);
+}
+
+.calendarButton:hover {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-white);
+}
+
+.calendarButton:disabled {
+  background-color: rgba(var(--theme-bg-modal-rgb), 0.5);
+}
+
+.calendarButtonEmpty {
+  color: var(--theme-text-secondary);
+}
+
+.calendarIcon {
+  margin-right: 0.5rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Calendar Popover */
+.calendarPopover {
+  width: auto;
+  padding: 0;
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+}
+
+.calendar {
+  background-color: var(--theme-bg-modal);
+  color: var(--theme-text-white);
+}
+
+/* React Select Styles */
+.reactSelectContainer {
+  /* Custom styles for react-select */
+}
+
+.reactSelect {
+  /* Additional react-select styles */
+}
+
+/* Table */
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border: 1px solid var(--theme-border-primary);
+  border-radius: 0.5rem;
+}
+
+.tableHeader {
+  background-color: var(--theme-bg-modal);
+}
+
+.tableHeaderCell {
+  text-align: left;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-text-white);
+}
+
+.tableRow {
+  border-top: 1px solid var(--theme-border-primary);
+}
+
+.tableCell {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--theme-text-white);
+}
+
+/* Badge */
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.badgeReceived {
+  background-color: var(--theme-primary);
+  color: var(--theme-text-white);
+}
+
+.badgeOverdue {
+  background-color: var(--theme-hotPink);
+  color: var(--theme-text-white);
+}
+
+.badgeOpen {
+  background-color: var(--theme-warning);
+  color: var(--theme-darkPurple);
+}
+
+/* Tabs */
+.tabs {
+  width: 100%;
+}
+
+.tabsList {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+}
+
+.tabsTrigger {
+  color: var(--theme-text-white);
+}
+
+.tabsTrigger[data-state="active"] {
+  background-color: var(--theme-neonPurple);
+  color: var(--theme-text-white);
+}
+
+.tabsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Textarea */
+.textarea {
+  min-height: 7.5rem;
+  background-color: var(--theme-bg-modal);
+  border: 1px solid var(--theme-border-primary);
+  color: var(--theme-text-white);
+}
+
+.textarea::placeholder {
+  color: var(--theme-text-secondary);
+}
+
+/* File Upload Section */
+.fileUploadSection {
+  border: 2px dashed var(--theme-border-primary);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.fileUploadText {
+  color: var(--theme-text-secondary);
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--theme-border-primary);
+  background-color: var(--theme-bg-primary);
+  margin-top: auto;
+}
+
+.footerButton {
+  border: 1px solid var(--theme-border-primary);
+  background-color: var(--theme-bg-modal);
+  color: var(--theme-text-white);
+}
+
+.footerButton:hover {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-white);
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.saveButton {
+  background-color: rgba(30, 136, 229, 0.2);
+  color: #26a6eb;
+  border: 1px solid rgba(30, 136, 229, 0.3);
+  border-color: #26a6eb;
+}
+
+.saveButton:hover {
+  background-color: rgba(30, 136, 229, 0.3);
+  color: #26a6eb;
+}
+
+.moreButton {
+  border: 1px solid var(--theme-border-primary);
+  background-color: var(--theme-bg-modal);
+  color: var(--theme-text-white);
+}
+
+.moreButton:hover {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-white);
+}
+
+.moreButtonIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Helper Text */
+.helperText {
+  font-size: 0.75rem;
+  color: var(--theme-text-secondary);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contentInner {
+    padding: 0.75rem 1rem;
+  }
+  
+  .header {
+    padding: 0.5rem 1rem;
+  }
+  
+  .footer {
+    padding: 0.5rem 1rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
