@@ -24,7 +24,8 @@ import {
   Tag,
   ExternalLink,
   Mic,
-  LayoutDashboard
+  LayoutDashboard,
+  ShoppingCart
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -219,6 +220,18 @@ const MODULE_REGISTRY = {
         label: 'Contratos',
         icon: <FileText size={18} />,
         route: '/financeiro/contratos'
+      },
+      {
+        id: 'vendas-orcamentos',
+        label: 'Vendas e orçamentos',
+        icon: <ShoppingCart size={18} />,
+        route: '/financeiro/vendas-e-orcamentos'
+      },
+      {
+        id: 'centro-custo',
+        label: 'Centros de Custo',
+        icon: <DollarSign size={18} />,
+        route: '/financeiro/centro-custo'
       }
     ]
   },

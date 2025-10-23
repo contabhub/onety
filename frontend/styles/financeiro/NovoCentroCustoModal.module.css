@@ -1,0 +1,189 @@
+.modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+}
+
+.closeBtn {
+  color: var(--onity-color-text);
+  transition: var(--onity-transition);
+}
+
+.closeBtn:hover {
+  color: var(--onity-color-primary);
+}
+
+.title {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-m);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+  padding: var(--onity-space-m) 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--onity-space-m);
+}
+
+.gridTwoColumns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--onity-space-m);
+}
+
+.fieldContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.label {
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-medium);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
+}
+
+.input {
+  width: 90%;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-normal);
+  transition: var(--onity-transition);
+  min-height: 48px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.input:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.input::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.6;
+}
+
+.select {
+  width: 90%;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-normal);
+  transition: var(--onity-transition);
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.select:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.select option {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s);
+}
+
+.buttonsContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-m);
+}
+
+.cancelBtn {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-medium);
+  cursor: pointer;
+  transition: var(--onity-transition);
+  min-height: 40px;
+}
+
+.cancelBtn:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+}
+
+.saveBtn {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-medium);
+  cursor: pointer;
+  transition: var(--onity-transition);
+  min-height: 40px;
+}
+
+.saveBtn:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+@media (max-width: 768px) {
+  .gridTwoColumns {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal {
+    max-width: 95vw;
+    margin: var(--onity-space-m);
+  }
+  
+  .buttonsContainer {
+    flex-direction: column;
+    gap: var(--onity-space-xs);
+  }
+  
+  .cancelBtn,
+  .saveBtn {
+    width: 100%;
+  }
+}
