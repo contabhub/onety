@@ -97,6 +97,10 @@ const transacoesRoutes = require('./financeiro/transacoes');
 const transferenciasCaixinhasRoutes = require('./financeiro/transferencias_caixinha');
 const vendasRoutes = require('./financeiro/vendas');
 
+// Rotas do OpenFinance
+const openfinanceRoutes = require('../apis/openfinance');
+const contasRoutes = require('../apis/contas');
+
 // Rotas do Onety
 router.use('/auth', authRoutes);
 router.use('/empresas', empresasRoutes);
@@ -194,6 +198,10 @@ router.use('/financeiro/transferencias-caixinha', transferenciasCaixinhasRoutes)
 router.use('/financeiro/vendas', vendasRoutes);
 router.use('/financeiro/vendas', vendasRoutes);
 router.use('/financeiro/contratos', contratosFinanceiroRoutes);
+
+// Rotas do OpenFinance
+router.use('/openfinance', openfinanceRoutes);
+router.use('/contas-api', contasRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");

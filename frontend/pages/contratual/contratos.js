@@ -67,6 +67,10 @@ export default function Contratos() {
     const userRaw = localStorage.getItem("userData");
     const user = userRaw ? JSON.parse(userRaw) : null;
     const equipeId = user?.EmpresaId ?? null;
+    
+    console.log("🔍 [DEBUG] Frontend - user:", user);
+    console.log("🔍 [DEBUG] Frontend - equipeId no useEffect:", equipeId);
+    
     setUserRole(user && user.permissoes?.adm ? String(user.permissoes.adm[0]).toLowerCase() : null);
 
     if (!token || !equipeId) {
@@ -77,7 +81,10 @@ export default function Contratos() {
 
     async function fetchContratos() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/empresa/${equipeId}/light`, {
+        console.log("🔍 [DEBUG] Frontend - equipeId na função:", equipeId);
+        console.log("🔍 [DEBUG] Frontend - URL:", `${process.env.NEXT_PUBLIC_API_URL}/financeiro/contratos?empresa_id=${equipeId}`);
+        
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contratos?empresa_id=${equipeId}`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -158,7 +165,7 @@ export default function Contratos() {
     const intervalo = setInterval(fetchContratos, 60000); // a cada 60 segundos
 
     return () => clearInterval(intervalo);
-  }, []);
+  }, [router.query]);
 
 
 
@@ -232,6 +239,16 @@ export default function Contratos() {
     }
     return statusOk && dataOk && autentiqueOk;
   });
+  
+  console.log("🔍 [DEBUG] Contratos originais:", contratos.length);
+  console.log("🔍 [DEBUG] Contratos filtrados:", contratosFiltrados.length);
+  console.log("🔍 [DEBUG] Status filtro:", statusFiltro);
+  console.log("🔍 [DEBUG] Mes filtro:", mesFiltro);
+  console.log("🔍 [DEBUG] Ano filtro:", anoFiltro);
+  console.log("🔍 [DEBUG] Autentique filtro:", autentiqueFiltro);
+  console.log("🔍 [DEBUG] View mode:", viewMode);
+  console.log("🔍 [DEBUG] PDF only:", pdfOnly);
+  
   const totalPages = Math.ceil(contratosFiltrados.length / itemsPerPage) || 1;
   const paginatedContratos = contratosFiltrados.slice(
     (currentPage - 1) * itemsPerPage,

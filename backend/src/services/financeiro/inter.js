@@ -21,13 +21,12 @@ async function getAccountById(id) {
        inter_client_secret as client_secret,
        inter_cert_b64 as cert_b64,
        inter_key_b64 as key_b64,
-       inter_ambiente as ambiente,
        inter_is_default as is_default,
        inter_status as status,
        created_at,
        updated_at
      FROM contas_api 
-     WHERE id = ? AND inter_enabled = TRUE AND inter_status = "ativo"`,
+     WHERE id = ? AND inter_ativado = TRUE AND inter_status = "ativo"`,
     [id]
   );
   if (contasApiRows.length) return contasApiRows[0];
@@ -57,13 +56,12 @@ async function getDefaultAccountForCompany(companyId) {
        inter_client_secret as client_secret,
        inter_cert_b64 as cert_b64,
        inter_key_b64 as key_b64,
-       inter_ambiente as ambiente,
        inter_is_default as is_default,
        inter_status as status,
        created_at,
        updated_at
      FROM contas_api 
-     WHERE company_id = ? AND inter_enabled = TRUE AND inter_status = "ativo"
+     WHERE company_id = ? AND inter_ativado = TRUE AND inter_status = "ativo"
      ORDER BY inter_is_default DESC, id ASC
      LIMIT 1`,
     [companyId]
@@ -167,14 +165,13 @@ async function enableInterForContaApi(contaApiId, interData) {
     // 1. Atualizar a conta_api com os dados Inter
     await conn.query(
       `UPDATE contas_api SET
-       inter_enabled = TRUE,
+       inter_ativado = TRUE,
        inter_client_id = ?,
        inter_client_secret = ?,
        inter_cert_b64 = ?,
        inter_key_b64 = ?,
        inter_conta_corrente = ?,
        inter_apelido = ?,
-       inter_ambiente = ?,
        inter_is_default = ?,
        inter_status = ?,
        updated_at = NOW()
@@ -199,7 +196,7 @@ async function enableInterForContaApi(contaApiId, interData) {
       if (contaApi?.company_id) {
         await conn.query(
           `UPDATE contas_api SET inter_is_default = FALSE 
-           WHERE company_id = ? AND id <> ? AND inter_enabled = TRUE`,
+           WHERE company_id = ? AND id <> ? AND inter_ativado = TRUE`,
           [contaApi.company_id, contaApiId]
         );
       }
@@ -230,7 +227,7 @@ async function disableInterForContaApi(contaApiId) {
     // 2. Desabilitar Inter na conta_api
     await conn.query(
       `UPDATE contas_api SET
-       inter_enabled = FALSE,
+       inter_ativado = FALSE,
        inter_account_id = NULL,
        updated_at = NOW()
        WHERE id = ?`,
@@ -266,7 +263,7 @@ async function getContasApiWithInter(companyId) {
        numero_conta,
        agencia,
        tipo,
-       inter_enabled,
+       inter_ativado,
        inter_apelido,
        inter_conta_corrente,
        inter_ambiente,
@@ -275,7 +272,7 @@ async function getContasApiWithInter(companyId) {
        created_at,
        updated_at
      FROM contas_api 
-     WHERE company_id = ? AND inter_enabled = TRUE
+     WHERE company_id = ? AND inter_ativado = TRUE
      ORDER BY inter_is_default DESC, created_at DESC`,
     [companyId]
   );

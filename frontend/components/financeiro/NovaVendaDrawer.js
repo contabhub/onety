@@ -105,9 +105,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
     },
   ]);
 
-  // Atualizar vendedor automaticamente com o userId do localStorage
+  // Atualizar vendedor automaticamente com o userId do userData
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const userId = user?.id || null;
     if (userId) {
       setFormData(prev => ({
         ...prev,

@@ -76,7 +76,7 @@ router.get("/", verifyToken, async (req, res) => {
           sc.nome AS sub_categoria_nome,
           co.nome AS empresa_nome,
           cc.nome AS centro_custo_nome,
-          u.name AS vendedor_nome,
+          u.nome AS vendedor_nome,
           cra.descricao_banco AS conta_recebimento_api_nome
         FROM vendas v
         LEFT JOIN clientes c ON v.cliente_id = c.id
@@ -200,7 +200,7 @@ router.get("/:id", verifyToken, async (req, res) => {
         sc.nome AS sub_categoria_nome,
         co.nome AS empresa_nome,
         cc.nome AS centro_custo_nome,
-        u.name AS vendedor_nome,
+        u.nome AS vendedor_nome,
         cra.descricao_banco AS conta_recebimento_api_nome
     FROM vendas v
     LEFT JOIN clientes c ON v.cliente_id = c.id

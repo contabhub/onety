@@ -123,7 +123,8 @@ export default function OutrasContasPage() {
       return;
     }
 
-    const empresaId = localStorage.getItem("empresaId");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const empresaId = userData.EmpresaId;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) {
@@ -313,7 +314,8 @@ export default function OutrasContasPage() {
       return;
     }
 
-    const empresaId = localStorage.getItem("empresaId");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const empresaId = userData.EmpresaId;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) {
@@ -486,7 +488,8 @@ export default function OutrasContasPage() {
 
   // Função para buscar contas (reutilizável)
   const fetchContas = useCallback(async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const empresaId = userData.EmpresaId;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) {
@@ -496,55 +499,38 @@ export default function OutrasContasPage() {
 
     setLoading(true);
     try {
-      // Buscar as duas rotas em paralelo (sem aguardar sincronização)
-      const [resContas, resContasApi] = await Promise.all([
-        fetch(`${API_URL}/contas/empresa/${empresaId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }),
-        fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }),
-      ]);
+      // Buscar contas da empresa
+      const resContas = await fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       let contasTradicionais = [];
       let contasApi = [];
 
-      // Trata resposta das contas tradicionais
+      // Trata resposta das contas
       if (resContas.ok) {
         const dataContas = await resContas.json();
-        contasTradicionais = (dataContas || []).map(
-          transformarContaTradicional
-        );
+        console.log('📋 Dados recebidos da API contas-api:', dataContas);
+        
+        const todasContas = dataContas.contas || [];
+        
+        // Separar contas tradicionais (sem account) e contas-api (com account)
+        const contasSemAccount = todasContas.filter(conta => !conta.account);
+        const contasComAccount = todasContas.filter(conta => conta.account && conta.account.toString().trim() !== "");
+        
+        console.log(`🔍 Contas tradicionais: ${contasSemAccount.length}`);
+        console.log(`🔍 Contas com account válido: ${contasComAccount.length}`);
+        
+        // Transformar contas tradicionais
+        contasTradicionais = contasSemAccount.map(transformarContaTradicional);
+        
+        // Transformar contas-api passando todas as contas como parâmetro
+        contasApi = contasComAccount.map(conta => transformarContaApi(conta, todasContas));
       } else {
-        console.error(
-          "Erro ao buscar contas tradicionais:",
-          resContas.status
-        );
-      }
-
-             // Trata resposta das contas-api
-       if (resContasApi.ok) {
-         const dataContasApi = await resContasApi.json();
-         console.log('📋 Dados recebidos da API contas-api:', dataContasApi);
-         
-         // Filtra apenas contas que tenham o campo 'account' válido
-         const contasComAccount = (dataContasApi.contas || []).filter(
-           (conta) =>
-             conta.account && conta.account.toString().trim() !== ""
-         );
-         
-         console.log(`🔍 Contas com account válido: ${contasComAccount.length}`, contasComAccount);
-         
-         // Transformar contas passando todas as contas como parâmetro
-         contasApi = contasComAccount.map(conta => transformarContaApi(conta, dataContasApi.contas || []));
-       } else {
-        console.error("Erro ao buscar contas-api:", resContasApi.status);
+        console.error("Erro ao buscar contas:", resContas.status);
       }
 
       // Une as duas listas

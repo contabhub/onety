@@ -65,7 +65,7 @@ router.get("/empresa/:empresa_id", verifyToken, async (req, res) => {
   const { status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos WHERE empresa_id = ?`;
+    let query = `SELECT id, nome, tipo, status, codigo, valor, descricao, global, criado_em, atualizado_em, empresa_id FROM produtos WHERE empresa_id = ?`;
     const params = [empresa_id];
 
     // Se status foi fornecido, adiciona filtro por status
@@ -90,7 +90,7 @@ router.get("/empresa/:empresa_id/produtos", verifyToken, async (req, res) => {
   const { status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos WHERE empresa_id = ? AND tipo = 'produto'`;
+    let query = `SELECT id, nome, tipo, status, codigo, valor, descricao, global, criado_em, atualizado_em, empresa_id FROM produtos WHERE empresa_id = ? AND tipo = 'produto'`;
     const params = [empresa_id];
 
     // Se status foi fornecido, adiciona filtro por status
@@ -115,7 +115,7 @@ router.get("/empresa/:empresa_id/servicos", verifyToken, async (req, res) => {
   const { status } = req.query;
 
   try {
-    let query = `SELECT id, nome, tipo, status FROM produtos WHERE empresa_id = ? AND tipo = 'servico'`;
+    let query = `SELECT id, nome, tipo, status, codigo, valor, descricao, global, criado_em, atualizado_em, empresa_id FROM produtos WHERE empresa_id = ? AND tipo = 'servico'`;
     const params = [empresa_id];
 
     // Se status foi fornecido, adiciona filtro por status
