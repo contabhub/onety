@@ -20,6 +20,12 @@ import {
   Building2,
   ChevronRight,
   FileText as FileTextIcon,
+  RefreshCw,
+  Clock,
+  XCircle,
+  CheckCircle,
+  FileText as FileIcon,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { NovaDespesaDrawer } from "../../components/financeiro/NovaDespesaDrawer";
@@ -36,8 +42,24 @@ function formatCurrencyFromCents(valueInCents) {
 }
 
 function formatDate(iso) {
-  const date = new Date(iso);
-  return date.toLocaleDateString("pt-BR");
+  if (!iso) return 'Data não disponível';
+  
+  try {
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) {
+      return 'Data inválida';
+    }
+    return date.toLocaleDateString("pt-BR");
+  } catch (error) {
+    console.error("Erro ao formatar data:", error);
+    return 'Data inválida';
+  }
+}
+
+function truncateText(text, maxLength = 50) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
 }
 
 const initialBoletos = [];
@@ -58,7 +80,7 @@ export default function CapturaFacilPage() {
 
   const carregarDrafts = useCallback(async (showToast = false) => {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const EmpresaId = userData.EmpresaId;
+    const EmpresaId = userData.EmpresaId || userData.empresa?.id;
     const token = localStorage.getItem("token");
 
     if (!EmpresaId || !token) {
@@ -74,7 +96,7 @@ export default function CapturaFacilPage() {
         toast.info("Carregando drafts...");
       }
       
-      const url = `${API}/boletos-drafts/drafts?company_id=${EmpresaId}&status=draft`;
+      const url = `${API}/financeiro/boletos-drafts/drafts?company_id=${EmpresaId}&status=rascunho`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -126,13 +148,13 @@ export default function CapturaFacilPage() {
         return {
           id: `draft-${draft.id}`,
           titulo: form?.nome_arquivo || form?.descricao || 'Boleto sem título',
-          descricao: form?.observacoes || 'Draft de boleto',
-          dataEnvioISO: draft.created_at,
+          descricao: form?.observacao || 'Draft de boleto',
+          dataEnvioISO: form?.data_transacao || new Date().toISOString(),
           remetente: 'draft',
           valorCentavos: Math.round((form?.valor || 0) * 100),
           fornecedor: boletoMeta?.beneficiario || form?.descricao || 'Fornecedor não identificado',
           categoria: boletoMeta?.tipo === 'pix' ? 'Boleto PIX' : 'Boleto Bancário',
-          pdfBase64: form?.anexo_base64,
+          pdfBase64: form?.anexo,
           boletoMeta: boletoMeta,
           tipoBoleto: boletoMeta?.tipo || 'linha_digitavel',
           linhaDigitavel: draft.linha_digitavel,
@@ -211,7 +233,7 @@ export default function CapturaFacilPage() {
 
       // Enviar para o backend
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      const EmpresaId = userData.EmpresaId;
+      const EmpresaId = userData.EmpresaId || userData.empresa?.id;
       const token = localStorage.getItem("token");
 
       if (!EmpresaId || !token) {
@@ -224,7 +246,7 @@ export default function CapturaFacilPage() {
       formData.append('tipo', 'saida');
       formData.append('nome_arquivo', file.name); // Enviar nome do arquivo
 
-      const response = await fetch(`${API}/boletos-drafts/importar-pdf`, {
+      const response = await fetch(`${API}/financeiro/boletos-drafts/importar-pdf`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -310,7 +332,7 @@ export default function CapturaFacilPage() {
       valor: selectedBoleto.valorCentavos / 100,
       dataVencimento: selectedBoleto.boletoMeta?.data_vencimento ? new Date(selectedBoleto.boletoMeta.data_vencimento) : new Date(),
       origem: 'boleto',
-      observacoes: selectedBoleto.form?.observacoes || `Importado via Captura Fácil\n${selectedBoleto.descricao}`,
+      observacoes: selectedBoleto.form?.observacao || `Importado via Captura Fácil\n${selectedBoleto.descricao}`,
       anexo_base64: selectedBoleto.pdfBase64,
       boletoMeta: selectedBoleto.boletoMeta,
       draftId: selectedBoleto.draftId,
@@ -333,7 +355,7 @@ export default function CapturaFacilPage() {
       }
 
       try {
-        const response = await fetch(`${API}/boletos-drafts/drafts/${selectedBoleto.draftId}/finalizar`, {
+        const response = await fetch(`${API}/financeiro/boletos-drafts/drafts/${selectedBoleto.draftId}/finalizar`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -441,7 +463,7 @@ export default function CapturaFacilPage() {
     }
 
     try {
-      const response = await fetch(`${API}/boletos-drafts/drafts/${selectedBoleto.draftId}`, {
+      const response = await fetch(`${API}/financeiro/boletos-drafts/drafts/${selectedBoleto.draftId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -510,7 +532,10 @@ export default function CapturaFacilPage() {
                       Carregando...
                     </>
                   ) : (
-                    '🔄 Atualizar'
+                    <>
+                      <RefreshCw className={styles.capturaFacilRefreshIcon} />
+                      Atualizar
+                    </>
                   )}
                 </Button>
               </div>
@@ -541,23 +566,24 @@ export default function CapturaFacilPage() {
                             item.status === 'processado' ? (item.draftId ? styles.capturaFacilItemIconDraft : styles.capturaFacilItemIconSuccess) :
                             styles.capturaFacilItemIconDefault
                           }`}>
-                            {item.status === 'processando' ? '⏳' :
-                             item.status === 'erro' ? '❌' :
-                             item.status === 'processado' ? (item.draftId ? '📄' : '✅') : 'CA'}
+                            {item.status === 'processando' ? <Clock className={styles.capturaFacilIconSize} /> :
+                             item.status === 'erro' ? <XCircle className={styles.capturaFacilIconSize} /> :
+                             item.status === 'processado' ? (item.draftId ? <FileIcon className={styles.capturaFacilIconSize} /> : <CheckCircle className={styles.capturaFacilIconSize} />) : 
+                             <AlertCircle className={styles.capturaFacilIconSize} />}
                           </div>
                           <div className={styles.capturaFacilItemContent}>
-                            <p className={styles.capturaFacilItemTitle}>{item.titulo}</p>
+                            <p className={styles.capturaFacilItemTitle}>{truncateText(item.titulo, 40)}</p>
                             <p className={styles.capturaFacilItemSubtitle}>
-                              {formatDate(item.dataEnvioISO)} – {item.descricao}
+                              {formatDate(item.dataEnvioISO)} – {truncateText(item.descricao, 30)}
                             </p>
                             {item.status === 'erro' && item.erro && (
                               <p className={styles.capturaFacilItemError}>{item.erro}</p>
                             )}
-                            {item.form?.observacoes && (
+                            {item.form?.observacao && (
                               <div className={styles.capturaFacilItemObservations}>
                                 <FileText className={styles.capturaFacilItemObservationIcon} />
                                 <p className={styles.capturaFacilItemObservationText}>
-                                  {item.form.observacoes.split('\n')[0]}...
+                                  {truncateText(item.form.observacao.split('\n')[0], 60)}
                                 </p>
                               </div>
                             )}
@@ -605,47 +631,64 @@ export default function CapturaFacilPage() {
               </Card>
             ) : (
               <>
-                <Card className={styles.capturaFacilMainCard}>
-                  <CardHeader className={styles.capturaFacilMainCardHeader}>
+                <div className={styles.capturaFacilMainCard}>
+                  <div className={styles.capturaFacilMainCardHeader}>
                     <div className={styles.capturaFacilMainCardHeaderContent}>
-                      <div className={styles.capturaFacilMainCardTitle}>
-                        <span className={styles.capturaFacilMainCardTitleText}>{selectedBoleto.titulo}</span>
-                      </div>
+                        <div className={styles.capturaFacilMainCardTitle}>
+                          <span className={styles.capturaFacilMainCardTitleText}>{truncateText(selectedBoleto.titulo, 60)}</span>
+                        </div>
                       <div className={styles.capturaFacilMainCardControls}>
-                        <Button variant="ghost" size="icon" className={styles.capturaFacilControlBtn} onClick={() => setZoom(z => Math.min(200, z + 10))}>
-                          <ZoomIn className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className={styles.capturaFacilControlBtn} onClick={() => setZoom(z => Math.max(10, z - 10))}>
-                          <ZoomOut className="h-4 w-4" />
-                        </Button>
-                        <div className={styles.capturaFacilZoomText}>{zoom}%</div>
-                        <Separator orientation="vertical" className={styles.capturaFacilSeparator} />
-                        <Button variant="ghost" size="icon" className={styles.capturaFacilControlBtn} onClick={() => setRotation(r => (r - 90) % 360)}>
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className={styles.capturaFacilControlBtn} onClick={() => setRotation(r => (r + 90) % 360)}>
-                          <RotateCw className="h-4 w-4" />
-                        </Button>
-                        <Separator orientation="vertical" className={styles.capturaFacilSeparator} />
-                        <Button variant="ghost" size="icon" className={styles.capturaFacilControlBtn} onClick={handleDownloadPDF} title="Baixar PDF">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className={styles.capturaFacilControlBtn} onClick={handleOpenPDFInNewTab} title="Abrir PDF em nova aba">
-                          <FileTextIcon className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={styles.capturaFacilDeleteBtn} 
-                          onClick={selectedBoleto?.draftId ? handleExcluirDraft : () => { resetViewer(); toast.info("Arquivo removido da seleção"); }}
-                          title={selectedBoleto?.draftId ? "Excluir draft" : "Remover da seleção"}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {/* Grupo de Zoom */}
+                        <div className={styles.capturaFacilControlGroup}>
+                          <button className={styles.capturaFacilControlBtn} onClick={() => setZoom(z => Math.min(200, z + 10))} title="Aumentar zoom">
+                            <ZoomIn className={styles.capturaFacilControlIcon} />
+                          </button>
+                          <button className={styles.capturaFacilControlBtn} onClick={() => setZoom(z => Math.max(10, z - 10))} title="Diminuir zoom">
+                            <ZoomOut className={styles.capturaFacilControlIcon} />
+                          </button>
+                          <div className={styles.capturaFacilZoomText}>{zoom}%</div>
+                        </div>
+                        
+                        <div className={styles.capturaFacilSeparator}></div>
+                        
+                        {/* Grupo de Rotação */}
+                        <div className={styles.capturaFacilControlGroup}>
+                          <button className={styles.capturaFacilControlBtn} onClick={() => setRotation(r => (r - 90) % 360)} title="Rotacionar à esquerda">
+                            <RotateCcw className={styles.capturaFacilControlIcon} />
+                          </button>
+                          <button className={styles.capturaFacilControlBtn} onClick={() => setRotation(r => (r + 90) % 360)} title="Rotacionar à direita">
+                            <RotateCw className={styles.capturaFacilControlIcon} />
+                          </button>
+                        </div>
+                        
+                        <div className={styles.capturaFacilSeparator}></div>
+                        
+                        {/* Grupo de Ações */}
+                        <div className={styles.capturaFacilControlGroup}>
+                          <button className={styles.capturaFacilControlBtn} onClick={handleDownloadPDF} title="Baixar PDF">
+                            <Download className={styles.capturaFacilControlIcon} />
+                          </button>
+                          <button className={styles.capturaFacilControlBtn} onClick={handleOpenPDFInNewTab} title="Abrir PDF em nova aba">
+                            <FileTextIcon className={styles.capturaFacilControlIcon} />
+                          </button>
+                        </div>
+                        
+                        <div className={styles.capturaFacilSeparator}></div>
+                        
+                        {/* Ação de Exclusão */}
+                        <div className={styles.capturaFacilControlGroup}>
+                          <button 
+                            className={styles.capturaFacilDeleteBtn} 
+                            onClick={selectedBoleto?.draftId ? handleExcluirDraft : () => { resetViewer(); toast.info("Arquivo removido da seleção"); }}
+                            title={selectedBoleto?.draftId ? "Excluir draft" : "Remover da seleção"}
+                          >
+                            <Trash2 className={styles.capturaFacilControlIcon} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className={styles.capturaFacilMainCardContent}>
+                  </div>
+                  <div className={styles.capturaFacilMainCardContent}>
                     <div className={styles.capturaFacilPdfContainer}>
                       {selectedBoleto.status === 'processando' ? (
                         <div className={styles.capturaFacilProcessingContainer}>
@@ -670,9 +713,9 @@ export default function CapturaFacilPage() {
                           )}
                           <div 
                             className={styles.capturaFacilPdfViewer}
-                            style={{ 
-                              transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
-                              transition: 'transform 0.2s ease-out'
+                            style={{
+                              '--zoom-scale': zoom / 100,
+                              '--rotation-deg': `${rotation}deg`
                             }}
                           >
                             <iframe
@@ -696,37 +739,37 @@ export default function CapturaFacilPage() {
                         </div>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                <Card className={styles.capturaFacilInfoCard}>
-                  <CardContent className={styles.capturaFacilInfoCardContent}>
+                <div className={styles.capturaFacilInfoCard}>
+                  <div className={styles.capturaFacilInfoCardContent}>
                     <div className={styles.capturaFacilInfoHeader}>
                       <div className={styles.capturaFacilInfoBadges}>
-                        <Badge className={`${styles.capturaFacilInfoBadge} ${
+                        <span className={`${styles.capturaFacilInfoBadge} ${
                           selectedBoleto.status === 'processado' ? styles.capturaFacilInfoBadgeSuccess :
                           selectedBoleto.status === 'processando' ? styles.capturaFacilInfoBadgeProcessing :
                           styles.capturaFacilInfoBadgeError
                         }`}>
                           {selectedBoleto.status === 'processado' ? 'Dados extraídos' :
                            selectedBoleto.status === 'processando' ? 'Processando' : 'Erro'}
-                        </Badge>
+                        </span>
                         <span className={styles.capturaFacilInfoType}>
                           {selectedBoleto.tipoBoleto === 'pix' ? 'Boleto PIX' : 'Boleto Bancário'}
                         </span>
                       </div>
 
                       <div className={styles.capturaFacilInfoActions}>
-                        <Button 
+                        <button 
                           className={styles.capturaFacilActionBtn}
                           onClick={handleRevisarECriar}
                           disabled={selectedBoleto.status !== 'processado'}
                         >
                           {selectedBoleto.draftId ? 'Finalizar draft' : 'Revisar e criar'}
-                        </Button>
-                        <Button variant="outline" className={styles.capturaFacilOutlineBtn}>
+                        </button>
+                        <button className={styles.capturaFacilOutlineBtn}>
                           Buscar lançamento
-                        </Button>
+                        </button>
                       </div>
                     </div>
 
@@ -740,7 +783,7 @@ export default function CapturaFacilPage() {
                       </div>
                       <div className={styles.capturaFacilInfoItem}>
                         <Building2 className={styles.capturaFacilInfoIcon} /> 
-                        Fornecedor: <span className={styles.capturaFacilInfoValue}>{selectedBoleto.fornecedor}</span>
+                        Fornecedor: <span className={styles.capturaFacilInfoValue}>{truncateText(selectedBoleto.fornecedor, 40)}</span>
                       </div>
                       <div className={styles.capturaFacilInfoItem}>
                         <FileText className={styles.capturaFacilInfoIcon} /> 
@@ -753,21 +796,21 @@ export default function CapturaFacilPage() {
                     </div>
 
                     {/* Seção de Observações */}
-                    {selectedBoleto.form?.observacoes && (
+                    {selectedBoleto.form?.observacao && (
                       <div className={styles.capturaFacilObservationsSection}>
                         <div className={styles.capturaFacilObservationsHeader}>
                           <FileText className={styles.capturaFacilObservationsIcon} />
                           <h3 className={styles.capturaFacilObservationsTitle}>Observações</h3>
                         </div>
-                        <div className={styles.capturaFacilObservationsContainer}>
-                          <div className={styles.capturaFacilObservationsText}>
-                            {selectedBoleto.form.observacoes}
+                          <div className={styles.capturaFacilObservationsContainer}>
+                            <div className={styles.capturaFacilObservationsText}>
+                              {truncateText(selectedBoleto.form.observacao, 200)}
+                            </div>
                           </div>
-                        </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             )}
           </div>

@@ -75,6 +75,7 @@ const rascunhosDocumentosRoutes = require('./contratual/rascunhos_documentos');
 
 // Rotas do Financeiro
 const automacaoRoutes = require('./financeiro/automacao');
+const boletosRoutes = require('./financeiro/boletos');
 const boletosDraftsRoutes = require('./financeiro/boletos_drafts');
 const categoriasFinanceiroRoutes = require('./financeiro/categorias');
 const centroDeCustoRoutes = require('./financeiro/centro_de_custo');
@@ -170,6 +171,7 @@ router.use('/contratual/rascunhos-documentos', rascunhosDocumentosRoutes);
 
 // Rotas do Financeiro
 router.use('/financeiro/automacao', automacaoRoutes);
+router.use('/financeiro/boletos', boletosRoutes);
 router.use('/financeiro/boletos-drafts', boletosDraftsRoutes);
 router.use('/financeiro/categorias', categoriasFinanceiroRoutes);
 router.use('/financeiro/centro-de-custo', centroDeCustoRoutes);
@@ -190,10 +192,8 @@ router.use('/financeiro/tipos', tiposRoutes);
 router.use('/financeiro/transacoes', transacoesRoutes);
 router.use('/financeiro/transferencias-caixinha', transferenciasCaixinhasRoutes);
 router.use('/financeiro/vendas', vendasRoutes);
-
-// Rotas diretas para compatibilidade com frontend
-router.use('/vendas', vendasRoutes);
-router.use('/contratos', contratosFinanceiroRoutes);
+router.use('/financeiro/vendas', vendasRoutes);
+router.use('/financeiro/contratos', contratosFinanceiroRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");

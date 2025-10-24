@@ -58,7 +58,6 @@ import {
 } from "../../components/financeiro/dialog";
 import { NovaVendaDrawer } from '../../components/financeiro/NovaVendaDrawer';
 import { DetalhesVendaDrawer } from "../../components/financeiro/DetalhesVendaDrawer";
-import EditarVendaDrawer from "../../components/financeiro/EditarVendaDrawer";
 import { DetalhesContratoDrawer } from "../../components/financeiro/DetalhesContratoDrawer";
 import { useVendas } from "../../hooks/financeiro/useVenda";
 import { useContratos } from "../../hooks/financeiro/useContratos";
@@ -106,7 +105,7 @@ export default function VendasOrcamentosPage() {
   const [isDetalhesContratoOpen, setIsDetalhesContratoOpen] = useState(false);
   const [contratoSelecionado, setContratoSelecionado] = useState(null);
 
-  // Estados para editar venda
+  // Estados para editar venda (usando o mesmo drawer)
   const [isEditarVendaOpen, setIsEditarVendaOpen] = useState(false);
   const [vendaParaEditar, setVendaParaEditar] = useState(null);
 
@@ -472,7 +471,7 @@ export default function VendasOrcamentosPage() {
         throw new Error("Token não encontrado");
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendas/${selectedVendaId}/situacao`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/vendas/${selectedVendaId}/situacao`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -519,10 +518,10 @@ export default function VendasOrcamentosPage() {
         throw new Error("Token não encontrado");
       }
 
-      // Primeiro, buscar o código de solicitação da venda
+      // Primeiro, buscar o código de solicitação da venda usando a rota mais robusta
       console.log(`🔍 Buscando código de solicitação para venda ${vendaId}`);
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inter-boletos/boletos/venda/${vendaId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/boletos/boletos/codigo-por-venda/${vendaId}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -532,7 +531,20 @@ export default function VendasOrcamentosPage() {
 
       if (!response.ok) {
         console.log(`❌ Erro na resposta: ${response.status} ${response.statusText}`);
-        toast.error("Nenhum boleto encontrado para esta venda");
+        
+        // Tentar obter mais detalhes do erro
+        try {
+          const errorData = await response.json();
+          console.log(`📋 Detalhes do erro:`, errorData);
+          
+          if (response.status === 404) {
+            toast.error("Nenhum boleto encontrado para esta venda");
+          } else {
+            toast.error(errorData.error || "Erro ao buscar boleto");
+          }
+        } catch {
+          toast.error("Erro ao buscar boleto");
+        }
         return;
       }
 
@@ -548,15 +560,25 @@ export default function VendasOrcamentosPage() {
 
       console.log(`📄 Baixando boleto para venda ${vendaId} com código: ${boleto.codigoSolicitacao}`);
 
-      // Baixar o PDF do boleto
-      const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inter-boletos/pdf-simples/${boleto.codigoSolicitacao}`, {
+      // Baixar o PDF do boleto usando a rota correta
+      const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/boletos/pdf-simples/${boleto.codigoSolicitacao}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
 
       if (!pdfResponse.ok) {
-        throw new Error("Erro ao baixar boleto");
+        console.log(`❌ Erro ao baixar PDF: ${pdfResponse.status} ${pdfResponse.statusText}`);
+        
+        // Tentar obter mais detalhes do erro
+        try {
+          const errorData = await pdfResponse.json();
+          console.log(`📋 Detalhes do erro do PDF:`, errorData);
+          toast.error(errorData.error || "Erro ao baixar boleto");
+        } catch {
+          toast.error("Erro ao baixar boleto");
+        }
+        return;
       }
 
       // Criar blob e baixar arquivo
@@ -610,6 +632,12 @@ export default function VendasOrcamentosPage() {
   const handleFecharEditarVenda = () => {
     setIsEditarVendaOpen(false);
     setVendaParaEditar(null);
+  };
+
+  const handleEditarVendaSave = (data) => {
+    console.log("Venda editada:", data);
+    // Recarregar os dados após editar uma venda
+    refetch();
   };
 
   // Função para abrir modal de exclusão
@@ -1264,6 +1292,16 @@ export default function VendasOrcamentosPage() {
         isOpen={isNovaVendaOpen}
         onClose={() => setIsNovaVendaOpen(false)}
         onSave={handleNovaVendaSave}
+        mode="create"
+      />
+
+      {/* Editar Venda Drawer (usando o mesmo componente) */}
+      <NovaVendaDrawer
+        isOpen={isEditarVendaOpen}
+        onClose={handleFecharEditarVenda}
+        onSave={handleEditarVendaSave}
+        vendaId={vendaParaEditar}
+        mode="edit"
       />
 
       {/* Detalhes Venda Drawer */}
@@ -1272,13 +1310,6 @@ export default function VendasOrcamentosPage() {
         onClose={() => setIsDetalhesVendaOpen(false)}
         vendaId={vendaSelecionada}
         onRefresh={refetchVendas}
-      />
-
-      {/* Editar Venda Drawer */}
-      <EditarVendaDrawer
-        isOpen={isEditarVendaOpen}
-        onClose={handleFecharEditarVenda}
-        vendaId={vendaParaEditar}
       />
 
       {/* Detalhes Contrato Drawer */}

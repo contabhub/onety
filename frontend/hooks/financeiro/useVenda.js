@@ -37,7 +37,7 @@ export function useVendas(options) {
       setError(null);
       
       // Construir URL com filtros de data se fornecidos
-      let url = `${API}/vendas?company_id=${empresaId}`;
+      let url = `${API}/financeiro/vendas?company_id=${empresaId}`;
       
       if (memoizedStartDate && memoizedEndDate) {
         url += `&start_date=${memoizedStartDate}&end_date=${memoizedEndDate}`;
@@ -95,7 +95,7 @@ export function useVendas(options) {
       setError(null);
       console.log("Dados sendo enviados para criar venda:", dados);
       
-      const response = await fetch(`${API}/vendas`, {
+      const response = await fetch(`${API}/financeiro/vendas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ export function useVendas(options) {
         
         console.log("📤 Enviando dados da recorrência:", dadosRecorrencia);
         
-        const responseRecorrencia = await fetch(`${API}/recorrencia-vendas-contratos`, {
+        const responseRecorrencia = await fetch(`${API}/financeiro/recorrencia-vendas-contratos`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ export function useVendas(options) {
         
         // Buscar dados completos do cliente
         console.log("🔍 Buscando dados completos do cliente ID:", dados.cliente_id);
-        const responseCliente = await fetch(`${API}/clientes/${dados.cliente_id}`, {
+        const responseCliente = await fetch(`${API}/financeiro/clientes/${dados.cliente_id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -204,7 +204,7 @@ export function useVendas(options) {
           mensagem: dados.observacoes || "Pagamento referente à venda"
         };
 
-        const responseBoleto = await fetch(`${API}/inter/cobranca`, {
+        const responseBoleto = await fetch(`${API}/financeiro/boletos/cobranca`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ export function useVendas(options) {
 
       console.log(`🔄 Atualizando venda ${id} com dados:`, dados);
 
-      const response = await fetch(`${API}/vendas/${id}`, {
+      const response = await fetch(`${API}/financeiro/vendas/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -333,7 +333,7 @@ export function useVendas(options) {
 
       console.log(`🗑️ Excluindo venda ${id}`);
 
-      const response = await fetch(`${API}/vendas/${id}`, {
+      const response = await fetch(`${API}/financeiro/vendas/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,

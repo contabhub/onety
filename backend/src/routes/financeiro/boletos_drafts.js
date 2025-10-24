@@ -2,30 +2,14 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 
-// Polyfill para DOMMatrix no Node.js
-if (typeof globalThis.DOMMatrix === 'undefined') {
-  globalThis.DOMMatrix = class DOMMatrix {
-    constructor(init) {
-      if (init) {
-        this.a = init.a || 1;
-        this.b = init.b || 0;
-        this.c = init.c || 0;
-        this.d = init.d || 1;
-        this.e = init.e || 0;
-        this.f = init.f || 0;
-      } else {
-        this.a = 1;
-        this.b = 0;
-        this.c = 0;
-        this.d = 1;
-        this.e = 0;
-        this.f = 0;
-      }
-    }
-  };
-}
 
-const pdfParse = require('pdf-parse');
+let pdfParse;
+try {
+  pdfParse = require('pdf-parse');
+} catch (error) {
+  console.error('Erro ao importar pdf-parse:', error);
+  pdfParse = null;
+}
 const pool = require('../../config/database');
 const verifyToken = require('../../middlewares/auth');
 
@@ -296,7 +280,7 @@ router.post('/drafts', verifyToken, async (req, res) => {
 /** 3) Listar todos os rascunhos de boletos da empresa */
 router.get('/drafts', verifyToken, async (req, res) => {
   try {
-    const { company_id, user_id = null, status = 'draft' } = req.query;
+    const { company_id, user_id = null, status = 'rascunho' } = req.query;
     
     if (!company_id) {
       return res.status(400).json({ error: 'company_id é obrigatório.' });
@@ -435,6 +419,11 @@ router.post('/importar-pdf', verifyToken, upload.single('pdf'), async (req, res)
     const { company_id, tipo = 'saida', user_id = null, nome_arquivo } = req.body;
     if (!company_id) {
       return res.status(400).json({ error: 'company_id é obrigatório.' });
+    }
+
+    // Verificar se pdfParse está disponível
+    if (!pdfParse) {
+      return res.status(500).json({ error: 'Biblioteca de parsing de PDF não disponível.' });
     }
 
     // Extrair texto do PDF
@@ -594,7 +583,7 @@ router.post('/drafts/:id/finalizar', verifyToken, async (req, res) => {
         form.subcategoria_id || null,
         form.cliente_id || null,
         form.anexo || null,
-        form.centro_de_custo_id || null,
+        form.centro_custo_id || null,
         form.pluggy_transacao_id || null,
         form.boleto_id || null
       ]
