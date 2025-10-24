@@ -66,7 +66,7 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-med);
-  padding: var(--onity-space-l);
+  padding: var(--onity-space-m);
   min-height: 500px;
   max-height: 800px;
   overflow-y: auto;
@@ -198,12 +198,34 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
+  font-size: var(--onity-type-body-size);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .capturaFacilActionBtn:hover {
   background: var(--onity-color-primary-hover);
   transform: translateY(-1px);
-  box-shadow: var(--onity-elev-low);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.capturaFacilActionBtn:disabled {
+  background: var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border-color: var(--onity-color-border);
+}
+
+.capturaFacilActionBtn:disabled:hover {
+  background: var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+  transform: none;
+  box-shadow: none;
 }
 
 .capturaFacilRefreshBtn {
@@ -221,18 +243,35 @@
   background: var(--onity-color-bg);
 }
 
+.capturaFacilRefreshIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--onity-space-xs);
+}
+
 .capturaFacilControlBtn {
   color: var(--onity-color-text);
-    background: transparent;
-    border: none;
+  background: transparent;
+  border: 1px solid transparent;
   padding: var(--onity-space-xs);
   border-radius: var(--onity-radius-xs);
   cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+}
+
 .capturaFacilControlBtn:hover {
   background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+}
+
+.capturaFacilControlIcon {
+  width: 16px;
+  height: 16px;
 }
 
 .capturaFacilCurrencyIcon {
@@ -249,10 +288,14 @@
   background: transparent;
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-m);
-  margin-bottom: var(--onity-space-s);
+  padding: var(--onity-space-s);
+  margin-bottom: var(--onity-space-xs);
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--onity-space-s);
+  width: 100%;
 }
 
 .capturaFacilListItem:hover {
@@ -268,13 +311,21 @@
 
 .capturaFacilItemTitle {
   color: var(--onity-color-text);
-  font-weight: 500;
-  margin-bottom: var(--onity-space-xs);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .capturaFacilItemSubtitle {
   color: var(--onity-icon-secondary);
   font-size: var(--onity-type-caption-size);
+  margin: 0;
+  line-height: 1.2;
+  text-align: left;
 }
   
 /* ===== STATUS BADGES ===== */
@@ -425,8 +476,10 @@
 
 .capturaFacilSeparator {
   background: var(--onity-color-border);
-  height: 1px;
-  margin: var(--onity-space-m) 0;
+  width: 1px;
+  height: 24px;
+  margin: 0 var(--onity-space-s);
+  opacity: 0.6;
 }
 
 /* ===== CLASSES ADICIONAIS ===== */
@@ -476,14 +529,19 @@
 }
 
 .capturaFacilItemIcon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--onity-radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  margin-right: var(--onity-space-m);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.capturaFacilIconSize {
+  width: 16px;
+  height: 16px;
 }
 
 .capturaFacilItemIconProcessing {
@@ -515,7 +573,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--onity-space-xs);
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
 }
 
 .capturaFacilItemError {
@@ -528,25 +588,33 @@
   display: flex;
   align-items: center;
   gap: var(--onity-space-xs);
-  margin-top: var(--onity-space-xs);
+  margin-top: 2px;
+  text-align: left;
 }
 
 .capturaFacilItemObservationIcon {
   width: 16px;
   height: 16px;
   color: var(--onity-icon-secondary);
+  flex-shrink: 0;
 }
 
 .capturaFacilItemObservationText {
   color: var(--onity-icon-secondary);
   font-size: var(--onity-type-caption-size);
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .capturaFacilItemChevron {
   width: 20px;
   height: 20px;
   color: var(--onity-icon-secondary);
+  flex-shrink: 0;
+  align-self: center;
 }
 
 .capturaFacilEmptyCard {
@@ -598,7 +666,7 @@
 
 .capturaFacilMainCardTitleText {
   color: var(--onity-color-text);
-  font-size: var(--onity-type-h3-size);
+  font-size: 12px;
   font-weight: var(--onity-type-h3-weight);
   margin: 0;
 }
@@ -606,15 +674,25 @@
 .capturaFacilMainCardControls {
   display: flex;
   align-items: center;
-  gap: var(--onity-space-s);
+  gap: var(--onity-space-xs);
+}
+
+.capturaFacilControlGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
 }
 
 .capturaFacilZoomText {
   color: var(--onity-color-text);
   font-size: var(--onity-type-caption-size);
   font-weight: 500;
-  min-width: 40px;
+  min-width: 35px;
   text-align: center;
+  padding: 0 var(--onity-space-xs);
+  background: var(--onity-color-bg);
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
 }
 
 .capturaFacilMainCardContent {
@@ -684,7 +762,9 @@
 .capturaFacilPdfViewer {
   width: 100%;
   height: 100%;
-    border: none;
+  border: none;
+  transform: scale(var(--zoom-scale, 1)) rotate(var(--rotation-deg, 0deg));
+  transition: transform 0.2s ease-out;
 }
 
 .capturaFacilPdfIframe {
@@ -779,25 +859,31 @@
 
 .capturaFacilInfoActions {
   display: flex;
-  gap: var(--onity-space-s);
+  gap: var(--onity-space-m);
+  align-items: center;
 }
 
 .capturaFacilOutlineBtn {
   background: transparent;
-  color: var(--onity-color-primary);
-  border: 1px solid var(--onity-color-primary);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
   padding: var(--onity-space-s) var(--onity-space-m);
   border-radius: var(--onity-radius-xs);
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
+  font-size: var(--onity-type-body-size);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .capturaFacilOutlineBtn:hover {
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
   transform: translateY(-1px);
-  box-shadow: var(--onity-elev-low);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .capturaFacilInfoGrid {

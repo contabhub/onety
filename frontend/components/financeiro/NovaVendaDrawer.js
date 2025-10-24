@@ -46,14 +46,19 @@ import NovoProdutoServicoDrawer from "./NovoProdutoServicoDrawer";
 import { toast } from 'react-toastify';
 import ReactSelect from "react-select";
 
-export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
+export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode = "create" }) {
   const { formData: formDataFromAPI, isLoading: isLoadingFormData, error: formDataError } = useVendaFormData();
   const [contasApi, setContasApi] = useState([]);
-  const { criarVenda } = useVendas();
+  const { criarVenda, atualizarVenda } = useVendas();
+  
+  // Determinar se é modo de edição
+  const isEditMode = mode === "edit" && vendaId;
   
   const [isSaving, setIsSaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isNovoProdutoServicoOpen, setIsNovoProdutoServicoOpen] = useState(false);
+  const [isLoadingVenda, setIsLoadingVenda] = useState(false);
+  const [vendaOriginal, setVendaOriginal] = useState(null);
   const [formData, setFormData] = useState({
     tipoVenda: "venda-avulsa",
     situacao: "aprovado",
@@ -129,6 +134,13 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
     }
   }, [isOpen]);
 
+  // Carregar dados da venda quando estiver em modo de edição
+  useEffect(() => {
+    if (isOpen && isEditMode) {
+      loadVendaData();
+    }
+  }, [isOpen, isEditMode, vendaId]);
+
   const fetchContasApi = async () => {
     const empresaId = localStorage.getItem("empresaId");
     const token = localStorage.getItem("token");
@@ -148,6 +160,88 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
       }
     } catch (error) {
       console.error("Erro ao buscar contas API:", error);
+    }
+  };
+
+  const loadVendaData = async () => {
+    if (!vendaId) return;
+
+    const token = localStorage.getItem("token");
+    const API = process.env.NEXT_PUBLIC_API_URL;
+    
+    if (!token || !API) {
+      console.error("Token não encontrado");
+      return;
+    }
+
+    setIsLoadingVenda(true);
+    try {
+      const response = await fetch(`${API}/financeiro/vendas/${vendaId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar dados da venda');
+      }
+
+      const venda = await response.json();
+      setVendaOriginal(venda);
+
+      // Preencher o formulário com os dados da venda
+      setFormData({
+        tipoVenda: venda.tipo_venda === "venda_avulsa" ? "venda-avulsa" : 
+                  venda.tipo_venda === "venda_recorrente" ? "venda-recorrente" : "orçamento",
+        situacao: venda.situacao || "aprovado",
+        numeroVenda: venda.numero_venda?.toString() || "",
+        cliente: venda.cliente_id?.toString() || "",
+        dataVenda: venda.data_venda ? new Date(venda.data_venda) : new Date(),
+        categoriaFinanceira: venda.categoria_id?.toString() || "",
+        subCategoria: venda.sub_categoria_id?.toString() || "",
+        centroCusto: venda.centro_de_custo_id?.toString() || "",
+        vendedor: venda.vendedor_id?.toString() || "",
+        descontoTipo: "reais",
+        descontoValor: venda.desconto_venda?.toString() || "0,00",
+        formaPagamento: venda.pagamento || "",
+        contaRecebimento: venda.conta_recebimento_api ? `api:${venda.conta_recebimento_api}` : venda.conta_recebimento ? `erp:${venda.conta_recebimento}` : "",
+        percentual: "100",
+        valorReceber: venda.valor_venda?.toString() || "0,00",
+        condicaoPagamento: venda.parcelamento || "a-vista",
+        vencimento: venda.vencimento ? new Date(venda.vencimento) : new Date(),
+        observacoesPagamento: venda.observacoes || "",
+        naturezaOperacao: venda.natureza || "",
+        observacoesFiscais: venda.observacoes_fiscais || "",
+        // Campos de recorrência
+        tipoIntervalo: venda.recorrencia?.tipo_intervalo || "meses",
+        intervalo: venda.recorrencia?.intervalo?.toString() || "1",
+        indeterminado: venda.recorrencia?.indeterminado ?? true,
+        totalCiclos: venda.recorrencia?.total_ciclos?.toString() || "",
+        terminoRecorrencia: venda.recorrencia?.indeterminado ? "indeterminado" : "personalizado",
+        dataTermino: venda.recorrencia?.data_termino ? new Date(venda.recorrencia.data_termino) : null,
+        // Campos de boleto e e-mail
+        gerarBoleto: !!venda.boleto,
+        contaCorrente: venda.boleto?.conta_corrente || "",
+        enviarEmail: !!venda.email,
+        clienteEmail: venda.cliente_email || "",
+      });
+
+      // Configurar itens (simplificado para um item principal)
+      const itensIniciais = [
+        {
+          id: "1",
+          produtoServico: venda.produtos_servicos_id?.toString() || "",
+          detalhes: "",
+          quantidade: "1,00",
+          valorUnitario: venda.valor_venda?.toString() || "",
+          total: venda.valor_venda?.toString() || "",
+        },
+      ];
+      setItens(itensIniciais);
+
+    } catch (error) {
+      console.error("Erro ao carregar venda:", error);
+      toast.error("Erro ao carregar dados da venda");
+    } finally {
+      setIsLoadingVenda(false);
     }
   };
 
@@ -238,7 +332,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      console.log("🔍 Iniciando salvamento da venda");
+      console.log(`🔍 Iniciando ${isEditMode ? 'atualização' : 'salvamento'} da venda`);
       console.log("📋 FormData:", formData);
       console.log("📦 Itens:", itens);
 
@@ -387,21 +481,49 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
         cliente_email: formData.clienteEmail,
       };
 
-      console.log("📤 Dados sendo enviados para criarVenda:", dataToSave);
-      console.log("🔍 Verificando dados de recorrência:");
-      console.log("   - tipoVenda:", formData.tipoVenda);
-      console.log("   - tipo_venda no dataToSave:", dataToSave.tipo_venda);
-      console.log("   - recorrencia no dataToSave:", dataToSave.recorrencia);
-      
-      console.log("🚀 Chamando criarVenda...");
-      const result = await criarVenda(dataToSave);
-      console.log("✅ Resultado da API:", result);
+      if (isEditMode) {
+        // Modo de edição - preparar dados para atualização
+        const dadosAtualizacao = {
+          situacao: formData.situacao,
+          valor_venda: calcularTotalFinal(),
+          desconto_venda: calcularDesconto(),
+          vendedor_id: formData.vendedor ? parseInt(formData.vendedor) : null,
+          categoria_id: formData.categoriaFinanceira ? parseInt(formData.categoriaFinanceira) : null,
+          sub_categoria_id: formData.subCategoria ? parseInt(formData.subCategoria) : null,
+          produtos_servicos_id: itemComProduto ? parseInt(itemComProduto.produtoServico) : null,
+          centro_de_custo_id: formData.centroCusto ? parseInt(formData.centroCusto) : null,
+          pagamento: formData.formaPagamento,
+          conta_recebimento: contaIdParsed,
+          conta_recebimento_api: contaApiIdParsed,
+          parcelamento: formData.condicaoPagamento,
+          vencimento: format(formData.vencimento, 'yyyy-MM-dd'),
+          observacoes: formData.observacoesPagamento,
+          natureza: formData.naturezaOperacao,
+          observacoes_fiscais: formData.observacoesFiscais,
+        };
 
-      toast({
-        title: "Sucesso!",
-        description: "Venda criada com sucesso!",
-      });
-      onSave(dataToSave);
+        console.log("📤 Dados sendo enviados para atualizarVenda:", dadosAtualizacao);
+        console.log("🚀 Chamando atualizarVenda...");
+        const result = await atualizarVenda(vendaId, dadosAtualizacao);
+        console.log("✅ Resultado da API:", result);
+
+        toast.success("Venda atualizada com sucesso!");
+      } else {
+        // Modo de criação
+        console.log("📤 Dados sendo enviados para criarVenda:", dataToSave);
+        console.log("🔍 Verificando dados de recorrência:");
+        console.log("   - tipoVenda:", formData.tipoVenda);
+        console.log("   - tipo_venda no dataToSave:", dataToSave.tipo_venda);
+        console.log("   - recorrencia no dataToSave:", dataToSave.recorrencia);
+        
+        console.log("🚀 Chamando criarVenda...");
+        const result = await criarVenda(dataToSave);
+        console.log("✅ Resultado da API:", result);
+
+        toast.success("Venda criada com sucesso!");
+      }
+      
+      onSave(isEditMode ? vendaOriginal : dataToSave);
       handleClose();
     } catch (error) {
       console.error("❌ Erro ao salvar venda:", error);
@@ -442,9 +564,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
           {/* Header */}
           <div className={styles.novaVendaHeader}>
             <div>
-              <h2 className={styles.novaVendaTitle}>Nova Venda</h2>
+              <h2 className={styles.novaVendaTitle}>
+                {isEditMode ? "Editar Venda" : "Nova Venda"}
+              </h2>
               <p className={styles.novaVendaTextSecondary}>
-                Preencha as informações da venda
+                {isEditMode ? "Edite as informações da venda" : "Preencha as informações da venda"}
               </p>
             </div>
             <button
@@ -457,15 +581,52 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
 
           {/* Content */}
           <div className={styles.novaVendaContent}>
-            {isLoadingFormData && (
+            {(isLoadingFormData || isLoadingVenda) && (
               <div className={styles.novaVendaLoading}>
                 <div className={styles.novaVendaLoadingSpinner}></div>
                 <span>Carregando dados...</span>
               </div>
             )}
 
-          {!isLoadingFormData && (
+          {!isLoadingFormData && !isLoadingVenda && (
             <>
+              {/* Seção Informações da Venda (apenas em modo de edição) */}
+              {isEditMode && vendaOriginal && (
+                <div className={styles.novaVendaSection}>
+                  <h3 className={styles.novaVendaSectionTitle}>Informações da Venda</h3>
+                  
+                  <div className={styles.novaVendaGrid2Colunas}>
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>Número da venda</Label>
+                      <div className={styles.novaVendaReadOnlyField}>
+                        {vendaOriginal.numero_venda || vendaOriginal.id}
+                      </div>
+                    </div>
+
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>Cliente</Label>
+                      <div className={styles.novaVendaReadOnlyField}>
+                        {vendaOriginal.cliente_nome}
+                      </div>
+                    </div>
+
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>Data da venda</Label>
+                      <div className={styles.novaVendaReadOnlyField}>
+                        {vendaOriginal.data_venda ? new Date(vendaOriginal.data_venda).toLocaleDateString('pt-BR') : 'N/A'}
+                      </div>
+                    </div>
+
+                    <div className={styles.novaVendaField}>
+                      <Label className={styles.novaVendaLabel}>Tipo da venda</Label>
+                      <div className={styles.novaVendaReadOnlyField}>
+                        {vendaOriginal.tipo_venda}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Seção Informações */}
               <div className={styles.novaVendaSection}>
                 <h3 className={styles.novaVendaSectionTitle}>Informações</h3>
@@ -1234,11 +1395,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave }) {
             <div className={styles.novaVendaFooterActions}>
               <button
                 onClick={handleSave}
-                disabled={isSaving || isLoadingFormData}
+                disabled={isSaving || isLoadingFormData || isLoadingVenda}
                 className={styles.novaVendaButtonPrimary}
               >
                 {isSaving && <div className={styles.novaVendaLoadingSpinner}></div>}
-                {isSaving ? "Salvando..." : "Salvar"}
+                {isSaving ? (isEditMode ? "Atualizando..." : "Salvando...") : (isEditMode ? "Atualizar" : "Salvar")}
               </button>
             </div>
           </div>
