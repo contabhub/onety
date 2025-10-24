@@ -138,7 +138,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
       const [clientes] = await pool.query("SELECT id, nome_fantasia FROM clientes WHERE empresa_id = ?", [empresa_id]);
       const [produtosServicos] = await pool.query("SELECT id, nome FROM produtos WHERE empresa_id = ?", [empresa_id]);
       const [empresas] = await pool.query("SELECT id, nome FROM empresas WHERE id = ?", [empresa_id]);
-      const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_de_custo WHERE empresa_id = ?", [empresa_id]);
+      const [centrosCusto] = await pool.query("SELECT id, nome FROM centro_custo WHERE empresa_id = ?", [empresa_id]);
       const [contas] = await pool.query("SELECT id, descricao_banco FROM contas WHERE empresa_id = ?", [empresa_id]);
   
       // categorias e subcategorias via tipos
@@ -163,8 +163,8 @@ router.get("/form-data", verifyToken, async (req, res) => {
       const [usuarios] = await pool.query(
         `SELECT u.id, u.nome 
          FROM usuarios u
-         INNER JOIN usuarios_empresas uc ON uc.user_id = u.id
-         WHERE uc.company_id = ?`,
+         INNER JOIN usuarios_empresas uc ON uc.usuario_id = u.id
+         WHERE uc.empresa_id = ?`,
         [empresa_id]
       );
   
@@ -176,7 +176,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
         subCategorias,
         empresas,
         centrosCusto,
-        usuarios,
+        users: usuarios,
         contas
       });
   
@@ -208,9 +208,9 @@ router.get("/:id", verifyToken, async (req, res) => {
     LEFT JOIN straton_categorias ct ON v.categoria_id = ct.id
     LEFT JOIN straton_subcategorias sc ON v.subcategoria_id = sc.id
     LEFT JOIN empresas co ON v.empresa_id = co.id
-    LEFT JOIN centro_de_custo cc ON v.centro_custo_id = cc.id
+    LEFT JOIN centro_custo cc ON v.centro_custo_id = cc.id
     LEFT JOIN usuarios u ON v.usuario_id = u.id
-        LEFT JOIN contas cra ON v.conta_recebimento_api = cra.id
+    LEFT JOIN contas cra ON v.conta_recebimento_api = cra.id
     WHERE v.id = ?
   `;  
 
@@ -345,8 +345,8 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
       SELECT 
         v.*,
         c.nome_fantasia as cliente_nome,
-        c.cnpj as cliente_cpf_cnpj,
-        c.e_mail_principal as cliente_email,
+        c.cpf_cnpj as cliente_cpf_cnpj,
+        c.email_principal as cliente_email,
         c.endereco as cliente_endereco,
         c.numero as cliente_numero,
         c.complemento as cliente_complemento,
@@ -354,7 +354,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
         c.cidade as cliente_cidade,
         c.estado as cliente_estado,
         c.cep as cliente_cep,
-        c.tipo_de_pessoa as cliente_tipo_pessoa,
+        c.tipo_pessoa as cliente_tipo_pessoa,
         co.nome as empresa_nome
       FROM vendas v
       INNER JOIN clientes c ON v.cliente_id = c.id
@@ -425,7 +425,7 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     // Fazer requisição para gerar boleto via API Inter
     const axios = require('axios');
     const response = await axios.post(
-      `${req.protocol}://${req.get('host')}/inter-boletos/cobranca`,
+      `${req.protocol}://${req.get('host')}/financeiro/boletos/cobranca`,
       boletoData,
       {
         headers: {

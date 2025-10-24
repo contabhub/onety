@@ -61,7 +61,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
   const [vendaOriginal, setVendaOriginal] = useState(null);
   const [formData, setFormData] = useState({
     tipoVenda: "venda-avulsa",
-    situacao: "aprovado",
+    situacao: "orcamento",
     numeroVenda: "3",
     cliente: "",
     dataVenda: new Date(),
@@ -144,7 +144,8 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
   }, [isOpen, isEditMode, vendaId]);
 
   const fetchContasApi = async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const empresaId = userData.EmpresaId;
     const token = localStorage.getItem("token");
     const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -191,9 +192,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
       // Preencher o formulário com os dados da venda
       setFormData({
-        tipoVenda: venda.tipo_venda === "venda_avulsa" ? "venda-avulsa" : 
-                  venda.tipo_venda === "venda_recorrente" ? "venda-recorrente" : "orçamento",
-        situacao: venda.situacao || "aprovado",
+        tipoVenda: venda.tipo_venda === "venda avulsa" ? "venda-avulsa" : 
+                  venda.tipo_venda === "venda recorrente" ? "venda-recorrente" : "orcamento",
+        situacao: venda.situacao || "orcamento",
         numeroVenda: venda.numero_venda?.toString() || "",
         cliente: venda.cliente_id?.toString() || "",
         dataVenda: venda.data_venda ? new Date(venda.data_venda) : new Date(),
@@ -440,18 +441,18 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
       const contaApiIdParsed = isApi ? parseInt(formData.contaRecebimento.split(':')[1]) : null;
 
       // Buscar dados do cliente para boleto e e-mail
-      const clienteSelecionado = formDataFromAPI.clientes.find(c => c.id.toString() === formData.cliente);
+      const clienteSelecionado = formDataFromAPI.clientes?.find(c => c.id.toString() === formData.cliente);
       
       const dataToSave = {
-        tipo_venda: formData.tipoVenda === "venda-avulsa" ? "venda_avulsa" : 
-                   formData.tipoVenda === "venda-recorrente" ? "venda_recorrente" : "orçamento",
+        tipo_venda: formData.tipoVenda === "venda-avulsa" ? "venda avulsa" : 
+                   formData.tipoVenda === "venda-recorrente" ? "venda recorrente" : "orcamento",
         cliente_id: parseInt(formData.cliente),
         categoria_id: formData.categoriaFinanceira ? parseInt(formData.categoriaFinanceira) : null,
         sub_categoria_id: formData.subCategoria ? parseInt(formData.subCategoria) : null,
-        produtos_servicos_id: itens.find(item => item.produtoServico)?.produtoServico ? parseInt(itens.find(item => item.produtoServico).produtoServico) : null,
-        company_id: parseInt(localStorage.getItem("empresaId") || "0"),
-        centro_de_custo_id: formData.centroCusto ? parseInt(formData.centroCusto) : null,
-        vendedor_id: parseInt(formData.vendedor),
+        produtos_id: itens.find(item => item.produtoServico)?.produtoServico ? parseInt(itens.find(item => item.produtoServico).produtoServico) : null,
+        empresa_id: parseInt(JSON.parse(localStorage.getItem("userData") || "{}").EmpresaId || "0"),
+        centro_custo_id: formData.centroCusto ? parseInt(formData.centroCusto) : null,
+        usuario_id: parseInt(formData.vendedor),
         data_venda: format(formData.dataVenda, 'yyyy-MM-dd'),
         situacao: formData.situacao,
         valor_venda: calcularTotalFinal(),
@@ -459,7 +460,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
         pagamento: formData.formaPagamento,
         conta_recebimento: contaIdParsed,
         conta_recebimento_api: contaApiIdParsed,
-        parcelamento: formData.condicaoPagamento,
+        parcelamento: formData.condicaoPagamento === "a-vista" ? 1 : 
+                     formData.condicaoPagamento === "30-dias" ? 30 :
+                     formData.condicaoPagamento === "60-dias" ? 60 :
+                     formData.condicaoPagamento === "90-dias" ? 90 : null,
         vencimento: format(formData.vencimento, 'yyyy-MM-dd'),
         observacoes: formData.observacoesPagamento,
         natureza: formData.naturezaOperacao,
@@ -489,15 +493,18 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
           situacao: formData.situacao,
           valor_venda: calcularTotalFinal(),
           desconto_venda: calcularDesconto(),
-          vendedor_id: formData.vendedor ? parseInt(formData.vendedor) : null,
+          usuario_id: formData.vendedor ? parseInt(formData.vendedor) : null,
           categoria_id: formData.categoriaFinanceira ? parseInt(formData.categoriaFinanceira) : null,
           sub_categoria_id: formData.subCategoria ? parseInt(formData.subCategoria) : null,
-          produtos_servicos_id: itemComProduto ? parseInt(itemComProduto.produtoServico) : null,
-          centro_de_custo_id: formData.centroCusto ? parseInt(formData.centroCusto) : null,
+          produtos_id: itemComProduto ? parseInt(itemComProduto.produtoServico) : null,
+          centro_custo_id: formData.centroCusto ? parseInt(formData.centroCusto) : null,
           pagamento: formData.formaPagamento,
           conta_recebimento: contaIdParsed,
           conta_recebimento_api: contaApiIdParsed,
-          parcelamento: formData.condicaoPagamento,
+          parcelamento: formData.condicaoPagamento === "a-vista" ? 1 : 
+                       formData.condicaoPagamento === "30-dias" ? 30 :
+                       formData.condicaoPagamento === "60-dias" ? 60 :
+                       formData.condicaoPagamento === "90-dias" ? 90 : null,
           vencimento: format(formData.vencimento, 'yyyy-MM-dd'),
           observacoes: formData.observacoesPagamento,
           natureza: formData.naturezaOperacao,
@@ -647,9 +654,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                         formData.situacao
                           ? {
                               value: formData.situacao,
-                              label: formData.situacao === "aprovado" ? "Venda liberada" :
-                                     formData.situacao === "em_andamento" ? "Em andamento" :
-                                     formData.situacao === "recusado" ? "Recusado" : formData.situacao
+                              label: formData.situacao === "orcamento" ? "Orçamento" :
+                                     formData.situacao === "venda avulsa" ? "Venda Avulsa" :
+                                     formData.situacao === "venda recorrente" ? "Venda Recorrente" : formData.situacao
                             }
                           : null
                       }
@@ -660,9 +667,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                         );
                       }}
                       options={[
-                        { value: "aprovado", label: "Venda liberada" },
-                        { value: "em_andamento", label: "Em andamento" },
-                        { value: "recusado", label: "Recusado" }
+                        { value: "orcamento", label: "Orçamento" },
+                        { value: "venda avulsa", label: "Venda Avulsa" },
+                        { value: "venda recorrente", label: "Venda Recorrente" }
                       ]}
                       isClearable
                     />
@@ -690,7 +697,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                       classNamePrefix="react-select"
                       placeholder="Selecione o cliente"
                       value={
-                        formDataFromAPI.clientes.find(
+                        formDataFromAPI.clientes?.find(
                           (cliente) => cliente.id.toString() === formData.cliente
                         )
                           ? {
@@ -707,10 +714,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                           selected ? selected.value : ""
                         );
                       }}
-                      options={formDataFromAPI.clientes.map((cliente) => ({
+                      options={formDataFromAPI.clientes?.map((cliente) => ({
                         value: cliente.id.toString(),
                         label: cliente.nome_fantasia,
-                      }))}
+                      })) || []}
                       isClearable
                     />
                   </div>
@@ -758,7 +765,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                       classNamePrefix="react-select"
                       placeholder="Selecione a categoria"
                       value={
-                        formDataFromAPI.categorias.find(
+                        formDataFromAPI.categorias?.find(
                           (categoria) => categoria.id.toString() === formData.categoriaFinanceira
                         )
                           ? {
@@ -775,10 +782,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                           selected ? selected.value : ""
                         );
                       }}
-                      options={formDataFromAPI.categorias.map((categoria) => ({
+                      options={formDataFromAPI.categorias?.map((categoria) => ({
                         value: categoria.id.toString(),
                         label: categoria.nome,
-                      }))}
+                      })) || []}
                       isClearable
                     />
                   </div>
@@ -793,7 +800,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                       classNamePrefix="react-select"
                       placeholder="Selecione a sub-categoria"
                       value={
-                        formDataFromAPI.subCategorias.find(
+                        formDataFromAPI.subCategorias?.find(
                           (subCategoria) => subCategoria.id.toString() === formData.subCategoria
                         )
                           ? {
@@ -810,10 +817,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                           selected ? selected.value : ""
                         );
                       }}
-                      options={formDataFromAPI.subCategorias.map((subCategoria) => ({
+                      options={formDataFromAPI.subCategorias?.map((subCategoria) => ({
                         value: subCategoria.id.toString(),
                         label: subCategoria.nome,
-                      }))}
+                      })) || []}
                       isClearable
                     />
                   </div>
@@ -828,7 +835,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                       classNamePrefix="react-select"
                       placeholder="Selecione o centro de custo"
                       value={
-                        formDataFromAPI.centrosCusto.find(
+                        formDataFromAPI.centrosCusto?.find(
                           (centro) => centro.id.toString() === formData.centroCusto
                         )
                           ? {
@@ -845,10 +852,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                           selected ? selected.value : ""
                         );
                       }}
-                      options={formDataFromAPI.centrosCusto.map((centro) => ({
+                      options={formDataFromAPI.centrosCusto?.map((centro) => ({
                         value: centro.id.toString(),
                         label: centro.nome,
-                      }))}
+                      })) || []}
                       isClearable
                     />
                    </div>
@@ -861,14 +868,14 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                       classNamePrefix="react-select"
                       placeholder="Selecione o vendedor"
                       value={
-                        formDataFromAPI.users.find(
+                        formDataFromAPI.users?.find(
                           (user) => user.id.toString() === formData.vendedor
                         )
                           ? {
                               value: formData.vendedor,
                               label: formDataFromAPI.users.find(
                                 (user) => user.id.toString() === formData.vendedor
-                              )?.name,
+                              )?.nome,
                             }
                           : null
                       }
@@ -878,10 +885,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                           selected ? selected.value : ""
                         );
                       }}
-                      options={formDataFromAPI.users.map((user) => ({
+                      options={formDataFromAPI.users?.map((user) => ({
                         value: user.id.toString(),
-                        label: user.name,
-                      }))}
+                        label: user.nome,
+                      })) || []}
                       isClearable
                     />
                    </div>
@@ -925,7 +932,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                                     classNamePrefix="react-select"
                                     placeholder="Selecione produto/serviço"
                                     value={
-                                      formDataFromAPI.produtosServicos.find(
+                                      formDataFromAPI.produtosServicos?.find(
                                         (produto) => produto.id.toString() === item.produtoServico
                                       )
                                         ? {
@@ -943,10 +950,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                                         selected ? selected.value : ""
                                       );
                                     }}
-                                    options={formDataFromAPI.produtosServicos.map((produto) => ({
+                                    options={formDataFromAPI.produtosServicos?.map((produto) => ({
                                       value: produto.id.toString(),
                                       label: produto.nome,
-                                    }))}
+                                    })) || []}
                                     isClearable
                                   />
                                 </div>
@@ -1275,7 +1282,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                                 const isErp = formData.contaRecebimento.startsWith('erp:');
                                 if (isErp) {
                                   const contaId = parseInt(formData.contaRecebimento.split(':')[1]);
-                                  const conta = formDataFromAPI.contas.find(c => c.id === contaId);
+                                  const conta = formDataFromAPI.contas?.find(c => c.id === contaId);
                                   return conta ? {
                                     value: formData.contaRecebimento,
                                     label: conta.descricao_banco
@@ -1301,11 +1308,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                         options={[
                           // Contas ERP
                           ...formDataFromAPI.contas
-                            .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                            .map((conta) => ({
+                            ?.filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
+                            ?.map((conta) => ({
                               value: `erp:${conta.id}`,
                               label: conta.descricao_banco
-                            })),
+                            })) || [],
                           // Contas API (OpenFinance)
                           ...contasApi
                             .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))

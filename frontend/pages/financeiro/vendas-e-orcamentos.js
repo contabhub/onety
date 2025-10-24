@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import styles from '../../styles/financeiro/vendas-e-orcamento.module.css';
 import { Button } from '../../components/financeiro/botao';
 import { Input } from '../../components/financeiro/input';
@@ -97,6 +97,26 @@ export default function VendasOrcamentosPage() {
   // Estados para download de boleto
   const [isDownloadingBoleto, setIsDownloadingBoleto] = useState(null);
 
+  // Estado para controlar qual dropdown está aberto
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+  // Função para calcular posição do dropdown
+  const calculateDropdownPosition = useCallback((buttonElement) => {
+    if (!buttonElement) return;
+    
+    const rect = buttonElement.getBoundingClientRect();
+    setDropdownPosition({
+      top: rect.bottom + 8,
+      left: rect.right - 160
+    });
+  }, []);
+
+  // Função para fechar dropdown quando clicar fora
+  const handleCloseDropdown = useCallback(() => {
+    setOpenDropdownId(null);
+  }, []);
+
   // Estados para detalhes da venda
   const [isDetalhesVendaOpen, setIsDetalhesVendaOpen] = useState(false);
   const [vendaSelecionada, setVendaSelecionada] = useState(null);
@@ -186,6 +206,20 @@ export default function VendasOrcamentosPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [periodFilter, currentDate, searchTerm, activeStatusFilter]);
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId && !event.target.closest(`.${styles.vendasOrcamentosDropdownContainer}`)) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdownId]);
 
   // Função para lidar com o clique nos cards de estatísticas
   const handleStatusCardClick = (status) => {
@@ -1126,87 +1160,102 @@ export default function VendasOrcamentosPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={styles.vendasOrcamentosActionButton}
-                            >
-                              <MoreHorizontal className={styles.vendasOrcamentosActionIcon} />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="vendas-orcamentos-dropdown"
+                        <div className={styles.vendasOrcamentosDropdownContainer}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={styles.vendasOrcamentosActionButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (openDropdownId === item.id) {
+                                setOpenDropdownId(null);
+                              } else {
+                                calculateDropdownPosition(e.currentTarget);
+                                setOpenDropdownId(item.id);
+                              }
+                            }}
                           >
-                            <DropdownMenuItem 
-                              className="vendas-orcamentos-dropdown-item"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAbrirDetalhes(item);
+                            <MoreHorizontal className={styles.vendasOrcamentosActionIcon} />
+                          </Button>
+                          {openDropdownId === item.id && (
+                            <div 
+                              className={styles.vendasOrcamentosDropdownContent}
+                              style={{
+                                top: `${dropdownPosition.top}px`,
+                                left: `${dropdownPosition.left}px`
                               }}
                             >
-                              Ver detalhes
-                            </DropdownMenuItem>
-                            {item.__tipo !== "contrato" && (
-                              <DropdownMenuItem 
-                                className="vendas-orcamentos-dropdown-item"
+                              <button 
+                                className={styles.vendasOrcamentosDropdownItem}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleAbrirEditarVenda(item.id);
+                                  handleAbrirDetalhes(item);
+                                  setOpenDropdownId(null);
                                 }}
                               >
-                                Editar
-                              </DropdownMenuItem>
-                            )}
-                            
+                                Ver detalhes
+                              </button>
+                              {item.__tipo !== "contrato" && (
+                                <button 
+                                  className={styles.vendasOrcamentosDropdownItem}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAbrirEditarVenda(item.id);
+                                    setOpenDropdownId(null);
+                                  }}
+                                >
+                                  Editar
+                                </button>
+                              )}
+                              
+                              {item.__tipo !== "contrato" && (
+                                <button 
+                                  className={styles.vendasOrcamentosDropdownItem}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownloadBoleto(item.id);
+                                    setOpenDropdownId(null);
+                                  }}
+                                  disabled={isDownloadingBoleto === item.id}
+                                >
+                                  {isDownloadingBoleto === item.id ? (
+                                    <>
+                                      <div className={styles.vendasOrcamentosModalSpinner}></div>
+                                      Baixando...
+                                    </>
+                                  ) : (
+                                    <>
+                                      Baixar boleto
+                                    </>
+                                  )}
+                                </button>
+                              )}
 
-                            {item.__tipo !== "contrato" && (
-                              <DropdownMenuItem 
-                                className="vendas-orcamentos-dropdown-item"
+                              <button 
+                                className={`${styles.vendasOrcamentosDropdownItem} danger`}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDownloadBoleto(item.id);
-                                }}
-                                disabled={isDownloadingBoleto === item.id}
-                              >
-                                {isDownloadingBoleto === item.id ? (
-                                  <>
-                                    <div className={styles.vendasOrcamentosModalSpinner}></div>
-                                    Baixando...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Download className={styles.vendasOrcamentosActionIcon} />
-                                    Baixar boleto
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                            )}
-
-                            <DropdownMenuItem 
-                              className="vendas-orcamentos-dropdown-item danger"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDeleteModal(item.id, item.numero_venda || "", item.cliente_nome || "");
-                              }}
-                            >
-                              Excluir
-                            </DropdownMenuItem>
-                            {item.__tipo !== "contrato" && (
-                              <DropdownMenuItem 
-                                className="vendas-orcamentos-dropdown-item warning"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenSituacaoModal(item.id, item.situacao);
+                                  handleOpenDeleteModal(item.id, item.numero_venda || "", item.cliente_nome || "");
+                                  setOpenDropdownId(null);
                                 }}
                               >
-                                Mudar situação
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                                Excluir
+                              </button>
+                              {item.__tipo !== "contrato" && (
+                                <button 
+                                  className={`${styles.vendasOrcamentosDropdownItem} warning`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenSituacaoModal(item.id, item.situacao);
+                                    setOpenDropdownId(null);
+                                  }}
+                                >
+                                  Mudar situação
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

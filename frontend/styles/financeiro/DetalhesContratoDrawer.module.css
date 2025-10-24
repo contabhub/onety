@@ -114,6 +114,7 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   margin-bottom: var(--onity-space-l);
+  padding: 10px 20px;
 }
 
 .cardHeader {

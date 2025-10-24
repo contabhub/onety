@@ -2043,6 +2043,69 @@
   background-color: var(--onity-primary-20);
 }
 
+/* Dropdown Menu Styles */
+.vendasOrcamentosDropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.vendasOrcamentosDropdownContent {
+  position: fixed;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-high);
+  z-index: 9999;
+  min-width: 160px;
+  padding: var(--onity-space-xs);
+}
+
+.vendasOrcamentosDropdownItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: none;
+  background: none;
+  color: var(--onity-color-text);
+  font-size: var(--onity-font-size-s);
+  cursor: pointer;
+  border-radius: var(--onity-radius-xs);
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.vendasOrcamentosDropdownItem:hover {
+  background-color: var(--onity-primary-20);
+  color: var(--onity-color-primary);
+}
+
+.vendasOrcamentosDropdownItem.danger:hover {
+  background-color: var(--onity-color-error-20);
+  color: var(--onity-color-error);
+}
+
+.vendasOrcamentosDropdownItem.warning:hover {
+  background-color: var(--onity-color-warning-20);
+  color: var(--onity-color-warning);
+}
+
+.vendasOrcamentosDropdownItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vendasOrcamentosDropdownItem:disabled:hover {
+  background-color: transparent;
+  color: var(--onity-color-text);
+}
+
+.vendasOrcamentosDropdownItemIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--onity-space-s);
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .vendasOrcamentosPage {

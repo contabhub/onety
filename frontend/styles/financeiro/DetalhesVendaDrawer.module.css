@@ -1,0 +1,551 @@
+/* DetalhesVendaDrawer.module.css */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.drawer {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  width: 100%;
+  max-width: 48rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--onity-color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.headerIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--onity-color-primary);
+}
+
+.headerTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+}
+
+.headerSubtitle {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.closeButton {
+  color: var(--onity-color-text);
+  background-color: transparent;
+}
+
+.closeButton:hover {
+  color: var(--onity-color-error);
+}
+
+.content {
+  padding: var(--onity-space-l);
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+  background-color: var(--onity-color-surface);
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xl) 0;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 2rem;
+  width: 2rem;
+  border-bottom: 2px solid var(--onity-color-primary);
+}
+
+.loadingText {
+  margin-left: var(--onity-space-s);
+  color: var(--onity-color-text);
+}
+
+.errorContainer {
+  text-align: center;
+  padding: var(--onity-space-xl) 0;
+}
+
+.errorMessage {
+  color: var(--onity-color-error);
+  margin-bottom: var(--onity-space-m);
+}
+
+.card {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: 10px 20px;
+}
+
+.cardHeader {
+  padding: var(--onity-space-l) var(--onity-space-l) 0 var(--onity-space-l);
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  font-size: var(--onity-type-h3-size);
+  color: var(--onity-color-text);
+}
+
+.cardTitleIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.cardContent {
+  padding: var(--onity-space-l);
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--onity-space-m);
+}
+
+@media (min-width: 768px) {
+  .infoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoLabel {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+}
+
+.infoValue {
+  color: var(--onity-color-text);
+}
+
+.infoValuePrimary {
+  color: var(--onity-color-primary);
+  font-weight: 500;
+}
+
+.dateEditContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.dateInput {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-color-text);
+}
+
+.dateEditButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.saveButton {
+  background-color: var(--onity-color-success);
+  color: white;
+  height: 1.75rem;
+}
+
+.saveButton:hover {
+  background-color: #059669;
+}
+
+.cancelButton {
+  border: 1px solid var(--onity-color-border);
+  height: 1.75rem;
+}
+
+.editButton {
+  color: var(--onity-color-primary);
+  height: 1.5rem;
+  padding: 0 var(--onity-space-s);
+}
+
+.editButton:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+.editIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: var(--onity-space-xs);
+}
+
+.valuesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.valueRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.valueRowSecondary {
+  color: var(--onity-icon-secondary);
+}
+
+.valueRowMain {
+  color: var(--onity-color-text);
+  font-weight: 500;
+}
+
+.valueRowOrange {
+  color: var(--onity-color-warning);
+  font-weight: 500;
+}
+
+.valueRowDivider {
+  padding-top: var(--onity-space-s);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.valueRowTotal {
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+.valueRowTotalAmount {
+  color: var(--onity-color-success);
+  font-weight: bold;
+  font-size: var(--onity-type-h3-size);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.valueRowTotalIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.boletoContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.boletoLoadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-m) 0;
+}
+
+.boletoLoadingSpinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-bottom: 2px solid var(--onity-color-primary);
+}
+
+.boletoLoadingText {
+  margin-left: var(--onity-space-xs);
+  color: var(--onity-icon-secondary);
+}
+
+.boletoSuccessContainer {
+  background-color: rgba(40, 199, 111, 0.1);
+  border: 1px solid rgba(40, 199, 111, 0.3);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+}
+
+.boletoSuccessHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-xs);
+}
+
+.boletoSuccessText {
+  color: var(--onity-color-success);
+  font-size: var(--onity-type-caption-size);
+}
+
+.boletoReloadButton {
+  font-size: var(--onity-type-caption-size);
+}
+
+.boletoInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--onity-space-xs);
+  font-size: var(--onity-type-caption-size);
+}
+
+@media (min-width: 768px) {
+  .boletoInfoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.boletoInfoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.boletoInfoLabel {
+  color: var(--onity-icon-secondary);
+}
+
+.boletoInfoValue {
+  color: var(--onity-color-text);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.boletoDownloadButton {
+  width: 100%;
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.boletoDownloadButton:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.boletoDownloadSpinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+  border-bottom: 2px solid currentColor;
+  margin-right: var(--onity-space-xs);
+}
+
+.boletoDownloadIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-xs);
+}
+
+.boletoGenerateContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.boletoGenerateText {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-caption-size);
+}
+
+.boletoGenerateButton {
+  width: 100%;
+  background-color: var(--onity-color-success);
+  color: white;
+}
+
+.boletoGenerateButton:hover {
+  background-color: #059669;
+}
+
+.boletoGenerateSpinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+  border-bottom: 2px solid currentColor;
+  margin-right: var(--onity-space-xs);
+}
+
+.boletoGenerateIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-xs);
+}
+
+.observationsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.observationItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.observationLabel {
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+}
+
+.observationText {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-caption-size);
+  margin-top: var(--onity-space-xs);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.footerCloseButton {
+  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+
+.footerCloseButton:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.footerDownloadButton {
+  border: 1px solid var(--onity-color-primary);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-primary);
+}
+
+.footerDownloadButton:hover {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.footerDownloadIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-xs);
+}
+
+.footerGenerateButton {
+  background-color: var(--onity-color-success);
+  color: white;
+}
+
+.footerGenerateButton:hover {
+  background-color: #059669;
+}
+
+.footerGenerateIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-xs);
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.badgeGray {
+  background-color: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.badgeGreen {
+  background-color: rgba(40, 199, 111, 0.2);
+  color: var(--onity-color-success);
+  border-color: rgba(40, 199, 111, 0.3);
+}
+
+.badgeBlue {
+  background-color: rgba(0, 207, 232, 0.2);
+  color: var(--onity-color-info);
+  border-color: rgba(0, 207, 232, 0.3);
+}
+
+.badgeOrange {
+  background-color: rgba(255, 159, 67, 0.2);
+  color: var(--onity-color-warning);
+  border-color: rgba(255, 159, 67, 0.3);
+}
+
+.badgeRed {
+  background-color: rgba(234, 84, 85, 0.2);
+  color: var(--onity-color-error);
+  border-color: rgba(234, 84, 85, 0.3);
+}
+
+.badgeYellow {
+  background-color: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.badgeBlueAlt {
+  background-color: rgba(0, 207, 232, 0.2);
+  color: var(--onity-color-info);
+  border-color: rgba(0, 207, 232, 0.3);
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
