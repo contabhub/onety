@@ -84,13 +84,13 @@ export function useVendaFormData() {
                   const mapearTipoVenda = (tipoVenda) => {
                     switch (tipoVenda) {
                       case "orcamento":
-                        return "orçamento";
+                        return "orcamento";
                       case "venda-avulsa":
-                        return "venda_avulsa";
+                        return "venda avulsa";
                       case "venda-recorrente":
-                        return "venda_recorrente";
+                        return "venda recorrente";
                       default:
-                        return "venda_avulsa"; // valor padrão
+                        return "orcamento"; // valor padrão
                     }
                   };
 

@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { X, Calendar, User, Building, DollarSign, FileText, Mail, CreditCard, Download, Package, TrendingUp } from 'lucide-react';
 import { toast } from 'react-toastify';
+import styles from '../../styles/financeiro/DetalhesVendaDrawer.module.css';
 
-// DetalhesVendaDrawerProps: { isOpen: boolean, onClose: () => void, vendaId: number | null, onRefresh?: () => void }
-// VendaDetalhada: { id: number, tipo_venda: string, cliente_id: number, cliente_nome: string, cliente_email?: string, categoria_id?: number, sub_categoria_id?: number, produtos_servicos_id?: number, produto_servico_nome?: string, company_id: number, empresa_nome: string, centro_de_custo_id?: number, centro_custo_nome?: string, vendedor_id?: number, vendedor_nome?: string, data_venda: string, situacao: string, valor_venda: number, desconto_venda: number, pagamento?: string, conta_recebimento?: number, conta_recebimento_nome?: string, conta_recebimento_api?: number, conta_recebimento_api_nome?: string, parcelamento?: number, vencimento: string, observacoes?: string, natureza?: string, observacoes_fiscais?: string, created_at: string, updated_at: string, contrato_origem_id?: number, mes_referencia?: number, ano_referencia?: number }
-// BoletoInfo: { id: number, codigo_solicitacao: string, link_boleto: string, data_vencimento: string, valor_nominal: number, status: string, data_emissao: string }
 
 export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
   const [venda, setVenda] = useState(null);
@@ -44,7 +42,7 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
         throw new Error('Token não encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendas/${vendaId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/vendas/${vendaId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +74,7 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
 
       console.log(`🔍 Buscando boleto para venda ${vendaId}...`);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inter-boletos/boletos/codigo-por-venda/${vendaId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/boletos/boletos/codigo-por-venda/${vendaId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -111,7 +109,7 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
         throw new Error('Token ou URL da API não encontrados');
       }
 
-      const response = await fetch(`${API}/vendas/${venda.id}/gerar-boleto`, {
+      const response = await fetch(`${API}/financeiro/vendas/${venda.id}/gerar-boleto`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +186,7 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
 
       console.log('🔍 Tentando baixar boleto com código:', boleto.codigo_solicitacao);
 
-      const response = await fetch(`${API}/inter-boletos/pdf-simples/${boleto.codigo_solicitacao}`, {
+      const response = await fetch(`${API}/financeiro/boletos/pdf-simples/${boleto.codigo_solicitacao}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -254,7 +252,7 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
         throw new Error('Token ou URL da API não encontrados');
       }
 
-      const response = await fetch(`${API}/vendas/${venda.id}`, {
+      const response = await fetch(`${API}/financeiro/vendas/${venda.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -329,7 +327,7 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
   const getSituacaoBadge = (situacao) => {
     if (!situacao) {
       return (
-        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+        <Badge className={`${styles.badge} ${styles.badgeGray}`}>
           Não definido
         </Badge>
       );
@@ -338,43 +336,43 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
     switch (situacao) {
       case "ativo":
         return (
-          <Badge className="bg-[#4CAF50]/20 text-[#4CAF50] border-[#4CAF50]/30">
+          <Badge className={`${styles.badge} ${styles.badgeGreen}`}>
             Ativo
           </Badge>
         );
       case "aprovado":
         return (
-          <Badge className="bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30">
+          <Badge className={`${styles.badge} ${styles.badgeBlue}`}>
             Venda liberada
           </Badge>
         );
       case "em_andamento":
         return (
-          <Badge className="bg-[#FF9800]/20 text-[#FF9800] border-[#FF9800]/30">
+          <Badge className={`${styles.badge} ${styles.badgeOrange}`}>
             Em Andamento
           </Badge>
         );
       case "recusado":
         return (
-          <Badge className="bg-[#F50057]/20 text-[#ff1769] border-[#F50057]/30">
+          <Badge className={`${styles.badge} ${styles.badgeRed}`}>
             Recusado
           </Badge>
         );
       case "pendente":
         return (
-          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+          <Badge className={`${styles.badge} ${styles.badgeYellow}`}>
             Pendente
           </Badge>
         );
       case "processado":
         return (
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+          <Badge className={`${styles.badge} ${styles.badgeBlueAlt}`}>
             Processado
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+          <Badge className={`${styles.badge} ${styles.badgeGray}`}>
             {situacao}
           </Badge>
         );
@@ -384,17 +382,17 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-darkPurple rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-neonPurple">
+    <div className={styles.overlay}>
+      <div className={styles.drawer}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-neonPurple bg-darkPurple sticky top-0 z-10">
-          <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6 text-primary" />
+        <div className={styles.header}>
+          <div className={styles.headerContent}>
+            <FileText className={styles.headerIcon} />
             <div>
-              <h2 className="text-xl font-bold text-textMain">
+              <h2 className={styles.headerTitle}>
                 Detalhes da Venda #{venda?.id}
               </h2>
-              <p className="text-sm text-textSecondary">
+              <p className={styles.headerSubtitle}>
                 {venda ? formatCurrency(venda.valor_venda) : '-'}
               </p>
             </div>
@@ -403,22 +401,22 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-textSecondary hover:text-textMain"
+            className={styles.closeButton}
           >
-            <X className="w-5 h-5" />
+            <X className={`w-5 h-5 ${styles.closeButton}`} />
           </Button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 bg-darkPurple">
+        <div className={styles.content}>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="ml-3 text-textMain">Carregando detalhes...</span>
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSpinner}></div>
+              <span className={styles.loadingText}>Carregando detalhes...</span>
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-hotPink mb-4">{error}</p>
+            <div className={styles.errorContainer}>
+              <p className={styles.errorMessage}>{error}</p>
               <Button onClick={fetchVendaDetalhes} className="bg-primary hover:bg-primary/80 text-textMain">
                 Tentar novamente
               </Button>
@@ -426,115 +424,117 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
           ) : venda ? (
             <>
               {/* Informações da Venda */}
-              <Card className="bg-darkPurple border-neonPurple">
+              <Card className={styles.card}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <Building className="w-5 h-5 text-primary" />
+                  <CardTitle className={styles.cardTitle}>
+                    <Building className={styles.cardTitleIcon} />
                     Informações da Venda
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Cliente</label>
-                      <p className="text-primary font-medium">{venda.cliente_nome}</p>
+                <CardContent className={styles.cardContent}>
+                  <div className={styles.infoGrid}>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Cliente</label>
+                      <p className={styles.infoValuePrimary}>{venda.cliente_nome}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Tipo de Venda</label>
-                      <p className="text-textMain">{venda.tipo_venda || 'Não definido'}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Tipo de Venda</label>
+                      <p className={styles.infoValue}>{venda.tipo_venda || 'Não definido'}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Data da Venda</label>
-                      <p className="text-textMain">{formatDate(venda.data_venda)}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Data da Venda</label>
+                      <p className={styles.infoValue}>{formatDate(venda.data_venda)}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Vencimento</label>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Vencimento</label>
                       {editandoVencimento ? (
-                        <div className="flex items-center gap-2">
+                        <div className={styles.dateEditContainer}>
                           <input
                             type="date"
                             value={novoVencimento}
                             onChange={(e) => setNovoVencimento(e.target.value)}
-                            className="bg-darkPurple border border-neonPurple rounded px-2 py-1 text-sm text-textMain"
+                            className={styles.dateInput}
                           />
-                          <Button
-                            size="sm"
-                            onClick={handleSalvarVencimento}
-                            className="bg-green-500 hover:bg-green-600 text-white h-7"
-                          >
-                            Salvar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditandoVencimento(false);
-                              setNovoVencimento(toInputDateValue(venda.vencimento));
-                            }}
-                            className="border-neonPurple h-7"
-                          >
-                            Cancelar
-                          </Button>
+                          <div className={styles.dateEditButtons}>
+                            <Button
+                              size="sm"
+                              onClick={handleSalvarVencimento}
+                              className={styles.saveButton}
+                            >
+                              Salvar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditandoVencimento(false);
+                                setNovoVencimento(toInputDateValue(venda.vencimento));
+                              }}
+                              className={styles.cancelButton}
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <p className="text-textMain">{formatDate(venda.vencimento)}</p>
+                        <div className={styles.dateEditContainer}>
+                          <p className={styles.infoValue}>{formatDate(venda.vencimento)}</p>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => setEditandoVencimento(true)}
-                            className="text-primary hover:text-primary/80 h-6 px-2"
+                            className={styles.editButton}
                           >
-                            <Calendar className="w-3 h-3 mr-1" />
+                            <Calendar className={styles.editIcon} />
                             Editar
                           </Button>
                         </div>
                       )}
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Situação</label>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Situação</label>
                       <div className="mt-1">{getSituacaoBadge(venda.situacao)}</div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Vendedor</label>
-                      <p className="text-textMain">{venda.vendedor_nome || 'Não definido'}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Vendedor</label>
+                      <p className={styles.infoValue}>{venda.vendedor_nome || 'Não definido'}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Empresa</label>
-                      <p className="text-textMain">{venda.empresa_nome}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Empresa</label>
+                      <p className={styles.infoValue}>{venda.empresa_nome}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Centro de Custo</label>
-                      <p className="text-textMain">{venda.centro_custo_nome || 'Não definido'}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Centro de Custo</label>
+                      <p className={styles.infoValue}>{venda.centro_custo_nome || 'Não definido'}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Valores */}
-              <Card className="bg-darkPurple border-neonPurple">
+              <Card className={styles.card}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <DollarSign className="w-5 h-5 text-green-500" />
+                  <CardTitle className={styles.cardTitle}>
+                    <DollarSign className={styles.cardTitleIcon} style={{color: '#10b981'}} />
                     Valores
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-textSecondary">Valor Bruto:</span>
-                      <span className="text-textMain font-medium">{formatCurrency(venda.valor_venda + (venda.desconto_venda || 0))}</span>
+                  <div className={styles.valuesContainer}>
+                    <div className={styles.valueRow}>
+                      <span className={styles.valueRowSecondary}>Valor Bruto:</span>
+                      <span className={styles.valueRowMain}>{formatCurrency(venda.valor_venda + (venda.desconto_venda || 0))}</span>
                     </div>
                     {venda.desconto_venda > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-textSecondary">Desconto:</span>
-                        <span className="text-orange-400 font-medium">- {formatCurrency(venda.desconto_venda)}</span>
+                      <div className={styles.valueRow}>
+                        <span className={styles.valueRowSecondary}>Desconto:</span>
+                        <span className={styles.valueRowOrange}>- {formatCurrency(venda.desconto_venda)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center pt-3 border-t border-neonPurple">
-                      <span className="text-textMain font-semibold">Valor Total:</span>
-                      <span className="text-green-500 font-bold text-xl flex items-center gap-1">
-                        <TrendingUp className="w-5 h-5" />
+                    <div className={`${styles.valueRow} ${styles.valueRowDivider}`}>
+                      <span className={styles.valueRowTotal}>Valor Total:</span>
+                      <span className={styles.valueRowTotalAmount}>
+                        <TrendingUp className={styles.valueRowTotalIcon} />
                         {formatCurrency(venda.valor_venda)}
                       </span>
                     </div>
@@ -544,41 +544,41 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
 
               {/* Produto/Serviço */}
               {venda.produto_servico_nome && (
-                <Card className="bg-darkPurple border-neonPurple">
+                <Card className={styles.card}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                      <Package className="w-5 h-5 text-purple-500" />
+                    <CardTitle className={styles.cardTitle}>
+                      <Package className={styles.cardTitleIcon} style={{color: '#8b5cf6'}} />
                       Produto/Serviço
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-textMain">{venda.produto_servico_nome}</p>
+                    <p className={styles.infoValue}>{venda.produto_servico_nome}</p>
                   </CardContent>
                 </Card>
               )}
 
               {/* Informações de Pagamento */}
-              <Card className="bg-darkPurple border-neonPurple">
+              <Card className={styles.card}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <CreditCard className="w-5 h-5 text-green-500" />
+                  <CardTitle className={styles.cardTitle}>
+                    <CreditCard className={styles.cardTitleIcon} style={{color: '#10b981'}} />
                     Informações de Pagamento
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Forma de Pagamento</label>
-                      <p className="text-textMain">{venda.pagamento || 'Não definido'}</p>
+                <CardContent>
+                  <div className={styles.infoGrid}>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Forma de Pagamento</label>
+                      <p className={styles.infoValue}>{venda.pagamento || 'Não definido'}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">Conta de Recebimento</label>
-                      <p className="text-textMain">{venda.conta_recebimento_nome || venda.conta_recebimento_api_nome || 'Não definido'}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>Conta de Recebimento</label>
+                      <p className={styles.infoValue}>{venda.conta_recebimento_nome || venda.conta_recebimento_api_nome || 'Não definido'}</p>
                     </div>
                     {venda.parcelamento && venda.parcelamento > 1 && (
-                      <div>
-                        <label className="text-sm font-medium text-textSecondary">Parcelamento</label>
-                        <p className="text-textMain">{venda.parcelamento}x</p>
+                      <div className={styles.infoItem}>
+                        <label className={styles.infoLabel}>Parcelamento</label>
+                        <p className={styles.infoValue}>{venda.parcelamento}x</p>
                       </div>
                     )}
                   </div>
@@ -586,58 +586,58 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
               </Card>
 
               {/* Boleto */}
-              <Card className="bg-darkPurple border-neonPurple">
+              <Card className={styles.card}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                    <CreditCard className="w-5 h-5 text-primary" />
+                  <CardTitle className={styles.cardTitle}>
+                    <CreditCard className={styles.cardTitleIcon} />
                     Boleto
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loadingBoleto ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                      <span className="ml-2 text-textSecondary">Verificando boleto...</span>
+                    <div className={styles.boletoLoadingContainer}>
+                      <div className={styles.boletoLoadingSpinner}></div>
+                      <span className={styles.boletoLoadingText}>Verificando boleto...</span>
                     </div>
                   ) : boleto ? (
-                    <div className="space-y-3">
-                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-green-400 text-sm">✅ Boleto gerado</p>
+                    <div className={styles.boletoContainer}>
+                      <div className={styles.boletoSuccessContainer}>
+                        <div className={styles.boletoSuccessHeader}>
+                          <p className={styles.boletoSuccessText}>✅ Boleto gerado</p>
                           <div className="flex gap-2">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={fetchBoletoVenda}
                               disabled={loadingBoleto}
-                              className="text-xs"
+                              className={styles.boletoReloadButton}
                             >
                               {loadingBoleto ? '🔄' : '🔄'} Recarregar
                             </Button>
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                          <div>
-                            <span className="text-textSecondary">Código:</span>
-                            <p className="text-textMain font-mono">
+                        <div className={styles.boletoInfoGrid}>
+                          <div className={styles.boletoInfoItem}>
+                            <span className={styles.boletoInfoLabel}>Código:</span>
+                            <p className={styles.boletoInfoValue}>
                               {boleto.codigo_solicitacao || 'Não encontrado'}
                             </p>
                           </div>
-                          <div>
-                            <span className="text-textSecondary">Vencimento:</span>
-                            <p className="text-textMain">
+                          <div className={styles.boletoInfoItem}>
+                            <span className={styles.boletoInfoLabel}>Vencimento:</span>
+                            <p className={styles.boletoInfoValue}>
                               {boleto.data_vencimento ? formatDate(boleto.data_vencimento) : (venda?.vencimento ? formatDate(venda.vencimento) : 'Não definido')}
                             </p>
                           </div>
-                          <div>
-                            <span className="text-textSecondary">Valor:</span>
-                            <p className="text-textMain">
+                          <div className={styles.boletoInfoItem}>
+                            <span className={styles.boletoInfoLabel}>Valor:</span>
+                            <p className={styles.boletoInfoValue}>
                               {formatCurrency(boleto.valor_nominal || venda?.valor_venda || 0)}
                             </p>
                           </div>
-                          <div>
-                            <span className="text-textSecondary">Status:</span>
-                            <p className="text-textMain">
+                          <div className={styles.boletoInfoItem}>
+                            <span className={styles.boletoInfoLabel}>Status:</span>
+                            <p className={styles.boletoInfoValue}>
                               {boleto.status || venda?.situacao || 'Não definido'}
                             </p>
                           </div>
@@ -646,37 +646,37 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                       <Button
                         onClick={handleBaixarBoleto}
                         disabled={baixandoBoleto}
-                        className="w-full bg-primary hover:bg-primary/80 text-textMain"
+                        className={styles.boletoDownloadButton}
                       >
                         {baixandoBoleto ? (
                           <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                            <div className={styles.boletoDownloadSpinner}></div>
                             Baixando...
                           </>
                         ) : (
                           <>
-                            <Download className="w-4 h-4 mr-2" />
+                            <Download className={styles.boletoDownloadIcon} />
                             Baixar Boleto
                           </>
                         )}
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <p className="text-textSecondary text-sm">Nenhum boleto gerado para esta venda</p>
+                    <div className={styles.boletoGenerateContainer}>
+                      <p className={styles.boletoGenerateText}>Nenhum boleto gerado para esta venda</p>
                       <Button
                         onClick={handleGerarBoleto}
                         disabled={gerandoBoleto}
-                        className="w-full bg-green-500 hover:bg-green-600 text-white"
+                        className={styles.boletoGenerateButton}
                       >
                         {gerandoBoleto ? (
                           <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                            <div className={styles.boletoGenerateSpinner}></div>
                             Gerando...
                           </>
                         ) : (
                           <>
-                            <CreditCard className="w-4 h-4 mr-2" />
+                            <CreditCard className={styles.boletoGenerateIcon} />
                             Gerar Boleto
                           </>
                         )}
@@ -688,24 +688,24 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
 
               {/* Observações */}
               {(venda.observacoes || venda.observacoes_fiscais) && (
-                <Card className="bg-darkPurple border-neonPurple">
+                <Card className={styles.card}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                      <FileText className="w-5 h-5 text-primary" />
+                    <CardTitle className={styles.cardTitle}>
+                      <FileText className={styles.cardTitleIcon} />
                       Observações
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className={styles.observationsContainer}>
                     {venda.observacoes && (
-                      <div>
-                        <label className="text-sm font-medium text-textSecondary">Observações Gerais</label>
-                        <p className="text-textMain text-sm mt-1">{venda.observacoes}</p>
+                      <div className={styles.observationItem}>
+                        <label className={styles.observationLabel}>Observações Gerais</label>
+                        <p className={styles.observationText}>{venda.observacoes}</p>
                       </div>
                     )}
                     {venda.observacoes_fiscais && (
-                      <div>
-                        <label className="text-sm font-medium text-textSecondary">Observações Fiscais</label>
-                        <p className="text-textMain text-sm mt-1">{venda.observacoes_fiscais}</p>
+                      <div className={styles.observationItem}>
+                        <label className={styles.observationLabel}>Observações Fiscais</label>
+                        <p className={styles.observationText}>{venda.observacoes_fiscais}</p>
                       </div>
                     )}
                   </CardContent>
@@ -714,17 +714,17 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
 
               {/* Email Cliente */}
               {venda.cliente_email && (
-                <Card className="bg-darkPurple border-neonPurple">
+                <Card className={styles.card}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg text-textMain">
-                      <Mail className="w-5 h-5 text-primary" />
+                    <CardTitle className={styles.cardTitle}>
+                      <Mail className={styles.cardTitleIcon} />
                       Contato
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div>
-                      <label className="text-sm font-medium text-textSecondary">E-mail do Cliente</label>
-                      <p className="text-textMain">{venda.cliente_email}</p>
+                    <div className={styles.infoItem}>
+                      <label className={styles.infoLabel}>E-mail do Cliente</label>
+                      <p className={styles.infoValue}>{venda.cliente_email}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -734,23 +734,16 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-neonPurple bg-darkPurple sticky bottom-0">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain"
-          >
-            Fechar
-          </Button>
-          <div className="flex items-center gap-2">
+        <div className={styles.footer}>
+          <div className={styles.footerActions}>
             {boleto && (
               <Button
                 variant="outline"
                 onClick={handleBaixarBoleto}
                 disabled={baixandoBoleto}
-                className="border-primary bg-darkPurple text-primary hover:bg-primary hover:text-textMain"
+                className={styles.footerDownloadButton}
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className={styles.footerDownloadIcon} />
                 Baixar Boleto
               </Button>
             )}
@@ -758,9 +751,9 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
               <Button
                 onClick={handleGerarBoleto}
                 disabled={gerandoBoleto}
-                className="bg-green-500 hover:bg-green-600 text-white"
+                className={styles.footerGenerateButton}
               >
-                <CreditCard className="w-4 h-4 mr-2" />
+                <CreditCard className={styles.footerGenerateIcon} />
                 Gerar Boleto
               </Button>
             )}

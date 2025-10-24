@@ -176,13 +176,13 @@ router.post("/cobranca", async (req, res) => {
     // Buscar conta Inter configurada para a empresa
     let empresaId = empresa_id || 1; // Usar empresa_id da requisição ou padrão
     
-    // Primeiro tentar buscar na tabela inter_accounts
+    // Primeiro tentar buscar na tabela contas_inter
     let [[contaInter]] = await pool.query(
-      `SELECT * FROM inter_accounts 
+      `SELECT * FROM contas_inter 
        WHERE empresa_id = ? AND status = 'ativo' 
-       ORDER BY is_default DESC, id ASC 
+       ORDER BY id ASC 
        LIMIT 1`,
-      [companyId]
+      [empresaId]
     );
 
     // Se não encontrou, buscar na tabela contas_api
@@ -203,12 +203,12 @@ router.post("/cobranca", async (req, res) => {
          WHERE empresa_id = ? AND inter_ativado = TRUE AND inter_status = 'ativo'
          ORDER BY inter_is_default DESC, id ASC 
          LIMIT 1`,
-        [companyId]
+        [empresaId]
       );
     }
 
     if (!contaInter) {
-      return res.status(400).json({ error: `Nenhuma conta Inter configurada para a empresa ${companyId}. Configure uma conta em /contas-api ou /inter-accounts.` });
+      return res.status(400).json({ error: `Nenhuma conta Inter configurada para a empresa ${empresaId}. Configure uma conta em /contas-api ou /contas-inter.` });
     }
 
     console.log(`🏦 Usando conta Inter: ${contaInter.apelido || contaInter.conta_corrente}`);
@@ -313,11 +313,11 @@ router.get('/consulta/:codigoSolicitacao', async (req, res) => {
 
     // Buscar a conta Inter
     let [[contaInter]] = await pool.query(
-      'SELECT * FROM inter_accounts WHERE id = ? AND status = "ativo"',
+      'SELECT * FROM contas_inter WHERE id = ? AND status = "ativo"',
       [boleto.inter_conta_id]
     );
 
-    // Se não encontrou na inter_accounts, buscar na contas_api
+    // Se não encontrou na contas_inter, buscar na contas_api
     if (!contaInter) {
       [[contaInter]] = await pool.query(
         `SELECT 
@@ -387,11 +387,11 @@ router.get('/pdf-simples/:codigoSolicitacao', async (req, res) => {
 
     // Buscar a conta Inter
     let [[contaInter]] = await pool.query(
-      'SELECT * FROM inter_accounts WHERE id = ? AND status = "ativo"',
+      'SELECT * FROM contas_inter WHERE id = ? AND status = "ativo"',
       [boleto.inter_conta_id]
     );
 
-    // Se não encontrou na inter_accounts, buscar na contas_api
+    // Se não encontrou na contas_inter, buscar na contas_api
     if (!contaInter) {
       [[contaInter]] = await pool.query(
         `SELECT 
@@ -592,7 +592,7 @@ router.get('/teste-simples/:codigoSolicitacao', async (req, res) => {
     // 2) Buscar informações da conta Inter
     const [[contaInter]] = await pool.query(`
       SELECT id, apelido, conta_corrente, client_id, client_secret, ambiente, cert_b64, key_b64
-      FROM inter_accounts 
+      FROM contas_inter 
       WHERE id = ?
     `, [boleto.inter_conta_id]);
 
@@ -1395,14 +1395,14 @@ router.post('/fix-existing-boletos', async (req, res) => {
     // 2. Verificar contas Inter disponíveis
     const [contasInter] = await pool.query(`
       SELECT id, nome, ambiente, inter_client_id 
-      FROM inter_accounts 
+      FROM contas_inter 
       ORDER BY id
     `);
     
     if (contasInter.length === 0) {
       return res.status(400).json({
         error: "Nenhuma conta Inter configurada encontrada",
-        solucao: "Configure uma conta na tabela inter_accounts primeiro"
+        solucao: "Configure uma conta na tabela contas_inter primeiro"
       });
     }
     
@@ -1475,7 +1475,7 @@ router.post('/fix-boleto/:codigoSolicitacao', async (req, res) => {
     // 2. Verificar contas Inter disponíveis
     const [contasInter] = await pool.query(`
       SELECT id, nome, ambiente, empresa_id, apelido
-      FROM inter_accounts 
+      FROM contas_inter 
       ORDER BY id
     `);
     
@@ -1533,7 +1533,7 @@ router.post('/fix-boleto-credenciais/:codigoSolicitacao', async (req, res) => {
       SELECT b.id, b.codigo_solicitacao, b.inter_conta_id, 
              ia.apelido, ia.client_id, ia.ambiente
       FROM boletos b
-      LEFT JOIN inter_accounts ia ON b.inter_conta_id = ia.id
+      LEFT JOIN contas_inter ia ON b.inter_conta_id = ia.id
       WHERE b.codigo_solicitacao = ?
     `, [codigoSolicitacao]);
     
@@ -1566,7 +1566,7 @@ router.post('/fix-boleto-credenciais/:codigoSolicitacao', async (req, res) => {
     // 3. Buscar conta Inter com credenciais válidas
     const [contasValidas] = await pool.query(`
       SELECT id, apelido, ambiente, client_id, is_default
-      FROM inter_accounts 
+      FROM contas_inter 
       WHERE client_id NOT LIKE '%aqui%' 
         AND client_id NOT LIKE '%placeholder%'
         AND client_id IS NOT NULL
@@ -1579,7 +1579,7 @@ router.post('/fix-boleto-credenciais/:codigoSolicitacao', async (req, res) => {
     if (contasValidas.length === 0) {
       return res.status(400).json({
         error: "Nenhuma conta Inter com credenciais válidas encontrada",
-        solucao: "Configure uma conta com credenciais reais na tabela inter_accounts"
+        solucao: "Configure uma conta com credenciais reais na tabela contas_inter"
       });
     }
     
