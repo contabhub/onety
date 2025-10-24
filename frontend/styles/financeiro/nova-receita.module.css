@@ -330,6 +330,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-xs);
+  position: relative;
+  z-index: 1;
+}
+
+/* Z-index específico para o campo de subcategoria receita */
+.novaReceitaField:has(.react-select-container) {
+  z-index: 100;
 }
 
 .novaReceitaLabel {
@@ -436,6 +443,8 @@
   display: flex;
   gap: calc(var(--onity-space-m) - 8px);
   align-items: flex-end;
+  position: relative;
+  z-index: 10;
 }
 
 .novaReceitaClientField {
@@ -472,6 +481,8 @@
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
+  position: relative;
+  z-index: 1;
 }
 
 /* Switch personalizado usando variáveis do globals.css */
@@ -1043,6 +1054,7 @@
   background-color: var(--onity-color-surface) !important;
   margin-top: 4px !important;
   overflow: hidden !important;
+  z-index: 9999 !important;
 }
 
 .react-select__menu-list {

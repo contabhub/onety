@@ -14,7 +14,7 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 
 .headerTitle {
@@ -93,8 +93,8 @@
 
 .statusCard {
   background: transparent;
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-m);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
   transition: all 120ms ease;
   cursor: pointer;
   position: relative;
@@ -153,8 +153,8 @@
 }
 
 .textMutedSmall {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 500;
   color: var(--onity-icon-secondary);
 }
 
@@ -171,8 +171,8 @@
 }
 
 .animatedNumber {
-  font-size: var(--onity-type-heading-size);
-  font-weight: var(--onity-type-heading-weight);
+  font-size: 32px;
+  font-weight: 600;
 }
 
 /* ===== SKELETON LOADING ===== */
@@ -258,6 +258,7 @@
 
 .searchWrap {
   position: relative;
+  width: 100%;
 }
 
 .searchIcon {
@@ -271,11 +272,12 @@
 }
 
 .searchInput {
-  padding: 2px 2px 2px 30px;
-  width: 90%;
+  padding: 0px 2px 2px 30px;
+  width: 97%;
+  max-height: 35px;
   background: transparent;
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
   transition: all 120ms ease;
@@ -342,6 +344,23 @@
   background: color-mix(in srgb, var(--onity-color-primary) 20%, var(--onity-color-surface));
 }
 
+.badgeFilterStatus {
+  background: color-mix(in srgb, var(--onity-color-success) 15%, var(--onity-color-surface));
+  color: var(--onity-text-color);
+  border: 2px solid var(--onity-text-color);
+  border-radius: 15px;
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.badgeFilterStatus:hover {
+  background: color-mix(in srgb, var(--onity-color-success) 25%, var(--onity-color-surface));
+  transform: scale(1.02);
+}
+
 .badgeCloseIcon {
   width: 12px;
   height: 12px;
@@ -367,6 +386,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 20px;
 }
 
 .actionsLeft {
@@ -380,6 +400,11 @@
   border: 1px solid var(--onity-color-error);
   color: var(--onity-color-error);
   transition: all 120ms ease;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 44px;
 }
 
 .btnDangerOutline:hover {
@@ -392,6 +417,11 @@
   border: 1px solid var(--onity-color-border);
   color: var(--onity-icon-secondary);
   transition: all 120ms ease;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 44px;
 }
 
 .btnSecondary:hover {
@@ -434,21 +464,29 @@
 }
 
 .tableHeadRow {
+  background-color: var(--onity-color-bg);
   border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
 }
 
 .tableHeadCell {
+  background-color: var(--onity-color-bg);
   text-align: left;
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-type-body-weight);
-  color: var(--onity-icon-secondary);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
 }
 
 .tableHeadCellCheckbox {
+  background-color: var(--onity-color-bg);
   text-align: left;
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   width: 48px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
 }
 
 .tableEmpty {
@@ -460,21 +498,16 @@
 
 .tableRow {
   border-bottom: 1px solid var(--onity-color-border);
-  transition: all 120ms ease;
-}
-
-.tableRow:hover {
-  background: var(--onity-color-bg);
 }
 
 .tableCell {
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   font-size: var(--onity-type-body-size);
   color: var(--onity-color-text);
 }
 
 .tableCellCheckbox {
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   width: 48px;
 }
 
@@ -494,16 +527,16 @@
 }
 
 .clienteName {
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   font-size: var(--onity-type-body-size);
   font-weight: var(--onity-type-body-weight);
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 120ms ease;
 }
 
 .clienteName:hover {
-  color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary);
 }
 
 /* ===== BADGES ===== */
@@ -554,6 +587,7 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-high);
+  z-index: 999999 !important;
 }
 
 .dropdownItem {
@@ -576,93 +610,90 @@
 }
 
 /* ===== PAGINAÇÃO ===== */
-.paginationBar {
+/* Paginação - Estilos idênticos ao contratos.js */
+.pagination {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: var(--onity-space-l);
-  padding-top: var(--onity-space-m);
-  border-top: 1px solid var(--onity-color-border);
-  padding: 10px 10px 10px 10px;
-}
-
-.paginationLeft {
-  display: flex;
   align-items: center;
-  gap: var(--onity-space-xs);
-}
-
-.perPageSelectTrigger {
-  width: 80px;
+  padding: var(--onity-space-m, 10px);
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   color: var(--onity-color-text);
-  font-size: var(--onity-type-body-size);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--onity-space-s) var(--onity-space-m);
-  min-height: 40px;
+  box-shadow: var(--onity-elev-med);
 }
 
-.paginationCenter {
-  display: flex;
-  align-items: center;
-  gap: var(--onity-space-xs);
+.paginationSelect {
+  padding: var(--onity-space-xs, 4px) var(--onity-space-s, 8px);
+  border-radius: var(--onity-radius-xs, 4px);
+  border: 1px solid var(--onity-color-border);
+  font-size: 12px;
+  height: 28px;
+  min-width: 28px;
+  box-sizing: border-box;
+  margin: 0;
+  line-height: 1.1;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: all 0.2s ease;
+  font-family: var(--onity-font-family-sans);
 }
 
-.pageNavBtn {
-  background: transparent;
+.paginationSelect:focus {
+  border-color: var(--onity-color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 4px);
+}
+
+.paginationArrow,
+.paginationButtonActive {
+  background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   color: var(--onity-color-text);
-  border-radius: var(--onity-radius-xs);
-  transition: all 120ms ease;
+  border-radius: var(--onity-radius-xs, 4px);
+  min-width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--onity-font-family-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.pageNavBtn:hover:not(:disabled) {
-  border-color: var(--onity-color-primary);
-  background: var(--onity-color-bg);
-}
-
-.pageNavBtn:disabled {
+.paginationArrow:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pageNumbers {
-  display: flex;
-  align-items: center;
-  gap: var(--onity-space-xs);
-}
-
-.pageBtn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid var(--onity-color-border);
-  color: var(--onity-color-text);
-  border-radius: var(--onity-radius-xs);
-  transition: all 120ms ease;
-}
-
-.pageBtn:hover:not(:disabled) {
-  border-color: var(--onity-color-primary);
+.paginationArrow:hover:not(:disabled) {
   background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent), 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.pageEllipsis {
-  border: none;
-  background: transparent;
-  color: var(--onity-icon-secondary);
-  cursor: default;
+.paginationButtonActive {
+  background: color-mix(in srgb, var(--onity-color-primary) 18%, transparent);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  border: 1px solid var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
+  transform: scale(1.02);
 }
 
-.pageBtnActive {
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-  border-color: var(--onity-color-primary);
+.paginationInfo {
+  font-size: 14px;
+  color: var(--onity-color-text);
+  font-weight: 500;
 }
 
 /* ===== MODAL EXCLUIR ===== */
@@ -745,4 +776,195 @@
   font-weight: bold;
   color: var(--onity-color-primary);
   font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Toolbar retangular contendo título, botão e filtros */
+.toolbarBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
+  border-radius: 10px;
+  padding: 40px 26px;
+  box-shadow: none;
+  margin-bottom: 20px;
+}
+
+.toolbarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s, 8px);
+}
+
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filtersRow .filtersRowBox:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.filtersRow .filtersRowBox:last-child {
+  margin-right: 24px;
+}
+
+/* Retângulo que envolve especificamente a linha de filtros */
+.filtersRowBox {
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 0;
+  box-shadow: none;
+}
+
+.filterSelect {
+  padding: 9px 12px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterSelect:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--onity-color-primary);
+}
+
+.filterSelect option {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.tableContainer {
+  background: var(--onity-color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Estilos para badges de status */
+.badgeActive {
+  background: color-mix(in srgb, var(--onity-color-success) 12%, var(--onity-color-surface));
+  color: var(--onity-color-success);
+  border: 1px solid color-mix(in srgb, var(--onity-color-success) 30%, var(--onity-color-border));
+}
+
+.badgeInactive {
+  background: color-mix(in srgb, var(--onity-color-error) 12%, var(--onity-color-surface));
+  color: var(--onity-color-error);
+  border: 1px solid color-mix(in srgb, var(--onity-color-error) 30%, var(--onity-color-border));
+}
+
+.badgeIcon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
+
+/* Estilos para ícones pequenos com gap */
+.iconSmallWithGap {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+/* Estilos para skeleton */
+.skeletonCard {
+  background: rgba(27, 18, 41, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(103, 58, 183, 0.2);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeletonCardContent {
+  padding-top: 24px;
+}
+
+.skeletonInner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeletonLineSmall {
+  height: 16px;
+  background: rgba(103, 58, 183, 0.2);
+  border-radius: 4px;
+  width: 64px;
+  margin: 0 auto;
+}
+
+.skeletonLineLarge {
+  height: 32px;
+  background: rgba(103, 58, 183, 0.2);
+  border-radius: 4px;
+  width: 48px;
+  margin: 0 auto;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Responsividade para paginação - igual ao contratos.js */
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .paginationButtons {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .paginationSelect {
+    margin-right: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .paginationArrow,
+  .paginationButtonActive {
+    min-width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .paginationSelect {
+    font-size: 11px;
+    height: 24px;
+    min-width: 24px;
+  }
 }

@@ -1,6 +1,108 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
+// Adicionar estilos CSS para a animação do spinner
+const spinnerStyles = `
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+// Injetar os estilos no head
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = spinnerStyles;
+  document.head.appendChild(styleElement);
+}
+
+// Estilos personalizados para o Toastify
+const toastStyles = `
+  .custom-toast {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+    border: 1px solid #333333 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  .custom-toast .Toastify__toast-body {
+    color: #ffffff !important;
+    font-family: inherit !important;
+    font-weight: 500 !important;
+  }
+  
+  .custom-toast .Toastify__progress-bar {
+    background-color: var(--onity-primary) !important;
+  }
+  
+  .custom-toast .Toastify__close-button {
+    color: #888888 !important;
+  }
+  
+  .custom-toast .Toastify__close-button:hover {
+    color: #ffffff !important;
+  }
+  
+  /* Estilos para os ícones dos toasts */
+  .custom-toast .Toastify__toast-icon {
+    margin-right: 12px !important;
+  }
+  
+  .custom-toast .Toastify__toast-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  
+  /* Sobrescrever cores específicas dos tipos de toast */
+  .Toastify__toast--success.custom-toast {
+    background-color: #1a1a1a !important;
+    border-left: 4px solid #10b981 !important;
+  }
+  
+  .Toastify__toast--success.custom-toast .Toastify__toast-icon {
+    color: #10b981 !important;
+  }
+  
+  .Toastify__toast--error.custom-toast {
+    background-color: #1a1a1a !important;
+    border-left: 4px solid #ef4444 !important;
+  }
+  
+  .Toastify__toast--error.custom-toast .Toastify__toast-icon {
+    color: #ef4444 !important;
+  }
+  
+  .Toastify__toast--warning.custom-toast {
+    background-color: #1a1a1a !important;
+    border-left: 4px solid #f59e0b !important;
+  }
+  
+  .Toastify__toast--warning.custom-toast .Toastify__toast-icon {
+    color: #f59e0b !important;
+  }
+  
+  .Toastify__toast--info.custom-toast {
+    background-color: #1a1a1a !important;
+    border-left: 4px solid #3b82f6 !important;
+  }
+  
+  .Toastify__toast--info.custom-toast .Toastify__toast-icon {
+    color: #3b82f6 !important;
+  }
+`;
+
+// Injetar os estilos do toast
+if (typeof document !== 'undefined') {
+  const toastStyleElement = document.createElement('style');
+  toastStyleElement.textContent = toastStyles;
+  document.head.appendChild(toastStyleElement);
+}
 import { Card, CardContent } from "../../components/financeiro/card";
 import { Button } from "../../components/financeiro/botao";
 import { Input } from "../../components/financeiro/input";
@@ -37,10 +139,13 @@ import { NovoClienteDrawer } from "../../components/financeiro/NovoClienteDrawer
 import { EditarClienteDrawer } from "../../components/financeiro/EditarCliente";
 import { DetalhesClienteDrawer } from "../../components/financeiro/DetalheClienteDrawer";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../components/financeiro/dropdown-menu";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
 import styles from '../../styles/financeiro/cadastro-clientes.module.css';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
+import { Loader2 } from "lucide-react";
+import ReactSelect from "react-select";
 
 
 const DeleteModal = ({ isOpen, onClose, onConfirm, clienteNome }) => {
@@ -74,8 +179,24 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, clienteNome }) => {
   );
 };
 
+// Função para debounce
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function ClientesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const searchDebounced = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -88,16 +209,31 @@ export default function ClientesPage() {
   const [isDetalheDrawerOpen, setIsDetalheDrawerOpen] = useState(false);
   const [clienteDetalhado, setClienteDetalhado] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedClientes, setSelectedClientes] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const API = process.env.NEXT_PUBLIC_API_URL;
+
+  // Estado para ordenação
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc"
+  });
+
+  // Opções para o react-select de status
+  const statusOptions = [
+    { value: "Todos", label: "Todos" },
+    { value: "Ativo", label: "Ativo" },
+    { value: "Inativo", label: "Inativo" }
+  ];
 
   const filteredClientes = clientes.filter((cliente) => {
     const matchesSearch =
       (cliente.nome_fantasia?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
+        searchDebounced.toLowerCase()
       ) ||
-      (cliente.cnpj || "").includes(searchTerm) ||
+      (cliente.cnpj || "").includes(searchDebounced) ||
       (cliente.e_mail_principal?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
+        searchDebounced.toLowerCase()
       );
 
     // Filtro por status
@@ -117,6 +253,12 @@ export default function ClientesPage() {
       setCurrentPage(1);
     }
   }, [totalPages, currentPage]);
+
+  // Reset da seleção quando mudar página, filtros ou ordenação
+  useEffect(() => {
+    setSelectedClientes([]);
+    setSelectAll(false);
+  }, [currentPage, searchDebounced, statusFilter, sortConfig]);
   
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedClientes = filteredClientes.slice(
@@ -140,6 +282,162 @@ export default function ClientesPage() {
     setCurrentPage(1); // Reset para primeira página
   };
 
+  // Função para solicitar ordenação
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Funções para gerenciar seleção
+  const handleSelectAll = () => {
+    if (selectAll) {
+      // Desmarcar todos
+      setSelectedClientes([]);
+      setSelectAll(false);
+    } else {
+      // Marcar todos os clientes da página atual
+      const allIds = paginatedClientes.map(cliente => cliente.id);
+      setSelectedClientes(allIds);
+      setSelectAll(true);
+    }
+  };
+
+  const handleSelectIndividual = (clienteId) => {
+    setSelectedClientes(prev => {
+      if (prev.includes(clienteId)) {
+        // Remover da seleção
+        const newSelection = prev.filter(id => id !== clienteId);
+        setSelectAll(false);
+        return newSelection;
+      } else {
+        // Adicionar à seleção
+        const newSelection = [...prev, clienteId];
+        // Verificar se todos os clientes da página estão selecionados
+        if (newSelection.length === paginatedClientes.length) {
+          setSelectAll(true);
+        }
+        return newSelection;
+      }
+    });
+  };
+
+  // Verificar se um cliente específico está selecionado
+  const isClienteSelected = (clienteId) => {
+    return selectedClientes.includes(clienteId);
+  };
+
+  // Verificar se o checkbox "selecionar todos" deve estar marcado
+  const isSelectAllChecked = () => {
+    return selectAll && paginatedClientes.length > 0;
+  };
+
+  // Função para inativar múltiplos clientes
+  const handleInativarSelecionados = async () => {
+    if (selectedClientes.length === 0) {
+      toast.error("Nenhum cliente selecionado.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Token de autenticação não encontrado.");
+      return;
+    }
+
+    try {
+      // Inativar todos os clientes selecionados
+      const promises = selectedClientes.map(clienteId => 
+        fetch(`${API}/financeiro/clientes/${clienteId}/status`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "inativo" }),
+        })
+      );
+
+      const responses = await Promise.all(promises);
+      
+      // Verificar se todas as requisições foram bem-sucedidas
+      const failedRequests = responses.filter(res => !res.ok);
+      
+      if (failedRequests.length > 0) {
+        throw new Error(`${failedRequests.length} cliente(s) não puderam ser inativados.`);
+      }
+
+      // Atualizar lista local
+      setClientes(prev => 
+        prev.map(cliente => 
+          selectedClientes.includes(cliente.id) 
+            ? { ...cliente, status: "inativo" }
+            : cliente
+        )
+      );
+
+      // Limpar seleção
+      setSelectedClientes([]);
+      setSelectAll(false);
+
+      toast.success(`${selectedClientes.length} cliente(s) inativado(s) com sucesso!`);
+    } catch (err) {
+      console.error("❌ Erro ao inativar clientes:", err);
+      toast.error(`Erro ao inativar clientes: ${err.message}`);
+    }
+  };
+
+  // Função para excluir múltiplos clientes
+  const handleExcluirSelecionados = async () => {
+    if (selectedClientes.length === 0) {
+      toast.error("Nenhum cliente selecionado.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Token de autenticação não encontrado.");
+      return;
+    }
+
+    try {
+      // Excluir todos os clientes selecionados
+      const promises = selectedClientes.map(clienteId => 
+        fetch(`${API}/financeiro/clientes/${clienteId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      );
+
+      const responses = await Promise.all(promises);
+      
+      // Verificar se todas as requisições foram bem-sucedidas
+      const failedRequests = responses.filter(res => !res.ok);
+      
+      if (failedRequests.length > 0) {
+        throw new Error(`${failedRequests.length} cliente(s) não puderam ser excluídos.`);
+      }
+
+      // Atualizar lista local
+      setClientes(prev => 
+        prev.filter(cliente => !selectedClientes.includes(cliente.id))
+      );
+
+      // Limpar seleção
+      setSelectedClientes([]);
+      setSelectAll(false);
+
+      toast.success(`${selectedClientes.length} cliente(s) excluído(s) com sucesso!`);
+    } catch (err) {
+      console.error("❌ Erro ao excluir clientes:", err);
+      toast.error(`Erro ao excluir clientes: ${err.message}`);
+    }
+  };
+
 
   const handleSaveCliente = async (clienteData) => {
     console.log("Salvando cliente:", clienteData);
@@ -147,11 +445,14 @@ export default function ClientesPage() {
     // Se o clienteData tem um ID, busca os dados completos
     if (clienteData && clienteData.id) {
       try {
-        const companyId = localStorage.getItem("empresaId");
+        // Buscar empresaId do userData (padrão correto do sistema)
+        const userData = localStorage.getItem("userData");
+        const user = userData ? JSON.parse(userData) : null;
+        const companyId = user?.EmpresaId || user?.empresa?.id || null;
         const token = localStorage.getItem("token");
         
         if (companyId && token) {
-          const response = await fetch(`${API}/clientes/company/${companyId}`, {
+          const response = await fetch(`${API}/financeiro/clientes/empresa/${companyId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -190,7 +491,7 @@ export default function ClientesPage() {
       return;
     }
 
-    fetch(`${API}/clientes/${clienteId}`, {
+    fetch(`${API}/financeiro/clientes/${clienteId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -222,7 +523,7 @@ export default function ClientesPage() {
     }
 
     try {
-      const response = await fetch(`${API}/clientes/${clienteId}/status`, {
+      const response = await fetch(`${API}/financeiro/clientes/${clienteId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -254,13 +555,13 @@ export default function ClientesPage() {
     // Se não houver status definido, considera como ativo
     const clientStatus = status || "ativo";
     return clientStatus === "ativo" ? (
-      <Badge className="bg-[#1E88E5]/10 text-[#1E88E5] border-[#1E88E5]/20">
-        <CheckCircle className="w-3 h-3 mr-1" />
+      <Badge className={styles.badgeActive}>
+        <CheckCircle className={styles.badgeIcon} />
         Ativo
       </Badge>
     ) : (
-      <Badge className="bg-[#F50057]/10 text-[#F50057] border-[#F50057]/20">
-        <XCircle className="w-3 h-3 mr-1" />
+      <Badge className={styles.badgeInactive}>
+        <XCircle className={styles.badgeIcon} />
         Inativo
       </Badge>
     );
@@ -268,25 +569,37 @@ export default function ClientesPage() {
 
   // Componente de Loading
   const LoadingState = () => (
-    <div className="flex flex-col items-center justify-center py-12 space-y-4">
-      <div className="w-20 h-20">
-      <SpaceLoader label="Carregando clientes..." size={100} minHeight={150} />
-      </div>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '40px',
+      flexDirection: 'column',
+      gap: '16px'
+    }}>
+      <Loader2
+        size={32}
+        style={{
+          color: '#1976D2',
+          animation: 'spin 1s linear infinite'
+        }}
+      />
+      <span style={{ color: '#6B7280', fontSize: '14px' }}>Carregando clientes...</span>
     </div>
   );
 
   // Componente de Skeleton para Stats Cards
   const StatsCardSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className={styles.statsGrid}>
       {[1, 2, 3].map((index) => (
         <Card 
           key={index}
-          className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 animate-pulse"
+          className={styles.skeletonCard}
         >
-          <CardContent className="pt-6">
-            <div className="text-center space-y-3">
-              <div className="h-4 bg-[#673AB7]/20 rounded w-16 mx-auto"></div>
-              <div className="h-8 bg-[#673AB7]/20 rounded w-12 mx-auto"></div>
+          <CardContent className={styles.skeletonCardContent}>
+            <div className={styles.skeletonInner}>
+              <div className={styles.skeletonLineSmall}></div>
+              <div className={styles.skeletonLineLarge}></div>
             </div>
           </CardContent>
         </Card>
@@ -303,7 +616,7 @@ export default function ClientesPage() {
       if (!loading && value > 0) {
         setDisplayValue(0);
         
-        const duration = 1500; // 1.5 segundos
+        const duration = 200; // 1.5 segundos
         const steps = 60;
         const increment = value / steps;
         const stepDuration = duration / steps;
@@ -336,7 +649,10 @@ export default function ClientesPage() {
   };
 
   useEffect(() => {
-    const companyId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const companyId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
 
     console.log("🔍 companyId:", companyId);
@@ -348,7 +664,7 @@ export default function ClientesPage() {
       return;
     }
 
-    const url = `${API}/clientes/company/${companyId}`;
+    const url = `${API}/financeiro/clientes/empresa/${companyId}`;
     console.log("🌐 URL da requisição:", url);
 
     fetch(url, {
@@ -375,12 +691,22 @@ export default function ClientesPage() {
 
   return (
     <div className={styles.page}>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        toastClassName="custom-toast"
+        closeButton={false}
+      />
       {/* Header */}
       <div className={styles.header}>
-        <div>
-          <h1 className={styles.headerTitle}>Clientes</h1>
-          <p className={styles.headerSubtitle}>Gerencie seus clientes</p>
-        </div>
         <div className={styles.headerActions}>
           <Button
             disabled
@@ -388,7 +714,7 @@ export default function ClientesPage() {
             size="sm"
             className={styles.btnExport}
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className={styles.iconSmallWithGap} />
             Exportar
           </Button>
           <Button
@@ -397,7 +723,7 @@ export default function ClientesPage() {
             size="sm"
             className={styles.btnImport}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className={styles.iconSmallWithGap} />
             Importar
           </Button>
           <Button
@@ -405,7 +731,7 @@ export default function ClientesPage() {
             className={styles.btnNew}
             onClick={() => setIsNovoClienteOpen(true)}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className={styles.iconSmallWithGap} />
             Novo cliente
           </Button>
         </div>
@@ -470,123 +796,207 @@ export default function ClientesPage() {
       )}
 
       {/* Filters */}
-      <Card className={styles.filtersCard}>
-        <CardContent className={styles.cardContentPadded}>
-          <div className={styles.filtersRow}>
-            <div className={styles.flex1}>
-              <label className={styles.labelSmall}>
-                Pesquisar
-              </label>
-              <div className={styles.searchWrap}>
-                <Search className={styles.searchIcon} />
-                <Input
-                  placeholder="Pesquisar"
-                  className={styles.searchInput}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className={styles.filtersRight}>
-              <div>
-                <label className={styles.labelSmall}>
-                  Status
-                </label>
-                <Select
-                  value={statusFilter}
-                  onValueChange={(value) => setStatusFilter(value)}
-                >
-                  <SelectTrigger className={styles.selectTriggerSmall}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={styles.selectContent}>
-                    <SelectItem value="Todos" className={styles.selectItem}>Todos</SelectItem>
-                    <SelectItem value="Ativo" className={styles.selectItem}>Ativo</SelectItem>
-                    <SelectItem value="Inativo" className={styles.selectItem}>Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      <div className={styles.toolbarBox}>
+        <div className={styles.filtersRow}>
+          <div className={styles.filtersRowBox}>
+            <div className={styles.searchWrap}>
+              <Search className={styles.searchIcon} />
+              <Input
+                placeholder="Pesquisar clientes..."
+                className={styles.searchInput}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
           </div>
           
-          {/* Filtros Ativos */}
-          {(statusFilter !== "Todos" || searchTerm) && (
-            <div className={styles.activeFiltersRow}>
-              <span className={styles.textMutedSmall}>Filtros ativos:</span>
-              
-              {statusFilter !== "Todos" && (
-                <Badge 
-                  className={styles.badgeFilter}
-                  onClick={() => setStatusFilter("Todos")}
-                >
-                  Status: {statusFilter}
-                  <X className={styles.badgeCloseIcon} />
-                </Badge>
-              )}
-              
-              {searchTerm && (
-                <Badge 
-                  className={styles.badgeFilter}
-                  onClick={() => setSearchTerm("")}
-                >
-                  Busca: &quot;{searchTerm}&quot;
-                  <X className={styles.badgeCloseIcon} />
-                </Badge>
-              )}
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setStatusFilter("Todos");
-                  setSearchTerm("");
-                }}
-                className={styles.btnClearAll}
+          <div className={styles.filtersRowBox}>
+            <select
+              className={styles.filterSelect}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="Todos">Todos os status</option>
+              <option value="Ativo">Ativo</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+          </div>
+        </div>
+        
+        {/* Filtros Ativos */}
+        {(statusFilter !== "Todos" || searchTerm) && (
+          <div className={styles.activeFiltersRow}>
+            <span className={styles.textMutedSmall}>Filtros ativos:</span>
+            
+            {statusFilter !== "Todos" && (
+              <Badge 
+                className={styles.badgeFilterStatus}
+                onClick={() => setStatusFilter("Todos")}
               >
-                Limpar todos
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                Status: {statusFilter}
+                <X className={styles.badgeCloseIcon} />
+              </Badge>
+            )}
+            
+            {searchTerm && (
+              <Badge 
+                className={styles.badgeFilter}
+                onClick={() => setSearchTerm("")}
+              >
+                Busca: &quot;{searchTerm}&quot;
+                <X className={styles.badgeCloseIcon} />
+              </Badge>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Indicador de ordenação */}
+      {sortConfig.key && (
+        <div style={{
+          marginBottom: "var(--onity-spacing-sm)",
+          padding: "var(--onity-spacing-sm) var(--onity-spacing-md)",
+          backgroundColor: "rgba(0, 128, 255, 0.1)",
+          border: "1px solid rgba(0, 128, 255, 0.2)",
+          borderRadius: "var(--onity-radius-sm)",
+          color: "var(--onity-primary)",
+          fontSize: "var(--onity-font-size-sm)",
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--onity-spacing-sm)"
+        }}>
+          <span>
+            Ordenado por: <strong>{sortConfig.key === "nome_fantasia" ? "Nome" : 
+              sortConfig.key === "cpf_cnpj" ? "CPF/CNPJ" :
+              sortConfig.key === "email_principal" ? "E-mail" :
+              sortConfig.key === "status" ? "Status" : sortConfig.key}</strong>
+            {" "}({sortConfig.direction === "asc" ? "A-Z" : "Z-A"})
+          </span>
+          <button
+            onClick={() => setSortConfig({ key: null, direction: "asc" })}
+            style={{
+              marginLeft: "auto",
+              background: "none",
+              border: "none",
+              color: "var(--onity-primary)",
+              cursor: "pointer",
+              fontSize: "var(--onity-font-size-sm)",
+              padding: "var(--onity-spacing-xs)",
+              borderRadius: "var(--onity-radius-sm)",
+              transition: "all var(--onity-transition-fast)"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0, 128, 255, 0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            ✕ Limpar ordenação
+          </button>
+        </div>
+      )}
 
       {/* Actions */}
       <div className={styles.actionsBar}>
         <div className={styles.actionsLeft}>
-          <p className={styles.textMutedSmall}>0 registro(s) selecionado(s)</p>
-          <Button disabled variant="outline" size="sm" className={styles.btnDangerOutline}>Excluir</Button>
-          <Button disabled variant="outline" size="sm" className={styles.btnSecondary}>Inativar</Button>
+          <p className={styles.textMutedSmall}>{selectedClientes.length} registro(s) selecionado(s)</p>
+          <Button 
+            disabled={selectedClientes.length === 0} 
+            variant="outline" 
+            size="sm" 
+            className={styles.btnDangerOutline}
+            onClick={handleExcluirSelecionados}
+          >
+            Excluir
+          </Button>
+          <Button 
+            disabled={selectedClientes.length === 0} 
+            variant="outline" 
+            size="sm" 
+            className={styles.btnSecondary}
+            onClick={handleInativarSelecionados}
+          >
+            Inativar
+          </Button>
         </div>
       </div>
 
       {/* Table */}
-      <Card className={styles.tableCard}>
-        <CardContent className={styles.cardContentPadded}>
-          {loading ? (
-            <LoadingState />
-          ) : (
-            <>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
+      {loading ? (
+        <LoadingState />
+      ) : (
+        <>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
                   <thead>
                     <tr className={styles.tableHeadRow}>
                       <th className={styles.tableHeadCellCheckbox}>
-                        <input type="checkbox" className={styles.checkbox} />
+                        <input 
+                          type="checkbox" 
+                          className={styles.checkbox}
+                          checked={isSelectAllChecked()}
+                          onChange={handleSelectAll}
+                        />
                       </th>
-                      <th className={styles.tableHeadCell}>
-                        Nome
+                      <th 
+                        className={`${styles.tableHeadCell} ${styles.sortableTh}`}
+                        onClick={() => requestSort("nome_fantasia")}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          Nome
+                          {sortConfig.key === "nome_fantasia" && (
+                            <span style={{ fontSize: "12px", color: "var(--onity-primary)" }}>
+                              {sortConfig.direction === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
+                        </div>
                       </th>
-                      <th className={styles.tableHeadCell}>
-                        CPF / CNPJ / ID Estrangeiro
+                      <th 
+                        className={`${styles.tableHeadCell} ${styles.sortableTh}`}
+                        onClick={() => requestSort("cpf_cnpj")}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          CPF / CNPJ / ID Estrangeiro
+                          {sortConfig.key === "cpf_cnpj" && (
+                            <span style={{ fontSize: "12px", color: "var(--onity-primary)" }}>
+                              {sortConfig.direction === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
+                        </div>
                       </th>
-                      <th className={styles.tableHeadCell}>
-                        E-mail
+                      <th 
+                        className={`${styles.tableHeadCell} ${styles.sortableTh}`}
+                        onClick={() => requestSort("email_principal")}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          E-mail
+                          {sortConfig.key === "email_principal" && (
+                            <span style={{ fontSize: "12px", color: "var(--onity-primary)" }}>
+                              {sortConfig.direction === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
+                        </div>
                       </th>
                       <th className={styles.tableHeadCell}>
                         Telefone
                       </th>
-                      <th className={styles.tableHeadCell}>
-                        Status
+                      <th 
+                        className={`${styles.tableHeadCell} ${styles.sortableTh}`}
+                        onClick={() => requestSort("status")}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          Status
+                          {sortConfig.key === "status" && (
+                            <span style={{ fontSize: "12px", color: "var(--onity-primary)" }}>
+                              {sortConfig.direction === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
+                        </div>
                       </th>
                       <th className={styles.tableHeadCell}>
                         Ações
@@ -604,7 +1014,12 @@ export default function ClientesPage() {
                       paginatedClientes.map((cliente) => (
                         <tr key={cliente.id} className={styles.tableRow}>
                           <td className={styles.tableCellCheckbox}>
-                            <input type="checkbox" className={styles.checkbox} />
+                            <input 
+                              type="checkbox" 
+                              className={styles.checkbox}
+                              checked={isClienteSelected(cliente.id)}
+                              onChange={() => handleSelectIndividual(cliente.id)}
+                            />
                           </td>
                           <td
                             className={styles.clienteName}
@@ -630,7 +1045,7 @@ export default function ClientesPage() {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm" className={styles.dropdownTrigger}>
-                                  <MoreVertical className="h-4 w-4" />
+                                  <MoreVertical className={styles.iconSmallWithGap} />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className={styles.dropdownContent}>
@@ -641,24 +1056,24 @@ export default function ClientesPage() {
                                   }}
                                   className={styles.dropdownItem}
                                 >
-                                  <Edit className="w-4 h-4 mr-2" />
+                                  <Edit className={styles.iconSmallWithGap} />
                                   Editar
                                 </DropdownMenuItem>
 
                                 {cliente.status === "ativo" ? (
                                   <DropdownMenuItem onClick={() => handleToggleStatus(cliente.id, "inativo")} className={styles.dropdownItemDanger}>
-                                    <XCircle className="w-4 h-4 mr-2" />
+                                    <XCircle className={styles.iconSmallWithGap} />
                                     Inativar
                                   </DropdownMenuItem>
                                 ) : (
                                   <DropdownMenuItem onClick={() => handleToggleStatus(cliente.id, "ativo")} className={styles.dropdownItemPrimary}>
-                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    <CheckCircle className={styles.iconSmallWithGap} />
                                     Ativar
                                   </DropdownMenuItem>
                                 )}
 
                                 <DropdownMenuItem onClick={() => setDeleteModal({ isOpen: true, cliente })} className={styles.dropdownItemDanger}>
-                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  <Trash2 className={styles.iconSmallWithGap} />
                                   Excluir
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -736,10 +1151,8 @@ export default function ClientesPage() {
                   </div>
                 </div>
               )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+        </>
+      )}
 
       {clienteDetalhado && (
         <DetalhesClienteDrawer
