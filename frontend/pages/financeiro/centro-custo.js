@@ -6,12 +6,7 @@ import styles from '../../styles/financeiro/centro-custo.module.css';
 import { Button } from "../../components/financeiro/botao";
 import { Input } from "../../components/financeiro/input";
 import { Badge } from "../../components/financeiro/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/financeiro/dropdown-menu";
+
 import {
   Plus,
   Search,
@@ -44,7 +39,24 @@ export default function CentrosCustoPage() {
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false
   });
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const API = process.env.NEXT_PUBLIC_API_URL;
+
+  // Função auxiliar para buscar companyId
+  const getCompanyId = () => {
+    const userData = localStorage.getItem("userData");
+    let companyId = localStorage.getItem("empresaId");
+
+    if (!companyId && userData) {
+      const parsedUserData = JSON.parse(userData);
+      companyId = parsedUserData.EmpresaId || parsedUserData.empresa?.id;
+    }
+
+    return companyId;
+  };
 
   // Logs para debug da renderização
   useEffect(() => {
@@ -55,7 +67,7 @@ export default function CentrosCustoPage() {
   useEffect(() => {
     const fetchCentrosCusto = async () => {
       try {
-        const companyId = localStorage.getItem("empresaId");
+        const companyId = getCompanyId();
         const token = localStorage.getItem("token");
 
         console.log("🔍 companyId:", companyId);
@@ -69,7 +81,7 @@ export default function CentrosCustoPage() {
           return;
         }
 
-        const url = `${API}/centro-de-custo/empresa/${companyId}`;
+        const url = `${API}/financeiro/centro-de-custo/empresa/${companyId}`;
         console.log("🌐 URL da requisição:", url);
 
         const response = await fetch(url, {
@@ -93,7 +105,7 @@ export default function CentrosCustoPage() {
           codigo: centro.codigo || "",
           nome: centro.nome || "",
           situacao:
-            centro.situacao.toLowerCase() === "ativo" ? "Ativo" : "Inativo",
+            centro.situacao === "ativo" ? "Ativo" : "Inativo",
         }));
 
         console.log("📁 Centros formatados:", centrosFormatados);
@@ -112,6 +124,46 @@ export default function CentrosCustoPage() {
   const handleFilterAtivos = () => setStatusFilter("Ativo");
   const handleFilterInativos = () => setStatusFilter("Inativo");
   const handleFilterTodos = () => setStatusFilter("Todos");
+
+  // Funções para controlar dropdown individual
+  const handleDropdownToggle = (centroId, event) => {
+    if (openDropdownId === centroId) {
+      setOpenDropdownId(null);
+      return;
+    }
+
+    // Calcular posição do dropdown
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+
+    // Definir posição do dropdown
+    setDropdownPosition({
+      top: rect.bottom + window.scrollY + 4,
+      left: rect.right - 192 + window.scrollX // 192px é a largura do dropdown
+    });
+
+    setOpenDropdownId(centroId);
+  };
+
+  // Função para fechar dropdown quando clicar fora
+  const handleCloseDropdown = () => {
+    setOpenDropdownId(null);
+  };
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(`.${styles.dropdownContainer}`) &&
+        !event.target.closest(`.${styles.dropdownContent}`)) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    if (openDropdownId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openDropdownId]);
 
   const filteredCentros = centrosCusto.filter((centro) => {
     // Filtro por termo de busca
@@ -139,6 +191,21 @@ export default function CentrosCustoPage() {
     }
   });
 
+  // Lógica de paginação
+  const totalPages = Math.ceil(sortedCentros.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCentros = sortedCentros.slice(startIndex, startIndex + itemsPerPage);
+
+  // Cálculo das páginas visíveis
+  const maxVisiblePages = 5;
+  let paginaInicio = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let paginaFim = Math.min(totalPages, paginaInicio + maxVisiblePages - 1);
+  
+  // Ajusta o início se estivermos próximos ao fim
+  if (paginaFim - paginaInicio < maxVisiblePages - 1) {
+    paginaInicio = Math.max(1, paginaFim - maxVisiblePages + 1);
+  }
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -150,7 +217,7 @@ export default function CentrosCustoPage() {
 
   const handleSaveCentro = async (data) => {
     try {
-      const companyId = localStorage.getItem("empresaId");
+      const companyId = getCompanyId();
       const token = localStorage.getItem("token");
 
       if (!companyId || !token) {
@@ -161,7 +228,7 @@ export default function CentrosCustoPage() {
 
       console.log("📦 Salvando centro de custo:", data);
 
-      const response = await fetch(`${API}/centro-de-custo`, {
+      const response = await fetch(`${API}/financeiro/centro-de-custo`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -170,8 +237,8 @@ export default function CentrosCustoPage() {
         body: JSON.stringify({
           codigo: data.codigo,
           nome: data.nome,
-          situacao: data.situacao === "Ativo" ? 1 : 0,
-          company_id: Number(companyId),
+          situacao: data.situacao === "Ativo" ? "ativo" : "inativo",
+          empresa_id: Number(companyId),
         }),
       });
 
@@ -201,11 +268,11 @@ export default function CentrosCustoPage() {
         codigo: novoCentro.codigo ?? data.codigo ?? "",
         nome: novoCentro.nome ?? data.nome ?? "",
         situacao:
-          novoCentro.situacao === 1
+          novoCentro.situacao === "ativo"
             ? "Ativo"
-            : novoCentro.situacao === 0
-            ? "Inativo"
-            : data.situacao, // fallback se vier null
+            : novoCentro.situacao === "inativo"
+              ? "Inativo"
+              : data.situacao, // fallback se vier null
       };
 
       console.log('🔍 Centro formatado para adicionar:', centroFormatado);
@@ -216,7 +283,7 @@ export default function CentrosCustoPage() {
         console.log('🔍 Estado atualizado:', updated);
         return updated;
       });
-      
+
       setIsNovoModalOpen(false);
     } catch (error) {
       console.error("❌ Erro inesperado ao salvar centro de custo:", error);
@@ -228,7 +295,7 @@ export default function CentrosCustoPage() {
     if (!centroSelecionado) return;
 
     try {
-      const companyId = localStorage.getItem("empresaId");
+      const companyId = getCompanyId();
       const token = localStorage.getItem("token");
 
       if (!companyId || !token) {
@@ -240,7 +307,7 @@ export default function CentrosCustoPage() {
       console.log("📦 Editando centro de custo:", data);
 
       const response = await fetch(
-        `${API}/centro-de-custo/${centroSelecionado.id}`,
+        `${API}/financeiro/centro-de-custo/${centroSelecionado.id}`,
         {
           method: "PUT",
           headers: {
@@ -250,8 +317,8 @@ export default function CentrosCustoPage() {
           body: JSON.stringify({
             codigo: data.codigo,
             nome: data.nome,
-            situacao: data.situacao === "Ativo" ? 1 : 0,
-            company_id: Number(companyId),
+            situacao: data.situacao === "Ativo" ? "ativo" : "inativo",
+            empresa_id: Number(companyId),
           }),
         }
       );
@@ -278,11 +345,11 @@ export default function CentrosCustoPage() {
           centroEditado.codigo ?? data.codigo ?? centroSelecionado.codigo ?? "",
         nome: centroEditado.nome ?? data.nome ?? centroSelecionado.nome ?? "",
         situacao:
-          centroEditado.situacao === 1
+          centroEditado.situacao === "ativo"
             ? "Ativo"
-            : centroEditado.situacao === 0
-            ? "Inativo"
-            : centroSelecionado.situacao,
+            : centroEditado.situacao === "inativo"
+              ? "Inativo"
+              : centroSelecionado.situacao,
       };
 
       setCentrosCusto((prev) =>
@@ -307,7 +374,7 @@ export default function CentrosCustoPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const empresaId = localStorage.getItem("empresaId");
+      const empresaId = getCompanyId();
 
       if (!token) {
         console.error("❌ Token ausente!");
@@ -322,7 +389,7 @@ export default function CentrosCustoPage() {
       }
 
       const response = await fetch(
-        `${API}/centro-de-custo/${centroId}?company_id=${empresaId}`,
+        `${API}/financeiro/centro-de-custo/${centroId}?empresa_id=${empresaId}`,
         {
           method: "DELETE",
           headers: {
@@ -352,7 +419,7 @@ export default function CentrosCustoPage() {
 
   const handleToggleStatus = async (centro) => {
     try {
-      const companyId = localStorage.getItem("empresaId");
+      const companyId = getCompanyId();
       const token = localStorage.getItem("token");
 
       if (!companyId || !token) {
@@ -366,7 +433,7 @@ export default function CentrosCustoPage() {
         `📦 Alterando situação do centro ${centro.id} para: ${novaSituacao}`
       );
 
-      const response = await fetch(`${API}/centro-de-custo/${centro.id}`, {
+      const response = await fetch(`${API}/financeiro/centro-de-custo/${centro.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -375,8 +442,8 @@ export default function CentrosCustoPage() {
         body: JSON.stringify({
           codigo: centro.codigo,
           nome: centro.nome,
-          situacao: novaSituacao === "Ativo" ? 1 : 0,
-          company_id: Number(companyId),
+          situacao: novaSituacao === "Ativo" ? "ativo" : "inativo",
+          empresa_id: Number(companyId),
         }),
       });
 
@@ -405,11 +472,11 @@ export default function CentrosCustoPage() {
         codigo: centroAtualizado.codigo ?? centro.codigo,
         nome: centroAtualizado.nome ?? centro.nome,
         situacao:
-          centroAtualizado.situacao === 1
+          centroAtualizado.situacao === "ativo"
             ? "Ativo"
-            : centroAtualizado.situacao === 0
-            ? "Inativo"
-            : novaSituacao, // fallback se backend não devolver nada
+            : centroAtualizado.situacao === "inativo"
+              ? "Inativo"
+              : novaSituacao, // fallback se backend não devolver nada
       };
 
       setCentrosCusto((prev) =>
@@ -452,10 +519,7 @@ export default function CentrosCustoPage() {
       <PrincipalSidebar />
       {/* Header */}
       <div className={styles.centroCustoHeader}>
-        <div>
-          <h1 className={styles.centroCustoHeaderTitle}>Centros de custo</h1>
-          <p className={styles.centroCustoHeaderSubtitle}>Gerencie seus centros de custo</p>
-        </div>
+        <h1 className={styles.centroCustoHeaderTitle}>Centros de custo</h1>
         <div className={styles.centroCustoHeaderActions}>
           <Button
             size="sm"
@@ -466,6 +530,68 @@ export default function CentrosCustoPage() {
             Novo Centro de Custo
           </Button>
         </div>
+      </div>
+
+
+
+      {/* Stats Cards */}
+      <div className={styles.statsGrid}>
+        <Card
+          className={`${styles.statusCard} ${statusFilter === "Ativo" ? styles.statusCardAtivoSelected : styles.statusCard}`}
+          onClick={handleFilterAtivos}
+        >
+          {statusFilter === "Ativo" && (
+            <div className={styles.cardCheckIconWrap}>
+              <CheckCircle className={styles.iconAtivo} />
+            </div>
+          )}
+          <CardContent className={styles.cardContentPadded}>
+            <div className={styles.textCenter}>
+              <p className={styles.textMutedSmall}>Ativos</p>
+              <p className={`${styles.animatedNumber} ${styles.textAtivo}`}>
+                {stats.ativos}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`${styles.statusCard} ${statusFilter === "Inativo" ? styles.statusCardInativoSelected : styles.statusCard}`}
+          onClick={handleFilterInativos}
+        >
+          {statusFilter === "Inativo" && (
+            <div className={styles.cardCheckIconWrap}>
+              <CheckCircle className={styles.iconInativo} />
+            </div>
+          )}
+          <CardContent className={styles.cardContentPadded}>
+            <div className={styles.textCenter}>
+              <p className={styles.textMutedSmall}>Inativos</p>
+              <p className={`${styles.animatedNumber} ${styles.textInativo}`}>
+                {stats.inativos}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`${styles.statusCard} ${statusFilter === "Todos" ? styles.statusCardTodosSelected : styles.statusCardTodos}`}
+          onClick={handleFilterTodos}
+        >
+          {statusFilter === "Todos" && (
+            <div className={styles.cardCheckIconWrap}>
+              <CheckCircle className={styles.iconTodos} />
+            </div>
+          )}
+          <CardContent className={styles.cardContentPadded}>
+            <div className={styles.textCenter}>
+              <p className={styles.textMutedSmall}>Todos</p>
+              <p className={`${styles.animatedNumber} ${styles.textTodos}`}>
+                {stats.todos}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search */}
@@ -488,66 +614,6 @@ export default function CentrosCustoPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className={styles.statsGrid}>
-        <Card 
-          className={`${styles.statusCard} ${statusFilter === "Ativo" ? styles.statusCardAtivoSelected : styles.statusCard}`}
-          onClick={handleFilterAtivos}
-        >
-          {statusFilter === "Ativo" && (
-            <div className={styles.cardCheckIconWrap}>
-              <CheckCircle className={styles.iconAtivo} />
-            </div>
-          )}
-          <CardContent className={styles.cardContentPadded}>
-            <div className={styles.textCenter}>
-              <p className={styles.textMutedSmall}>Ativos</p>
-              <p className={`${styles.animatedNumber} ${styles.textAtivo}`}>
-                {stats.ativos}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className={`${styles.statusCard} ${statusFilter === "Inativo" ? styles.statusCardInativoSelected : styles.statusCard}`}
-          onClick={handleFilterInativos}
-        >
-          {statusFilter === "Inativo" && (
-            <div className={styles.cardCheckIconWrap}>
-              <CheckCircle className={styles.iconInativo} />
-            </div>
-          )}
-          <CardContent className={styles.cardContentPadded}>
-            <div className={styles.textCenter}>
-              <p className={styles.textMutedSmall}>Inativos</p>
-              <p className={`${styles.animatedNumber} ${styles.textInativo}`}>
-                {stats.inativos}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className={`${styles.statusCard} ${statusFilter === "Todos" ? styles.statusCardTodosSelected : styles.statusCardTodos}`}
-          onClick={handleFilterTodos}
-        >
-          {statusFilter === "Todos" && (
-            <div className={styles.cardCheckIconWrap}>
-              <CheckCircle className={styles.iconTodos} />
-            </div>
-          )}
-          <CardContent className={styles.cardContentPadded}>
-            <div className={styles.textCenter}>
-              <p className={styles.textMutedSmall}>Todos</p>
-              <p className={`${styles.animatedNumber} ${styles.textTodos}`}>
-                {stats.todos}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Filtro Ativo */}
       {statusFilter !== "Todos" && (
         <div className={styles.centroCustoFiltrosAtivosCard}>
@@ -568,130 +634,159 @@ export default function CentrosCustoPage() {
       )}
 
       {/* Table */}
-      <Card className={styles.tableCard}>
-        <CardContent className={styles.cardContentPadded}>
-          {loading ? (
-            <SpaceLoader 
-              size={80} 
-              label="Carregando centros de custo..." 
-              showText={true} 
-              minHeight={200}
-            />
-          ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr className={styles.tableHeadRow}>
-                    <th className={styles.tableHeadCell}>
-                      <button
-                        onClick={() => handleSort("codigo")}
-                        className={styles.tableHeadButton}
-                      >
-                        Código
-                        {getSortIcon("codigo")}
-                      </button>
-                    </th>
-                    <th className={styles.tableHeadCell}>
-                      <button
-                        onClick={() => handleSort("nome")}
-                        className={styles.tableHeadButton}
-                      >
-                        Nome
-                        {getSortIcon("nome")}
-                      </button>
-                    </th>
-                    <th className={styles.tableHeadCell}>
-                      <button
-                        onClick={() => handleSort("situacao")}
-                        className={styles.tableHeadButton}
-                      >
-                        Situação
-                        {getSortIcon("situacao")}
-                      </button>
-                    </th>
-                    <th className={styles.tableHeadCell}>
-                      Ações
-                    </th>
+      <div className={styles.tableCard}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr className={styles.tableHeadRow}>
+                <th className={styles.tableHeadCell}>
+                  <button
+                    onClick={() => handleSort("codigo")}
+                    className={styles.tableHeadButton}
+                  >
+                    Código
+                    {getSortIcon("codigo")}
+                  </button>
+                </th>
+                <th className={styles.tableHeadCell}>
+                  <button
+                    onClick={() => handleSort("nome")}
+                    className={styles.tableHeadButton}
+                  >
+                    Nome
+                    {getSortIcon("nome")}
+                  </button>
+                </th>
+                <th className={styles.tableHeadCell}>
+                  <button
+                    onClick={() => handleSort("situacao")}
+                    className={styles.tableHeadButton}
+                  >
+                    Situação
+                    {getSortIcon("situacao")}
+                  </button>
+                </th>
+                <th className={styles.tableHeadCell}>
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className={styles.tableEmpty}>
+                    <div className={styles.loadingWrap}>
+                      <SpaceLoader
+                        size={80}
+                        label="Carregando centros de custo..."
+                        showText={true}
+                        minHeight={200}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : sortedCentros.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className={styles.tableEmpty}>
+                    <div className={styles.loadingWrap}>
+                      <div className={styles.notFoundIcon}></div>
+                      <p className={styles.textMutedSmall}>
+                        {statusFilter !== "Todos"
+                          ? `Nenhum centro de custo ${statusFilter.toLowerCase()} encontrado`
+                          : "Nenhum centro de custo encontrado"}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedCentros.map((centro) => (
+                  <tr key={centro.id} className={styles.tableRow}>
+                    <td className={styles.tableCell}>{centro.codigo || "-"}</td>
+                    <td className={styles.tableCell}>{centro.nome}</td>
+                    <td className={styles.tableCell}>{getStatusBadge(centro.situacao)}</td>
+                    <td className={styles.tableCell}>
+                      <div className={styles.dropdownContainer}>
+                        <button
+                          className={styles.dropdownTrigger}
+                          onClick={(e) => handleDropdownToggle(centro.id, e)}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {sortedCentros.map((centro) => (
-                    <tr key={centro.id} className={styles.tableRow}>
-                      <td className={styles.tableCell}>{centro.codigo || "-"}</td>
-                      <td className={styles.tableCell}>{centro.nome}</td>
-                      <td className={styles.tableCell}>{getStatusBadge(centro.situacao)}</td>
-                      <td className={styles.tableCell}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={styles.dropdownTrigger}
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className={styles.dropdownContent}>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setCentroSelecionado(centro);
-                                setIsEditModalOpen(true);
-                              }}
-                              className={styles.dropdownItem}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setDeleteModal({
-                                isOpen: true,
-                                centro
-                              })}
-                              className={styles.dropdownItemDanger}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Excluir
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleToggleStatus(centro)}
-                              className={styles.dropdownItem}
-                            >
-                              {centro.situacao === "Ativo" ? (
-                                <>
-                                  <XCircle className="w-4 h-4 mr-2" />
-                                  Inativar
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Ativar
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Pagination */}
+        {sortedCentros.length > 0 && (
+          <div className={styles.pagination}>
+            <span className={styles.paginationInfo}>
+              Mostrando {(currentPage - 1) * itemsPerPage + 1}
+              {" - "}
+              {Math.min(currentPage * itemsPerPage, sortedCentros.length)} de {sortedCentros.length}
+            </span>
+            <div className={styles.paginationButtons}>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className={styles.paginationSelect}
+                style={{ marginRight: 16 }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                aria-label="Primeira página"
+              >
+                {"<<"}
+              </button>
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                aria-label="Página anterior"
+              >
+                {"<"}
+              </button>
+              {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                aria-label="Próxima página"
+              >
+                {">"}
+              </button>
+              <button
+                className={styles.paginationArrow}
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                aria-label="Última página"
+              >
+                {">>"}
+              </button>
             </div>
-          )}
-
-          {!loading && sortedCentros.length === 0 && (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyStateContent}>
-                <FolderX className={styles.emptyStateIcon} />
-                <p className={styles.emptyStateText}>
-                  {statusFilter !== "Todos"
-                    ? `Nenhum centro de custo ${statusFilter.toLowerCase()} encontrado`
-                    : "Nenhum centro de custo encontrado"}
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
 
       {/* Novo Centro de Custo Modal */}
       <NovoCentroCustoModal
@@ -728,8 +823,8 @@ export default function CentrosCustoPage() {
           </div>
 
           <div className={styles.centroCustoModalFooter}>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setDeleteModal({ isOpen: false })}
               className={styles.centroCustoModalBtnCancelar}
             >
@@ -744,6 +839,73 @@ export default function CentrosCustoPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Dropdown Global */}
+      {openDropdownId && (
+        <div
+          className={styles.dropdownContent}
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left
+          }}
+        >
+          <button
+            className={styles.dropdownItem}
+            onClick={() => {
+              const centro = sortedCentros.find(c => c.id === openDropdownId);
+              if (centro) {
+                setCentroSelecionado(centro);
+                setIsEditModalOpen(true);
+                handleCloseDropdown();
+              }
+            }}
+          >
+            <Edit className="w-4 h-4" />
+            Editar
+          </button>
+          <button
+            className={styles.dropdownItemDanger}
+            onClick={() => {
+              const centro = sortedCentros.find(c => c.id === openDropdownId);
+              if (centro) {
+                setDeleteModal({
+                  isOpen: true,
+                  centro
+                });
+                handleCloseDropdown();
+              }
+            }}
+          >
+            <Trash2 className="w-4 h-4" />
+            Excluir
+          </button>
+          <button
+            className={styles.dropdownItem}
+            onClick={() => {
+              const centro = sortedCentros.find(c => c.id === openDropdownId);
+              if (centro) {
+                handleToggleStatus(centro);
+                handleCloseDropdown();
+              }
+            }}
+          >
+            {(() => {
+              const centro = sortedCentros.find(c => c.id === openDropdownId);
+              return centro?.situacao === "Ativo" ? (
+                <>
+                  <XCircle className="w-4 h-4" />
+                  Inativar
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Ativar
+                </>
+              );
+            })()}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

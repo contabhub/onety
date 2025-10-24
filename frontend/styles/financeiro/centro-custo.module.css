@@ -132,15 +132,11 @@
 
 /* ===== TABELA ===== */
 .tableCard {
-  background: transparent;
-  border: 1px solid var(--onity-color-primary);
-  border-radius: var(--onity-radius-m);
-  transition: all 120ms ease;
-}
-
-.tableCard:hover {
-  border-color: var(--onity-color-border);
-  box-shadow: var(--onity-elev-medium);
+  background: var(--onity-color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+  overflow: hidden;
 }
 
 .tableWrap {
@@ -153,15 +149,28 @@
 }
 
 .tableHeadRow {
+  background-color: var(--onity-color-bg);
   border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
 }
 
 .tableHeadCell {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
   text-align: left;
-  padding: var(--onity-space-s);
-  font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-type-body-weight);
-  color: var(--onity-icon-secondary);
+  font-size: 15px;
+}
+
+.tableHeadCell:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.tableHeadCell:last-child {
+  border-radius: 0 8px 0 0;
 }
 
 .tableHeadButton {
@@ -170,9 +179,9 @@
   gap: 4px;
   background: none;
   border: none;
-  color: var(--onity-icon-secondary);
-  font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 120ms ease;
   padding: 4px 8px;
@@ -180,7 +189,7 @@
 }
 
 .tableHeadButton:hover {
-  color: var(--onity-color-text);
+  color: var(--onity-color-primary);
   background: var(--onity-color-bg);
 }
 
@@ -189,23 +198,43 @@
   transition: all 120ms ease;
 }
 
+.tableRow:not(:last-child) {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
 .tableRow:hover {
   background: var(--onity-color-bg);
 }
 
 .tableCell {
-  padding: var(--onity-space-s);
-  font-size: var(--onity-type-body-size);
+  padding: 16px 24px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 15px;
   color: var(--onity-color-text);
 }
 
 /* ===== DROPDOWN ===== */
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
 .dropdownTrigger {
   background: transparent;
   border: 1px solid var(--onity-color-border);
   color: var(--onity-icon-secondary);
   border-radius: var(--onity-radius-xs);
   transition: all 120ms ease;
+  padding: var(--onity-space-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dropdownTrigger:hover {
@@ -213,20 +242,52 @@
 }
 
 .dropdownContent {
+  position: fixed;
   width: 192px;
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-high);
+  z-index: 9999;
+  padding: var(--onity-space-xs) 0;
 }
 
 .dropdownItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background: transparent;
+  border: none;
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  gap: var(--onity-space-s);
+}
+
+.dropdownItem:hover {
+  background: var(--onity-color-bg);
 }
 
 .dropdownItemDanger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background: transparent;
+  border: none;
   color: var(--onity-color-error);
+  font-size: var(--onity-type-body-size);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  gap: var(--onity-space-s);
+}
+
+.dropdownItemDanger:hover {
+  background: var(--onity-color-bg);
 }
 
 /* ===== FILTROS ATIVOS ===== */
@@ -274,26 +335,33 @@
 }
 
 /* ===== BADGES ===== */
-.centroCustoBadgeAtivo {
-  background: color-mix(in srgb, var(--onity-color-success) 12%, var(--onity-color-surface));
-  color: var(--onity-color-success);
-  border: 1px solid color-mix(in srgb, var(--onity-color-success) 30%, var(--onity-color-border));
-  border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-xs) var(--onity-space-s);
-  font-size: var(--onity-type-caption-size);
+.centroCustoBadgeAtivo,
+.centroCustoBadgeInativo {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-block;
+  line-height: normal;
+  vertical-align: middle;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  border: 1px solid var(--text-color);
+}
+
+.centroCustoBadgeAtivo {
+  --bg-color: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
+  --text-color: var(--onity-color-success);
 }
 
 .centroCustoBadgeInativo {
-  background: color-mix(in srgb, var(--onity-color-error) 12%, var(--onity-color-surface));
-  color: var(--onity-color-error);
-  border: 1px solid color-mix(in srgb, var(--onity-color-error) 30%, var(--onity-color-border));
-  border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-xs) var(--onity-space-s);
-  font-size: var(--onity-type-caption-size);
-  display: inline-flex;
-  align-items: center;
+  --bg-color: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  --text-color: var(--onity-color-error);
 }
 
 /* ===== MODAL DE CONFIRMAÇÃO ===== */
@@ -386,19 +454,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: var(--onity-color-surface);
+  padding: var(--onity-space-l);
+  border-radius: var(--onity-radius-m);
+  margin-bottom: var(--onity-space-l);
+  border: 1px solid var(--onity-color-border);
 }
 
 .centroCustoHeaderTitle {
-  font-size: var(--onity-type-h2-size);
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--onity-color-text);
   margin: 0;
 }
 
 .centroCustoHeaderSubtitle {
+  font-size: var(--onity-type-body-size);
   color: var(--onity-icon-secondary);
   margin-top: var(--onity-space-xs);
-  margin-bottom: 0;
 }
 
 .centroCustoHeaderActions {
@@ -589,7 +662,7 @@
 
 /* Filtros */
 .centroCustoFiltersCard {
-  background: transparent;
+  background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -832,26 +905,6 @@
   color: var(--onity-icon-secondary);
 }
 
-/* Badges de situação */
-.centroCustoBadgeAtivo {
-  background-color: var(--onity-success-20);
-  color: var(--onity-color-success);
-  border: 1px solid var(--onity-success-30);
-  border-radius: var(--onity-radius-xs);
-  padding: 4px 8px;
-  font-size: var(--onity-type-caption-size);
-  font-weight: 500;
-}
-
-.centroCustoBadgeInativo {
-  background-color: var(--onity-error-20);
-  color: var(--onity-color-error);
-  border: 1px solid var(--onity-error-30);
-  border-radius: var(--onity-radius-xs);
-  padding: 4px 8px;
-  font-size: var(--onity-type-caption-size);
-  font-weight: 500;
-}
 
 /* Dropdown de ações */
 .centroCustoDropdown {
@@ -1064,4 +1117,92 @@
     font-size: var(--onity-type-caption-size);
     padding: 6px 10px;
   }
+}
+
+/* ===== PAGINAÇÃO ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+  padding: 10px 10px 10px 10px;
+}
+
+.paginationInfo {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.paginationSelect {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  min-height: 40px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.paginationSelect:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.paginationSelect:focus {
+  border-color: var(--onity-color-primary);
+  outline: none;
+}
+
+.paginationArrow {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationArrow:hover:not(:disabled) {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.paginationArrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButtonActive {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationButtonActive:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
 }

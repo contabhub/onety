@@ -1,30 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/financeiro/card';
 import { Button } from "../../components/financeiro/botao";
 import { Input } from "../../components/financeiro/input";
 import { Badge } from "../../components/financeiro/badge";
 import { 
   Plus, 
   Search, 
-  Download, 
-  Upload,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   MoreVertical,
   Package,
-  Wrench
+  Wrench,
+  X
 } from 'lucide-react';
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/financeiro/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/financeiro/dropdown-menu';
 import NovoProdutoServicoDrawer from '../../components/financeiro/NovoProdutoServicoDrawer';
 import { useProdutos } from '../../hooks/financeiro/useProdutos';
 import { useServicos } from '../../hooks/financeiro/useServicos';
 import { toast } from 'react-toastify';
-import styles from '../../styles/financeiro/cadastro-clientes.module.css';
+import styles from '../../styles/financeiro/produtos.module.css';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 
 export default function ProdutosServicosPage() {
@@ -36,16 +30,41 @@ export default function ProdutosServicosPage() {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const [isNovoItemOpen, setIsNovoItemOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [empresaId, setEmpresaId] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [itemToEdit, setItemToEdit] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const [isUpdatingStatusMultiple, setIsUpdatingStatusMultiple] = useState(false);
 
+  // Carregar dados do usuário do localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('userData');
+      const parsed = raw ? JSON.parse(raw) : null;
+      setUserData(parsed);
+      
+      if (parsed) {
+        const empresaIdFromUserData = parsed.EmpresaId || parsed.empresa?.id;
+        setEmpresaId(empresaIdFromUserData);
+        console.log('🏢 EmpresaId carregado:', empresaIdFromUserData);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar userData:', error);
+    }
+  }, []);
+
   // Usar os hooks para buscar produtos e serviços da API
   const { produtos, isLoading: produtosLoading, error: produtosError, fetchProdutos, alterarStatus: alterarStatusProduto } = useProdutos({
-    status: statusFilter === 'Todos' ? undefined : statusFilter.toLowerCase()
+    status: statusFilter === 'Todos' ? undefined : statusFilter.toLowerCase(),
+    empresaId: empresaId
   });
 
   const { servicos, isLoading: servicosLoading, error: servicosError, fetchServicos, alterarStatus: alterarStatusServico } = useServicos({
-    status: statusFilter === 'Todos' ? undefined : statusFilter.toLowerCase()
+    status: statusFilter === 'Todos' ? undefined : statusFilter.toLowerCase(),
+    empresaId: empresaId
   });
 
   const isLoading = produtosLoading || servicosLoading;
@@ -146,6 +165,21 @@ export default function ProdutosServicosPage() {
     setSelectAll(false);
   }, [currentPage, searchTerm, statusFilter, tipoFilter]);
 
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(`.${styles.dropdownContainer}`) && 
+          !event.target.closest(`.${styles.dropdownContent}`)) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    if (openDropdownId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openDropdownId]);
+
   const clearSelection = () => {
     setSelectedItems(new Set());
     setSelectAll(false);
@@ -153,16 +187,16 @@ export default function ProdutosServicosPage() {
 
   const getStatusBadge = (status) => {
     return status.toLowerCase() === 'ativo' ? (
-      <Badge className="bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30">Ativo</Badge>
+      <Badge className={styles.badgeActive}>Ativo</Badge>
     ) : (
-      <Badge className="bg-[#B0AFC1]/20 text-[#B0AFC1] border-[#B0AFC1]/30">Inativo</Badge>
+      <Badge className={styles.badgeInactive}>Inativo</Badge>
     );
   };
 
   const getTipoBadge = (item) => {
     const isProduto = item.itemType === 'produto';
     return (
-      <Badge className={`${isProduto ? 'bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30' : 'bg-[#9C27B0]/20 text-[#9C27B0] border-[#9C27B0]/30'}`}>
+      <Badge className={isProduto ? styles.badgeProduto : styles.badgeServico}>
         {isProduto ? 'Produto' : 'Serviço'}
       </Badge>
     );
@@ -194,7 +228,7 @@ export default function ProdutosServicosPage() {
       }
 
       // Usar a rota correta da API para alterar status
-      const response = await fetch(`${API}/produtos-servicos/${item.id}/status`, {
+      const response = await fetch(`${API}/financeiro/produtos-servicos/${item.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -244,7 +278,7 @@ export default function ProdutosServicosPage() {
 
       // Alterar status de todos os itens selecionados usando a rota correta
       const promises = Array.from(selectedItems).map(async (id) => {
-        const response = await fetch(`${API}/produtos-servicos/${id}/status`, {
+        const response = await fetch(`${API}/financeiro/produtos-servicos/${id}/status`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -284,6 +318,108 @@ export default function ProdutosServicosPage() {
     window.location.reload();
   };
 
+  // Função para editar item individual
+  const handleEditItem = (item) => {
+    // Definir o item para edição e abrir o modal
+    setItemToEdit(item);
+    setIsEditModalOpen(true);
+  };
+
+  // Função para editar itens selecionados
+  const handleEditSelected = () => {
+    if (selectedItems.size === 0) {
+      toast.warning("Selecione pelo menos um item para editar");
+      return;
+    }
+
+    if (selectedItems.size > 1) {
+      toast.warning("Por enquanto, é possível editar apenas um item por vez");
+      return;
+    }
+
+    // Pegar o primeiro item selecionado
+    const selectedId = Array.from(selectedItems)[0];
+    const selectedItem = itensUnificados.find(item => item.id === selectedId);
+
+    if (!selectedItem) {
+      toast.error("Item selecionado não encontrado");
+      return;
+    }
+
+    // Definir o item para edição e abrir o modal
+    setItemToEdit(selectedItem);
+    setIsEditModalOpen(true);
+  };
+
+  // Função para fechar o modal de edição
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setItemToEdit(null);
+  };
+
+  // Função para controlar dropdown individual
+  const handleDropdownToggle = (itemId, event) => {
+    if (openDropdownId === itemId) {
+      setOpenDropdownId(null);
+      return;
+    }
+
+    // Calcular posição do dropdown
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    
+    // Definir posição do dropdown
+    setDropdownPosition({
+      top: rect.bottom + window.scrollY + 4,
+      left: rect.right - 192 + window.scrollX // 192px é a largura do dropdown
+    });
+    
+    setOpenDropdownId(itemId);
+  };
+
+  // Função para fechar dropdown quando clicar fora
+  const handleCloseDropdown = () => {
+    setOpenDropdownId(null);
+  };
+
+  // Função para salvar as alterações do item
+  const handleSaveEdit = async (updatedData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const API = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!token || !API) {
+        toast.error("Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      const response = await fetch(`${API}/financeiro/produtos-servicos/${itemToEdit.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao atualizar item");
+      }
+
+      const result = await response.json();
+      
+      // Recarregar dados para refletir a mudança
+      await fetchProdutos();
+      await fetchServicos();
+      
+      toast.success(result.message || "Item atualizado com sucesso");
+      handleCloseEditModal();
+    } catch (error) {
+      console.error('Erro ao atualizar item:', error);
+      toast.error('Erro ao atualizar item');
+    }
+  };
+
   // Componente de Loading
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center py-12 space-y-4">
@@ -293,11 +429,25 @@ export default function ProdutosServicosPage() {
     </div>
   );
 
-  // Mostrar loading se estiver carregando
-  if (isLoading) {
+  // Mostrar loading se estiver carregando ou se não há empresaId
+  if (isLoading || !empresaId) {
     return (
       <div className={styles.page}>
         <LoadingState />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não conseguir carregar dados da empresa
+  if (!userData) {
+    return (
+      <div className={styles.page}>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">Erro de Autenticação</h2>
+            <p className="text-gray-500">Não foi possível carregar os dados do usuário. Faça login novamente.</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -311,7 +461,6 @@ export default function ProdutosServicosPage() {
           <h1 className={styles.headerTitle}>
             Produtos e Serviços
           </h1>
-          <p className={styles.headerSubtitle}>Gerencie seus produtos e serviços</p>
         </div>
         <div className={styles.headerActions}>
           <Button 
@@ -343,16 +492,15 @@ export default function ProdutosServicosPage() {
             </div>
             <div>
               <label className={styles.labelSmall}>Tipo</label>
-              <Select value={tipoFilter} onValueChange={(value) => setTipoFilter(value)}>
-                <SelectTrigger className={styles.selectTriggerSmall}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
-                  <SelectItem value="Todos" className={styles.selectItem}>Todos os tipos</SelectItem>
-                  <SelectItem value="Produtos" className={styles.selectItem}>Apenas produtos</SelectItem>
-                  <SelectItem value="Serviços" className={styles.selectItem}>Apenas serviços</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                value={tipoFilter}
+                onChange={(e) => setTipoFilter(e.target.value)}
+                className={styles.selectTriggerSmall}
+              >
+                <option value="Todos">Todos os tipos</option>
+                <option value="Produtos">Apenas produtos</option>
+                <option value="Serviços">Apenas serviços</option>
+              </select>
             </div>
           </div>
         </div>
@@ -372,7 +520,6 @@ export default function ProdutosServicosPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className={styles.dropdownContent}>
-                <DropdownMenuItem className={styles.dropdownItem}>Editar selecionados</DropdownMenuItem>
                 <DropdownMenuItem className={styles.dropdownItem} onClick={() => handleBatchStatusChange('ativo')}>
                   Ativar selecionados
                 </DropdownMenuItem>
@@ -452,11 +599,6 @@ export default function ProdutosServicosPage() {
                     </td>
                     <td className={styles.tableCell}>
                       <div className="flex items-center gap-2">
-                        {item.itemType === 'produto' ? (
-                          <Package className="w-4 h-4 text-[#26a6eb]" />
-                        ) : (
-                          <Wrench className="w-4 h-4 text-[#9C27B0]" />
-                        )}
                         <span className={styles.clienteName}>{item.nome}</span>
                       </div>
                     </td>
@@ -464,34 +606,27 @@ export default function ProdutosServicosPage() {
                       {getTipoBadge(item)}
                     </td>
                     <td className={styles.tableCell}>
-                      <Badge className={styles.badgeActive}>
+                      <Badge className={styles.badgeCategoria}>
                         {item.tipo}
                       </Badge>
                     </td>
                     <td className={styles.tableCell}>
                       <button
                         onClick={() => handleStatusChange(item)}
-                        className="hover:opacity-80 transition-opacity"
+                        className={styles.statusButton}
                       >
                         {getStatusBadge(item.status)}
                       </button>
                     </td>
                     <td className={styles.tableCell}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm" className={styles.dropdownTrigger}>
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className={styles.dropdownContent}>
-                          <DropdownMenuItem 
-                            className={styles.dropdownItem}
-                            onClick={() => handleStatusChange(item)}
-                          >
-                            {item.status === 'Ativo' ? 'Desativar' : 'Ativar'}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className={styles.dropdownContainer}>
+                        <button
+                          className={styles.dropdownTrigger}
+                          onClick={(e) => handleDropdownToggle(item.id, e)}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -573,6 +708,129 @@ export default function ProdutosServicosPage() {
         onClose={() => setIsNovoItemOpen(false)}
         onSuccess={handleNovoItemSuccess}
       />
+
+      {/* Dropdown Global */}
+      {openDropdownId && (
+        <div 
+          className={styles.dropdownContent}
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left
+          }}
+        >
+          <button
+            className={styles.dropdownItem}
+            onClick={() => {
+              const item = itensUnificados.find(i => i.id === openDropdownId);
+              if (item) {
+                handleEditItem(item);
+                handleCloseDropdown();
+              }
+            }}
+          >
+            Editar
+          </button>
+          <button
+            className={styles.dropdownItem}
+            onClick={() => {
+              const item = itensUnificados.find(i => i.id === openDropdownId);
+              if (item) {
+                handleStatusChange(item);
+                handleCloseDropdown();
+              }
+            }}
+          >
+            {(() => {
+              const item = itensUnificados.find(i => i.id === openDropdownId);
+              return item?.status === 'Ativo' ? 'Desativar' : 'Ativar';
+            })()}
+          </button>
+        </div>
+      )}
+
+      {/* Modal de Edição */}
+      {isEditModalOpen && itemToEdit && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContainer}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Editar Item</h3>
+              <button
+                onClick={handleCloseEditModal}
+                className={styles.modalCloseButton}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Nome
+                </label>
+                <input
+                  type="text"
+                  defaultValue={itemToEdit.nome}
+                  className={styles.formInput}
+                  id="edit-nome"
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Tipo
+                </label>
+                <select
+                  defaultValue={itemToEdit.itemType === 'produto' ? 'produto' : 'servico'}
+                  className={styles.formInput}
+                  id="edit-tipo"
+                >
+                  <option value="produto">Produto</option>
+                  <option value="servico">Serviço</option>
+                </select>
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Status
+                </label>
+                <select
+                  defaultValue={itemToEdit.status.toLowerCase()}
+                  className={styles.formInput}
+                  id="edit-status"
+                >
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className={styles.modalActions}>
+              <button
+                onClick={handleCloseEditModal}
+                className={styles.modalCancelButton}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  const nome = document.getElementById('edit-nome').value;
+                  const tipo = document.getElementById('edit-tipo').value;
+                  const status = document.getElementById('edit-status').value;
+                  
+                  handleSaveEdit({
+                    nome: nome.trim(),
+                    tipo: tipo
+                  });
+                }}
+                className={styles.modalSaveButton}
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PrincipalSidebar />
     </div>
   );

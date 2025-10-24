@@ -23,7 +23,8 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
         nome: centro.nome || '',
         situacao: centro.situacao || 'Ativo'
       });
-    } else {
+    } else if (!isEditing) {
+      // Reset apenas quando não está editando
       setFormData({
         codigo: '',
         nome: '',
@@ -34,19 +35,16 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
 
   const handleSave = () => {
     if (!formData.nome.trim()) {
-      alert('O nome é obrigatório');
+      // Usar toast em vez de alert para consistência
+      console.error('Nome é obrigatório');
       return;
     }
 
+    // Chamar onSave com os dados formatados corretamente
     onSave(formData);
-    onClose();
     
-    // Reset form
-    setFormData({
-      codigo: '',
-      nome: '',
-      situacao: 'Ativo'
-    });
+    // Não fechar automaticamente - deixar o componente pai controlar
+    // onClose será chamado após sucesso na requisição
   };
 
   const handleInputChange = (field, value) => {
@@ -58,7 +56,7 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
 
   const handleClose = () => {
     onClose();
-    // Reset form
+    // Reset form apenas quando fechando
     setFormData({
       codigo: '',
       nome: '',
@@ -86,7 +84,7 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
                   id="codigo"
                   value={formData.codigo}
                   onChange={(e) => handleInputChange('codigo', e.target.value)}
-                  placeholder="Digite o código"
+                  placeholder="Digite o código (opcional)"
                   className={styles.input}
                 />
               </div>
@@ -108,6 +106,7 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
               <div className={styles.fieldContainer}>
                 <Label htmlFor="situacao" className={styles.label}>Situação</Label>
                 <select 
+                  id="situacao"
                   value={formData.situacao} 
                   onChange={(e) => handleInputChange('situacao', e.target.value)}
                   className={styles.select}
