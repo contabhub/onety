@@ -473,16 +473,16 @@ export default function ContratosPage() {
 
   // Componente de Skeleton para Stats Cards
   const StatsCardSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className={styles.statsGrid}>
       {[1, 2, 3, 4].map((index) => (
         <Card 
           key={index}
-          className="bg-[#1B1229]/50 backdrop-blur-sm border border-[#673AB7]/20 animate-pulse"
+          className={styles.skeletonCard}
         >
-          <CardContent className="pt-6">
-            <div className="text-center space-y-3">
-              <div className="h-4 bg-[#673AB7]/20 rounded w-16 mx-auto"></div>
-              <div className="h-8 bg-[#673AB7]/20 rounded w-12 mx-auto"></div>
+          <CardContent className={styles.skeletonCardContent}>
+            <div className={styles.skeletonInner}>
+              <div className={styles.skeletonLineSmall}></div>
+              <div className={styles.skeletonLineLarge}></div>
             </div>
           </CardContent>
         </Card>

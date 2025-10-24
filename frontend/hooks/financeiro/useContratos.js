@@ -10,7 +10,10 @@ export const useContratos = () => {
 
   // Buscar próximo número de contrato automaticamente
   const buscarProximoNumeroContrato = useCallback(async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token || !API) {
@@ -19,7 +22,7 @@ export const useContratos = () => {
 
     try {
       // Buscar contratos da empresa
-      const response = await fetch(`${API}/contratos?company_id=${empresaId}`, {
+      const response = await fetch(`${API}/financeiro/contratos?company_id=${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -67,7 +70,10 @@ export const useContratos = () => {
 
   // Buscar contratos (usando a rota específica de contratos)
   const buscarContratos = useCallback(async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token || !API) {
@@ -80,7 +86,7 @@ export const useContratos = () => {
       setError(null);
 
       // Usar a rota específica de contratos
-      const response = await fetch(`${API}/contratos?company_id=${empresaId}`, {
+      const response = await fetch(`${API}/financeiro/contratos?company_id=${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -115,7 +121,7 @@ export const useContratos = () => {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`${API}/recorrencia-vendas-contratos`, {
+      const response = await fetch(`${API}/financeiro/recorrencia-vendas-contratos`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -151,7 +157,7 @@ export const useContratos = () => {
       console.log("Dados sendo enviados para criar contrato:", dados);
 
       // Usar a rota específica de contratos
-      const response = await fetch(`${API}/contratos`, {
+      const response = await fetch(`${API}/financeiro/contratos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +189,7 @@ export const useContratos = () => {
           status: dados.recorrencia.status
         };
 
-        const responseRecorrencia = await fetch(`${API}/recorrencia-vendas-contratos`, {
+        const responseRecorrencia = await fetch(`${API}/financeiro/recorrencia-vendas-contratos`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -229,7 +235,7 @@ export const useContratos = () => {
 
       console.log(`🔄 Atualizando contrato ${id} com dados:`, dados);
 
-      const response = await fetch(`${API}/contratos/${id}`, {
+      const response = await fetch(`${API}/financeiro/contratos/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -275,7 +281,7 @@ export const useContratos = () => {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`${API}/contratos/${id}`, {
+      const response = await fetch(`${API}/financeiro/contratos/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1150,7 +1150,9 @@ export default function ContasAReceber() {
 
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
+      const userData = localStorage.getItem("userData");
+      const user = userData ? JSON.parse(userData) : null;
+      const userId = user?.id || null;
 
       if (!token) {
         toast.error("Token não encontrado. Faça login novamente.");

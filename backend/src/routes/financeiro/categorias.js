@@ -8,7 +8,7 @@ router.post("/", verifyToken, async (req, res) => {
   const { nome, tipo_id, ordem, padrao = 0 } = req.body;
   try {
     const [result] = await pool.query(
-      `INSERT INTO categorias (nome, tipo_id, ordem, padrao) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO straton_categorias (nome, tipo_id, ordem, padrao) VALUES (?, ?, ?, ?)`,
       [nome, tipo_id, ordem || 0, padrao]
     );
     res.status(201).json({ id: result.insertId, message: "Categoria criada com sucesso." });
@@ -22,7 +22,7 @@ router.post("/", verifyToken, async (req, res) => {
 // 🔹 Listar todas as categorias
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM categorias ORDER BY criado_em DESC`);
+    const [rows] = await pool.query(`SELECT * FROM straton_categorias ORDER BY criado_em DESC`);
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar categorias:", err);
@@ -34,7 +34,7 @@ router.get("/", verifyToken, async (req, res) => {
 router.get("/tipo/:tipoId", verifyToken, async (req, res) => {
   const { tipoId } = req.params;
   try {
-    const [rows] = await pool.query(`SELECT * FROM categorias WHERE tipo_id = ?`, [tipoId]);
+    const [rows] = await pool.query(`SELECT * FROM straton_categorias WHERE tipo_id = ?`, [tipoId]);
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar categorias por tipo:", err);
@@ -48,7 +48,7 @@ router.put("/:id", verifyToken, async (req, res) => {
   const { nome, tipo_id, ordem } = req.body;
   try {
     const [result] = await pool.query(
-      `UPDATE categorias SET nome = ?, tipo_id = ?, ordem = ? WHERE id = ?`,
+      `UPDATE straton_categorias SET nome = ?, tipo_id = ?, ordem = ? WHERE id = ?`,
       [nome, tipo_id, ordem || 0, id]
     );
     if (result.affectedRows === 0) {
@@ -68,7 +68,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
   try {
     // Verifica se a categoria é padrão
-    const [check] = await pool.query(`SELECT padrao FROM categorias WHERE id = ?`, [id]);
+    const [check] = await pool.query(`SELECT padrao FROM straton_categorias WHERE id = ?`, [id]);
 
     if (check.length === 0) {
       return res.status(404).json({ error: "Categoria não encontrada." });
@@ -78,7 +78,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Categoria padrão não pode ser excluída." });
     }
 
-    const [result] = await pool.query(`DELETE FROM categorias WHERE id = ?`, [id]);
+    const [result] = await pool.query(`DELETE FROM straton_categorias WHERE id = ?`, [id]);
 
     res.json({ message: "Categoria deletada com sucesso." });
   } catch (err) {
@@ -102,7 +102,7 @@ router.put("/reordenar", verifyToken, async (req, res) => {
 
     for (const item of ordenacao) {
       await connection.query(
-        `UPDATE categorias SET ordem = ? WHERE id = ?`,
+        `UPDATE straton_categorias SET ordem = ? WHERE id = ?`,
         [item.ordem, item.id]
       );
     }

@@ -105,8 +105,8 @@
 
 .statusCard {
   background: transparent;
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-m);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
   transition: all 120ms ease;
   cursor: pointer;
   position: relative;
@@ -124,7 +124,7 @@
 }
 
 .statusCardInativoSelected {
-  border-color: var(--onity-color-warning);
+  border-color: var(--onity-color-error);
 }
 
 .statusCardCanceladoSelected {
@@ -148,7 +148,7 @@
 }
 
 .iconInativo {
-  color: var(--onity-color-warning);
+  color: var(--onity-color-error);
   width: 20px;
   height: 20px;
 }
@@ -170,8 +170,8 @@
 }
 
 .textMutedSmall {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 500;
   color: var(--onity-icon-secondary);
 }
 
@@ -180,7 +180,7 @@
 }
 
 .textInativo {
-  color: var(--onity-color-warning);
+  color: var(--onity-color-error);
 }
 
 .textCancelado {
@@ -198,60 +198,63 @@
 }
 
 .animatedNumber {
-  font-size: var(--onity-type-heading-size);
-  font-weight: var(--onity-type-heading-weight);
+  font-size: 32px;
+  font-weight: 600;
 }
 
 /* ===== SKELETON LOADING ===== */
 .skeletonCard {
-  background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-m);
-  animation: pulse 1.6s ease-in-out infinite;
+  background: rgba(27, 18, 41, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(103, 58, 183, 0.2);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .skeletonCardContent {
-  padding: var(--onity-space-l);
+  padding-top: 24px;
 }
 
 .skeletonInner {
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: var(--onity-space-s);
+  gap: 12px;
 }
 
 .skeletonLineSmall {
   height: 16px;
+  background: rgba(103, 58, 183, 0.2);
+  border-radius: 4px;
   width: 64px;
   margin: 0 auto;
-  background: var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
 }
 
 .skeletonLineLarge {
   height: 32px;
+  background: rgba(103, 58, 183, 0.2);
+  border-radius: 4px;
   width: 48px;
   margin: 0 auto;
-  background: var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
 }
 
 @keyframes pulse {
   0%, 100% {
-    opacity: 0.6;
+    opacity: 1;
   }
   50% {
-    opacity: 1;
+    opacity: .5;
   }
 }
 
 /* ===== FILTROS ===== */
 .filtersCard {
   background: transparent;
-  border: 1px solid var(--onity-color-primary);
-  border-radius: var(--onity-radius-m);
+  border: 2px solid var(--onity-color-border);
+  border-radius: 10px;
   transition: all 120ms ease;
+  padding: 40px 26px;
+  box-shadow: none;
+  margin-bottom: 20px;
 }
 
 .filtersCard:hover {
@@ -335,11 +338,12 @@
 }
 
 .searchInput {
-  padding: 2px 2px 2px 24px;
-  width: 90%;
+  padding: 0px 2px 2px 30px;
+  width: 97%;
+  max-height: 35px;
   background: transparent;
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
   transition: all 120ms ease;
@@ -490,9 +494,12 @@
 /* ===== TABELA ===== */
 .tableCard {
   background: transparent;
-  border: 1px solid var(--onity-color-primary);
-  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
   transition: all 120ms ease;
+  box-shadow: var(--onity-elev-med);
+  overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .tableCard:hover {
@@ -510,21 +517,29 @@
 }
 
 .tableHeadRow {
+  background-color: var(--onity-color-bg);
   border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
 }
 
 .tableHeadCell {
+  background-color: var(--onity-color-bg);
   text-align: left;
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-type-body-weight);
-  color: var(--onity-icon-secondary);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
 }
 
 .tableHeadCellCheckbox {
+  background-color: var(--onity-color-bg);
   text-align: left;
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   width: 48px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
 }
 
 .sortableHeader {
@@ -570,13 +585,13 @@
 }
 
 .tableCell {
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   font-size: var(--onity-type-body-size);
   color: var(--onity-color-text);
 }
 
 .tableCellCheckbox {
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   width: 48px;
 }
 
@@ -596,23 +611,23 @@
 }
 
 .clienteName {
-  padding: var(--onity-space-s);
+  padding: 16px 24px;
   font-size: var(--onity-type-body-size);
   font-weight: var(--onity-type-body-weight);
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   cursor: pointer;
   transition: all 120ms ease;
 }
 
 .clienteName:hover {
-  color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary);
 }
 
 /* ===== BADGES ===== */
 .badgeActive {
-  background: color-mix(in srgb, var(--onity-color-info) 12%, var(--onity-color-surface));
-  color: var(--onity-color-info);
-  border: 1px solid color-mix(in srgb, var(--onity-color-info) 30%, var(--onity-color-border));
+  background: color-mix(in srgb, var(--onity-color-success) 12%, var(--onity-color-surface));
+  color: var(--onity-color-success);
+  border: 1px solid color-mix(in srgb, var(--onity-color-success) 30%, var(--onity-color-border));
   border-radius: var(--onity-radius-xs);
   padding: var(--onity-space-xs) var(--onity-space-s);
   font-size: var(--onity-type-caption-size);
@@ -678,93 +693,89 @@
 }
 
 /* ===== PAGINAÇÃO ===== */
-.paginationBar {
+.pagination {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: var(--onity-space-l);
-  padding-top: var(--onity-space-m);
-  border-top: 1px solid var(--onity-color-border);
-  padding: 10px 10px 10px 10px;
-}
-
-.paginationLeft {
-  display: flex;
   align-items: center;
-  gap: var(--onity-space-xs);
-}
-
-.perPageSelectTrigger {
-  width: 80px;
+  padding: var(--onity-space-m, 10px);
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   color: var(--onity-color-text);
-  font-size: var(--onity-type-body-size);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--onity-space-s) var(--onity-space-m);
-  min-height: 40px;
+  box-shadow: var(--onity-elev-med);
 }
 
-.paginationCenter {
-  display: flex;
-  align-items: center;
-  gap: var(--onity-space-xs);
+.paginationSelect {
+  padding: var(--onity-space-xs, 4px) var(--onity-space-s, 8px);
+  border-radius: var(--onity-radius-xs, 4px);
+  border: 1px solid var(--onity-color-border);
+  font-size: 12px;
+  height: 28px;
+  min-width: 28px;
+  box-sizing: border-box;
+  margin: 0;
+  line-height: 1.1;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: all 0.2s ease;
+  font-family: var(--onity-font-family-sans);
 }
 
-.pageNavBtn {
-  background: transparent;
+.paginationSelect:focus {
+  border-color: var(--onity-color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 4px);
+}
+
+.paginationArrow,
+.paginationButtonActive {
+  background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   color: var(--onity-color-text);
-  border-radius: var(--onity-radius-xs);
-  transition: all 120ms ease;
+  border-radius: var(--onity-radius-xs, 4px);
+  min-width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--onity-font-family-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.pageNavBtn:hover:not(:disabled) {
-  border-color: var(--onity-color-primary);
-  background: var(--onity-color-bg);
-}
-
-.pageNavBtn:disabled {
+.paginationArrow:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pageNumbers {
-  display: flex;
-  align-items: center;
-  gap: var(--onity-space-xs);
-}
-
-.pageBtn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid var(--onity-color-border);
-  color: var(--onity-color-text);
-  border-radius: var(--onity-radius-xs);
-  transition: all 120ms ease;
-}
-
-.pageBtn:hover:not(:disabled) {
-  border-color: var(--onity-color-primary);
+.paginationArrow:hover:not(:disabled) {
   background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent), 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.pageEllipsis {
-  border: none;
-  background: transparent;
-  color: var(--onity-icon-secondary);
-  cursor: default;
+.paginationButtonActive {
+  background: color-mix(in srgb, var(--onity-color-primary) 18%, transparent);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  border: 1px solid var(--onity-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--onity-color-primary) 25%, transparent);
+  transform: scale(1.02);
 }
 
-.pageBtnActive {
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-  border-color: var(--onity-color-primary);
+.paginationInfo {
+  font-size: 14px;
+  color: var(--onity-color-text);
+  font-weight: 500;
 }
 
 /* ===== MODAL EXCLUIR ===== */
@@ -847,4 +858,43 @@
   font-weight: bold;
   color: var(--onity-color-primary);
   font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Responsividade para paginação - igual ao clientes.js */
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .paginationButtons {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .paginationSelect {
+    margin-right: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .paginationArrow,
+  .paginationButtonActive {
+    min-width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .paginationSelect {
+    font-size: 11px;
+    height: 24px;
+    min-width: 24px;
+  }
 }

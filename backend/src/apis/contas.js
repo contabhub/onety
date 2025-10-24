@@ -22,15 +22,13 @@ router.post("/", verifyToken, async (req, res) => {
         tipo,
         
         // 🏦 Campos Inter
-        inter_enabled,
+        inter_ativado,
         inter_cliente_id,
         inter_cliente_secret,
         inter_cert,
         inter_key,
         inter_conta_corrente,
         inter_apelido,
-        inter_ambiente,
-        inter_padrao,
         inter_status
     } = req.body;
 
@@ -47,7 +45,7 @@ router.post("/", verifyToken, async (req, res) => {
         item_id,
         empresa_id,
         cliente_id,
-        inter_enabled,
+        inter_ativado,
         has_inter_cliente_id: !!inter_cliente_id
     });
 
@@ -61,10 +59,10 @@ router.post("/", verifyToken, async (req, res) => {
             INSERT INTO contas
                 (api_id, conector_id, status, status_execucao, expiracao_consentimento, 
                  empresa_id, cliente_id, banco, descricao_banco, tipo_conta, numero_conta, agencia, tipo,
-                 inter_enabled, inter_cliente_id, inter_cliente_secret, inter_cert, inter_key, 
-                 inter_conta_corrente, inter_apelido, inter_ambiente, inter_padrao, inter_status, 
+                 inter_ativado, inter_cliente_id, inter_cliente_secret, inter_cert, inter_key, 
+                 inter_conta_corrente, inter_apelido, inter_status, 
                  criado_em, atualizado_em)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             ON DUPLICATE KEY UPDATE
                 conector_id = VALUES(conector_id),
                 status = VALUES(status),
@@ -78,15 +76,13 @@ router.post("/", verifyToken, async (req, res) => {
                 numero_conta = VALUES(numero_conta),
                 agencia = VALUES(agencia),
                 tipo = VALUES(tipo),
-                inter_enabled = VALUES(inter_enabled),
+                inter_ativado = VALUES(inter_ativado),
                 inter_cliente_id = VALUES(inter_cliente_id),
                 inter_cliente_secret = VALUES(inter_cliente_secret),
                 inter_cert = VALUES(inter_cert),
                 inter_key = VALUES(inter_key),
                 inter_conta_corrente = VALUES(inter_conta_corrente),
                 inter_apelido = VALUES(inter_apelido),
-                inter_ambiente = VALUES(inter_ambiente),
-                inter_padrao = VALUES(inter_padrao),
                 inter_status = VALUES(inter_status),
                 atualizado_em = NOW()
             `,
@@ -104,21 +100,19 @@ router.post("/", verifyToken, async (req, res) => {
                 numero_conta || null,
                 agencia || null,
                 tipo || null,
-                inter_enabled || false,
+                inter_ativado || false,
                 inter_cliente_id || null,
                 inter_cliente_secret || null,
                 inter_cert || null,
                 inter_key || null,
                 inter_conta_corrente || null,
                 inter_apelido || null,
-                inter_ambiente || 'prod',
-                inter_padrao || false,
                 inter_status || 'ativo'
             ]
         );
 
         // 2. Se Inter está habilitado e tem credenciais, criar/atualizar na tabela inter_accounts
-        if (inter_enabled && inter_cliente_id && inter_cliente_secret && inter_cert && inter_key) {
+        if (inter_ativado && inter_cliente_id && inter_cliente_secret && inter_cert && inter_key) {
             console.log("[DEBUG] Criando/atualizando conta Inter...");
             
             // Buscar o ID da conta recém-criada/atualizada
@@ -129,7 +123,7 @@ router.post("/", verifyToken, async (req, res) => {
 
             if (contaApi) {
                 // Se é conta padrão, desmarcar outras da mesma empresa
-                if (inter_padrao && empresa_id) {
+                if (empresa_id) {
                     await conn.query(
                         `UPDATE inter_accounts SET is_default = FALSE 
                          WHERE company_id = ? AND id <> (SELECT inter_conta_id FROM contas WHERE id = ?)`,
@@ -142,16 +136,14 @@ router.post("/", verifyToken, async (req, res) => {
                     `
                     INSERT INTO inter_accounts 
                         (company_id, conta_corrente, client_id, client_secret, cert_b64, key_b64, 
-                         apelido, ambiente, is_default, status, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                         apelido, status, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
                     ON DUPLICATE KEY UPDATE
                         client_id = VALUES(client_id),
                         client_secret = VALUES(client_secret),
                         cert_b64 = VALUES(cert_b64),
                         key_b64 = VALUES(key_b64),
                         apelido = VALUES(apelido),
-                        ambiente = VALUES(ambiente),
-                        is_default = VALUES(is_default),
                         status = VALUES(status),
                         updated_at = NOW()
                     `,
@@ -163,8 +155,6 @@ router.post("/", verifyToken, async (req, res) => {
                         inter_cert,
                         inter_key,
                         inter_apelido || `Conta ${inter_conta_corrente}`,
-                        inter_ambiente || 'prod',
-                        inter_padrao ? 1 : 0,
                         inter_status || 'ativo'
                     ]
                 );
@@ -185,7 +175,7 @@ router.post("/", verifyToken, async (req, res) => {
         res.status(201).json({
             message: "Conta Pluggy salva/atualizada com sucesso.",
             affectedRows: result.affectedRows,
-            interEnabled: inter_enabled
+            interEnabled: inter_ativado
         });
     } catch (error) {
         await conn.rollback();
@@ -317,7 +307,7 @@ router.get("/inter/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT 
+      `       SELECT 
          id,
          api_id,
          banco,
@@ -326,18 +316,16 @@ router.get("/inter/:empresaId", verifyToken, async (req, res) => {
          numero_conta,
          agencia,
          tipo,
-         inter_enabled,
+         inter_ativado,
          inter_apelido,
          inter_conta_corrente,
-         inter_ambiente,
-         inter_padrao,
          inter_status,
          inter_conta_id,
          criado_em,
          atualizado_em
        FROM contas 
-       WHERE empresa_id = ? AND inter_enabled = TRUE
-       ORDER BY inter_padrao DESC, criado_em DESC`,
+       WHERE empresa_id = ? AND inter_ativado = TRUE
+       ORDER BY criado_em DESC`,
       [empresaId]
     );
     res.json({ total: rows.length, contas: rows });

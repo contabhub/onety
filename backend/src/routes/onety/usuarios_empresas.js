@@ -58,7 +58,7 @@ router.get("/empresa/:empresa_id", async (req, res) => {
       LEFT JOIN usuarios u ON ue.usuario_id = u.id
       LEFT JOIN cargos c ON ue.cargo_id = c.id
       LEFT JOIN departamentos d ON ue.departamento_id = d.id
-      WHERE ue.empresa_id = ?
+      WHERE ue.empresa_id = ? AND (c.nome IS NULL OR c.nome != 'Superadmin')
       ORDER BY u.nome ASC
     `, [empresa_id]);
     
@@ -91,9 +91,11 @@ router.get("/", async (req, res) => {
     const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
     const [rows] = await pool.query(
-      `SELECT SQL_CALC_FOUND_ROWS id, usuario_id, empresa_id, cargo_id, departamento_id, criado_em
-       FROM usuarios_empresas ${whereSql}
-       ORDER BY id DESC LIMIT ? OFFSET ?`,
+      `SELECT SQL_CALC_FOUND_ROWS ue.id, ue.usuario_id, ue.empresa_id, ue.cargo_id, ue.departamento_id, ue.criado_em
+       FROM usuarios_empresas ue
+       LEFT JOIN cargos c ON ue.cargo_id = c.id
+       ${whereSql} ${whereSql ? 'AND' : 'WHERE'} (c.nome IS NULL OR c.nome != 'Superadmin')
+       ORDER BY ue.id DESC LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
     const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");

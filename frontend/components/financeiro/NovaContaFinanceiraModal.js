@@ -271,7 +271,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
     try {
       const token = localStorage.getItem("token");
       const company_id = empresaId;
-      const cliente_id = localStorage.getItem("userId");
+      const userData = localStorage.getItem("userData");
+      const user = userData ? JSON.parse(userData) : null;
+      const cliente_id = user?.id || null;
 
       // Preparar dados do Inter se habilitado
       let interCertB64 = null;
@@ -1268,8 +1270,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
     try {
       const token = localStorage.getItem("token");
       const company_id = Number(localStorage.getItem("empresaId"));
-      const rawClienteId = localStorage.getItem("userId");
-      const cliente_id = rawClienteId ? Number(rawClienteId) : null;
+      const userData = localStorage.getItem("userData");
+      const user = userData ? JSON.parse(userData) : null;
+      const cliente_id = user?.id ? Number(user.id) : null;
 
       // Preparar dados do Inter se habilitado
       let interCertB64 = null;

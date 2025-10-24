@@ -13,12 +13,12 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO departamentos (empresa_id, nome, codigo, descricao, status)
-       VALUES (?, ?, ?, ?, 'ativo')`,
-      [empresa_id, nome, codigo || null, descricao || null]
+      `INSERT INTO departamentos (empresa_id, nome, descricao, status)
+       VALUES (?, ?, ?, 'ativo')`,
+      [empresa_id, nome, descricao || null]
     );
 
-    res.status(201).json({ id: result.insertId, nome, codigo, descricao, empresa_id, status: 'ativo' });
+    res.status(201).json({ id: result.insertId, nome, descricao, empresa_id, status: 'ativo' });
   } catch (err) {
     console.error('❌ Erro ao criar departamento:', err);
     res.status(500).json({ error: 'Erro ao criar departamento' });
@@ -35,7 +35,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
 
     const [rows] = await pool.query(
-      `SELECT id, nome, codigo, descricao, status
+      `SELECT id, nome, descricao, status
        FROM departamentos
        WHERE empresa_id = ? AND status = 'ativo'
        ORDER BY nome ASC`,
@@ -57,16 +57,16 @@ router.put('/:id', verifyToken, async (req, res) => {
 
     const [result] = await pool.query(
       `UPDATE departamentos
-       SET nome = ?, codigo = ?, descricao = ?, status = ?
+       SET nome = ?, descricao = ?, status = ?
        WHERE id = ?`,
-      [nome, codigo || null, descricao || null, status || 'ativo', id]
+      [nome, descricao || null, status || 'ativo', id]
     );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Departamento não encontrado' });
     }
 
-    res.json({ id, nome, codigo, descricao, status });
+    res.json({ id, nome, descricao, status });
   } catch (err) {
     console.error('❌ Erro ao atualizar departamento:', err);
     res.status(500).json({ error: 'Erro ao atualizar departamento' });

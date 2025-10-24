@@ -32,16 +32,32 @@ const ALLOWED_UPDATE_FIELDS = [
 // Estatísticas de usuários para dashboard
 router.get("/estatisticas", async (req, res) => {
   try {
-    // Total de usuários
-    const [totalUsers] = await pool.query("SELECT COUNT(*) as total FROM usuarios");
+    // Total de usuários (excluindo Superadmin)
+    const [totalUsers] = await pool.query(`
+      SELECT COUNT(DISTINCT u.id) as total 
+      FROM usuarios u
+      LEFT JOIN usuarios_empresas ue ON u.id = ue.usuario_id
+      LEFT JOIN cargos c ON ue.cargo_id = c.id
+      WHERE (c.nome IS NULL OR c.nome != 'Superadmin')
+    `);
     
-    // Usuários ativos (status = 'ativo')
-    const [activeUsers] = await pool.query("SELECT COUNT(*) as ativos FROM usuarios WHERE status = 'ativo'");
+    // Usuários ativos (status = 'ativo', excluindo Superadmin)
+    const [activeUsers] = await pool.query(`
+      SELECT COUNT(DISTINCT u.id) as ativos 
+      FROM usuarios u
+      LEFT JOIN usuarios_empresas ue ON u.id = ue.usuario_id
+      LEFT JOIN cargos c ON ue.cargo_id = c.id
+      WHERE u.status = 'ativo' AND (c.nome IS NULL OR c.nome != 'Superadmin')
+    `);
     
-    // Usuários criados recentemente (usando ID como proxy para data)
-    const [recentUsers] = await pool.query(
-      "SELECT COUNT(*) as recentes FROM usuarios WHERE id > (SELECT MAX(id) - 10 FROM usuarios)"
-    );
+    // Usuários criados recentemente (usando ID como proxy para data, excluindo Superadmin)
+    const [recentUsers] = await pool.query(`
+      SELECT COUNT(DISTINCT u.id) as recentes 
+      FROM usuarios u
+      LEFT JOIN usuarios_empresas ue ON u.id = ue.usuario_id
+      LEFT JOIN cargos c ON ue.cargo_id = c.id
+      WHERE u.id > (SELECT MAX(id) - 10 FROM usuarios) AND (c.nome IS NULL OR c.nome != 'Superadmin')
+    `);
 
     res.json({
       total: totalUsers[0]?.total || 0,
@@ -68,11 +84,13 @@ router.get("/recentes", async (req, res) => {
         COUNT(ue.empresa_id) as empresas
       FROM usuarios u
       LEFT JOIN usuarios_empresas ue ON u.id = ue.usuario_id
+      LEFT JOIN cargos c ON ue.cargo_id = c.id
+      WHERE (c.nome IS NULL OR c.nome != 'Superadmin')
       GROUP BY u.id, u.nome, u.email, u.criado_em
       ORDER BY u.id DESC
       LIMIT ?
     `, [limit]);
-
+    
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -120,10 +138,17 @@ router.get("/", async (req, res) => {
     const limit = Number(req.query.limit || 20);
     const offset = (page - 1) * limit;
 
-    const [rows] = await pool.query(
-      "SELECT SQL_CALC_FOUND_ROWS id, nome, email, telefone, avatar_url, criado_em, status, preferencias FROM usuarios ORDER BY id DESC LIMIT ? OFFSET ?",
-      [limit, offset]
-    );
+    // Query modificada para excluir usuários com cargo "Superadmin"
+    const [rows] = await pool.query(`
+      SELECT SQL_CALC_FOUND_ROWS DISTINCT u.id, u.nome, u.email, u.telefone, u.avatar_url, u.criado_em, u.status, u.preferencias 
+      FROM usuarios u
+      LEFT JOIN usuarios_empresas ue ON u.id = ue.usuario_id
+      LEFT JOIN cargos c ON ue.cargo_id = c.id
+      WHERE (c.nome IS NULL OR c.nome != 'Superadmin')
+      ORDER BY u.id DESC 
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
+    
     const [countRows] = await pool.query("SELECT FOUND_ROWS() as total");
 
     res.json({ data: rows, page, limit, total: countRows[0]?.total || 0 });

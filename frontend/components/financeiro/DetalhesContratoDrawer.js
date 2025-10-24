@@ -221,7 +221,11 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
   };
 
   const fetchEmpresaDetalhes = async () => {
-    const empresaId = localStorage.getItem('empresaId');
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
+    
     if (!empresaId) {
       toast.error('ID da empresa não encontrado');
       return;
@@ -233,7 +237,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
         throw new Error('Token não encontrado');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/companies/${empresaId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/empresas/${empresaId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

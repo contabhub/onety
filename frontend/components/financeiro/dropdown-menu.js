@@ -16,15 +16,22 @@ const DropdownMenuContext = React.createContext({
 });
 
 // Componente principal do dropdown
-const DropdownMenu = ({ children, ...props }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+const DropdownMenu = ({ children, open, onOpenChange, ...props }) => {
+  const [isOpen, setIsOpen] = React.useState(open || false);
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    if (onOpenChange) {
+      onOpenChange(newIsOpen);
+    }
   };
 
   const handleClose = () => {
     setIsOpen(false);
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
   };
 
   // Fechar dropdown quando clicar fora

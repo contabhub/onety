@@ -792,11 +792,10 @@ class AutomacaoRecorrencia {
              inter_client_secret as client_secret,
              inter_cert_b64 as cert_b64,
              inter_key_b64 as key_b64,
-             inter_ambiente as ambiente,
              inter_is_default as is_default,
              inter_status as status
            FROM contas_api 
-           WHERE company_id = ? AND inter_enabled = TRUE AND inter_status = 'ativo'
+           WHERE company_id = ? AND inter_ativado = TRUE AND inter_status = 'ativo'
            ORDER BY inter_is_default DESC, id ASC 
            LIMIT 1`,
           [companyId]
@@ -1027,7 +1026,7 @@ class AutomacaoRecorrencia {
              inter_key_b64 as key_b64,
              inter_ambiente as ambiente
            FROM contas_api 
-           WHERE id = ? AND inter_enabled = TRUE AND inter_status = 'ativo'`,
+           WHERE id = ? AND inter_ativado = TRUE AND inter_status = 'ativo'`,
           [boleto.inter_account_id]
         );
         

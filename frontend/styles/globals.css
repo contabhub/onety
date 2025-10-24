@@ -251,6 +251,36 @@ body {
 .react-select__single-value {
   color: var(--onity-color-text) !important;
   font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+/* Estilos para imagens no valor selecionado */
+.react-select__single-value .flex {
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.react-select__single-value img {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 2px !important;
+  object-fit: contain !important;
+}
+
+.react-select__single-value .w-5 {
+  width: 16px !important;
+}
+
+.react-select__single-value .h-5 {
+  height: 16px !important;
+}
+
+.react-select__single-value .w-3 {
+  width: 12px !important;
+}
+
+.react-select__single-value .h-3 {
+  height: 12px !important;
 }
 
 .react-select__input-container {
@@ -268,8 +298,39 @@ body {
 .react-select__option {
   background-color: var(--onity-color-surface) !important;
   color: var(--onity-color-text) !important;
-  padding: 12px 16px !important;
+  padding: 8px 12px !important;
   transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+/* Estilos específicos para imagens e conteúdo dentro das opções */
+.react-select__option .flex {
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.react-select__option img {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 2px !important;
+  object-fit: contain !important;
+}
+
+.react-select__option .w-5 {
+  width: 16px !important;
+}
+
+.react-select__option .h-5 {
+  height: 16px !important;
+}
+
+.react-select__option .w-3 {
+  width: 12px !important;
+}
+
+.react-select__option .h-3 {
+  height: 12px !important;
 }
 
 .react-select__option:hover {

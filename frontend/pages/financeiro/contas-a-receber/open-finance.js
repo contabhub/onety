@@ -76,7 +76,8 @@ export default function OpenFinancePluggy({ onSuccess }) {
       
           // Supondo que seu JWT esteja no localStorage:
           const token = localStorage.getItem('token');
-          const company_id = localStorage.getItem('empresaId');
+          const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+          const company_id = userData.EmpresaId;
       
           const res = await fetch(`${API_BASE}/contas-api`, {
             method: 'POST',
@@ -90,7 +91,7 @@ export default function OpenFinancePluggy({ onSuccess }) {
               connector_id: data.item.connector.id,
               status: data.item.status,
               execution_status: data.item.executionStatus,
-              company_id,
+              empresa_id: company_id,
             }),
           });
       

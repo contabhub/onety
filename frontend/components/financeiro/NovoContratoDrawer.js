@@ -93,7 +93,11 @@ const customSelectStyles = {
     border: '1px solid var(--onity-color-border)',
     borderRadius: '5px',
     boxShadow: 'var(--onity-elev-high)',
-    zIndex: '1000',
+    zIndex: 10020,
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 10020,
   }),
   option: (provided, state) => ({
     ...provided,
@@ -254,10 +258,15 @@ export default function NovoContratoDrawer({
   const getSubCategoriasReceita = () => {
     const items = [];
 
+    console.log("🔍 getSubCategoriasReceita - categorias:", formDataFromAPI.categorias);
+    console.log("🔍 getSubCategoriasReceita - subCategorias:", formDataFromAPI.subCategorias);
+
     // Filtrar apenas subcategorias de receita
     formDataFromAPI.subCategorias.forEach((subCategoria) => {
-      // Verificar se a categoria pai é de receita
+      // Verificar se a categoria pai é de receita (tipo_id = 1)
       const categoriaPai = formDataFromAPI.categorias.find(cat => cat.id === subCategoria.categoria_id);
+      console.log(`🔍 Subcategoria ${subCategoria.nome} (categoria_id: ${subCategoria.categoria_id}) - categoria pai encontrada:`, categoriaPai);
+      
       if (categoriaPai) {
         items.push({
           id: subCategoria.id,
@@ -268,6 +277,8 @@ export default function NovoContratoDrawer({
         });
       }
     });
+
+    console.log("🔍 getSubCategoriasReceita - items finais:", items);
 
     // Ordenar alfabeticamente por categoria pai e depois por subcategoria
     return items.sort((a, b) => {
@@ -291,7 +302,10 @@ export default function NovoContratoDrawer({
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadFormData = async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token || !API) {
@@ -307,7 +321,7 @@ export default function NovoContratoDrawer({
       // 1. Buscar clientes
       const fetchClientes = async () => {
         try {
-          const res = await fetch(`${API}/clientes/company/${empresaId}`, {
+          const res = await fetch(`${API}/financeiro/clientes/empresa/${empresaId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
@@ -321,13 +335,12 @@ export default function NovoContratoDrawer({
       // 2. Buscar categorias de receita
       const fetchCategorias = async () => {
         try {
-          const res = await fetch(`${API}/companies/${empresaId}/categorias`, {
+          const res = await fetch(`${API}/financeiro/categorias/tipo/1`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          // Filtrar apenas categorias de receita
-          const receitaData = data.find((item) => item.tipo === "Receita");
-          return receitaData?.categorias || [];
+          // A API retorna diretamente um array de categorias
+          return data || [];
         } catch (error) {
           console.error("Erro ao buscar categorias:", error);
           return [];
@@ -337,7 +350,7 @@ export default function NovoContratoDrawer({
       // 3. Buscar subcategorias
       const fetchSubCategorias = async () => {
         try {
-          const res = await fetch(`${API}/sub-categorias/empresa/${empresaId}`, {
+          const res = await fetch(`${API}/financeiro/sub-categorias/empresa/${empresaId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
@@ -351,7 +364,7 @@ export default function NovoContratoDrawer({
       // 4. Buscar centros de custo
       const fetchCentrosDeCusto = async () => {
         try {
-          const res = await fetch(`${API}/centro-de-custo/empresa/${empresaId}`, {
+          const res = await fetch(`${API}/financeiro/centro-de-custo/empresa/${empresaId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
@@ -365,11 +378,12 @@ export default function NovoContratoDrawer({
       // 5. Buscar usuários
       const fetchUsers = async () => {
         try {
-          const res = await fetch(`${API}/users/company/${empresaId}`, {
+          const res = await fetch(`${API}/usuarios`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          return data;
+          // A API retorna { data: rows, page, limit, total: ... }
+          return data.data || [];
         } catch (error) {
           console.error("Erro ao buscar usuários:", error);
           return [];
@@ -379,25 +393,51 @@ export default function NovoContratoDrawer({
       // 6. Buscar contas ERP
       const fetchContas = async () => {
         try {
-          const res = await fetch(`${API}/contas/empresa/${empresaId}`, {
+          console.log(`🔍 Buscando contas ERP para empresa ${empresaId}`);
+          const res = await fetch(`${API}/contas-api/company/${empresaId}/contas`, {
             headers: { Authorization: `Bearer ${token}` }
           });
+          
+          if (!res.ok) {
+            console.error(`❌ Erro na resposta: ${res.status} ${res.statusText}`);
+            return [];
+          }
+          
           const data = await res.json();
-          return Array.isArray(data) ? data : Array.isArray(data?.contas) ? data.contas : [];
+          console.log('📋 Dados recebidos da API contas:', data);
+          
+          // Filtrar apenas contas tradicionais (sem account)
+          const contasTradicionais = (data.contas || []).filter(conta => !conta.account);
+          console.log(`🔍 Contas tradicionais encontradas: ${contasTradicionais.length}`, contasTradicionais);
+          
+          return contasTradicionais;
         } catch (error) {
-          console.error("Erro ao buscar contas:", error);
+          console.error("Erro ao buscar contas ERP:", error);
           return [];
         }
       };
 
-      // 7. Buscar contas API
+      // 7. Buscar contas API (OpenFinance)
       const fetchContasApi = async () => {
         try {
+          console.log(`🔍 Buscando contas API para empresa ${empresaId}`);
           const res = await fetch(`${API}/contas-api/company/${empresaId}/contas`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          const json = await res.json();
-          return Array.isArray(json) ? json : Array.isArray(json.contas) ? json.contas : [];
+          
+          if (!res.ok) {
+            console.error(`❌ Erro na resposta: ${res.status} ${res.statusText}`);
+            return [];
+          }
+          
+          const data = await res.json();
+          console.log('📋 Dados recebidos da API contas:', data);
+          
+          // Filtrar apenas contas API (com account)
+          const contasApi = (data.contas || []).filter(conta => conta.account && conta.account.toString().trim() !== "");
+          console.log(`🔍 Contas API encontradas: ${contasApi.length}`, contasApi);
+          
+          return contasApi;
         } catch (error) {
           console.error("Erro ao buscar contas API:", error);
           return [];
@@ -407,7 +447,7 @@ export default function NovoContratoDrawer({
       // 8. Buscar produtos/serviços
       const fetchProdutosServicos = async () => {
         try {
-          const res = await fetch(`${API}/produtos-servicos/company/${empresaId}`, {
+          const res = await fetch(`${API}/financeiro/produtos-servicos/empresa/${empresaId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
@@ -421,7 +461,7 @@ export default function NovoContratoDrawer({
       // 9. Buscar departamentos
       const fetchDepartamentos = async () => {
         try {
-          const res = await fetch(`${API}/departamentos?company_id=${empresaId}`, {
+          const res = await fetch(`${API}/financeiro/departamentos?empresa_id=${empresaId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
@@ -466,6 +506,14 @@ export default function NovoContratoDrawer({
         produtosServicos: produtosServicos.length,
         departamentos: departamentos.length
       });
+
+      console.log("🔍 Debug categorias:", categorias);
+      console.log("🔍 Debug subcategorias:", subCategorias);
+      console.log("🔍 Debug produtos/serviços:", produtosServicos);
+      console.log("🔍 Debug departamentos:", departamentos);
+      console.log("🔍 Debug produtos/serviços:", produtosServicos);
+      console.log("🔍 Debug departamentos:", departamentos);
+      console.log("🔍 Debug users:", users);
 
       setFormDataFromAPI({
         clientes,
@@ -590,8 +638,11 @@ export default function NovoContratoDrawer({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const empresaId = localStorage.getItem("empresaId");
-      const userId = localStorage.getItem("userId");
+      // Buscar empresaId e userId do userData (padrão correto do sistema)
+      const userData = localStorage.getItem("userData");
+      const user = userData ? JSON.parse(userData) : null;
+      const empresaId = user?.EmpresaId || user?.empresa?.id || null;
+      const userId = user?.id || null;
       
       if (!empresaId || !userId) {
         toast.error("Dados de autenticação não encontrados");
@@ -709,13 +760,13 @@ export default function NovoContratoDrawer({
         produtos_servicos_id: produtosServicos.length > 0 ? produtosServicos[0].produtos_servicos_id : null,
         // Novo: array de produtos/serviços
         produtos_servicos: produtosServicos,
-        company_id: parseInt(empresaId),
+        empresa_id: parseInt(empresaId),
         valor: calcularTotalFinal(), // Valor calculado dos itens com desconto
         desconto: calcularDesconto(), // Desconto calculado
         data_inicio: formData.dataInicio ? format(formData.dataInicio, 'yyyy-MM-dd') : '',
         dia_gerado: formData.dataPrimeiraVenda ? format(formData.dataPrimeiraVenda, 'yyyy-MM-dd') : (formData.dataInicio ? format(formData.dataInicio, 'yyyy-MM-dd') : ''),
         proximo_vencimento: formData.vencimento ? format(formData.vencimento, 'yyyy-MM-dd') : (formData.dataInicio ? format(formData.dataInicio, 'yyyy-MM-dd') : ''),
-        status: "ativo",
+        status: "pendente",
         observacoes: `${formData.observacoesPagamento || ''} | Contrato Nº: ${formData.numeroContrato}`,
         // Novos campos adicionados
         centro_de_custo_id: formData.centroCusto ? parseInt(formData.centroCusto) : null,
@@ -732,6 +783,8 @@ export default function NovoContratoDrawer({
         // Conta de recebimento
         conta_id: contaIdParsed,
         conta_api_id: contaApiIdParsed,
+        // Valor recorrente
+        valor_recorrente: calcularTotalFinal(),
         // Dados de recorrência
         recorrencia: {
           tipo_intervalo: formData.tipoIntervalo,
@@ -743,6 +796,14 @@ export default function NovoContratoDrawer({
       };
 
       console.log("Dados do contrato sendo enviados:", dadosContrato);
+      console.log("🔍 Debug campos obrigatórios:", {
+        cliente_id: dadosContrato.cliente_id,
+        empresa_id: dadosContrato.empresa_id,
+        data_inicio: dadosContrato.data_inicio,
+        formData_cliente: formData.cliente,
+        formData_dataInicio: formData.dataInicio,
+        empresaId: empresaId
+      });
 
       await onSave(dadosContrato);
       toast.success("Contrato salvo com sucesso!");
@@ -854,6 +915,8 @@ export default function NovoContratoDrawer({
                             styles={customSelectStyles}
                             isClearable
                             isSearchable
+                            menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                            menuPosition="fixed"
                             noOptionsMessage={() => "Nenhum cliente encontrado"}
                           />
                         </div>
@@ -1070,6 +1133,8 @@ export default function NovoContratoDrawer({
                         styles={customSelectStyles}
                         isClearable
                         isSearchable
+                        menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                        menuPosition="fixed"
                         noOptionsMessage={() => "Nenhuma subcategoria encontrada"}
                       />
                     </div>
@@ -1092,6 +1157,8 @@ export default function NovoContratoDrawer({
                         styles={customSelectStyles}
                         isClearable
                         isSearchable
+                        menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                        menuPosition="fixed"
                         noOptionsMessage={() => "Nenhum centro de custo encontrado"}
                       />
                     </div>
@@ -1102,16 +1169,18 @@ export default function NovoContratoDrawer({
                       <ReactSelect
                         options={(formDataFromAPI.users || []).map((user) => ({
                           value: user.id.toString(),
-                          label: user.name,
+                          label: user.nome,
                         }))}
                         value={formDataFromAPI.users.find((user) => user.id.toString() === formData.vendedorResponsavel) 
-                          ? { value: formData.vendedorResponsavel, label: formDataFromAPI.users.find((user) => user.id.toString() === formData.vendedorResponsavel)?.name }
+                          ? { value: formData.vendedorResponsavel, label: formDataFromAPI.users.find((user) => user.id.toString() === formData.vendedorResponsavel)?.nome }
                           : null}
                         onChange={(option) => handleInputChange('vendedorResponsavel', option ? option.value : '')}
                         placeholder="Pesquisar vendedor..."
                         styles={customSelectStyles}
                         isClearable
                         isSearchable
+                        menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                        menuPosition="fixed"
                         noOptionsMessage={() => "Nenhum vendedor encontrado"}
                       />
                     </div>
@@ -1180,6 +1249,8 @@ export default function NovoContratoDrawer({
                                   }}
                                   isClearable
                                   isSearchable
+                                  menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                  menuPosition="fixed"
                                   noOptionsMessage={() => "Nenhum produto encontrado"}
                                 />
                               </div>
@@ -1201,11 +1272,11 @@ export default function NovoContratoDrawer({
                             <div className={styles.itemField}>
                               <div className={styles.itemFieldFlex}>
                                 <ReactSelect
-                                  options={(formDataFromAPI.departamentos || []).map((departamento) => ({
+                                  options={Array.isArray(formDataFromAPI.departamentos) ? formDataFromAPI.departamentos.map((departamento) => ({
                                     value: departamento.id.toString(),
                                     label: departamento.nome,
-                                  }))}
-                                  value={formDataFromAPI.departamentos.find((departamento) => departamento.id.toString() === item.departamento) 
+                                  })) : []}
+                                  value={Array.isArray(formDataFromAPI.departamentos) && formDataFromAPI.departamentos.find((departamento) => departamento.id.toString() === item.departamento) 
                                     ? { value: item.departamento, label: formDataFromAPI.departamentos.find((departamento) => departamento.id.toString() === item.departamento)?.nome }
                                     : null}
                                   onChange={(option) => handleItemChange(item.id, 'departamento', option ? option.value : '')}
@@ -1222,6 +1293,8 @@ export default function NovoContratoDrawer({
                                   }}
                                   isClearable
                                   isSearchable
+                                  menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                  menuPosition="fixed"
                                   noOptionsMessage={() => "Nenhum departamento encontrado"}
                                 />
                               </div>
@@ -1415,35 +1488,83 @@ export default function NovoContratoDrawer({
                             <SelectValue placeholder="Selecione a conta" />
                           </SelectTrigger>
                           <SelectContent className={styles.selectContent}>
+                            {/* Debug: Log das contas disponíveis */}
+                            {console.log('🔍 Debug contas ERP:', formDataFromAPI.contas)}
+                            {console.log('🔍 Debug contas API:', formDataFromAPI.contasApi)}
+                            
                             {/* Contas ERP */}
                             {formDataFromAPI.contas
-                              .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                              .map((conta) => (
-                                <SelectItem
-                                  key={`erp-${conta.id}`}
-                                  value={`erp:${conta.id}`}
-                                  className={styles.selectItem}
-                                >
-                                  <span>{conta.banco} — {conta.descricao_banco}</span>
-                                </SelectItem>
-                              ))}
+                              .filter((conta) => {
+                                console.log('🔍 Verificando conta ERP:', conta);
+                                // Ser mais flexível na filtragem - aceitar qualquer conta que tenha dados
+                                const temBanco = conta.banco && String(conta.banco).trim();
+                                const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
+                                const temApiId = conta.api_id && String(conta.api_id).trim();
+                                const resultado = temBanco || temDescricao || temApiId;
+                                console.log('🔍 Conta ERP aprovada:', resultado, { temBanco, temDescricao, temApiId });
+                                return resultado;
+                              })
+                              .map((conta) => {
+                                console.log('🔍 Renderizando conta ERP:', conta);
+                                const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.id}`;
+                                const bancoConta = conta.banco || 'Banco';
+                                return (
+                                  <SelectItem
+                                    key={`erp-${conta.id}`}
+                                    value={`erp:${conta.id}`}
+                                    className={styles.selectItem}
+                                  >
+                                    <span>{bancoConta} — {nomeConta}</span>
+                                  </SelectItem>
+                                );
+                              })}
 
                             {/* Contas API (OpenFinance) */}
                             {formDataFromAPI.contasApi
-                              .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                              .map((conta) => (
-                                <SelectItem
-                                  key={`api-${conta.id}`}
-                                  value={`api:${conta.id}`}
-                                  className={styles.selectItem}
-                                >
-                                  <span>{conta.descricao_banco}</span>
-                                  <span className={styles.openFinanceBadge}>OpenFinance</span>
-                                </SelectItem>
-                              ))}
+                              .filter((conta) => {
+                                console.log('🔍 Verificando conta API:', conta);
+                                // Ser mais flexível na filtragem - aceitar qualquer conta que tenha dados
+                                const temBanco = conta.banco && String(conta.banco).trim();
+                                const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
+                                const temAccount = conta.account && String(conta.account).trim();
+                                const resultado = temBanco || temDescricao || temAccount;
+                                console.log('🔍 Conta API aprovada:', resultado, { temBanco, temDescricao, temAccount });
+                                return resultado;
+                              })
+                              .map((conta) => {
+                                console.log('🔍 Renderizando conta API:', conta);
+                                const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.account}`;
+                                return (
+                                  <SelectItem
+                                    key={`api-${conta.id}`}
+                                    value={`api:${conta.id}`}
+                                    className={styles.selectItem}
+                                  >
+                                    <span>{nomeConta}</span>
+                                    <span className={styles.openFinanceBadge}>OpenFinance</span>
+                                  </SelectItem>
+                                );
+                              })}
 
-                            {formDataFromAPI.contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                             formDataFromAPI.contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
+                            {/* Fallback: Mostrar TODAS as contas se nenhuma passou no filtro */}
+                            {formDataFromAPI.contas.length > 0 && formDataFromAPI.contas.filter(c => c.banco || c.descricao_banco || c.api_id).length === 0 && (
+                              <>
+                                <div className={`${styles.textSecondary} px-2 py-1`}>
+                                  Contas encontradas (sem filtro):
+                                </div>
+                                {formDataFromAPI.contas.map((conta) => (
+                                  <SelectItem
+                                    key={`erp-fallback-${conta.id}`}
+                                    value={`erp:${conta.id}`}
+                                    className={styles.selectItem}
+                                  >
+                                    <span>Conta {conta.id} - {conta.api_id || 'Sem nome'}</span>
+                                  </SelectItem>
+                                ))}
+                              </>
+                            )}
+
+                            {formDataFromAPI.contas.length === 0 && formDataFromAPI.contasApi.length === 0 && (
                               <div className={`${styles.textSecondary} px-2 py-1`}>
                                 Nenhuma conta encontrada
                               </div>
