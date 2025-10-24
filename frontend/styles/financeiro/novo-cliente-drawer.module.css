@@ -201,13 +201,16 @@
 .fieldContainer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--onity-space-xs);
+  position: relative;
+  z-index: 1;
 }
 
 .fieldLabel {
-  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
   font-weight: 500;
-  font-size: 15px;
+  color: var(--onity-color-text);
+  margin: 0;
 }
 
 .fieldLabelWithIcon {
@@ -237,13 +240,16 @@
 
 /* Input fields */
 .inputField {
-  background-color: var(--onity-color-surface);
-  color: var(--onity-color-text);
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
   border: 2px solid var(--onity-color-border);
   border-radius: 5px;
-  padding: 8px 12px;
-  font-size: 15px;
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
   outline: none;
 }
 
@@ -271,6 +277,7 @@
 
 .inputField::placeholder {
   color: var(--onity-icon-secondary);
+  font-weight: 400;
 }
 
 .inputField:hover {
@@ -280,6 +287,7 @@
 }
 
 .inputField:focus {
+  outline: none;
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
   transform: translateY(-1px);
@@ -297,16 +305,19 @@
 
 /* Select fields */
 .selectField {
-  background-color: var(--onity-color-surface);
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
   border: 2px solid var(--onity-color-border);
+  border-radius: 5px;
+  font-size: var(--onity-type-body-size);
   color: var(--onity-color-text);
-  padding: 8px 12px;
-  border-radius: var(--onity-radius-m);
-  font-size: 15px;
+  background-color: var(--onity-color-surface);
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
   outline: none;
   cursor: pointer;
-  min-height: 48px;
+  min-height: 40px;
   display: flex;
   align-items: center;
 }
@@ -318,8 +329,10 @@
 }
 
 .selectField:focus {
+  outline: none;
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
 }
 
 .selectContent {
@@ -598,21 +611,25 @@
 
 /* Textarea */
 .textareaField {
-  background-color: var(--onity-color-surface);
-  color: var(--onity-color-text);
+  width: 100%;
+  min-height: 120px;
+  padding: var(--onity-space-s) var(--onity-space-m);
   border: 2px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
-  padding: 8px 12px;
-  font-size: 15px;
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
   outline: none;
   resize: vertical;
-  min-height: 120px;
   font-family: inherit;
 }
 
 .textareaField::placeholder {
   color: var(--onity-icon-secondary);
+  font-weight: 400;
 }
 
 .textareaField:hover {
@@ -622,6 +639,7 @@
 }
 
 .textareaField:focus {
+  outline: none;
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
   transform: translateY(-1px);

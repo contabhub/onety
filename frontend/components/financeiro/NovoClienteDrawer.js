@@ -169,7 +169,10 @@ export function NovoClienteDrawer({
   ]);
 
   const enviarClienteParaBackend = async (data) => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
 
     if (!empresaId) {
       toast.error("Empresa não identificada. Verifique seu acesso.");
@@ -183,24 +186,24 @@ export function NovoClienteDrawer({
       tiposSelecionados.push("transportadora");
 
     try {
-      const response = await fetch(`${API}/clientes`, {
+      const response = await fetch(`${API}/financeiro/clientes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
         body: JSON.stringify({
-          tipo_de_pessoa: data.tipoPessoa,
-          cnpj: data.cnpj,
+          tipo_pessoa: data.tipoPessoa,
+          cpf_cnpj: data.cnpj,
           nome_fantasia: data.nomeFantasia,
           tipo_de_papel: tiposSelecionados.join(","),
           codigo_do_cadastro: data.codigoCadastro,
-          e_mail_principal: data.emailPrincipal,
+          email_principal: data.emailPrincipal,
           telefone_comercial: data.telefoneComercial,
           telefone_celular: data.telefoneCelular,
-          abertura_da_empresa: formatarDataParaMysql(data.aberturaEmpresa),
+          abertura_empresa: formatarDataParaMysql(data.aberturaEmpresa),
           razao_social: data.razaoSocial,
-          optante_pelo_simples: data.optanteSimples === "Sim" ? 1 : 0,
+          optante_simples: data.optanteSimples === "Sim" ? 1 : 0,
           pais: data.pais,
           cep: data.cep,
           endereco: data.endereco,
@@ -218,7 +221,7 @@ export function NovoClienteDrawer({
           cargo: data.outrosContatos?.[0]?.cargo || "",
           observacoes: data.observacoes,
           status: "ativo", // Status padrão para novos clientes
-          company_id: empresaId,
+          empresa_id: empresaId,
         }),
       });
 
@@ -232,10 +235,10 @@ export function NovoClienteDrawer({
         );
       }
 
-      toast.success("✅ Cliente salvo com sucesso!");
+      toast.success("Cliente salvo com sucesso!");
       return resultado; // Retorna os dados do cliente criado
     } catch (error) {
-      toast.error(`❌ Erro ao salvar cliente: ${error.message}`);
+      toast.error(`Erro ao salvar cliente: ${error.message}`);
       console.error("Erro ao salvar cliente:", error);
       return null;
     }

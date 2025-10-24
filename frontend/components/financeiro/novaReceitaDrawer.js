@@ -173,14 +173,17 @@ export default function NovaReceitaDrawer({
   }, [isOpen]);
 
   useEffect(() => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) return;
 
     const fetchClientes = async () => {
       try {
-        const res = await fetch(`${API}/clientes/company/${empresaId}`, {
+        const res = await fetch(`${API}/financeiro/clientes/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -284,7 +287,10 @@ export default function NovaReceitaDrawer({
 
   // Função para buscar as 5 últimas recorrências da empresa atual
   const fetchUltimasRecorrencias = async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
     if (!empresaId || !token) return [];
     
@@ -374,7 +380,10 @@ export default function NovaReceitaDrawer({
 
   const handleCriarRecorrenciaPersonalizada = async (dados) => {
     console.log("🔄 handleCriarRecorrenciaPersonalizada chamada com:", dados);
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
     if (!empresaId || !token) {
       console.error("❌ EmpresaId ou token não encontrados");
@@ -465,7 +474,10 @@ export default function NovaReceitaDrawer({
   // Função principal para criar transação
   const createTransaction = async () => {
     const token = localStorage.getItem("token");
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
 
     if (!token || !empresaId) {
       toast.error("Token ou empresaId não encontrados.");
@@ -777,14 +789,17 @@ export default function NovaReceitaDrawer({
 
   // Função para buscar clientes (será reutilizada após criar novo cliente)
   const fetchClientes = async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) return;
 
     try {
       console.log("Buscando clientes...");
-      const res = await fetch(`${API}/clientes/company/${empresaId}`, {
+      const res = await fetch(`${API}/financeiro/clientes/empresa/${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

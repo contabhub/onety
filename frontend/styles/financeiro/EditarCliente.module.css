@@ -1,210 +1,311 @@
-/* EditarCliente Component Styles */
+/* ===== NOVO CLIENTE DRAWER STYLES ===== */
 
+/* Container principal do drawer */
 .editarClienteOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  z-index: 10000;
+  background-color: transparent;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: flex-end;
-  z-index: 50;
+  transition: opacity 300ms ease-out;
+}
+
+.editarClienteOverlay.closing {
+  opacity: 0;
 }
 
 .editarClienteContainer {
   width: 100%;
-  background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
-  border-top-left-radius: var(--onity-radius-m);
-  border-top-right-radius: var(--onity-radius-m);
+  background: var(--onity-color-primary);
+  border-radius: 16px 16px 0 0;
   box-shadow: var(--onity-elev-high);
   transition: transform 300ms ease-out;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 10001;
+  transform: translateY(0);
 }
 
+.editarClienteContainer.closing {
+  transform: translateY(100%);
+}
+
+.editarClienteContainerOpen {
+  transform: translateY(0);
+}
+
+.editarClienteContainerClosed {
+  transform: translateY(100%);
+}
+
+/* Header do drawer */
 .editarClienteHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--onity-space-l);
+  padding: 24px;
   border-bottom: 1px solid var(--onity-color-border);
-  background: var(--onity-color-surface);
+  background: var(--onity-color-primary);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .editarClienteTitle {
-  font-size: var(--onity-type-heading-size);
-  font-weight: var(--onity-type-heading-weight);
+  font-size: 23px;
+  font-weight: 600;
   color: var(--onity-color-text);
   margin: 0;
 }
 
 .editarClienteCloseButton {
+  height: 32px;
+  width: 32px;
+  padding: 0;
   background: transparent;
   border: none;
-  padding: var(--onity-space-xs);
-  border-radius: var(--onity-radius-xs);
-  color: var(--onity-color-text);
+  color: var(--onity-icon-secondary);
   cursor: pointer;
-  transition: background-color 120ms ease, color 120ms ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  border-radius: 4px;
+  transition: color 120ms ease;
 }
 
 .editarClienteCloseButton:hover {
-  background-color: var(--onity-color-bg);
-  color: var(--onity-icon-secondary);
+  color: var(--onity-color-text);
 }
 
+.editarClienteCloseIcon {
+  height: 16px;
+  width: 16px;
+}
+
+/* Conteúdo do drawer */
 .editarClienteContent {
   flex: 1;
   overflow-y: auto;
-  padding: var(--onity-space-l);
 }
 
 .editarClienteForm {
+  padding: 24px;
+  background: var(--onity-color-primary);
+}
+
+/* Grid layouts */
+.editarClienteGrid1Col {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--onity-space-m);
+  gap: 16px;
+}
+
+.editarClienteGrid2Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.editarClienteGrid3Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.editarClienteGrid4Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.editarClienteGrid5Col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 @media (min-width: 768px) {
-  .editarClienteForm {
+  .editarClienteGrid2Col {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-
-@media (min-width: 1024px) {
-  .editarClienteForm {
+  
+  .editarClienteGrid3Col {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .editarClienteGrid4Col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .editarClienteGrid5Col {
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
+/* Form fields */
 .editarClienteField {
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-xs);
-}
-
-.editarClienteFieldFull {
-  grid-column: 1 / -1;
+  position: relative;
+  z-index: 1;
 }
 
 .editarClienteLabel {
   font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-type-body-weight);
+  font-weight: 500;
   color: var(--onity-color-text);
+  margin: 0;
 }
 
+.editarClienteFieldWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editarClienteInfoButton {
+  background: transparent;
+  border: none;
+  color: #B0AFC1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: all 120ms ease;
+}
+
+.editarClienteInfoButton:hover {
+  color: #1E88E5;
+}
+
+.editarClienteInfoIcon {
+  height: 16px;
+  width: 16px;
+}
+
+/* Input fields */
 .editarClienteInput {
   width: 100%;
-  background: var(--onity-color-surface);
-  color: var(--onity-color-text);
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
   padding: var(--onity-space-s) var(--onity-space-m);
-  outline: none;
-  transition: box-shadow 120ms ease, border-color 120ms ease;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 5px;
   font-size: var(--onity-type-body-size);
-  font-weight: 400;
-  min-height: 48px;
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
+  outline: none;
 }
 
-.editarClienteInput:focus {
-  border-color: var(--onity-color-primary);
-  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+.editarClienteInputLarge {
+  min-height: 27px;
+  font-size: 16px;
+  border-radius: 7px;
 }
 
-.editarClienteInput:hover {
-  border-color: var(--onity-color-primary);
-  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+.editarClienteInputExtraWide {
+  min-height: 27px;
+  font-size: 16px;
+  border-radius: 7px;
+  width: 100%;
+  min-width: 300px;
+}
+
+.editarClienteTextareaLarge {
+  min-height: 27px;
+  font-size: 16px;
+  border-radius: 7px;
+  width: 98%;
+  min-width: 400px;
 }
 
 .editarClienteInput::placeholder {
   color: var(--onity-icon-secondary);
-  opacity: 0.8;
-}
-
-.editarClienteTextarea {
-  width: 100%;
-  background: var(--onity-color-surface);
-  color: var(--onity-color-text);
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-s) var(--onity-space-m);
-  outline: none;
-  transition: box-shadow 120ms ease, border-color 120ms ease;
-  font-size: var(--onity-type-body-size);
   font-weight: 400;
-  min-height: 100px;
-  resize: vertical;
-  font-family: var(--onity-font-family-sans);
 }
 
-.editarClienteTextarea:focus {
+.editarClienteInput:hover {
   border-color: var(--onity-color-primary);
-  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
-}
-
-.editarClienteTextarea:hover {
-  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
-.editarClienteTextarea::placeholder {
-  color: var(--onity-icon-secondary);
-  opacity: 0.8;
+.editarClienteInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
 }
 
+/* Input com botão */
+.editarClienteInputWithButton {
+  display: flex;
+  gap: 8px;
+}
+
+.editarClienteInputWithButton .editarClienteInput {
+  flex: 1;
+}
+
+/* Select fields */
 .editarClienteSelectTrigger {
   width: 100%;
-  background: var(--onity-color-surface);
-  color: var(--onity-color-text);
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
   padding: var(--onity-space-s) var(--onity-space-m);
-  outline: none;
-  transition: box-shadow 120ms ease, border-color 120ms ease;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 5px;
   font-size: var(--onity-type-body-size);
-  font-weight: 400;
-  min-height: 48px;
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
 }
 
 .editarClienteSelectTrigger:hover {
   border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
   box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
 }
 
+.editarClienteSelectTrigger:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
+}
+
 .editarClienteSelectContent {
-  background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-high);
-  padding: var(--onity-space-xs);
-  z-index: 1000;
+  z-index: 10002;
 }
 
 .editarClienteSelectItem {
-  padding: var(--onity-space-s) var(--onity-space-m);
-  border-radius: var(--onity-radius-xs);
   color: var(--onity-color-text);
-  font-size: var(--onity-type-body-size);
+  padding: 12px 16px;
   cursor: pointer;
-  transition: background-color 120ms ease, color 120ms ease;
-  margin: 2px 0;
+  transition: all 0.2s ease;
+  border-radius: var(--onity-radius-xs);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .editarClienteSelectItem:hover {
@@ -212,49 +313,398 @@
   color: var(--onity-color-text);
 }
 
-.editarClienteFooter {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: var(--onity-space-m);
-  border-top: 1px solid var(--onity-color-border);
-  background: var(--onity-color-surface);
-  gap: var(--onity-space-s);
-}
-
-.editarClienteButton {
-  padding: var(--onity-space-s) var(--onity-space-l);
-  border-radius: var(--onity-radius-xs);
-  font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-type-body-weight);
-  cursor: pointer;
-  transition: all 120ms ease;
-  border: none;
-  outline: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-}
-
-.editarClienteButtonCancel {
-  background: transparent;
-  color: var(--onity-color-text);
-  border: 1px solid var(--onity-color-border);
-}
-
-.editarClienteButtonCancel:hover {
+.editarClienteSelectItem:focus {
   background-color: var(--onity-color-bg);
   color: var(--onity-color-text);
 }
 
-.editarClienteButtonSave {
-  background: rgba(30, 136, 229, 0.2);
-  color: #26a6eb;
-  border: 1px solid rgba(30, 136, 229, 0.3);
+/* Checkbox */
+.editarClienteCheckboxContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.editarClienteButtonSave:hover {
-  background: rgba(30, 136, 229, 0.3);
-  color: #26a6eb;
+.editarClienteCheckboxItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editarClienteCheckboxLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+/* Radio Group */
+.editarClienteRadioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editarClienteRadioItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editarClienteRadioLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+/* Accordion */
+.editarClienteAccordionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editarClienteAccordionItem {
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+  overflow: hidden;
+}
+
+.editarClienteAccordionTrigger {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  transition: background-color 120ms ease;
+}
+
+.editarClienteAccordionTrigger:hover {
+  background: var(--onity-color-bg);
+}
+
+.editarClienteAccordionContent {
+  padding: 0 16px 16px 16px;
+}
+
+/* Buttons */
+.editarClienteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  min-height: 40px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: 12px;
+}
+
+.editarClienteButton:hover {
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
+
+.editarClienteButton:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.editarClienteButton:active { 
+  transform: none; 
+}
+
+.editarClienteButtonOutline {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid transparent;
+  min-height: 40px;
+}
+
+.editarClienteButtonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid transparent;
+  min-height: 40px;
+}
+
+.editarClienteButtonSmall {
+  padding: 6px 12px;
+  font-size: 13px;
+  min-height: 36px;
+  border-radius: 6px;
+}
+
+.editarClienteButtonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.editarClienteButtonSecondary {
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid transparent;
+  min-height: 40px;
+}
+
+/* Contact Card */
+.editarClienteContactCard {
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.editarClienteContactHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.editarClienteContactTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.editarClienteRemoveButton {
+  background: transparent;
+  border: none;
+  color: var(--onity-color-error);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 120ms ease;
+}
+
+.editarClienteRemoveButton:hover {
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+}
+
+.editarClienteAddContactButton {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: 12px 16px;
+  border-radius: var(--onity-radius-m);
+  cursor: pointer;
+  transition: all 120ms ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  justify-content: center;
+}
+
+.editarClienteAddContactButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* Help text */
+.editarClienteHelpText {
+  font-size: 12px;
+  color: var(--onity-icon-secondary);
+  margin-top: 4px;
+}
+
+/* Error message */
+.editarClienteErrorMessage {
+  color: var(--onity-color-error);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Textarea */
+.editarClienteTextarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.editarClienteTextarea::placeholder {
+  color: var(--onity-icon-secondary);
+  font-weight: 400;
+}
+
+.editarClienteTextarea:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.editarClienteTextarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Footer do drawer */
+.editarClienteFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-top: 1px solid var(--onity-color-border);
+  background: var(--onity-color-primary);
+  position: sticky;
+  bottom: 0;
+}
+
+.editarClienteCancelButton {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 120ms ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.editarClienteCancelButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.editarClienteSaveButton {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 120ms ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.editarClienteSaveButton:hover {
+  background: var(--onity-color-primary-hover);
+}
+
+/* Utility classes */
+.editarClienteSpaceY2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editarClienteSpaceY4 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editarClienteFlex {
+  display: flex;
+}
+
+.editarClienteFontMedium {
+  font-weight: 500;
+}
+
+.editarClienteH4 {
+  height: 16px;
+  width: 16px;
+}
+
+.editarClienteW4 {
+  width: 16px;
+}
+
+.editarClienteMr2 {
+  margin-right: 8px;
+}
+
+.editarClienteTextRed400 {
+  color: var(--onity-color-error);
+}
+
+.editarClienteTextWhite {
+  color: var(--onity-color-text);
+}
+
+.editarClienteTextXl {
+  font-size: 20px;
+}
+
+.editarClienteMinH120px {
+  min-height: 120px;
+}
+
+/* Responsive utilities */
+@media (min-width: 768px) {
+  .editarClienteMdGrid2Col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .editarClienteMdGrid3Col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .editarClienteMdGrid4Col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .editarClienteMdGrid5Col {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .editarClienteLgGrid4Col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .editarClienteLgGrid5Col {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
