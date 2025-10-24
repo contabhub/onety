@@ -1,0 +1,809 @@
+/* Produtos e Serviços - CSS Module com Tokens Onety */
+
+/* ===== LAYOUT BASE ===== */
+.page {
+  padding: var(--onity-space-l);
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+  background: var(--onity-color-bg);
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--onity-color-surface);
+  padding: var(--onity-space-l);
+  border-radius: var(--onity-radius-m);
+  margin-bottom: var(--onity-space-l);
+  border: 1px solid var(--onity-color-border);
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.headerSubtitle {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+/* ===== BOTÕES PRINCIPAIS ===== */
+.btnNew {
+  background: transparent;
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary-contrast);
+  transition: all 120ms ease;
+}
+
+.btnNew:hover {
+  background: var(--onity-color-primary-contrast);
+  color: var(--onity-dark-primary-deep);
+  border-color: var(--onity-color-primary-contrast);
+}
+
+.btnSecondary {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+  transition: all 120ms ease;
+}
+
+.btnSecondary:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.btnDangerOutline {
+  background: transparent;
+  border: 1px solid var(--onity-color-error);
+  color: var(--onity-color-error);
+  transition: all 120ms ease;
+}
+
+.btnDangerOutline:hover {
+  background: var(--onity-color-error);
+  color: var(--onity-color-error-contrast);
+}
+
+/* ===== CARDS E CONTEÚDO ===== */
+.filtersCard {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-m);
+  transition: all 120ms ease;
+}
+
+.filtersCard:hover {
+  border-color: var(--onity-color-border);
+  box-shadow: var(--onity-elev-medium);
+}
+
+.cardContentPadded {
+  padding: var(--onity-space-l);
+}
+
+.filtersRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+@media (min-width: 1024px) {
+  .filtersRow {
+    flex-direction: row;
+  }
+}
+
+.flex1 {
+  flex: 1;
+}
+
+/* ===== LABELS E FORMULÁRIOS ===== */
+.labelSmall {
+  font-size: var(--onity-type-caption-size);
+  font-weight: var(--onity-type-caption-weight);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
+  display: block;
+}
+
+.searchWrap {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--onity-space-s);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+.searchInput {
+  padding: 2px 2px 2px 30px;
+  width: 90%;
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  transition: all 120ms ease;
+}
+
+.searchInput:focus {
+  border-color: var(--onity-color-info);
+}
+
+/* ===== SELECT COMPONENTS ===== */
+.selectTriggerSmall {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  min-height: 40px;
+  cursor: pointer;
+  transition: all 120ms ease;
+  outline: none;
+}
+
+.selectTriggerSmall:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.selectTriggerSmall:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+/* ===== BARRA DE AÇÕES ===== */
+.actionsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actionsLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.textMutedSmall {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--onity-icon-secondary);
+}
+
+/* ===== TABELA ===== */
+.tableCard {
+  background: var(--onity-color-surface);
+  border-radius: 8px;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-med);
+  overflow: hidden;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeadRow {
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
+}
+
+.tableHeadCell {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+  text-align: left;
+  font-size: 15px;
+}
+
+.tableHeadCellCheckbox {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+  text-align: left;
+  width: 48px;
+}
+
+.tableHeadCell:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.tableHeadCell:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.tableEmpty {
+  text-align: center;
+  color: var(--onity-icon-secondary);
+  padding: var(--onity-space-l);
+  font-size: var(--onity-type-body-size);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--onity-color-border);
+  transition: all 120ms ease;
+}
+
+.tableRow:not(:last-child) {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background: var(--onity-color-bg);
+}
+
+.tableCell {
+  padding: 16px 24px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 15px;
+  color: var(--onity-color-text);
+}
+
+.tableCellCheckbox {
+  padding: 16px 24px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 15px;
+  color: var(--onity-color-text);
+  width: 48px;
+}
+
+.checkbox {
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xs);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.checkbox:checked {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.clienteName {
+  padding: var(--onity-space-s);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.clienteName:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+/* ===== BADGES ===== */
+.statusButton {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.statusButton:hover {
+  opacity: 0.8;
+}
+
+.badgeActive,
+.badgeInactive {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-block;
+  line-height: normal;
+  vertical-align: middle;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  border: 1px solid var(--text-color);
+}
+
+.badgeActive {
+  --bg-color: color-mix(in srgb, var(--onity-color-success) 12%, transparent);
+  --text-color: var(--onity-color-success);
+}
+
+.badgeInactive {
+  --bg-color: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  --text-color: var(--onity-color-error);
+}
+
+.badgeCategoria {
+  background: color-mix(in srgb, var(--onity-color-info) 20%, var(--onity-color-surface));
+  color: var(--onity-color-info);
+  border: 1px solid color-mix(in srgb, var(--onity-color-info) 30%, var(--onity-color-border));
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  display: inline-flex;
+  align-items: center;
+}
+
+.badgeProduto {
+  background: color-mix(in srgb, var(--onity-color-info) 20%, var(--onity-color-surface));
+  color: var(--onity-color-info);
+  border: 1px solid color-mix(in srgb, var(--onity-color-info) 30%, var(--onity-color-border));
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  display: inline-flex;
+  align-items: center;
+}
+
+.badgeServico {
+  background: color-mix(in srgb, #9C27B0 20%, var(--onity-color-surface));
+  color: #9C27B0;
+  border: 1px solid color-mix(in srgb, #9C27B0 30%, var(--onity-color-border));
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ===== DROPDOWN ===== */
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownTrigger {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-icon-secondary);
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+  padding: var(--onity-space-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdownTrigger:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.dropdownContent {
+  position: fixed;
+  width: 192px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  z-index: 9999;
+  padding: var(--onity-space-xs) 0;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background: transparent;
+  border: none;
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.dropdownItem:hover {
+  background: var(--onity-color-bg);
+}
+
+.dropdownItemDanger {
+  color: var(--onity-color-error);
+}
+
+.dropdownItemPrimary {
+  color: var(--onity-color-primary);
+}
+
+/* ===== MODAL DE EDIÇÃO ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContainer {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 400px;
+  margin: var(--onity-space-m);
+  box-shadow: var(--onity-elev-high);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-l);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-heading-size);
+  font-weight: var(--onity-type-heading-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.modalCloseButton {
+  background: transparent;
+  border: none;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+}
+
+.modalCloseButton:hover {
+  background: var(--onity-color-surface-hover);
+  color: var(--onity-color-text);
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.formLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+}
+
+.formInput {
+  padding: var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  transition: border-color 120ms ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+}
+
+.modalCancelButton {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  background: transparent;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modalCancelButton:hover {
+  background: var(--onity-color-surface-hover);
+}
+
+.modalSaveButton {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modalSaveButton:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+/* ===== PAGINAÇÃO ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+  padding: 10px 10px 10px 10px;
+}
+
+.paginationInfo {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.paginationSelect {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  min-height: 40px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.paginationSelect:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.paginationSelect:focus {
+  border-color: var(--onity-color-primary);
+  outline: none;
+}
+
+.paginationArrow {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationArrow:hover:not(:disabled) {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.paginationArrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButtonActive {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationButtonActive:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+/* ===== LOADING ===== */
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xl) 0;
+  gap: var(--onity-space-m);
+}
+
+.notFoundIcon {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  margin-bottom: var(--onity-space-m);
+}
+
+.notFoundIcon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 4px solid var(--onity-color-primary);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.notFoundIcon::after {
+  content: '?';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--onity-color-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ===== MODAL DE EDIÇÃO ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 400px;
+  margin: var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-elev-high);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-m);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.modalCloseButton {
+  background: transparent;
+  border: none;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  padding: var(--onity-space-xs);
+  border-radius: var(--onity-radius-xs);
+  transition: all 120ms ease;
+}
+
+.modalCloseButton:hover {
+  color: var(--onity-color-text);
+  background: var(--onity-color-bg);
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.formLabel {
+  font-size: var(--onity-type-caption-size);
+  font-weight: var(--onity-type-caption-weight);
+  color: var(--onity-color-text);
+}
+
+
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+}
+
+.modalCancelButton {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modalCancelButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.modalSaveButton {
+  background: var(--onity-color-primary);
+  border: 1px solid var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.modalSaveButton:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}

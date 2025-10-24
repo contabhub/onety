@@ -71,8 +71,20 @@ export default function NovoProdutoServicoDrawer({
       return;
     }
 
-    const empresaId = localStorage.getItem("empresaId");
+    // Buscar empresaId do userData (prioridade) ou do localStorage direto
+    const userData = localStorage.getItem("userData");
     const token = localStorage.getItem("token");
+
+    let empresaId;
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      empresaId = parsedUserData.EmpresaId || parsedUserData.empresa?.id;
+    }
+    
+    // Fallback para localStorage direto
+    if (!empresaId) {
+      empresaId = localStorage.getItem("empresaId");
+    }
 
     if (!empresaId || !token || !API) {
       console.error("EmpresaId ou Token não encontrados");
@@ -83,7 +95,7 @@ export default function NovoProdutoServicoDrawer({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API}/produtos-servicos`, {
+      const response = await fetch(`${API}/financeiro/produtos-servicos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +104,7 @@ export default function NovoProdutoServicoDrawer({
         body: JSON.stringify({
           nome: formData.nome.trim(),
           tipo: formData.tipo,
-          company_id: parseInt(empresaId),
+          empresa_id: parseInt(empresaId),
         }),
       });
 

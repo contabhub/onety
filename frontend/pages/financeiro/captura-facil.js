@@ -493,27 +493,6 @@ export default function CapturaFacilPage() {
               </CardContent>
             </Card>
 
-            {/* <Card className="bg-gradient-to-r from-[#1E88E5] to-[#9C27B0] border-0">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-white">Envie por WhatsApp ou E-mail!</CardTitle>
-                    <p className="text-white/80 text-sm mt-1">Clique aqui e configure de forma simples.</p>
-                    <div className="mt-3 flex gap-2">
-                      <Button variant="secondary" className="bg-white/10 text-white hover:bg-white/20">
-                        <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
-                      </Button>
-                      <Button variant="secondary" className="bg-white/10 text-white hover:bg-white/20">
-                        <Mail className="h-4 w-4 mr-2" /> E-mail
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="shrink-0 w-28 h-20 rounded-md bg-white/10 flex items-center justify-center">
-                    <ImageIcon className="text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card> */}
 
             <div className={styles.capturaFacilSection}>
               <div className={styles.capturaFacilSectionHeader}>

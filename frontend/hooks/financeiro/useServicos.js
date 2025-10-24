@@ -10,8 +10,21 @@ export function useServicos(options) {
       setIsLoading(true);
       setError(null);
       
-      const companyId = localStorage.getItem("empresaId");
+      // Buscar empresaId do userData (prioridade) ou do localStorage direto
+      const userData = localStorage.getItem("userData");
       const token = localStorage.getItem("token");
+      
+      let companyId = options?.empresaId;
+      
+      if (!companyId && userData) {
+        const parsedUserData = JSON.parse(userData);
+        companyId = parsedUserData.EmpresaId || parsedUserData.empresa?.id;
+      }
+      
+      // Fallback para localStorage direto
+      if (!companyId) {
+        companyId = localStorage.getItem("empresaId");
+      }
       
       if (!companyId || !token) {
         setError("Dados de autenticação não encontrados");
@@ -19,13 +32,14 @@ export function useServicos(options) {
       }
 
       // Construir URL com filtro de status se fornecido
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/produtos-servicos/company/${companyId}/servicos`;
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/financeiro/produtos-servicos/empresa/${companyId}/servicos`;
       
       if (options?.status) {
         url += `?status=${options.status}`;
       }
 
       console.log("🔍 URL da requisição:", url);
+      console.log("🏢 CompanyId usado:", companyId);
 
       const response = await fetch(url, {
         headers: {
@@ -70,7 +84,7 @@ export function useServicos(options) {
         throw new Error("Token de autenticação não encontrado");
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/produtos-servicos/${id}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/produtos-servicos/${id}/status`, {
         method: 'PATCH',
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +135,7 @@ export function useServicos(options) {
       console.log("📤 Enviando dados do serviço:", servicoData);
 
       // Tentar criar usando a rota de produtos/serviços (se existir)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/produtos-servicos`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/produtos-servicos`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
