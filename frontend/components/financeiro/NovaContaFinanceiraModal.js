@@ -175,30 +175,6 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
     setSelectedTipo(tipo);
   };
 
-  const [empresaId, setEmpresaId] = useState(null);
-
-  useEffect(() => {
-    const updateEmpresaId = () => {
-      const stored = localStorage.getItem('empresaId');
-      setEmpresaId(stored);
-    };
-
-    window.addEventListener('storage', updateEmpresaId);
-    updateEmpresaId();
-
-    return () => window.removeEventListener('storage', updateEmpresaId);
-  }, []);
-
-  useEffect(() => {
-    const checkEmpresaChange = () => {
-      const currentEmpresaId = localStorage.getItem('empresaId');
-      if (currentEmpresaId !== empresaId) {
-        setEmpresaId(currentEmpresaId);
-      }
-    };
-    const interval = setInterval(checkEmpresaChange, 1000);
-    return () => clearInterval(interval);
-  }, [empresaId]);
 
   const [ofxBase64, setOfxBase64] = useState(null);
 
@@ -270,10 +246,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const company_id = empresaId;
-      const userData = localStorage.getItem("userData");
-      const user = userData ? JSON.parse(userData) : null;
-      const cliente_id = user?.id || null;
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const company_id = userData.EmpresaId;
+      const cliente_id = userData.id || null;
 
       // Preparar dados do Inter se habilitado
       let interCertB64 = null;
@@ -293,14 +268,15 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
       }
 
       // 1. Criar conta na tabela contas tradicional
-      const responseContaTradicional = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contas`, {
+      const responseContaTradicional = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contas-api`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          company_id,
+          item_id: `manual-${Date.now()}`, // ID único para contas manuais
+          empresa_id: company_id,
           cliente_id,
           banco: formData.banco,
           descricao_banco: formData.descricao,
@@ -1269,10 +1245,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const company_id = Number(localStorage.getItem("empresaId"));
-      const userData = localStorage.getItem("userData");
-      const user = userData ? JSON.parse(userData) : null;
-      const cliente_id = user?.id ? Number(user.id) : null;
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const company_id = userData.EmpresaId;
+      const cliente_id = userData.id ? Number(userData.id) : null;
 
       // Preparar dados do Inter se habilitado
       let interCertB64 = null;
