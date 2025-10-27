@@ -2,18 +2,6 @@
 
 import { useState, useRef } from "react";
 import { Button } from "./botao";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog";
-import { Label } from "./label";
-import { Input } from "./input";
-import { Card, CardContent, CardHeader, CardTitle } from "./card";
-import { Badge } from "./badge";
 import { 
   Upload, 
   FileText, 
@@ -82,8 +70,9 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
 
     try {
       setIsLoading(true);
-      const empresaId = localStorage.getItem("empresaId");
       const token = localStorage.getItem("token");
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const empresaId = userData.EmpresaId;
 
       if (!empresaId || !token || !API) {
         toast.error("Erro de autenticação. Faça login novamente.");
@@ -93,7 +82,7 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
       const formData = new FormData();
       formData.append("arquivo", selectedFile);
 
-      const response = await fetch(`${API}/import/movimentacoes/${empresaId}`, {
+      const response = await fetch(`${API}/financeiro/importar/movimentacoes/${empresaId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -130,8 +119,9 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
 
     try {
       setIsImporting(true);
-      const empresaId = localStorage.getItem("empresaId");
       const token = localStorage.getItem("token");
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const empresaId = userData.EmpresaId;
 
       if (!empresaId || !token || !API) {
         toast.error("Erro de autenticação. Faça login novamente.");
@@ -142,7 +132,7 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
       formData.append("arquivo", selectedFile);
       formData.append("save", "true");
 
-      const response = await fetch(`${API}/import/movimentacoes/${empresaId}`, {
+      const response = await fetch(`${API}/financeiro/importar/movimentacoes/${empresaId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -205,30 +195,35 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
     return String(value);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={styles.dialogContent}>
-        <DialogHeader>
-          <DialogTitle className={styles.dialogTitle}>
+    <div className={styles.modalOverlay} onClick={handleClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3 className={styles.modalTitle}>
             <Upload className={styles.dialogIcon} />
             Importar Movimentações
-          </DialogTitle>
-          <DialogDescription className={styles.dialogDescription}>
-            Faça upload de uma planilha Excel ou CSV para importar movimentações financeiras.
-            <br />
-            <span className={styles.dialogDescriptionSmall}>
-              Formatos aceitos: .xlsx, .xls, .csv (máximo 10MB)
-            </span>
-          </DialogDescription>
-        </DialogHeader>
+          </h3>
+          <button onClick={handleClose} className={styles.closeButton}>
+            <X className={styles.closeIcon} />
+          </button>
+        </div>
+        <p className={styles.modalDescription}>
+          Faça upload de uma planilha Excel ou CSV para importar movimentações financeiras.
+          <br />
+          <span className={styles.dialogDescriptionSmall}>
+            Formatos aceitos: .xlsx, .xls, .csv (máximo 10MB)
+          </span>
+        </p>
 
         <div className={styles.formContainer}>
           {/* Upload Section */}
-          <Card className={styles.card}>
-            <CardHeader className={styles.cardHeader}>
-              <CardTitle className={styles.cardTitle}>1. Selecionar Arquivo</CardTitle>
-            </CardHeader>
-            <CardContent className={styles.cardContent}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h4 className={styles.cardTitle}>1. Selecionar Arquivo</h4>
+            </div>
+            <div className={styles.cardContent}>
               {!selectedFile ? (
                 <div 
                   className={styles.uploadArea}
@@ -251,21 +246,21 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                   }}
                 >
                   <Upload className={styles.uploadIcon} />
-                  <Label htmlFor="file-upload" className={styles.uploadLabel}>
+                  <label htmlFor="file-upload" className={styles.uploadLabel}>
                     <div className={styles.uploadLabel}>
                       Clique para selecionar um arquivo
                     </div>
                     <div className={styles.uploadDescription}>
                       ou arraste e solte aqui
                     </div>
-                  </Label>
-                  <Input
+                  </label>
+                  <input
                     id="file-upload"
                     ref={fileInputRef}
                     type="file"
                     accept=".xlsx,.xls,.csv"
                     onChange={handleFileSelect}
-                    className="hidden"
+                    className={styles.hiddenInput}
                   />
                 </div>
               ) : (
@@ -289,24 +284,24 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Preview Section */}
           {selectedFile && (
-            <Card className={styles.card}>
-              <CardHeader className={styles.cardHeader}>
-                <CardTitle className={styles.cardTitle}>
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h4 className={styles.cardTitle}>
                   <Eye className={styles.dialogIcon} />
                   2. Visualizar Dados
                   {hasPreview && (
-                    <Badge variant="secondary" className={styles.badgeCount}>
+                    <span className={styles.badgeCount}>
                       {totalRows} registros
-                    </Badge>
+                    </span>
                   )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className={styles.cardContent}>
+                </h4>
+              </div>
+              <div className={styles.cardContent}>
                 {!hasPreview ? (
                   <div className={styles.previewSection}>
                     <p className={styles.previewDescription}>
@@ -364,11 +359,11 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                           {previewData.map((row, index) => (
                             <tr key={index} className={styles.tableRow}>
                               <td>
-                                <Badge 
+                                <span 
                                   className={row.Tipo?.toLowerCase() === 'entrada' ? styles.badgeDefault : styles.badgeSecondary}
                                 >
                                   {row.Tipo || '-'}
-                                </Badge>
+                                </span>
                               </td>
                               <td className={styles.tableCell}>{formatValue(row.Vencimento)}</td>
                               <td className={styles.tableCell}>{formatValue(row.Pagamento)}</td>
@@ -383,13 +378,13 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Instructions */}
-          <Card className={styles.instructionsCard}>
-            <CardContent className={styles.cardContent}>
+          <div className={styles.instructionsCard}>
+            <div className={styles.cardContent}>
               <div className={styles.fileInfo}>
                 <AlertCircle className={styles.instructionsIcon} />
                 <div>
@@ -413,12 +408,12 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                   </ul>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Download Template */}
-          <Card className={styles.templateCard}>
-            <CardContent className={styles.cardContent}>
+          <div className={styles.templateCard}>
+            <div className={styles.cardContent}>
               <div className={styles.fileInfo}>
                 <Download className={styles.templateIcon} />
                 <div>
@@ -442,15 +437,15 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className={styles.dialogFooter}>
-          <Button variant="outline" onClick={handleClose} disabled={isImporting} className={`${styles.button} ${styles.buttonOutline}`}>
+        <div className={styles.modalFooter}>
+          <button onClick={handleClose} disabled={isImporting} className={`${styles.button} ${styles.buttonOutline}`}>
             Cancelar
-          </Button>
-          <Button 
+          </button>
+          <button 
             onClick={handleImport} 
             disabled={!selectedFile || !hasPreview || isImporting}
             className={`${styles.button} ${styles.buttonPrimary}`}
@@ -461,9 +456,9 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
               <CheckCircle className={styles.buttonIcon} />
             )}
             {isImporting ? "Importando..." : "Importar Dados"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 

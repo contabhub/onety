@@ -19,7 +19,7 @@
   font-weight: var(--onity-type-h1-weight);
   color: var(--onity-color-text);
   margin: 0;
-  line-height: var(--onity-type-h1-line-height);
+  line-height: 1.2;
 }
 
 .extratoMovimentacoesHeaderSubtitle {
@@ -364,15 +364,19 @@
   left: var(--onity-space-s);
   color: var(--onity-icon-secondary);
   z-index: 1;
+  pointer-events: none;
 }
 
 .extratoMovimentacoesSearchInput {
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-s);
   color: var(--onity-color-text);
-  background: transparent;
+  background: var(--onity-color-surface);
   transition: all 0.2s ease;
-  padding: 1px;
+  padding: var(--onity-space-s) var(--onity-space-s) var(--onity-space-s) var(--onity-space-xl);
+  width: 100%;
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line-height);
 }
 
 .extratoMovimentacoesSearchInput:focus {
@@ -655,12 +659,15 @@
 
 /* Dropdown */
 .extratoMovimentacoesDropdown {
+  position: fixed;
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-medium);
   padding: var(--onity-space-xs);
-  min-width: 160px;
+  min-width: 200px;
+  z-index: 1000;
+  animation: slideDown 0.2s ease;
 }
 
 .extratoMovimentacoesDropdownItem {
@@ -674,6 +681,9 @@
   background: none;
   width: 100%;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
 }
 
 .extratoMovimentacoesDropdownItem:hover {
@@ -700,16 +710,7 @@
 }
 
 /* Table Footer / Paginação */
-.extratoMovimentacoesPagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--onity-space-m);
-  background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-l);
-  box-shadow: var(--onity-elev-low);
-}
+
 
 .extratoMovimentacoesPaginationInfo {
   font-size: var(--onity-type-body-size);
@@ -826,15 +827,25 @@
   border-radius: 50%;
 }
 
-.extratoMovimentacoesLoadingText {
-  font-size: var(--onity-type-body-size);
-  color: var(--onity-color-text-secondary);
-  margin: 0;
+.extratoMovimentacoesInlineLoadingSpinner {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  border: 2px solid #1E88E5;
+  border-top-color: transparent;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.extratoMovimentacoesLoadingText {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text-secondary);
+  margin: 0;
 }
 
 /* Seção de ações */
@@ -912,7 +923,7 @@
 .extratoMovimentacoesTotalsValue {
   font-size: 18px;
   font-weight: 700;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-info);
   margin: 0;
 }
 
@@ -923,18 +934,23 @@
   justify-content: space-between;
   width: 100%;
   margin-top: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .extratoMovimentacoesPaginationInfo {
   font-size: 14px;
   color: var(--onity-color-text-secondary);
   margin: 0;
+  flex-shrink: 0;
 }
 
 .extratoMovimentacoesPaginationButtons {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .extratoMovimentacoesPaginationSelect {
@@ -1068,4 +1084,226 @@
   .extratoMovimentacoesTableCellValue {
     padding: var(--onity-space-s);
   }
+}
+
+.extratoMovimentacoesPaginationSelectMargin {
+  margin-right: 16px;
+}
+
+/* Classes para substituir Tailwind */
+.extratoMovimentacoesInlineSpan {
+  margin-left: 8px;
+}
+
+.extratoMovimentacoesFlexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.extratoMovimentacoesRounded {
+  border-radius: 4px;
+}
+
+.extratoMovimentacoesFlexItemsCenter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.extratoMovimentacoesFlexCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.extratoMovimentacoesFlexColCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.extratoMovimentacoesFlexItemsCenterGap2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.extratoMovimentacoesFlexEnd {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.extratoMovimentacoesTextSm {
+  font-size: 14px;
+}
+
+.extratoMovimentacoesFontMedium {
+  font-weight: 500;
+}
+
+.extratoMovimentacoesModalText {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.extratoMovimentacoesCheckbox {
+  border-radius: 4px;
+}
+
+/* Botão Ver Completo */
+.extratoMovimentacoesVerCompletoBtn {
+  background: transparent;
+  border: 1px solid var(--onity-color-text);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: var(--onity-type-body-weight);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.extratoMovimentacoesVerCompletoBtn:hover {
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-color-info);
+
+}
+
+/* Modal de Detalhes */
+.extratoMovimentacoesModalDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+  margin-top: var(--onity-space-l);
+}
+
+.extratoMovimentacoesDetailRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.extratoMovimentacoesDetailLabel {
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text-secondary);
+  line-height: var(--onity-type-body-line-height);
+}
+
+.extratoMovimentacoesDetailValue {
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  line-height: var(--onity-type-body-line-height);
+  word-break: break-word;
+}
+
+/* Modal de Detalhes Customizado */
+.extratoMovimentacoesModalContainer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+}
+
+.extratoMovimentacoesModalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.extratoMovimentacoesModalContent {
+  position: relative;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--onity-space-l);
+  animation: slideUp 0.2s ease;
+}
+
+.extratoMovimentacoesModalHeader {
+  margin-bottom: var(--onity-space-l);
+}
+
+.extratoMovimentacoesModalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  line-height: var(--onity-type-h3-line-height);
+  margin: 0 0 var(--onity-space-xs) 0;
+}
+
+.extratoMovimentacoesModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Botão de Exclusão */
+.extratoMovimentacoesDeleteBtn {
+  background: var(--onity-color-error);
+  color: var(--onity-color-on-primary);
+  border: 1px solid var(--onity-color-error);
+  padding: var(--onity-space-xs) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.extratoMovimentacoesDeleteBtn:hover:not(:disabled) {
+  background: var(--onity-color-error-hover);
+  border-color: var(--onity-color-error-hover);
+}
+
+.extratoMovimentacoesDeleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
