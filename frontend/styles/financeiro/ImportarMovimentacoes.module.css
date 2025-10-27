@@ -1,18 +1,37 @@
 /* ImportarMovimentacoes.module.css */
 
-.dialogContent {
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.2s ease;
+}
+
+.modalContent {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-high);
   padding: var(--onity-space-l);
-  max-width: 4xl;
+  max-width: 1024px;
   max-height: 90vh;
   overflow-y: auto;
   width: 100%;
+  animation: slideUp 0.2s ease;
 }
 
-.dialogTitle {
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-s);
+}
+
+.modalTitle {
   color: var(--onity-color-text);
   font-size: var(--onity-type-h3-size);
   font-weight: var(--onity-type-h3-weight);
@@ -23,18 +42,51 @@
   gap: var(--onity-space-s);
 }
 
+.closeButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--onity-color-surface-hover);
+}
+
+.closeIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-text-secondary);
+}
+
+.modalDescription {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  margin: var(--onity-space-s) 0 var(--onity-space-l) 0;
+  opacity: 0.8;
+}
+
 .dialogIcon {
   width: 20px;
   height: 20px;
   color: var(--onity-color-primary);
 }
 
-.dialogDescription {
-  color: var(--onity-icon-secondary);
-  font-size: var(--onity-type-body-size);
-  line-height: var(--onity-type-body-line);
-  margin: var(--onity-space-s) 0 0 0;
-  opacity: 0.8;
+.modalFooter {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+  margin-top: var(--onity-space-l);
+}
+
+.hiddenInput {
+  display: none;
 }
 
 .dialogDescriptionSmall {
@@ -399,13 +451,6 @@
   background: rgba(255, 159, 67, 0.2);
 }
 
-.dialogFooter {
-  display: flex;
-  gap: var(--onity-space-s);
-  justify-content: flex-end;
-  margin-top: var(--onity-space-l);
-}
-
 .button {
   align-items: center;
   border-radius: var(--onity-radius-xs);
@@ -464,6 +509,26 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 

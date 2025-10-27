@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import styles from "../../styles/financeiro/extrato-movimentacoes.module.css";
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/financeiro/card';
 import { Button } from '../../components/financeiro/botao';
-import { Input } from '../../components/financeiro/input';
 import { Badge } from '../../components/financeiro/badge';
 import {
   Select,
@@ -166,6 +165,12 @@ export default function ExtratoMovimentacoesPage() {
     useState(false);
   const [downloadPlanilhasModal, setDownloadPlanilhasModal] =
     useState(false);
+  const [detailModal, setDetailModal] = useState({
+    isOpen: false,
+    movimentacao: null,
+  });
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
 
   // Estados para filtros de data
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -175,7 +180,8 @@ export default function ExtratoMovimentacoesPage() {
   const fetchTransacoes = async () => {
     try {
       setIsLoading(true);
-      const empresaId = localStorage.getItem("empresaId");
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const empresaId = userData.EmpresaId || localStorage.getItem("empresaId");
       const token = localStorage.getItem("token");
 
       if (!empresaId || !token) {
@@ -187,7 +193,7 @@ export default function ExtratoMovimentacoesPage() {
 
       // Buscar dados da rota transacoes (empresa)
       const responseEmpresa = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/transacoes/empresa/${empresaId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/empresa/${empresaId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -198,7 +204,7 @@ export default function ExtratoMovimentacoesPage() {
 
       // Buscar dados da rota transacoes-api (Pluggy)
       const responsePluggy = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/transacoes-api/company/${empresaId}/transacoes`,
+        `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes-api/company/${empresaId}/transacoes`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -435,8 +441,9 @@ export default function ExtratoMovimentacoesPage() {
 
     try {
       setIsUpdatingSituacao(transacaoId);
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const empresaId = userData.EmpresaId || localStorage.getItem("empresaId");
       const token = localStorage.getItem("token");
-      const empresaId = localStorage.getItem("empresaId");
 
       if (!token || !empresaId) {
         setError("Token ou empresaId não encontrado. Faça login novamente.");
@@ -457,7 +464,7 @@ export default function ExtratoMovimentacoesPage() {
 
         // Buscar a transação original da lista de dados Pluggy
         const transacoesPluggyResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes-api/company/${empresaId}/transacoes`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes-api/company/${empresaId}/transacoes`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -535,7 +542,7 @@ export default function ExtratoMovimentacoesPage() {
         };
 
         response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes-api/company/${empresaId}/transacao/${pluggyId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes-api/company/${empresaId}/transacao/${pluggyId}`,
           {
             method: "PUT",
             headers: {
@@ -549,7 +556,7 @@ export default function ExtratoMovimentacoesPage() {
         // Para transações OFX, usar a rota transacoes (mesmo que empresa)
         const idEmpresa = transacaoId.replace("empresa_", "");
         response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes/${idEmpresa}/situacao`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/${idEmpresa}/situacao`,
           {
             method: "PUT",
             headers: {
@@ -563,7 +570,7 @@ export default function ExtratoMovimentacoesPage() {
         // Para transações da empresa, usar a rota transacoes
         const idEmpresa = transacaoId.replace("empresa_", "");
         response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes/${idEmpresa}/situacao`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/${idEmpresa}/situacao`,
           {
             method: "PUT",
             headers: {
@@ -658,6 +665,35 @@ export default function ExtratoMovimentacoesPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeFilter, searchTerm, periodFilter, currentDate]);
+
+  // Função para abrir dropdown e calcular posição
+  const handleToggleDropdown = (event, movimentacaoId) => {
+    event.stopPropagation();
+    if (openDropdown === movimentacaoId) {
+      setOpenDropdown(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+      setOpenDropdown(movimentacaoId);
+    }
+  };
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdown && !event.target.closest(`[data-dropdown-id="${openDropdown}"]`)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   const filteredMovimentacoes = movimentacoes.filter((mov) => {
     // Filtro por período
@@ -906,8 +942,9 @@ export default function ExtratoMovimentacoesPage() {
 
     try {
       setIsDeleting(true);
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const empresaId = userData.EmpresaId || localStorage.getItem("empresaId");
       const token = localStorage.getItem("token");
-      const empresaId = localStorage.getItem("empresaId");
 
       if (!token || !empresaId) {
         setError("Token ou empresaId não encontrado. Faça login novamente.");
@@ -920,7 +957,7 @@ export default function ExtratoMovimentacoesPage() {
         // Para transações Pluggy, usar a rota transacoes-api
         const pluggyId = deleteModal.transacao.id.replace("pluggy_", "");
         response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes-api/company/${empresaId}/transacao/${pluggyId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes-api/company/${empresaId}/transacao/${pluggyId}`,
           {
             method: "DELETE",
             headers: {
@@ -933,7 +970,7 @@ export default function ExtratoMovimentacoesPage() {
         // Para transações OFX, usar a rota transacoes (mesmo que empresa)
         const transacaoId = deleteModal.transacao.id.replace("empresa_", "");
         response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes/${transacaoId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/${transacaoId}`,
           {
             method: "DELETE",
             headers: {
@@ -946,7 +983,7 @@ export default function ExtratoMovimentacoesPage() {
         // Para transações da empresa, usar a rota transacoes
         const transacaoId = deleteModal.transacao.id.replace("empresa_", "");
         response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/transacoes/${transacaoId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/${transacaoId}`,
           {
             method: "DELETE",
             headers: {
@@ -1080,9 +1117,8 @@ export default function ExtratoMovimentacoesPage() {
             Extrato de movimentações
           </h1>
           <p className={styles.extratoMovimentacoesHeaderSubtitle}>
-            Visualize todas as movimentações financeiras
             {movimentacoes.some((m) => m.origem === "pluggy") && (
-              <span className="ml-2">
+              <span className={styles.extratoMovimentacoesInlineSpan}>
                 •{" "}
                 <Badge className={styles.extratoMovimentacoesBadgePluggy}>
                   OpenFinance
@@ -1160,7 +1196,7 @@ export default function ExtratoMovimentacoesPage() {
             className={styles.extratoMovimentacoesImportBtn}
           >
             <Upload className={styles.extratoMovimentacoesActionIcon} />
-            Importar planilha
+            Importar
           </Button>
           <Button
             variant="outline"
@@ -1249,18 +1285,14 @@ export default function ExtratoMovimentacoesPage() {
                 Pesquisar no período selecionado
               </label>
               <div className={styles.extratoMovimentacoesSearchContainer}>
-                <Input
+                <Search className={styles.extratoMovimentacoesSearchIcon} size={16} />
+                <input
+                  type="text"
                   placeholder="Pesquisar por descrição, categoria, cliente, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
                   className={styles.extratoMovimentacoesSearchInput}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={styles.extratoMovimentacoesActionBtn}
-                >
-                </Button>
               </div>
             </div>
             <div className={styles.extratoMovimentacoesFilterGroup}>
@@ -1424,7 +1456,7 @@ export default function ExtratoMovimentacoesPage() {
           <CardContent className={styles.extratoMovimentacoesStatCardContent}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
-                <div className="flex items-center justify-center gap-1">
+                <div className={styles.extratoMovimentacoesFlexCenter}>
                   <p className={styles.extratoMovimentacoesStatCardTitle}>
                     Total do período (R$)
                   </p>
@@ -1515,7 +1547,7 @@ export default function ExtratoMovimentacoesPage() {
                   <th className={styles.extratoMovimentacoesTableHeaderCell}>
                     <input
                       type="checkbox"
-                      className="rounded"
+                      className={styles.extratoMovimentacoesCheckbox}
                       checked={
                         selectedItems.length ===
                           paginatedMovimentacoes.length &&
@@ -1525,9 +1557,9 @@ export default function ExtratoMovimentacoesPage() {
                     />
                   </th>
                   <th className={styles.extratoMovimentacoesTableHeaderText}>
-                    <div className="flex items-center gap-1">
+                    <div className={styles.extratoMovimentacoesFlexItemsCenter}>
                       Data
-                      <div className="flex flex-col">
+                      <div className={styles.extratoMovimentacoesFlexCol}>
                         <ArrowUp className={styles.extratoMovimentacoesTableSortIcon} />
                         <ArrowDown className={styles.extratoMovimentacoesTableSortIcon} />
                       </div>
@@ -1551,7 +1583,7 @@ export default function ExtratoMovimentacoesPage() {
                 {paginatedMovimentacoes.length === 0 ? (
                   <tr>
                     <td colSpan={6} className={styles.extratoMovimentacoesTableRowEmpty}>
-                      <div className="flex flex-col items-center ">
+                      <div className={styles.extratoMovimentacoesFlexColCenter}>
                         <div className={styles.extratoMovimentacoesEmptyIcon}>
                           ?
                         </div>
@@ -1568,7 +1600,7 @@ export default function ExtratoMovimentacoesPage() {
                       <td className={styles.extratoMovimentacoesTableCell}>
                         <input
                           type="checkbox"
-                          className="rounded"
+                          className={styles.extratoMovimentacoesCheckbox}
                           checked={selectedItems.includes(movimentacao.id)}
                           onChange={() => handleSelectItem(movimentacao.id)}
                         />
@@ -1577,11 +1609,13 @@ export default function ExtratoMovimentacoesPage() {
                         {movimentacao.data}
                       </td>
                       <td className={styles.extratoMovimentacoesTableCell}>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className={styles.extratoMovimentacoesTableCellPrimary}>
-                              {movimentacao.descricao}
-                            </p>
+                        <div className={styles.extratoMovimentacoesFlexItemsCenterGap2}>
+                          <button
+                            onClick={() => setDetailModal({ isOpen: true, movimentacao })}
+                            className={styles.extratoMovimentacoesVerCompletoBtn}
+                          >
+                            Ver completo
+                          </button>
                             {movimentacao.origem === "pluggy" && (
                               <Badge className={styles.extratoMovimentacoesBadgePluggy}>
                                 OpenFinance
@@ -1591,15 +1625,6 @@ export default function ExtratoMovimentacoesPage() {
                               <Badge className={styles.extratoMovimentacoesBadgeOfx}>
                                 OFX
                               </Badge>
-                            )}
-                          </div>
-                          <p className={styles.extratoMovimentacoesTableCellSecondary}>
-                          {movimentacao.cliente}
-                          </p>
-                          {movimentacao.cliente && (
-                            <p className={styles.extratoMovimentacoesTableCellSecondary}>
-                              {movimentacao.categoria}
-                            </p>
                           )}
                         </div>
                       </td>
@@ -1607,9 +1632,9 @@ export default function ExtratoMovimentacoesPage() {
                         {getStatusBadge(movimentacao.situacao)}
                       </td>
                       <td className={styles.extratoMovimentacoesTableCellValue}>
-                        <div className="flex items-center justify-end gap-2">
+                        <div className={styles.extratoMovimentacoesFlexEnd}>
                           <span
-                            className={`text-sm font-medium ${getValueColor(
+                            className={`${styles.extratoMovimentacoesTextSm} ${styles.extratoMovimentacoesFontMedium} ${getValueColor(
                               movimentacao.valor,
                               movimentacao.tipo
                             )}`}
@@ -1625,82 +1650,14 @@ export default function ExtratoMovimentacoesPage() {
                         </div>
                       </td>
                       <td className={styles.extratoMovimentacoesTableCell}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={isUpdatingSituacao === movimentacao.id}
-                              className={styles.extratoMovimentacoesActionBtn}
-                            >
-                              <MoreVertical className={styles.extratoMovimentacoesActionIcon} />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className={styles.extratoMovimentacoesDropdown}
-                          >
-                            <DropdownMenuItem
-                              onClick={() => handleEditTransacao(movimentacao)}
-                              disabled={movimentacao.origem === "pluggy" || movimentacao.origem === "Importação OFX"}
-                              className={`${
-                                movimentacao.origem === "pluggy" || movimentacao.origem === "Importação OFX"
-                                  ? `${styles.extratoMovimentacoesDropdownItem} opacity-50 cursor-not-allowed`
-                                  : styles.extratoMovimentacoesDropdownItem
-                              }`}
-                            >
-                              <Edit className={styles.extratoMovimentacoesActionIcon} />
-                              Editar
-                              {movimentacao.origem === "pluggy" &&
-                                " (não disponível)"}
-                              {movimentacao.origem === "Importação OFX" &&
-                                " (não disponível)"}
-                            </DropdownMenuItem>
-
-                            {/* Opções de mudança de situação */}
-                            {getSituacaoOptions(
-                              movimentacao.situacao,
-                              movimentacao.tipo,
-                              movimentacao.origem
-                            ).map((situacao) => (
-                              <DropdownMenuItem
-                                key={situacao}
-                                onClick={() =>
-                                  handleUpdateSituacao(
-                                    movimentacao.id,
-                                    situacao
-                                  )
-                                }
-                                disabled={
-                                  isUpdatingSituacao === movimentacao.id
-                                }
-                                className={styles.extratoMovimentacoesDropdownItem}
-                              >
-                                <div className="flex items-center">
-                                  {isUpdatingSituacao === movimentacao.id ? (
-                                    <div className="h-4 w-4 mr-2 animate-spin rounded border-2 border-[#1E88E5] border-t-transparent" />
-                                  ) : (
-                                    <CheckCircle className={styles.extratoMovimentacoesActionIcon} />
-                                  )}
-                                  Mudar para {situacao}
-                                </div>
-                              </DropdownMenuItem>
-                            ))}
-
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setDeleteModal({
-                                  isOpen: true,
-                                  transacao: movimentacao,
-                                })
-                              }
-                              className={`${styles.extratoMovimentacoesDropdownItem} danger`}
-                            >
-                              <Trash2 className={styles.extratoMovimentacoesActionIcon} />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <button
+                          onClick={(e) => handleToggleDropdown(e, movimentacao.id)}
+                          disabled={isUpdatingSituacao === movimentacao.id}
+                          className={styles.extratoMovimentacoesActionBtn}
+                          data-dropdown-id={movimentacao.id}
+                        >
+                          <MoreVertical className={styles.extratoMovimentacoesActionIcon} />
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -1749,8 +1706,7 @@ export default function ExtratoMovimentacoesPage() {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className={styles.extratoMovimentacoesPaginationSelect}
-                    style={{ marginRight: 16 }}
+                    className={`${styles.extratoMovimentacoesPaginationSelect} ${styles.extratoMovimentacoesPaginationSelectMargin}`}
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>
@@ -1804,57 +1760,230 @@ export default function ExtratoMovimentacoesPage() {
         </div>
       </div>
 
+      {/* Dropdown Flutuante */}
+      {openDropdown && paginatedMovimentacoes.find(m => m.id === openDropdown) && (
+        <div 
+          className={styles.extratoMovimentacoesDropdown}
+          style={{
+            top: `${dropdownPosition.top}px`,
+            right: `${dropdownPosition.right}px`
+          }}
+          data-dropdown-id={openDropdown}
+        >
+          {(() => {
+            const movimentacao = paginatedMovimentacoes.find(m => m.id === openDropdown);
+            if (!movimentacao) return null;
+            
+            return (
+              <>
+                <button
+                  onClick={() => {
+                    handleEditTransacao(movimentacao);
+                    setOpenDropdown(null);
+                  }}
+                  disabled={movimentacao.origem === "pluggy" || movimentacao.origem === "Importação OFX"}
+                  className={`${
+                    movimentacao.origem === "pluggy" || movimentacao.origem === "Importação OFX"
+                      ? `${styles.extratoMovimentacoesDropdownItem} opacity-50 cursor-not-allowed`
+                      : styles.extratoMovimentacoesDropdownItem
+                  }`}
+                >
+                  <Edit className={styles.extratoMovimentacoesActionIcon} />
+                  Editar
+                  {movimentacao.origem === "pluggy" &&
+                    " (não disponível)"}
+                  {movimentacao.origem === "Importação OFX" &&
+                    " (não disponível)"}
+                </button>
+
+                {/* Opções de mudança de situação */}
+                {getSituacaoOptions(
+                  movimentacao.situacao,
+                  movimentacao.tipo,
+                  movimentacao.origem
+                ).map((situacao) => (
+                  <button
+                    key={situacao}
+                    onClick={() => {
+                      handleUpdateSituacao(
+                        movimentacao.id,
+                        situacao
+                      );
+                      setOpenDropdown(null);
+                    }}
+                    disabled={
+                      isUpdatingSituacao === movimentacao.id
+                    }
+                    className={styles.extratoMovimentacoesDropdownItem}
+                  >
+                    <div className={styles.extratoMovimentacoesFlexItemsCenter}>
+                      {isUpdatingSituacao === movimentacao.id ? (
+                        <div className={styles.extratoMovimentacoesInlineLoadingSpinner} />
+                      ) : (
+                        <CheckCircle className={styles.extratoMovimentacoesActionIcon} />
+                      )}
+                      Mudar para {situacao}
+                    </div>
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => {
+                    setDeleteModal({
+                      isOpen: true,
+                      transacao: movimentacao,
+                    });
+                    setOpenDropdown(null);
+                  }}
+                  className={`${styles.extratoMovimentacoesDropdownItem} danger`}
+                >
+                  <Trash2 className={styles.extratoMovimentacoesActionIcon} />
+                  Excluir
+                </button>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Modal de Detalhes da Movimentação */}
+      {detailModal.isOpen && (
+        <div className={styles.extratoMovimentacoesModalContainer}>
+          <div 
+            className={styles.extratoMovimentacoesModalOverlay}
+            onClick={() => setDetailModal({ isOpen: false, movimentacao: null })}
+          />
+          <div className={styles.extratoMovimentacoesModalContent}>
+            <div className={styles.extratoMovimentacoesModalHeader}>
+              <h3 className={styles.extratoMovimentacoesModalTitle}>Detalhes da Movimentação</h3>
+            </div>
+            {detailModal.movimentacao && (
+              <div className={styles.extratoMovimentacoesModalDetails}>
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Descrição:</span>
+                  <span className={styles.extratoMovimentacoesDetailValue}>
+                    {detailModal.movimentacao.descricao}
+                  </span>
+                </div>
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Data:</span>
+                  <span className={styles.extratoMovimentacoesDetailValue}>
+                    {detailModal.movimentacao.data}
+                  </span>
+                </div>
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Categoria:</span>
+                  <span className={styles.extratoMovimentacoesDetailValue}>
+                    {detailModal.movimentacao.categoria || "Sem categoria"}
+                  </span>
+                </div>
+                {detailModal.movimentacao.cliente && (
+                  <div className={styles.extratoMovimentacoesDetailRow}>
+                    <span className={styles.extratoMovimentacoesDetailLabel}>Cliente:</span>
+                    <span className={styles.extratoMovimentacoesDetailValue}>
+                      {detailModal.movimentacao.cliente}
+                    </span>
+                  </div>
+                )}
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Situação:</span>
+                  <span className={styles.extratoMovimentacoesDetailValue}>
+                    {getStatusBadge(detailModal.movimentacao.situacao)}
+                  </span>
+                </div>
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Tipo:</span>
+                  <span className={styles.extratoMovimentacoesDetailValue}>
+                    {detailModal.movimentacao.tipo === "receita" ? "Receita" : 
+                     detailModal.movimentacao.tipo === "despesa" ? "Despesa" : 
+                     "Transferência"}
+                  </span>
+                </div>
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Valor:</span>
+                  <span className={`${styles.extratoMovimentacoesDetailValue} ${getValueColor(
+                    detailModal.movimentacao.valor,
+                    detailModal.movimentacao.tipo
+                  )}`}>
+                    {formatCurrency(detailModal.movimentacao.valor, detailModal.movimentacao.tipo)}
+                  </span>
+                </div>
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <span className={styles.extratoMovimentacoesDetailLabel}>Origem:</span>
+                  <span className={styles.extratoMovimentacoesDetailValue}>
+                    {detailModal.movimentacao.origem === "pluggy" ? "OpenFinance" :
+                     detailModal.movimentacao.origem === "Importação OFX" ? "Importação OFX" :
+                     "Empresa"}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className={styles.extratoMovimentacoesModalFooter}>
+              <button
+                onClick={() => setDetailModal({ isOpen: false, movimentacao: null })}
+                className={styles.extratoMovimentacoesSecondaryBtn}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Confirmação de Exclusão */}
-      <Dialog
-        open={deleteModal.isOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteModal({ isOpen: false, transacao: null });
-          }
-        }}
-      >
-        <DialogContent className={styles.extratoMovimentacoesDropdown}>
-          <DialogHeader>
-            <DialogTitle>Confirmar Exclusão</DialogTitle>
-            <DialogDescription>
-              <p>
+      {deleteModal.isOpen && (
+        <div className={styles.extratoMovimentacoesModalContainer}>
+          <div 
+            className={styles.extratoMovimentacoesModalOverlay}
+            onClick={() => !isDeleting && setDeleteModal({ isOpen: false, transacao: null })}
+          />
+          <div className={styles.extratoMovimentacoesModalContent}>
+            <div className={styles.extratoMovimentacoesModalHeader}>
+              <h3 className={styles.extratoMovimentacoesModalTitle}>Confirmar Exclusão</h3>
+            </div>
+            <div className={styles.extratoMovimentacoesModalDetails}>
+              <div className={styles.extratoMovimentacoesDetailRow}>
+                <p className={styles.extratoMovimentacoesDetailValue}>
                 Você tem certeza que quer excluir &ldquo;
                 {deleteModal.transacao?.descricao}&rdquo;?
               </p>
+              </div>
               {deleteModal.transacao?.origem === "pluggy" && (
-                <p className="mt-2 text-sm">
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <p className={styles.extratoMovimentacoesModalText}>
                   Esta transação foi sincronizada do OpenFinance e será removida
                   permanentemente.
                 </p>
+                </div>
               )}
               {deleteModal.transacao?.origem === "Importação OFX" && (
-                <p className="mt-2 text-sm">
+                <div className={styles.extratoMovimentacoesDetailRow}>
+                  <p className={styles.extratoMovimentacoesModalText}>
                   Esta transação foi importada via OFX e será removida
                   permanentemente.
                 </p>
+                </div>
               )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteModal({ isOpen: false, transacao: null })}
+            </div>
+            <div className={styles.extratoMovimentacoesModalFooter}>
+              <button
+                onClick={() => !isDeleting && setDeleteModal({ isOpen: false, transacao: null })}
               disabled={isDeleting}
               className={styles.extratoMovimentacoesSecondaryBtn}
             >
               Cancelar
-            </Button>
-            <Button
-              variant="destructive"
+              </button>
+              <button
               onClick={handleDeleteTransacao}
               disabled={isDeleting}
-              className={`${styles.extratoMovimentacoesDropdownItem} danger`}
+                className={styles.extratoMovimentacoesDeleteBtn}
             >
               {isDeleting ? "Excluindo..." : "Excluir"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Drawers de Edição */}
       <EditReceitaDrawer

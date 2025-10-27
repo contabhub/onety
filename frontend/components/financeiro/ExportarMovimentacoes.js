@@ -1,19 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./botao";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import { Label } from "./label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, X, ChevronDown } from "lucide-react";
 import { toast } from "react-toastify";
 import styles from "../../styles/financeiro/ExportarMovimentacoes.module.css";
 
@@ -22,6 +11,8 @@ export function ExportarMovimentacoes({ isOpen, onClose }) {
   const [mesSelecionado, setMesSelecionado] = useState("");
   const [anoSelecionado, setAnoSelecionado] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [showMesSelect, setShowMesSelect] = useState(false);
+  const [showAnoSelect, setShowAnoSelect] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,15 +39,16 @@ export function ExportarMovimentacoes({ isOpen, onClose }) {
   const handleExportar = async () => {
     try {
       setIsExporting(true);
-      const empresaId = localStorage.getItem("empresaId");
       const token = localStorage.getItem("token");
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const empresaId = userData.EmpresaId;
 
       if (!empresaId || !token || !API) {
         toast.error("Erro de autenticação. Faça login novamente.");
         return;
       }
 
-      let url = `${API}/export/movimentacoes/${empresaId}`;
+      let url = `${API}/financeiro/exportar/movimentacoes/${empresaId}`;
       
       if (tipoExportacao === "especifico") {
         if (!mesSelecionado || !anoSelecionado) {
@@ -137,94 +129,164 @@ export function ExportarMovimentacoes({ isOpen, onClose }) {
       setTipoExportacao("todos");
       setMesSelecionado("");
       setAnoSelecionado("");
+      setShowMesSelect(false);
+      setShowAnoSelect(false);
       onClose();
     }
   };
 
+  // Fechar selects ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const selectWrappers = document.querySelectorAll('[class*="selectWrapper"]');
+      const clickedOutside = Array.from(selectWrappers).every(wrapper => !wrapper.contains(event.target));
+      if (clickedOutside) {
+        setShowMesSelect(false);
+        setShowAnoSelect(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  if (!isOpen) return null;
+
+  const mesLabel = meses.find(m => m.value === mesSelecionado)?.label || "Selecione o mês";
+  const anoLabel = anos.find(a => a.value === anoSelecionado)?.label || "Selecione o ano";
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={styles.dialogContent}>
-        <DialogHeader>
-          <DialogTitle className={styles.dialogTitle}>
+    <div className={styles.modalOverlay} onClick={handleClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3 className={styles.modalTitle}>
             <Download className={styles.dialogIcon} />
             Exportar Movimentações
-          </DialogTitle>
-          <DialogDescription className={styles.dialogDescription}>
-            Escolha o período para exportar a planilha de movimentações financeiras.
-          </DialogDescription>
-        </DialogHeader>
+          </h3>
+          <button onClick={handleClose} className={styles.closeButton}>
+            <X className={styles.closeIcon} />
+          </button>
+        </div>
+        <p className={styles.modalDescription}>
+          Escolha o período para exportar a planilha de movimentações financeiras.
+        </p>
 
         <div className={styles.formContainer}>
-          <RadioGroup
-            value={tipoExportacao}
-            onValueChange={(value) => setTipoExportacao(value)}
-            className={styles.radioGroup}
-          >
-            <div className={styles.radioOption}>
-              <RadioGroupItem value="todos" id="todos" className={styles.radioItem} />
-              <Label htmlFor="todos" className={styles.radioLabel}>
-                Todo o período
-              </Label>
-            </div>
-            <div className={styles.radioOption}>
-              <RadioGroupItem value="especifico" id="especifico" className={styles.radioItem} />
-              <Label htmlFor="especifico" className={styles.radioLabel}>
-                Período específico
-              </Label>
-            </div>
-          </RadioGroup>
+          <div className={styles.radioGroup}>
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="tipoExportacao"
+                value="todos"
+                checked={tipoExportacao === "todos"}
+                onChange={(e) => setTipoExportacao(e.target.value)}
+                className={styles.radioInput}
+              />
+              <span className={styles.radioLabel}>Todo o período</span>
+            </label>
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="tipoExportacao"
+                value="especifico"
+                checked={tipoExportacao === "especifico"}
+                onChange={(e) => setTipoExportacao(e.target.value)}
+                className={styles.radioInput}
+              />
+              <span className={styles.radioLabel}>Período específico</span>
+            </label>
+          </div>
 
           {tipoExportacao === "especifico" && (
             <div className={styles.specificPeriodContainer}>
               <div className={styles.fieldContainer}>
-                <Label htmlFor="mes" className={styles.fieldLabel}>
+                <label htmlFor="mes" className={styles.fieldLabel}>
                   Mês
-                </Label>
-                <Select value={mesSelecionado} onValueChange={setMesSelecionado}>
-                  <SelectTrigger className={styles.selectTrigger}>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent className={styles.selectContent}>
-                    {meses.map((mes) => (
-                      <SelectItem key={mes.value} value={mes.value} className={styles.selectItem}>
-                        {mes.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </label>
+                <div className={styles.selectWrapper}>
+                  <button
+                    type="button"
+                    className={styles.selectTrigger}
+                    onClick={() => {
+                      setShowMesSelect(!showMesSelect);
+                      setShowAnoSelect(false);
+                    }}
+                  >
+                    <span>{mesLabel}</span>
+                    <ChevronDown className={styles.chevronIcon} />
+                  </button>
+                  {showMesSelect && (
+                    <div className={styles.selectContent}>
+                      {meses.map((mes) => (
+                        <button
+                          key={mes.value}
+                          type="button"
+                          className={`${styles.selectItem} ${mesSelecionado === mes.value ? styles.selectItemActive : ''}`}
+                          onClick={() => {
+                            setMesSelecionado(mes.value);
+                            setShowMesSelect(false);
+                          }}
+                        >
+                          {mes.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className={styles.fieldContainer}>
-                <Label htmlFor="ano" className={styles.fieldLabel}>
+                <label htmlFor="ano" className={styles.fieldLabel}>
                   Ano
-                </Label>
-                <Select value={anoSelecionado} onValueChange={setAnoSelecionado}>
-                  <SelectTrigger className={styles.selectTrigger}>
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent className={styles.selectContent}>
-                    {anos.map((ano) => (
-                      <SelectItem key={ano.value} value={ano.value} className={styles.selectItem}>
-                        {ano.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </label>
+                <div className={styles.selectWrapper}>
+                  <button
+                    type="button"
+                    className={styles.selectTrigger}
+                    onClick={() => {
+                      setShowAnoSelect(!showAnoSelect);
+                      setShowMesSelect(false);
+                    }}
+                  >
+                    <span>{anoLabel}</span>
+                    <ChevronDown className={styles.chevronIcon} />
+                  </button>
+                  {showAnoSelect && (
+                    <div className={styles.selectContent}>
+                      {anos.map((ano) => (
+                        <button
+                          key={ano.value}
+                          type="button"
+                          className={`${styles.selectItem} ${anoSelecionado === ano.value ? styles.selectItemActive : ''}`}
+                          onClick={() => {
+                            setAnoSelecionado(ano.value);
+                            setShowAnoSelect(false);
+                          }}
+                        >
+                          {ano.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <DialogFooter className={styles.dialogFooter}>
-          <Button
-            variant="outline"
+        <div className={styles.modalFooter}>
+          <button
+            type="button"
             onClick={handleClose}
             disabled={isExporting}
             className={`${styles.button} ${styles.buttonOutline}`}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleExportar}
             disabled={isExporting || (tipoExportacao === "especifico" && (!mesSelecionado || !anoSelecionado))}
             className={`${styles.button} ${styles.buttonPrimary}`}
@@ -240,9 +302,9 @@ export function ExportarMovimentacoes({ isOpen, onClose }) {
                 Exportar
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 
