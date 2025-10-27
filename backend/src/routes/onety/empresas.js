@@ -317,6 +317,9 @@ router.post("/", verifyToken, verificarPermissao("adm.superadmin"), async (req, 
       );
     }
 
+    // Criar categorias e subcategorias padrão
+    await criarCategoriasPadrao(result.insertId, conn);
+
     await conn.commit();
 
     const [created] = await pool.query("SELECT * FROM empresas WHERE id = ?", [result.insertId]);
@@ -465,6 +468,217 @@ router.post("/:empresa_id/vincular-responsavel", verifyToken, verificarPermissao
     if (conn) conn.release();
   }
 });
+
+// 🔹 Função para criar categorias e subcategorias padrão ao criar uma nova empresa
+async function criarCategoriasPadrao(empresaId, connection) {
+  try {
+    // Criar tipos (Receita e Despesa)
+    const [tipoReceitaResult] = await connection.query(
+      `INSERT INTO tipos (nome, empresa_id) VALUES (?, ?)`,
+      ["Receita", empresaId]
+    );
+    const tipoReceitaId = tipoReceitaResult.insertId;
+
+    const [tipoDespesaResult] = await connection.query(
+      `INSERT INTO tipos (nome, empresa_id) VALUES (?, ?)`,
+      ["Despesa", empresaId]
+    );
+    const tipoDespesaId = tipoDespesaResult.insertId;
+
+    // Definir categorias e subcategorias padrão
+    const categoriasReceita = [
+      {
+        nome: "Receitas de Vendas e de Serviços",
+        subcategorias: ["Receitas de serviços", "Receitas de vendas"]
+      },
+      {
+        nome: "Receitas Financeiras",
+        subcategorias: ["Rendimentos de aplicações"]
+      },
+      {
+        nome: "Outras Receitas e Entradas",
+        subcategorias: [
+          "Adiantamentos para futuros Aumentos de Capital - AFAC",
+          "Empréstimos de Bancos",
+          "Empréstimos de Instituições",
+          "Empréstimos de Sócios",
+          "Integralização de Capital Social",
+          "Receitas a Identificar"
+        ]
+      },
+      { nome: "Descontos financeiros obtidos", subcategorias: ["Descontos financeiros obtidos"] },
+      { nome: "Fretes recebidos", subcategorias: ["Fretes recebidos"] },
+      { nome: "Juros recebidos", subcategorias: ["Juros recebidos"] },
+      { nome: "Multas recebidas", subcategorias: ["Multas recebidas"] },
+      { nome: "Tarifas", subcategorias: ["Tarifas"] }
+    ];
+
+    // Criar categorias e subcategorias de Receita
+    for (const [catIndex, cat] of categoriasReceita.entries()) {
+      const [catResult] = await connection.query(
+        `INSERT INTO straton_categorias (nome, tipo_id, empresa_id, ordem) VALUES (?, ?, ?, ?)`,
+        [cat.nome, tipoReceitaId, empresaId, catIndex + 1]
+      );
+      const categoriaId = catResult.insertId;
+
+      for (const [subIndex, subNome] of cat.subcategorias.entries()) {
+        await connection.query(
+          `INSERT INTO straton_subcategorias (nome, categoria_id, empresa_id, ordem) VALUES (?, ?, ?, ?)`,
+          [subNome, categoriaId, empresaId, subIndex + 1]
+        );
+      }
+    }
+
+    // Definir categorias de Despesa
+    const categoriasDespesa = [
+      {
+        nome: "Impostos sobre Vendas e sobre Serviços",
+        subcategorias: ["ICMS ST sobre Vendas", "ISS sobre Faturamento", "Simples Nacional - DAS"]
+      },
+      {
+        nome: "Despesas com Vendas e Serviços",
+        subcategorias: [
+          "Comissões de Vendedores", "Materiais Aplicados na Prestação de Serviços",
+          "Materiais para Revenda", "Transporte de Mercadorias Vendidas"
+        ]
+      },
+      {
+        nome: "Despesas com Salários e Encargos",
+        subcategorias: [
+          "13º Salário - 1ª Parcela", "13º Salário - 2ª Parcela", "Adiantamento Salarial",
+          "Férias", "FGTS e Multa de FGTS", "INSS sobre Salários - GPS",
+          "IRRF s/ Salários - DARF 0561", "PLR - Participação nos Lucros e Resultados",
+          "Remuneração de Autônomos", "Remuneração de Estagiários", "Rescisões", "Salários"
+        ]
+      },
+      {
+        nome: "Despesas com Colaboradores",
+        subcategorias: [
+          "Confraternizações", "Contribuição Sindical", "Cursos e Treinamentos",
+          "Exames Médicos", "Farmácia", "Gratificações", "Plano de Saúde Colaboradores",
+          "Plano Odontológico Colaboradores", "Seguro de Vida", "Uniformes",
+          "Vale-Alimentação", "Vale-Transporte"
+        ]
+      },
+      {
+        nome: "Despesas Administrativas",
+        subcategorias: [
+          "Bens de Pequeno Valor", "Cartório", "Copa e Cozinha", "Correios", "Honorários (outros)",
+          "Honorários Advocatícios", "Honorários Consultoria", "Honorários Contábeis",
+          "Lanches e Refeições", "Manutenção de Equipamentos", "Materiais de Escritório",
+          "Materiais de Limpeza e de Higiene", "Retenção - Darf 1708 - IRRF",
+          "Retenção - Darf 5952 - PIS/COFINS/CSLL", "Retenção - GPS 2631 - INSS",
+          "Retenção - ISS Serviços Tomados", "Telefonia e Internet", "Telefonia Móvel",
+          "Transporte Urbano (táxi, Uber)"
+        ]
+      },
+      {
+        nome: "Despesas Comerciais",
+        subcategorias: ["Brindes para Clientes", "Marketing e Publicidade", "Viagens e Representações"]
+      },
+      {
+        nome: "Despesas com Imóvel",
+        subcategorias: [
+          "Água e Saneamento", "Aluguel", "Alvará de Funcionamento", "Condomínio", "Energia Elétrica",
+          "IPTU", "Manutenção Predial", "Retenção - Darf 3208 - IRRF Aluguel", "Seguro de Imóveis",
+          "Taxa de Lixo", "Vigilância e Segurança Patrimonial"
+        ]
+      },
+      {
+        nome: "Despesas com Veículos",
+        subcategorias: [
+          "Combustíveis", "Estacionamento", "IPVA / DPVAT / Licenciamento",
+          "Manutenção de Veículos", "Multas de Trânsito", "Pedágios", "Seguros de Veículos"
+        ]
+      },
+      {
+        nome: "Despesas com Diretoria",
+        subcategorias: [
+          "Antecipação de Lucros", "Despesas Pessoais dos Sócios", "INSS sobre Pró-labore - GPS",
+          "IRRF sobre Pró-labore - Darf", "Plano de Saúde Sócios", "Plano Odontológico Sócios", "Pró-labore"
+        ]
+      },
+      {
+        nome: "Despesas Financeiras",
+        subcategorias: [
+          "Impostos sobre Aplicações", "Tarifas Bancárias", "Tarifas de Boletos",
+          "Tarifas de Cartões de Crédito", "Tarifas DOC / TED"
+        ]
+      },
+      {
+        nome: "Outras Despesas",
+        subcategorias: ["Despesas a identificar"]
+      },
+      {
+        nome: "Bens Imobilizados da Empresa",
+        subcategorias: [
+          "Benfeitorias em Bens de Terceiros", "Computadores e Periféricos", "Construções em Andamento - Imóvel Próprio",
+          "Edifícios e Construções", "Leasing - Imóveis", "Leasing - Máquinas, Equipamentos e Instalações Industriais",
+          "Leasing - Móveis, Utensílios e Instalações Administrativos", "Leasing - Móveis, Utensílios e Instalações Comerciais",
+          "Leasing - Outras Imobilizações", "Leasing - Veículos", "Máquinas, Equipamentos e Instalações Industriais",
+          "Móveis, Utensílios e Instalações Administrativos", "Móveis, Utensílios e Instalações Comerciais",
+          "Outras Imobilizações por Aquisição", "Software / Licença de Uso", "Terrenos", "Veículos"
+        ]
+      },
+      {
+        nome: "Empréstimos e Financiamentos",
+        subcategorias: [
+          "Empréstimos de Bancos", "Empréstimos de Outras Instituições", "Empréstimos de Sócios",
+          "Juros Conta Garantida"
+        ]
+      },
+      {
+        nome: "Parcelamentos e Dívidas",
+        subcategorias: ["Parcelamento do Simples Nacional"]
+      },
+      {
+        nome: "Descontos financeiros concedidos",
+        subcategorias: ["Descontos incondicionais concedidos"]
+      },
+      {
+        nome: "Fretes pagos",
+        subcategorias: ["Fretes pagos"]
+      },
+      {
+        nome: "Impostos retidos em vendas",
+        subcategorias: ["Impostos retidos em vendas"]
+      },
+      {
+        nome: "Juros pagos",
+        subcategorias: ["Juros pagos"]
+      },
+      {
+        nome: "Multas pagas",
+        subcategorias: ["Multas pagas"]
+      },
+      {
+        nome: "Perdas",
+        subcategorias: ["Perdas"]
+      }
+    ];
+
+    // Criar categorias e subcategorias de Despesa
+    for (const [catIndex, cat] of categoriasDespesa.entries()) {
+      const [catResult] = await connection.query(
+        `INSERT INTO straton_categorias (nome, tipo_id, empresa_id, ordem) VALUES (?, ?, ?, ?)`,
+        [cat.nome, tipoDespesaId, empresaId, catIndex + 1]
+      );
+      const categoriaId = catResult.insertId;
+
+      for (const [subIndex, subNome] of cat.subcategorias.entries()) {
+        await connection.query(
+          `INSERT INTO straton_subcategorias (nome, categoria_id, empresa_id, ordem) VALUES (?, ?, ?, ?)`,
+          [subNome, categoriaId, empresaId, subIndex + 1]
+        );
+      }
+    }
+
+    console.log(`✅ Categorias padrão criadas para empresa ${empresaId}`);
+  } catch (error) {
+    console.error("Erro ao criar categorias padrão:", error);
+    throw error;
+  }
+}
 
 module.exports = router;
 

@@ -145,7 +145,7 @@ export default function OutrasContasPage() {
       console.log("🔄 Iniciando sincronização das transações Pluggy...");
       
       // Primeiro, buscar todas as contas-api da empresa
-      const resContasApi = await fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
+      const resContasApi = await fetch(`${API_URL}/financeiro/contas/company/${empresaId}/contas`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -337,7 +337,7 @@ export default function OutrasContasPage() {
       console.log("🔄 Iniciando sincronização das transações Pluggy...");
       
       // Primeiro, buscar todas as contas-api da empresa
-      const resContasApi = await fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
+      const resContasApi = await fetch(`${API_URL}/financeiro/contas/company/${empresaId}/contas`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -500,7 +500,7 @@ export default function OutrasContasPage() {
     setLoading(true);
     try {
       // Buscar contas da empresa
-      const resContas = await fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
+      const resContas = await fetch(`${API_URL}/financeiro/contas/company/${empresaId}/contas`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

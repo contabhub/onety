@@ -398,7 +398,7 @@ router.get("/empresa/:empresaId/saidas", verifyToken, async (req, res) => {
     WHERE t.empresa_id = ? AND t.tipo = 'saida'
   `;
 
-  const params = [companyId];
+  const params = [empresaId];
 
   // Filtro opcional por status
   if (status) {

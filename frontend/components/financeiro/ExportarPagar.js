@@ -56,7 +56,12 @@ export function ExportarPagar({ isOpen, onClose }) {
   const handleExportar = async () => {
     try {
       setIsExporting(true);
-      const empresaId = localStorage.getItem("empresaId");
+      let empresaId = localStorage.getItem("empresaId");
+      // Se não encontrou empresaId diretamente, buscar do userData
+      if (!empresaId) {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        empresaId = userData.EmpresaId || null;
+      }
       const token = localStorage.getItem("token");
 
       if (!empresaId || !token || !API) {
@@ -64,7 +69,7 @@ export function ExportarPagar({ isOpen, onClose }) {
         return;
       }
 
-      let url = `${API}/export/saidas/${empresaId}`;
+      let url = `${API}/financeiro/exportar/saidas/${empresaId}`;
       
       if (tipoExportacao === "especifico") {
         if (!mesSelecionado || !anoSelecionado) {

@@ -187,7 +187,12 @@ export function NovaDespesaDrawer({
   }, [diaCobranca, repetirLancamento, vencimentoManual]);
 
   useEffect(() => {
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) return;
@@ -195,34 +200,54 @@ export function NovaDespesaDrawer({
     // Função para buscar clientes (será reutilizada após criar novo cliente)
     const fetchClientes = async () => {
       try {
-        console.log("Buscando clientes...");
-        const res = await fetch(`${API}/clientes/company/${empresaId}`, {
+        console.log("🔍 Buscando clientes para empresaId:", empresaId);
+        const url = `${API}/financeiro/clientes/empresa/${empresaId}`;
+        console.log("🔗 URL completa:", url);
+        console.log("🔑 Token presente:", token ? "Sim" : "Não");
+        
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        console.log("📡 Status da resposta:", res.status);
+        
+        if (!res.ok) {
+          console.error("❌ Erro na resposta:", res.status, res.statusText);
+          const errorText = await res.text();
+          console.error("📄 Corpo do erro:", errorText);
+          return;
+        }
+        
         const data = await res.json();
-        console.log("Clientes carregados:", data);
-        setClientes(data);
+        console.log("✅ Clientes carregados:", data);
+        console.log("📊 Quantidade de clientes:", Array.isArray(data) ? data.length : "Não é array");
+        setClientes(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error("Erro ao buscar clientes:", error);
+        console.error("❌ Erro ao buscar clientes:", error);
+        setClientes([]);
       }
     };
 
     const fetchCategorias = async () => {
       try {
         // Buscar categorias principais de despesa
-        const res = await fetch(`${API}/companies/${empresaId}/categorias`, {
+        const res = await fetch(`${API}/financeiro/categorias/tipo/2`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         const data = await res.json();
-
-        // Filtrar apenas categorias de despesa
-        const despesaData = data.find((item) => item.tipo === "Despesa");
-        const categoriasDespesa = despesaData?.categorias || [];
-        setCategorias(categoriasDespesa);
+        
+        // Se data já é um array de categorias, usar diretamente
+        if (Array.isArray(data)) {
+          setCategorias(data);
+        } else {
+          // Tentar encontrar por tipo
+          const categoriasDespesa = data?.categorias || data?.data || [];
+          setCategorias(categoriasDespesa);
+        }
       } catch (error) {
         console.error("Erro ao buscar categorias:", error);
       }
@@ -230,52 +255,89 @@ export function NovaDespesaDrawer({
 
     const fetchSubCategorias = async () => {
       try {
-        const res = await fetch(`${API}/sub-categorias/empresa/${empresaId}`, {
+        const url = `${API}/financeiro/sub-categorias/empresa/${empresaId}`;
+        
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        if (!res.ok) {
+          console.error("❌ Erro na resposta (subcategorias):", res.status);
+          return;
+        }
+        
         const data = await res.json();
-        setSubCategorias(data);
+        setSubCategorias(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error("Erro ao buscar subcategorias:", error);
+        console.error("❌ Erro ao buscar subcategorias:", error);
+        setSubCategorias([]);
       }
     };
 
     const fetchContas = async () => {
       try {
-        const res = await fetch(`${API}/contas/empresa/${empresaId}`, {
+        console.log("🔍 Buscando contas para empresaId:", empresaId);
+        const url = `${API}/financeiro/contas/company/${empresaId}/contas`;
+        console.log("🔗 URL contas:", url);
+        
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        console.log("📡 Status da resposta (contas):", res.status);
+        
         const data = await res.json();
-        const lista = Array.isArray(data) ? data : Array.isArray(data?.contas) ? data.contas : [];
+        console.log("📦 Dados recebidos (contas):", data);
+        
+        // A API retorna {total: X, contas: [...]}
+        const lista = data?.contas || [];
+        console.log("📊 Quantidade de contas:", lista.length);
         setContas(lista);
       } catch (error) {
-        console.error("Erro ao buscar contas:", error);
+        console.error("❌ Erro ao buscar contas:", error);
         setContas([]);
       }
     };
 
     const fetchContasApi = async () => {
       try {
-        const res = await fetch(`${API}/contas-api/company/${empresaId}/contas`, {
+        console.log("🔍 Buscando contas API para empresaId:", empresaId);
+        const url = `${API}/financeiro/contas/company/${empresaId}/contas`;
+        console.log("🔗 URL contas API:", url);
+        
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        console.log("📡 Status da resposta (contas API):", res.status);
+        
+        if (!res.ok) {
+          console.warn("⚠️ Rota de contas API não encontrada (404) - OK, não é obrigatória");
+          setContasApi([]);
+          return;
+        }
+        
         const json = await res.json();
-        const lista = Array.isArray(json) ? json : Array.isArray(json.contas) ? json.contas : [];
+        console.log("📦 Dados recebidos (contas API):", json);
+        
+        const lista = Array.isArray(json) ? json : json?.contas || [];
+        console.log("📊 Quantidade de contas API:", lista.length);
         setContasApi(lista);
       } catch (error) {
-        console.error("Erro ao buscar contas API:", error);
+        console.error("❌ Erro ao buscar contas API:", error);
+        setContasApi([]);
       }
     };
 
     const fetchCentrosDeCusto = async () => {
       try {
-        const res = await fetch(`${API}/centro-de-custo/empresa/${empresaId}`, {
+        const res = await fetch(`${API}/financeiro/centro-de-custo/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -297,7 +359,12 @@ export function NovaDespesaDrawer({
 
   // Função para buscar as 5 últimas recorrências personalizadas (apenas as criadas pelo usuário)
   const fetchUltimasRecorrencias = async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
     if (!empresaId || !token) return [];
     
@@ -408,7 +475,12 @@ export function NovaDespesaDrawer({
 
   const handleCriarRecorrenciaPersonalizada = async (dados) => {
     console.log("🔄 handleCriarRecorrenciaPersonalizada chamada com:", dados);
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
     if (!empresaId || !token) {
       console.error("❌ EmpresaId ou token não encontrados");
@@ -472,19 +544,15 @@ export function NovaDespesaDrawer({
   const getSubCategoriasDespesa = () => {
     const items = [];
 
-    // Filtrar apenas subcategorias de despesa
+    // Usar categoria_nome que vem dos dados se disponível
     subCategorias.forEach((subCategoria) => {
-      // Verificar se a categoria pai é de despesa
-      const categoriaPai = categorias.find(cat => cat.id === subCategoria.categoria_id);
-      if (categoriaPai) {
-        items.push({
-          id: subCategoria.id,
-          nome: subCategoria.nome,
-          isSubcategoria: true,
-          categoria_id: subCategoria.categoria_id,
-          categoria_pai_nome: categoriaPai.nome, // Adicionar nome da categoria pai para exibição
-        });
-      }
+      items.push({
+        id: subCategoria.id,
+        nome: subCategoria.nome,
+        isSubcategoria: true,
+        categoria_id: subCategoria.categoria_id,
+        categoria_pai_nome: subCategoria.categoria_nome || 'Categoria',
+      });
     });
 
     // Ordenar alfabeticamente por categoria pai e depois por subcategoria
@@ -500,14 +568,19 @@ export function NovaDespesaDrawer({
 
   // Função para buscar clientes (reutilizada após criar novo cliente)
   const fetchClientes = async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) return;
 
     try {
       console.log("Buscando clientes...");
-      const res = await fetch(`${API}/clientes/company/${empresaId}`, {
+      const res = await fetch(`${API}/financeiro/clientes/empresa/${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -546,7 +619,12 @@ export function NovaDespesaDrawer({
 
   const createDespesa = async () => {
     console.log("🚀 Iniciando createDespesa...");
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
 
     console.log("🏢 Empresa ID:", empresaId);
@@ -634,7 +712,7 @@ export function NovaDespesaDrawer({
       const payload = {
       conta_id: contaIdParsed,
       conta_api_id: contaApiIdParsed || null,
-      company_id: parseInt(empresaId),
+      empresa_id: parseInt(empresaId),
       tipo: "saida",
       valor: valorPorParcela,
       descricao: formData.descricao,
@@ -643,7 +721,7 @@ export function NovaDespesaDrawer({
         : null,
       origem: formData.origem,
       data_vencimento: formData.vencimento.toISOString().split("T")[0],
-      situacao: formData.pago ? "recebido" : "em_aberto",
+      situacao: formData.pago ? "recebido" : "em aberto",
       observacoes: formData.observacoes || null,
       parcelamento:
         parcelamento === "A vista"
@@ -658,12 +736,12 @@ export function NovaDespesaDrawer({
             ? itemSelecionado.categoria_id
             : itemSelecionado.id)
         : null,
-      sub_categoria_id: itemSelecionado && itemSelecionado.isSubcategoria
+      subcategoria_id: itemSelecionado && itemSelecionado.isSubcategoria
         ? itemSelecionado.id
         : null,
       anexo_base64: formData.anexo_base64 || null,
       cliente_id: formData.cliente ? parseInt(formData.cliente) : null,
-      centro_de_custo_id: formData.centroCusto
+      centro_custo_id: formData.centroCusto
         ? parseInt(formData.centroCusto)
         : null,
     };
@@ -769,7 +847,7 @@ export function NovaDespesaDrawer({
         Authorization: `Bearer ${token ? "Presente" : "Ausente"}`,
       });
       
-      const response = await fetch(`${API}/transacoes`, {
+      const response = await fetch(`${API}/financeiro/transacoes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

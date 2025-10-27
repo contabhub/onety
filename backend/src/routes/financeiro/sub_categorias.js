@@ -51,15 +51,26 @@ router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
       `
-      SELECT sc.*
+      SELECT 
+        sc.id,
+        sc.nome,
+        sc.categoria_id,
+        sc.ordem,
+        sc.padrao,
+        sc.criado_em,
+        c.nome as categoria_nome
       FROM straton_subcategorias sc
-      JOIN straton_categorias c ON sc.categoria_id = c.id
-      JOIN tipos t ON c.tipo_id = t.id
-      WHERE t.empresa_id = ?
-      ORDER BY sc.ordem ASC
+      INNER JOIN straton_categorias c ON sc.categoria_id = c.id AND sc.empresa_id = c.empresa_id
+      WHERE sc.empresa_id = ?
+      ORDER BY c.nome ASC, sc.ordem ASC
       `,
       [empresaId]
     );
+
+    console.log("📊 Total de subcategorias encontradas:", rows.length);
+    if (rows.length > 0) {
+      console.log("📋 Primeira subcategoria:", rows[0]);
+    }
 
     res.json(rows);
   } catch (err) {
