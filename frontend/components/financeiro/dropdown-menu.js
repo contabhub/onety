@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 import styles from '../../styles/financeiro/dropdown-menu.module.css';
 
@@ -89,20 +90,88 @@ DropdownMenuTrigger.displayName = 'DropdownMenuTrigger';
 // Conteúdo do dropdown
 const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, align = 'end', ...props }, ref) => {
   const { isOpen } = React.useContext(DropdownMenuContext);
+  const [position, setPosition] = React.useState({ top: 0, right: 0 });
+  const contentRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const updatePosition = () => {
+        // Encontrar o botão que abriu o dropdown
+        const dropdownMenu = document.querySelector('[data-dropdown-menu][data-is-open="true"]');
+        if (!dropdownMenu) return;
+        
+        const trigger = dropdownMenu.querySelector('button, [role="button"]');
+        if (trigger) {
+          const rect = trigger.getBoundingClientRect();
+          const contentHeight = contentRef.current?.offsetHeight || 200;
+          
+          // Calcular se deve abrir para cima ou para baixo
+          let top = rect.bottom + sideOffset;
+          const spaceBelow = window.innerHeight - rect.bottom;
+          const spaceAbove = rect.top;
+          
+          // Se não cabe embaixo E cabe mais em cima, abrir para cima
+          if (spaceBelow < contentHeight && spaceAbove > spaceBelow) {
+            top = rect.top - contentHeight - sideOffset;
+          }
+          
+          setPosition({
+            top: top,
+            right: window.innerWidth - rect.right,
+          });
+        }
+      };
+      
+      const intervalId = setInterval(updatePosition, 100);
+      setTimeout(updatePosition, 0);
+      
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen, sideOffset]);
+
+  // Atualizar atributo no container
+  React.useEffect(() => {
+    const container = document.querySelector('[data-dropdown-menu]');
+    if (container) {
+      if (isOpen) {
+        container.setAttribute('data-is-open', 'true');
+      } else {
+        container.removeAttribute('data-is-open');
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  const content = (
     <div
-      ref={ref}
+      ref={(node) => {
+        contentRef.current = node;
+        if (ref) {
+          if (typeof ref === 'function') ref(node);
+          else ref.current = node;
+        }
+      }}
       className={cn(styles.dropdownContent, className)}
       style={{
-        marginTop: `${sideOffset}px`,
+        position: 'fixed',
+        top: `${position.top}px`,
+        right: `${position.right}px`,
+        zIndex: 999999,
         ...props.style,
       }}
       {...props}
     />
   );
+
+  return typeof window !== 'undefined' ? createPortal(content, document.body) : content;
 });
 DropdownMenuContent.displayName = 'DropdownMenuContent';
 

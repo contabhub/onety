@@ -66,6 +66,8 @@ export default function FluxoCaixaMensalPage() {
 
   // 🔄 Função para consolidar dados mensais em estrutura anual
   const consolidateMonthlyData = useCallback((monthlyResults) => {
+    console.log('🔄 Iniciando consolidação de dados...', monthlyResults.length, 'meses recebidos');
+    
     const consolidatedTipos = {};
     let totalAnoPrevisto = 0;
     let totalAnoRealizado = 0;
@@ -74,7 +76,11 @@ export default function FluxoCaixaMensalPage() {
 
     // Processar cada mês
     monthlyResults.forEach(({ mes, data }) => {
-      if (!data || !data.tipos) return;
+      console.log(`📅 Processando mês ${mes}, dados:`, data);
+      if (!data || !data.tipos) {
+        console.warn(`⚠️ Mês ${mes} sem dados ou sem tipos`);
+        return;
+      }
 
       // Consolidar totais gerais mensais
       valoresMensaisGerais[mes] = {
@@ -174,9 +180,25 @@ export default function FluxoCaixaMensalPage() {
       });
     });
 
+    console.log('📊 Consolidamento finalizado:', {
+      totalTipos: Object.keys(consolidatedTipos).length,
+      totais_gerais: {
+        previsto: totalAnoPrevisto,
+        realizado: totalAnoRealizado,
+        pendente: totalAnoPendente
+      }
+    });
+
+    // Buscar empresaId do localStorage com fallback para userData
+    let empresaId = localStorage.getItem('empresaId');
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      empresaId = userData.EmpresaId || '';
+    }
+
     return {
       filtros_aplicados: {
-        company_id: localStorage.getItem('empresaId') || '',
+        company_id: empresaId,
         ano: selectedYear,
         tipo: selectedTipo
       },
@@ -196,16 +218,31 @@ export default function FluxoCaixaMensalPage() {
     setError(null);
 
     try {
-      const empresaId = localStorage.getItem('empresaId');
+      let empresaId = localStorage.getItem('empresaId');
+      // Se não encontrou empresaId diretamente, buscar do userData
+      if (!empresaId) {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        empresaId = userData.EmpresaId || null;
+      }
       if (!empresaId) {
         throw new Error('ID da empresa não encontrado');
       }
+
+      console.log('🔍 Iniciando busca de dados...');
+      console.log('📋 Filtros aplicados:', {
+        empresaId,
+        ano: selectedYear,
+        tipo: selectedTipo,
+        enableDayFilter,
+        selectedDay
+      });
 
       // Buscar dados de todos os meses do ano
       const promises = [];
       
       if (enableDayFilter && selectedDay) {
         // 🔍 Filtro por dia específico: buscar apenas transações com data_vencimento no dia selecionado
+        console.log(`🔍 Buscando com filtro de dia ${selectedDay}`);
         for (let mes = 1; mes <= 12; mes++) {
           const params = new URLSearchParams();
           params.append('mes', mes.toString());
@@ -216,20 +253,25 @@ export default function FluxoCaixaMensalPage() {
             params.append('tipo', selectedTipo);
           }
 
+          const url = `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/relatorio/categorias/${empresaId}?${params}`;
+          console.log(`📡 [Mês ${mes}] Fazendo requisição para:`, url);
+
           promises.push(
-            fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/transacoes/relatorio/categorias/${empresaId}?${params}`,
-              {
-                headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                  'Content-Type': 'application/json',
-                },
-              }
-            ).then(res => res.json()).then(data => ({ mes, data }))
+            fetch(url, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+              },
+            }).then(async res => {
+              const jsonData = await res.json();
+              console.log(`✅ [Mês ${mes}] Resposta recebida:`, jsonData);
+              return { mes, data: jsonData };
+            })
           );
         }
       } else {
         // 📅 Busca normal por mês (sem filtro de dia)
+        console.log('📅 Buscando dados mensais (sem filtro de dia)');
         for (let mes = 1; mes <= 12; mes++) {
           const params = new URLSearchParams();
           params.append('mes', mes.toString());
@@ -239,26 +281,33 @@ export default function FluxoCaixaMensalPage() {
             params.append('tipo', selectedTipo);
           }
 
+          const url = `${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/relatorio/categorias/${empresaId}?${params}`;
+          console.log(`📡 [Mês ${mes}] Fazendo requisição para:`, url);
+
           promises.push(
-            fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/transacoes/relatorio/categorias/${empresaId}?${params}`,
-              {
-                headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                  'Content-Type': 'application/json',
-                },
-              }
-            ).then(res => res.json()).then(data => ({ mes, data }))
+            fetch(url, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+              },
+            }).then(async res => {
+              const jsonData = await res.json();
+              console.log(`✅ [Mês ${mes}] Resposta recebida:`, jsonData);
+              return { mes, data: jsonData };
+            })
           );
         }
       }
 
       const results = await Promise.all(promises);
+      console.log('📊 Todas as respostas recebidas:', results);
       
       // Processar e consolidar dados de todos os meses
       const consolidatedData = consolidateMonthlyData(results);
+      console.log('📈 Dados consolidados:', consolidatedData);
       setData(consolidatedData);
     } catch (err) {
+      console.error('❌ Erro ao buscar dados:', err);
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
       setLoading(false);
