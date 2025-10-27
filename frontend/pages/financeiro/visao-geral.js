@@ -1095,36 +1095,6 @@ export default function VisaoGeral() {
         <div>
           <h1 className={styles.dashboardTitle}>Visão geral</h1>
         </div>
-        <div className={styles.headerActions}>
-          {syncing && (
-            <div className={styles.syncIndicator}>
-              <div className={styles.syncSpinner}></div>
-              <span className={styles.syncText}>
-                Sincronizando transações... ({syncProgress.current}/{syncProgress.total})
-              </span>
-              {syncProgress.sucessos > 0 && (
-                <span className={styles.syncSuccess}>
-                  ✅ {syncProgress.sucessos}
-                </span>
-              )}
-              {syncProgress.falhas > 0 && (
-                <span className={styles.syncError}>
-                  ❌ {syncProgress.falhas}
-                </span>
-              )}
-            </div>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => syncTransacoesPluggy()}
-            disabled={syncing}
-            className={styles.syncButton}
-          >
-            <Settings className={styles.syncButtonIcon} />
-            {syncing ? "Sincronizando..." : "Sincronizar transações"}
-          </Button>
-        </div>
       </div>
 
       {/* Promo Banner */}
