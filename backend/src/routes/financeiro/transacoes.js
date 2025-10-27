@@ -298,6 +298,9 @@ router.get("/empresa/:empresaId/entradas", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { status, vencimento } = req.query;
 
+  console.log('🔍 [BACKEND] Buscando entradas para empresa:', empresaId);
+  console.log('🔍 [BACKEND] Query params recebidos:', { status, vencimento });
+
   let query = `
     SELECT 
       t.id,
@@ -333,13 +336,29 @@ router.get("/empresa/:empresaId/entradas", verifyToken, async (req, res) => {
     WHERE t.empresa_id = ? AND t.tipo = 'entrada'
   `;
   const params = [empresaId];
+  const hoje = new Date().toISOString().slice(0, 10);
 
   if (status) {
-    query += ` AND t.situacao = ?`;
-    params.push(status);
+    if (status === 'vencidos') {
+      // Vencidos: situação em aberto E data_vencimento < hoje
+      query += ` AND t.situacao = 'em aberto' AND DATE(t.data_vencimento) < ?`;
+      params.push(hoje);
+    } else if (status === 'em_aberto' && vencimento) {
+      // Especificamente para uma data: situação em aberto E data_vencimento = vencimento
+      query += ` AND t.situacao = 'em aberto' AND DATE(t.data_vencimento) = ?`;
+      params.push(vencimento);
+    } else if (status === 'em_aberto') {
+      // Todas em aberto sem filtro de vencimento
+      query += ` AND t.situacao = 'em aberto'`;
+    } else {
+      // Outros status (ex: recebido, pago, etc)
+      query += ` AND t.situacao = ?`;
+      params.push(status);
+    }
   }
 
-  if (vencimento) {
+  // Filtro adicional de vencimento (quando não já tratado acima)
+  if (vencimento && !(status === 'em_aberto' && vencimento)) {
     query += ` AND DATE(t.data_vencimento) = ?`;
     params.push(vencimento);
   }
@@ -348,6 +367,22 @@ router.get("/empresa/:empresaId/entradas", verifyToken, async (req, res) => {
 
   try {
     const [rows] = await pool.query(query, params);
+    console.log('🔍 [BACKEND] Query montada:', query);
+    console.log('🔍 [BACKEND] Params:', params);
+    console.log('🔍 [BACKEND] Total de linhas retornadas:', rows.length);
+    
+    // Debug: mostrar a situação das transações encontradas
+    if (rows.length > 0) {
+      console.log('🔍 [BACKEND] Primeira transação encontrada:', {
+        id: rows[0].id,
+        descricao: rows[0].descricao,
+        situacao: rows[0].situacao,
+        data_vencimento: rows[0].data_vencimento,
+        tipo: rows[0].tipo || 'entrada'
+      });
+      console.log('🔍 [BACKEND] Todas as situações das transações encontradas:', rows.map(r => ({id: r.id, situacao: r.situacao, data_vencimento: r.data_vencimento})));
+    }
+    
     res.json(rows);
   } catch (error) {
     console.error("Erro ao buscar transações de entrada:", error);
@@ -359,6 +394,9 @@ router.get("/empresa/:empresaId/entradas", verifyToken, async (req, res) => {
 router.get("/empresa/:empresaId/saidas", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { status, vencimento } = req.query;
+
+  console.log('🔍 [BACKEND] Buscando saidas para empresa:', empresaId);
+  console.log('🔍 [BACKEND] Query params recebidos:', { status, vencimento });
 
   let query = `
     SELECT 
@@ -399,15 +437,30 @@ router.get("/empresa/:empresaId/saidas", verifyToken, async (req, res) => {
   `;
 
   const params = [empresaId];
+  const hoje = new Date().toISOString().slice(0, 10);
 
   // Filtro opcional por status
   if (status) {
-    query += ` AND t.situacao = ?`;
-    params.push(status);
+    if (status === 'vencidos') {
+      // Vencidos: situação em aberto E data_vencimento < hoje
+      query += ` AND t.situacao = 'em aberto' AND DATE(t.data_vencimento) < ?`;
+      params.push(hoje);
+    } else if (status === 'em_aberto' && vencimento) {
+      // Especificamente para uma data: situação em aberto E data_vencimento = vencimento
+      query += ` AND t.situacao = 'em aberto' AND DATE(t.data_vencimento) = ?`;
+      params.push(vencimento);
+    } else if (status === 'em_aberto') {
+      // Todas em aberto sem filtro de vencimento
+      query += ` AND t.situacao = 'em aberto'`;
+    } else {
+      // Outros status (ex: pago, conciliado, etc)
+      query += ` AND t.situacao = ?`;
+      params.push(status);
+    }
   }
 
-  // Filtro opcional por data de vencimento
-  if (vencimento) {
+  // Filtro adicional de vencimento (quando não já tratado acima)
+  if (vencimento && !(status === 'em_aberto' && vencimento)) {
     query += ` AND DATE(t.data_vencimento) = ?`;
     params.push(vencimento);
   }
@@ -416,6 +469,21 @@ router.get("/empresa/:empresaId/saidas", verifyToken, async (req, res) => {
 
   try {
     const [rows] = await pool.query(query, params);
+    console.log('🔍 [BACKEND] Query montada (saidas):', query);
+    console.log('🔍 [BACKEND] Params:', params);
+    console.log('🔍 [BACKEND] Total de linhas retornadas:', rows.length);
+    
+    // Debug: mostrar a situação das transações encontradas
+    if (rows.length > 0) {
+      console.log('🔍 [BACKEND] Primeira saída encontrada:', {
+        id: rows[0].id,
+        descricao: rows[0].descricao,
+        situacao: rows[0].situacao,
+        data_vencimento: rows[0].data_vencimento
+      });
+      console.log('🔍 [BACKEND] Todas as situações das saídas encontradas:', rows.map(r => ({id: r.id, situacao: r.situacao, data_vencimento: r.data_vencimento})));
+    }
+    
     res.json(rows);
   } catch (error) {
     console.error("Erro ao buscar transações de saída:", error);
