@@ -137,6 +137,28 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
+// 🔹 Buscar contas por empresa_id - DEVE VIR ANTES DA ROTA /:id
+router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
+  const { empresaId } = req.params;
+  
+  console.log("🔍 Rota /empresa/:empresaId chamada para empresaId:", empresaId);
+
+  try {
+    const [contas] = await pool.query(
+      "SELECT * FROM caixinha WHERE empresa_id = ? ORDER BY criado_em DESC",
+      [empresaId]
+    );
+
+    console.log(`📊 Total de contas encontradas para empresa ${empresaId}:`, contas.length);
+
+    // Retornar array vazio em vez de 404 quando não há contas
+    res.json(contas);
+  } catch (error) {
+    console.error("Erro ao buscar contas por empresa_id:", error);
+    res.status(500).json({ error: "Erro ao buscar contas da empresa." });
+  }
+});
+
 // 🔹 Buscar uma conta por ID
 router.get("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
@@ -152,27 +174,6 @@ router.get("/:id", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Erro ao buscar conta:", error);
     res.status(500).json({ error: "Erro ao buscar conta." });
-  }
-});
-
-// 🔹 Buscar contas por empresa_id
-router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
-  const { empresaId } = req.params;
-
-  try {
-    const [contas] = await pool.query(
-      "SELECT * FROM caixinha WHERE empresa_id = ? ORDER BY criado_em DESC",
-      [empresaId]
-    );
-
-    if (contas.length === 0) {
-      return res.status(404).json({ error: "Nenhuma conta encontrada para esta empresa." });
-    }
-
-    res.json(contas);
-  } catch (error) {
-    console.error("Erro ao buscar contas por empresa_id:", error);
-    res.status(500).json({ error: "Erro ao buscar contas da empresa." });
   }
 });
 

@@ -19,7 +19,7 @@ import {
 import { toast } from "react-toastify";
 import { Button } from '../../components/financeiro/botao';
 import { Textarea } from '../../components/financeiro/textarea';
-import NovaReceitaDrawer from '../../components/financeiro/novaReceitaDrawer';
+import NovaReceitaDrawer from '../../components/financeiro/NovaReceitaDrawer';
 import { NovaDespesaDrawer } from '../../components/financeiro/NovaDespesaDrawer';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 import styles from '../../styles/financeiro/visao-geral.module.css';
@@ -151,6 +151,8 @@ export default function VisaoGeral() {
   const [saidasVencidas, setSaidasVencidas] = useState(0);
   const [entradasVencemHoje, setEntradasVencemHoje] = useState(0);
   const [saidasVencemHoje, setSaidasVencemHoje] = useState(0);
+  const [entradasRestanteMes, setEntradasRestanteMes] = useState(0);
+  const [saidasRestanteMes, setSaidasRestanteMes] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0, sucessos: 0, falhas: 0 });
@@ -177,11 +179,11 @@ export default function VisaoGeral() {
     {
       title: 'Vencem hoje',
       value: entradasVencemHoje.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-      subtitle: 'Restante do mês: R$ Há renderizar',
+      subtitle: `Restante do mês: ${entradasRestanteMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
       color: styles.statValueReceita,
       bgColor: styles.statItemReceita
     }
-  ], [entradasVencidas, entradasVencemHoje]);
+  ], [entradasVencidas, entradasVencemHoje, entradasRestanteMes]);
 
   const pagarStats = useMemo(() => [
     {
@@ -193,34 +195,88 @@ export default function VisaoGeral() {
     {
       title: 'Vencem hoje',
       value: saidasVencemHoje.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-      subtitle: 'Restante do mês: R$ Há renderizar',
+      subtitle: `Restante do mês: ${saidasRestanteMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
       color: styles.statValueDespesa,
       bgColor: styles.statItemDespesa
     }
-  ], [saidasVencidas, saidasVencemHoje]);
+  ], [saidasVencidas, saidasVencemHoje, saidasRestanteMes]);
 
   // Estados para o fluxo de caixa
   const [fluxoCaixaData, setFluxoCaixaData] = useState([]);
   const [fluxoCaixaLoading, setFluxoCaixaLoading] = useState(true);
   const [fluxoCaixaError, setFluxoCaixaError] = useState(null);
   const [lastUpdateFluxoCaixa, setLastUpdateFluxoCaixa] = useState(null);
+  const [vendasData, setVendasData] = useState([
+    { month: 'jul', value: 0 },
+    { month: 'ago', value: 0 },
+    { month: 'set', value: 0 },
+    { month: 'out', value: 0 },
+    { month: 'nov', value: 0 },
+    { month: 'dez', value: 0 },
+    { month: 'jan', value: 0 },
+    { month: 'fev', value: 0 },
+    { month: 'mar', value: 0 },
+    { month: 'abr', value: 0 },
+    { month: 'mai', value: 0 },
+    { month: 'jun', value: 0 }
+  ]);
 
-  const vendasData = [
-    { month: 'jul', value: 45000 },
-    { month: 'ago', value: 52000 },
-    { month: 'set', value: 48000 },
-    { month: 'out', value: 65000 },
-    { month: 'nov', value: 58000 },
-    { month: 'dez', value: 72000 },
-    { month: 'jan', value: 68000 },
-    { month: 'fev', value: 75000 },
-    { month: 'mar', value: 82000 },
-    { month: 'abr', value: 78000 },
-    { month: 'mai', value: 85000 },
-    { month: 'jun', value: 92000 }
-  ];
+  const maxVendas = Math.max(...vendasData.map(d => d.value), 1);
+  const [hoveredBar, setHoveredBar] = useState(null);
 
-  const maxVendas = Math.max(...vendasData.map(d => d.value));
+  // Função para buscar vendas por mês
+  const fetchVendasPorMes = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const empresaId = userData.EmpresaId;
+      
+      if (!empresaId) return;
+
+      // Buscar transações de entrada pagas/recebidas dos últimos 12 meses
+      const vendas = [];
+      const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+      const hoje = new Date();
+      
+      for (let i = 11; i >= 0; i--) {
+        const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        const mes = meses[data.getMonth()];
+        const ano = data.getFullYear();
+        const mesNumero = String(data.getMonth() + 1).padStart(2, '0');
+        
+        const url = `${API}/financeiro/transacoes/relatorio/categorias/${empresaId}?mes=${mesNumero}&ano=${ano}&tipo=entrada`;
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Somar valores realizados (recebidos)
+          let totalVendas = 0;
+          if (data.tipos) {
+            data.tipos.forEach(tipo => {
+              if (tipo.categorias) {
+                tipo.categorias.forEach(categoria => {
+                  if (categoria.subcategorias) {
+                    categoria.subcategorias.forEach(subcategoria => {
+                      totalVendas += subcategoria.valor_realizado || 0;
+                    });
+                  }
+                });
+              }
+            });
+          }
+          
+          vendas.push({ month: mes, value: totalVendas });
+        }
+      }
+      
+      setVendasData(vendas);
+    } catch (error) {
+      console.error('Erro ao buscar vendas por mês:', error);
+    }
+  };
 
   // Função para encontrar a imagem do banco baseada no campo "banco"
   const encontrarImagemBanco = (nomeBanco) => {
@@ -230,25 +286,21 @@ export default function VisaoGeral() {
     
     // Verificar se está na lista de bancos sem imagem
     if (BANCOS_SEM_IMAGEM.includes(nomeNormalizado)) {
-      console.log(`🏦 Banco sem imagem específica: ${nomeBanco}`);
       return undefined;
     }
     
     // Buscar correspondência exata primeiro
     if (BANCO_IMAGENS[nomeNormalizado]) {
-      console.log(`✅ Imagem encontrada para ${nomeBanco}: ${BANCO_IMAGENS[nomeNormalizado]}`);
       return BANCO_IMAGENS[nomeNormalizado];
     }
     
     // Buscar correspondência parcial
     for (const [bancoKey, imagemPath] of Object.entries(BANCO_IMAGENS)) {
       if (nomeNormalizado.includes(bancoKey) || bancoKey.includes(nomeNormalizado)) {
-        console.log(`✅ Imagem encontrada (parcial) para ${nomeBanco} -> ${bancoKey}: ${imagemPath}`);
         return imagemPath;
       }
     }
     
-    console.log(`❌ Nenhuma imagem encontrada para: ${nomeBanco}`);
     return undefined;
   };
 
@@ -258,8 +310,6 @@ export default function VisaoGeral() {
     const status = saldo > 0 ? 'current' : saldo === 0 ? 'zero' : 'error';
     const nomeBanco = conta.descricao_banco || conta.banco || '';
     const fotoBanco = encontrarImagemBanco(nomeBanco);
-    
-    console.log(`🏦 Conta Tradicional - ID: ${conta.id}, Banco: "${conta.banco}", Descrição: "${conta.descricao_banco}", Nome usado: "${nomeBanco}", Foto: ${fotoBanco ? '✅' : '❌'}`);
     
     return {
       id: String(conta.id),
@@ -280,15 +330,11 @@ export default function VisaoGeral() {
 
   // Função para transformar conta-api em ContaFinanceira
   const transformarContaApi = async (conta, todasContas) => {
-    console.log('🔄 Transformando conta API:', conta);
-    
     // Se a conta Pluggy não tem banco ou descricao_banco, buscar de uma conta manual com mesmo item_id
     let nomeConta = conta.descricao_banco;
     let bancoConta = conta.banco;
     
     if (!nomeConta || !bancoConta) {
-      console.log(`🔍 Conta Pluggy sem dados completos, buscando conta manual com item_id: ${conta.item_id}`);
-      
       // Buscar conta manual com mesmo item_id que tenha dados
       const contaManual = todasContas.find(c => 
         c.item_id === conta.item_id && 
@@ -297,20 +343,14 @@ export default function VisaoGeral() {
       );
       
       if (contaManual) {
-        console.log('✅ Encontrada conta manual com dados:', contaManual);
         nomeConta = nomeConta || contaManual.descricao_banco || contaManual.banco;
         bancoConta = bancoConta || contaManual.banco;
-      } else {
-        console.log('❌ Nenhuma conta manual encontrada com mesmo item_id');
       }
     }
     
     // Fallback se ainda não tem dados
     nomeConta = nomeConta || `Conta ${conta.tipo || conta.tipo_conta || 'OpenFinance'}`;
     bancoConta = bancoConta || "OpenFinance";
-    
-    console.log('📝 Nome da conta encontrado:', nomeConta);
-    console.log('🏦 Banco encontrado:', bancoConta);
     
     const fotoBanco = encontrarImagemBanco(bancoConta);
     
@@ -322,7 +362,7 @@ export default function VisaoGeral() {
       const token = localStorage.getItem('token');
       
       if (empresaId && token && conta.account) {
-        const transacoesRes = await fetch(`${API}/transacoes-api/${conta.account}`, {
+        const transacoesRes = await fetch(`${API}/financeiro/transacoes-api/${conta.account}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         
@@ -336,11 +376,9 @@ export default function VisaoGeral() {
             return total + valor;
           }, 0);
           
-          console.log(`💰 Saldo calculado para conta ${conta.account}: R$ ${saldoCalculado.toFixed(2)}`);
         }
       }
     } catch (error) {
-      console.error(`❌ Erro ao calcular saldo da conta ${conta.account}:`, error);
       saldoCalculado = parseFloat(conta.saldo || '0');
     }
     
@@ -365,13 +403,10 @@ export default function VisaoGeral() {
 
   // Função para buscar contas financeiras
   const fetchContasFinanceiras = async () => {
-    console.log('🚀 Iniciando busca de contas financeiras');
-    
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const empresaId = userData.EmpresaId;
 
     if (!empresaId) {
-      console.error('❌ empresaId não encontrado no localStorage');
       setContasError('Empresa não selecionada');
       setContasLoading(false);
       return;
@@ -384,8 +419,8 @@ export default function VisaoGeral() {
     try {
       // Buscar as duas rotas em paralelo usando o interceptor
       const [dataContas, dataContasApi] = await Promise.all([
-        apiFetchJson(`${API}/contas/empresa/${empresaId}`),
-        apiFetchJson(`${API}/contas-api/company/${empresaId}/contas`)
+        apiFetchJson(`${API}/financeiro/caixinha/empresa/${empresaId}`),
+        apiFetchJson(`${API}/financeiro/contas/company/${empresaId}/contas`)
       ]);
 
       let contasTradicionais = [];
@@ -394,7 +429,6 @@ export default function VisaoGeral() {
       // Processar contas tradicionais
       const contasTradicionaisPromises = (dataContas || []).map(transformarContaTradicional);
       contasTradicionais = await Promise.all(contasTradicionaisPromises);
-      console.log('✅ Contas tradicionais carregadas:', contasTradicionais.length);
 
       // Processar contas-api
       // Filtrar apenas contas que tenham o campo 'account' válido
@@ -405,8 +439,6 @@ export default function VisaoGeral() {
       // Processar contas API de forma assíncrona, passando todas as contas como parâmetro
       const contasApiPromises = contasComAccount.map(conta => transformarContaApi(conta, dataContasApi.contas || []));
       contasApi = await Promise.all(contasApiPromises);
-      
-      console.log('✅ Contas API carregadas:', contasApi.length);
 
       // Unir as duas listas
       const todasContas = [...contasTradicionais, ...contasApi];
@@ -419,8 +451,6 @@ export default function VisaoGeral() {
         return acc + saldo;
       }, 0);
       setValorTotalContas(total);
-
-      console.log('✅ Contas financeiras atualizadas:', todasContas.length, 'contas, total: R$', total.toLocaleString('pt-BR'));
 
       // Toast de sucesso se houver contas API
       const contasApiCount = contasApi.length;
@@ -441,7 +471,6 @@ export default function VisaoGeral() {
   const syncTransacoesPluggySilencioso = async () => {
     // Evitar múltiplas execuções simultâneas
     if (syncing) {
-      console.log("🔄 Sincronização já em andamento, ignorando nova chamada");
       return;
     }
 
@@ -455,20 +484,16 @@ export default function VisaoGeral() {
 
     setSyncing(true);
     
-    console.log("🚀 Iniciando sincronização automática silenciosa...");
-    
     // Timeout de 5 minutos para evitar travamento
     const timeoutId = setTimeout(() => {
-      console.warn("⚠️ Timeout de sincronização atingido (5 minutos)");
       setSyncing(false);
       setSyncProgress({ current: 0, total: 0, sucessos: 0, falhas: 0 });
     }, 5 * 60 * 1000);
     
     try {
-      console.log("🔄 Iniciando sincronização das transações Pluggy...");
       
       // Primeiro, buscar todas as contas-api da empresa
-      const resContasApi = await fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
+      const resContasApi = await fetch(`${API_URL}/financeiro/contas/company/${empresaId}/contas`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -487,11 +512,7 @@ export default function VisaoGeral() {
           conta.item_id // Deve ter item_id (é conta Pluggy válida)
         );
 
-        console.log(`📋 Encontradas ${contasPluggy.length} contas Pluggy no total`);
-        console.log(`🏢 Contas da empresa atual (${empresaId}): ${contasDaEmpresa.length}`);
-
         if (contasDaEmpresa.length === 0) {
-          console.log("ℹ️ Nenhuma conta Pluggy válida encontrada para esta empresa");
           setSyncing(false);
           return;
         }
@@ -509,18 +530,13 @@ export default function VisaoGeral() {
           lotes.push(contasDaEmpresa.slice(i, i + LOTE_SIZE));
         }
 
-        console.log(`🚀 Processando ${contasDaEmpresa.length} contas Pluggy em ${lotes.length} lotes de ${LOTE_SIZE}`);
-
-        for (let loteIndex = 0; loteIndex < lotes.length; loteIndex++) {
-          const lote = lotes[loteIndex];
-          console.log(`📦 Processando lote ${loteIndex + 1}/${lotes.length} com ${lote.length} contas`);
+    for (let loteIndex = 0; loteIndex < lotes.length; loteIndex++) {
+      const lote = lotes[loteIndex];
 
           // Processar contas do lote em paralelo
           const promessas = lote.map(async (conta) => {
             if (!conta.account) return { sucesso: false, conta: conta.account };
 
-            console.log(`🔄 Sincronizando transações da conta ${conta.account} (Empresa: ${conta.company_id})`);
-            
             // Tentar até 2 vezes para cada conta (reduzido para ser mais rápido)
             let tentativas = 0;
             const maxTentativas = 2;
@@ -536,7 +552,7 @@ export default function VisaoGeral() {
                   cliente_id: conta.cliente_id || null
                 };
                 
-                const syncResponse = await fetch(`${API_URL}/transacoes-api/sync`, {
+                const syncResponse = await fetch(`${API_URL}/financeiro/transacoes-api/sync`, {
                   method: "POST",
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -546,28 +562,20 @@ export default function VisaoGeral() {
                 });
 
                 if (syncResponse.ok) {
-                  const syncResult = await syncResponse.json();
-                  console.log(`✅ Transações da conta ${conta.account} sincronizadas:`, syncResult);
                   sucesso = true;
                   return { sucesso: true, conta: conta.account };
                 } else {
-                  const errorData = await syncResponse.json().catch(() => ({}));
-                  console.error(`❌ Erro ao sincronizar transações da conta ${conta.account} (tentativa ${tentativas}/${maxTentativas}):`, syncResponse.status, errorData);
-                  
                   if (tentativas < maxTentativas) {
                     await new Promise(resolve => setTimeout(resolve, 1000));
                   }
                 }
               } catch (error) {
-                console.error(`❌ Erro ao sincronizar transações da conta ${conta.account} (tentativa ${tentativas}/${maxTentativas}):`, error);
-                
                 if (tentativas < maxTentativas) {
                   await new Promise(resolve => setTimeout(resolve, 1000));
                 }
               }
             }
 
-            console.log(`❌ Conta ${conta.account} falhou após ${maxTentativas} tentativas`);
             return { sucesso: false, conta: conta.account };
           });
 
@@ -585,17 +593,13 @@ export default function VisaoGeral() {
 
           // Atualizar progresso
           const newProgress = { current: sucessos + falhas, total: contasDaEmpresa.length, sucessos, falhas };
-          console.log(`📊 Progresso atualizado (lote ${loteIndex + 1}):`, newProgress);
           setSyncProgress(newProgress);
 
           // Aguardar um pouco entre os lotes para não sobrecarregar
           if (loteIndex < lotes.length - 1) {
-            console.log(`⏳ Aguardando 2 segundos antes do próximo lote...`);
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
         }
-
-        console.log(`✅ Sincronização automática silenciosa concluída! Sucessos: ${sucessos}, Falhas: ${falhas}`);
         
         // Disparar evento de sincronização concluída (silencioso)
         window.dispatchEvent(new CustomEvent('syncCompleted'));
@@ -616,7 +620,6 @@ export default function VisaoGeral() {
   const syncTransacoesPluggy = async () => {
     // Evitar múltiplas execuções simultâneas
     if (syncing) {
-      console.log("🔄 Sincronização já em andamento, ignorando nova chamada");
       return;
     }
 
@@ -630,8 +633,6 @@ export default function VisaoGeral() {
 
     setSyncing(true);
     
-    console.log("🚀 Iniciando sincronização manual de transações Pluggy...");
-    
     // Timeout de 5 minutos para evitar travamento
     const timeoutId = setTimeout(() => {
       console.warn("⚠️ Timeout de sincronização atingido (5 minutos)");
@@ -642,7 +643,7 @@ export default function VisaoGeral() {
       console.log("🔄 Iniciando sincronização das transações Pluggy...");
       
       // Primeiro, buscar todas as contas-api da empresa
-      const resContasApi = await fetch(`${API_URL}/contas-api/company/${empresaId}/contas`, {
+      const resContasApi = await fetch(`${API_URL}/financeiro/contas/company/${empresaId}/contas`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -661,11 +662,7 @@ export default function VisaoGeral() {
           conta.item_id // Deve ter item_id (é conta Pluggy válida)
         );
 
-        console.log(`📋 Encontradas ${contasPluggy.length} contas Pluggy no total`);
-        console.log(`🏢 Contas da empresa atual (${empresaId}): ${contasDaEmpresa.length}`);
-
         if (contasDaEmpresa.length === 0) {
-          console.log("ℹ️ Nenhuma conta Pluggy válida encontrada para esta empresa");
           setSyncing(false);
           return;
         }
@@ -683,18 +680,13 @@ export default function VisaoGeral() {
           lotes.push(contasDaEmpresa.slice(i, i + LOTE_SIZE));
         }
 
-        console.log(`🚀 Processando ${contasDaEmpresa.length} contas Pluggy em ${lotes.length} lotes de ${LOTE_SIZE}`);
-
-        for (let loteIndex = 0; loteIndex < lotes.length; loteIndex++) {
-          const lote = lotes[loteIndex];
-          console.log(`📦 Processando lote ${loteIndex + 1}/${lotes.length} com ${lote.length} contas`);
+    for (let loteIndex = 0; loteIndex < lotes.length; loteIndex++) {
+      const lote = lotes[loteIndex];
 
           // Processar contas do lote em paralelo
           const promessas = lote.map(async (conta) => {
             if (!conta.account) return { sucesso: false, conta: conta.account };
 
-            console.log(`🔄 Sincronizando transações da conta ${conta.account} (Empresa: ${conta.company_id})`);
-            
             // Tentar até 2 vezes para cada conta (reduzido para ser mais rápido)
             let tentativas = 0;
             const maxTentativas = 2;
@@ -710,7 +702,7 @@ export default function VisaoGeral() {
                   cliente_id: conta.cliente_id || null
                 };
                 
-                const syncResponse = await fetch(`${API_URL}/transacoes-api/sync`, {
+                const syncResponse = await fetch(`${API_URL}/financeiro/transacoes-api/sync`, {
                   method: "POST",
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -720,28 +712,20 @@ export default function VisaoGeral() {
                 });
 
                 if (syncResponse.ok) {
-                  const syncResult = await syncResponse.json();
-                  console.log(`✅ Transações da conta ${conta.account} sincronizadas:`, syncResult);
                   sucesso = true;
                   return { sucesso: true, conta: conta.account };
                 } else {
-                  const errorData = await syncResponse.json().catch(() => ({}));
-                  console.error(`❌ Erro ao sincronizar transações da conta ${conta.account} (tentativa ${tentativas}/${maxTentativas}):`, syncResponse.status, errorData);
-                  
                   if (tentativas < maxTentativas) {
                     await new Promise(resolve => setTimeout(resolve, 1000));
                   }
                 }
               } catch (error) {
-                console.error(`❌ Erro ao sincronizar transações da conta ${conta.account} (tentativa ${tentativas}/${maxTentativas}):`, error);
-                
                 if (tentativas < maxTentativas) {
                   await new Promise(resolve => setTimeout(resolve, 1000));
                 }
               }
             }
 
-            console.log(`❌ Conta ${conta.account} falhou após ${maxTentativas} tentativas`);
             return { sucesso: false, conta: conta.account };
           });
 
@@ -794,13 +778,11 @@ export default function VisaoGeral() {
 
   // Handlers para os drawers
   const handleNovaReceitaSave = (data) => {
-    console.log('Nova receita criada:', data);
     // Recarregar dados do fluxo de caixa após criar nova receita
     fetchFluxoCaixaData();
   };
 
   const handleNovaDespesaSave = (data) => {
-    console.log('Nova despesa criada:', data);
     // Recarregar dados do fluxo de caixa após criar nova despesa
     fetchFluxoCaixaData();
   };
@@ -841,8 +823,8 @@ export default function VisaoGeral() {
 
     try {
       const [entradas, saidas] = await Promise.all([
-        apiFetchJson(`${API}/transacoes/empresa/${empresaId}/entradas?vencimento=${data}`),
-        apiFetchJson(`${API}/transacoes/empresa/${empresaId}/saidas?vencimento=${data}`)
+        apiFetchJson(`${API}/financeiro/transacoes/empresa/${empresaId}/entradas?vencimento=${data}`),
+        apiFetchJson(`${API}/financeiro/transacoes/empresa/${empresaId}/saidas?vencimento=${data}`)
       ]);
 
       console.log(`📊 Transações para ${data}:`, { entradas: entradas.length, saidas: saidas.length });
@@ -867,21 +849,16 @@ export default function VisaoGeral() {
     }, 0);
 
     const saldo = totalRecebimentos - totalPagamentos;
-
-    console.log(`💰 Totais calculados: Recebimentos: ${totalRecebimentos}, Pagamentos: ${totalPagamentos}, Saldo: ${saldo}`);
     
     return { totalRecebimentos, totalPagamentos, saldo };
   };
 
   // Função para buscar dados do fluxo de caixa
   const fetchFluxoCaixaData = async () => {
-    console.log('🚀 Iniciando busca de dados do fluxo de caixa');
-    
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const empresaId = userData.EmpresaId;
 
     if (!empresaId) {
-      console.error('❌ empresaId não encontrado no localStorage');
       setFluxoCaixaError('Empresa não selecionada');
       setFluxoCaixaLoading(false);
       return;
@@ -892,7 +869,6 @@ export default function VisaoGeral() {
 
     try {
       const dateRange = generateDateRange();
-      console.log('📅 Range de datas:', dateRange);
 
       const fluxoData = [];
 
@@ -903,12 +879,6 @@ export default function VisaoGeral() {
           const { totalRecebimentos, totalPagamentos, saldo } = calculateDayTotals(entradas, saidas);
 
           const formattedDay = formatDateForDisplay(data);
-          console.log(`📊 Dados processados para ${data}:`, { 
-            formattedDay, 
-            recebimentos: totalRecebimentos, 
-            pagamentos: totalPagamentos, 
-            saldo 
-          });
           
           fluxoData.push({
             day: formattedDay,
@@ -932,10 +902,9 @@ export default function VisaoGeral() {
 
       setFluxoCaixaData(fluxoData);
       setLastUpdateFluxoCaixa(new Date());
-      console.log('✅ Dados do fluxo de caixa atualizados:', fluxoData);
 
     } catch (error) {
-      console.error('❌ Erro geral ao buscar dados do fluxo de caixa:', error);
+      console.error('❌ Erro ao buscar dados do fluxo de caixa:', error);
       setFluxoCaixaError('Erro ao carregar dados do fluxo de caixa');
     } finally {
       setFluxoCaixaLoading(false);
@@ -985,49 +954,104 @@ export default function VisaoGeral() {
       try {
         // Data de hoje no formato YYYY-MM-DD
         const hoje = new Date().toISOString().slice(0, 10);
-  
+
+        const urls = {
+          entradasVencidas: `${API}/financeiro/transacoes/empresa/${empresaId}/entradas?status=vencidos`,
+          entradasVencemHoje: `${API}/financeiro/transacoes/empresa/${empresaId}/entradas?status=em_aberto&vencimento=${hoje}`,
+          entradasAberto: `${API}/financeiro/transacoes/empresa/${empresaId}/entradas?status=em_aberto`,
+          saidasVencidas: `${API}/financeiro/transacoes/empresa/${empresaId}/saidas?status=vencidos`,
+          saidasVencemHoje: `${API}/financeiro/transacoes/empresa/${empresaId}/saidas?status=em_aberto&vencimento=${hoje}`,
+          saidasAberto: `${API}/financeiro/transacoes/empresa/${empresaId}/saidas?status=em_aberto`
+        };
+
+        console.log('🔗 URLs chamadas:');
+        console.log('  Entradas vencidas:', urls.entradasVencidas);
+        console.log('  Entradas vencem hoje:', urls.entradasVencemHoje);
+        console.log('  Entradas em aberto:', urls.entradasAberto);
+        console.log('  Saídas vencidas:', urls.saidasVencidas);
+        console.log('  Saídas vencem hoje:', urls.saidasVencemHoje);
+        console.log('  Saídas em aberto:', urls.saidasAberto);
+
         // Executar todas as requisições em paralelo usando o interceptor
         const [
           entradasVencidasData,
           entradasVencemHojeData,
+          entradasAbertoData,
           saidasVencidasData,
-          saidasVencemHojeData
+          saidasVencemHojeData,
+          saidasAbertoData
         ] = await Promise.all([
-          apiFetchJson(`${API}/transacoes/empresa/${empresaId}/entradas?status=vencidos`),
-          apiFetchJson(`${API}/transacoes/empresa/${empresaId}/entradas?status=em_aberto&vencimento=${hoje}`),
-          apiFetchJson(`${API}/transacoes/empresa/${empresaId}/saidas?status=vencidos`),
-          apiFetchJson(`${API}/transacoes/empresa/${empresaId}/saidas?status=em_aberto&vencimento=${hoje}`)
+          apiFetchJson(urls.entradasVencidas),
+          apiFetchJson(urls.entradasVencemHoje),
+          apiFetchJson(urls.entradasAberto),
+          apiFetchJson(urls.saidasVencidas),
+          apiFetchJson(urls.saidasVencemHoje),
+          apiFetchJson(urls.saidasAberto)
         ]);
 
         // Calcular somas
+        console.log('🔍 [DEBUG] Total de transações recebidas:');
+        console.log('  - Entradas vencidas:', entradasVencidasData.length, 'items', entradasVencidasData.length > 0 ? entradasVencidasData[0] : '');
+        console.log('  - Entradas vencem hoje:', entradasVencemHojeData.length, 'items', entradasVencemHojeData.length > 0 ? entradasVencemHojeData[0] : '');
+        console.log('  - Entradas em aberto (total):', entradasAbertoData.length, 'items', entradasAbertoData.length > 0 ? entradasAbertoData[0] : '');
+        
         const somaEntradasVencidas = entradasVencidasData.reduce(
-          (acc, item) => acc + parseFloat(item.a_receber),
+          (acc, item) => acc + parseFloat(item.a_receber || 0),
           0
         );
         const somaEntradasVencemHoje = entradasVencemHojeData.reduce(
-          (acc, item) => acc + parseFloat(item.a_receber),
+          (acc, item) => acc + parseFloat(item.a_receber || 0),
           0
         );
+        
+        // Calcular restante do mês para entradas (transações em aberto que não vencem hoje)
+        const hojeObj = new Date(hoje);
+        const hojeDataStr = hoje; // já está no formato YYYY-MM-DD
+        const ultimoDiaMes = new Date(hojeObj.getFullYear(), hojeObj.getMonth() + 1, 0);
+        const entradasRestanteMesFiltradas = entradasAbertoData.filter(item => {
+          if (!item.data_vencimento) return false;
+          const dataVencimentoStr = item.data_vencimento.slice(0, 10); // pegar apenas a data sem hora
+          return dataVencimentoStr > hojeDataStr && 
+                 new Date(item.data_vencimento) <= ultimoDiaMes;
+        });
+        const somaEntradasRestanteMes = entradasRestanteMesFiltradas
+          .reduce((acc, item) => acc + parseFloat(item.a_receber || 0), 0);
+        
+        console.log('🔍 [DEBUG] Entradas em aberto totais:', entradasAbertoData.length);
+        console.log('🔍 [DEBUG] Entradas para restante do mês:', entradasRestanteMesFiltradas.length);
+        
         const somaSaidasVencidas = saidasVencidasData.reduce(
-          (acc, item) => acc + parseFloat(item.a_pagar),
+          (acc, item) => acc + parseFloat(item.a_pagar || 0),
           0
         );
         const somaSaidasVencemHoje = saidasVencemHojeData.reduce(
-          (acc, item) => acc + parseFloat(item.a_pagar),
+          (acc, item) => acc + parseFloat(item.a_pagar || 0),
           0
         );
+        
+        // Calcular restante do mês para saídas (transações em aberto que não vencem hoje)
+        const saidasRestanteMesFiltradas = saidasAbertoData.filter(item => {
+          if (!item.data_vencimento) return false;
+          const dataVencimentoStr = item.data_vencimento.slice(0, 10); // pegar apenas a data sem hora
+          return dataVencimentoStr > hojeDataStr && 
+                 new Date(item.data_vencimento) <= ultimoDiaMes;
+        });
+        const somaSaidasRestanteMes = saidasRestanteMesFiltradas
+          .reduce((acc, item) => acc + parseFloat(item.a_pagar || 0), 0);
+        
+        console.log('🔍 [DEBUG] Saídas em aberto totais:', saidasAbertoData.length);
+        console.log('🔍 [DEBUG] Saídas para restante do mês:', saidasRestanteMesFiltradas.length);
 
         // Atualizar estados
         setEntradasVencidas(somaEntradasVencidas);
         setEntradasVencemHoje(somaEntradasVencemHoje);
+        setEntradasRestanteMes(somaEntradasRestanteMes);
         setSaidasVencidas(somaSaidasVencidas);
         setSaidasVencemHoje(somaSaidasVencemHoje);
+        setSaidasRestanteMes(somaSaidasRestanteMes);
 
-        console.log('✅ Dados carregados:');
-        console.log('  Entradas vencidas:', somaEntradasVencidas);
-        console.log('  Entradas que vencem hoje:', somaEntradasVencemHoje);
-        console.log('  Saídas vencidas:', somaSaidasVencidas);
-        console.log('  Saídas que vencem hoje:', somaSaidasVencemHoje);
+        console.log('✅ Dados calculados - Entradas vencidas:', somaEntradasVencidas, '| Vencem hoje:', somaEntradasVencemHoje, '| Restante:', somaEntradasRestanteMes);
+        console.log('✅ Dados calculados - Saídas vencidas:', somaSaidasVencidas, '| Vencem hoje:', somaSaidasVencemHoje, '| Restante:', somaSaidasRestanteMes);
   
       } catch (error) {
         console.error('❌ Erro ao buscar valores vencidos e que vencem hoje:', error);
@@ -1037,6 +1061,7 @@ export default function VisaoGeral() {
     };
   
     fetchData();
+    fetchVendasPorMes();
   }, [API]);
 
   // useEffect para carregar dados do fluxo de caixa
@@ -1596,12 +1621,22 @@ export default function VisaoGeral() {
             <div className={styles.chartContainer}>
               <div className={styles.chartBars}>
               {vendasData.map((data, index) => (
-                  <div key={index} className={styles.chartBar}>
+                  <div 
+                    key={index} 
+                    className={styles.chartBar}
+                    onMouseEnter={() => setHoveredBar(index)}
+                    onMouseLeave={() => setHoveredBar(null)}
+                  >
                   <div 
                       className={styles.chartBarContainer}
                     style={{ height: `${(data.value / maxVendas) * 200}px` }}
                     >
                       <div className={styles.vendasBarFill}></div>
+                      {hoveredBar === index && (
+                        <div className={styles.chartTooltip}>
+                          R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      )}
                     </div>
                     <p className={styles.chartLabel}>
                     {data.month}
