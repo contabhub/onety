@@ -280,6 +280,90 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-med);
+  position: relative;
+  overflow: visible;
+}
+
+/* Estilos de tabela do cadastro-clientes */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.tableHeadRow {
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
+}
+
+.tableHeadCell {
+  background-color: var(--onity-color-bg);
+  text-align: left;
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+}
+
+.tableHeadCellCheckbox {
+  background-color: var(--onity-color-bg);
+  text-align: left;
+  padding: 16px 24px;
+  width: 48px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+}
+
+.tableEmpty {
+  text-align: center;
+  color: var(--onity-icon-secondary);
+  padding: var(--onity-space-l);
+  font-size: var(--onity-type-body-size);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableCell {
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+}
+
+.tableCellCheckbox {
+  padding: 16px 24px;
+  width: 48px;
+}
+
+/* Estilos para elementos nativos da tabela */
+.nativeTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nativeThead {
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.nativeTh {
+  background-color: var(--onity-color-bg);
+  text-align: left;
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+}
+
+.nativeTd {
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  border-bottom: 1px solid var(--onity-color-border);
 }
 
 /* Tabela */
@@ -289,6 +373,24 @@
   font-size: var(--onity-type-caption-size);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Container da tabela - permite overflow para dropdown */
+.contasReceberTableContainer {
+  overflow: visible;
+  position: relative;
+}
+
+/* Content da tabela */
+.contasReceberTableContent {
+  overflow: visible;
+  position: relative;
+}
+
+/* Célula da tabela com dropdown */
+.tableCellWithDropdown {
+  overflow: visible;
+  position: relative;
 }
 
 .contasReceberTableRow {
@@ -914,12 +1016,12 @@
 
 /* Select de itens por página */
 .contasReceberPaginationSelect {
-  background: var(--onity-color-bg);
+  background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
   color: var(--onity-color-text);
   font-size: var(--onity-type-caption-size);
-  padding: 4px 8px;
+  padding: 12px 24px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1038,4 +1140,101 @@
   font-size: var(--onity-type-body-size);
   color: var(--onity-icon-secondary);
   margin: 0;
+}
+
+/* ===== ESTILOS PARA DROPDOWN NATIVO ===== */
+
+/* Container do dropdown menu */
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+  z-index: 100;
+}
+
+/* Botão de ação para abrir dropdown */
+.actionButton {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  cursor: pointer;
+  background: var(--onity-color-surface);
+  transition: all 120ms ease;
+}
+
+.actionButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* Botão do menu de batch */
+.batchMenuButton {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  cursor: pointer;
+  background: var(--onity-color-surface);
+  font-size: var(--onity-type-caption-size);
+  transition: all 120ms ease;
+}
+
+.batchMenuButton:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* Menu dropdown */
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: var(--onity-space-xs);
+  z-index: 9999;
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+  min-width: 200px;
+  border: 1px solid var(--onity-color-border);
+}
+
+/* Menu dropdown para batch (alinhado à esquerda) */
+.dropdownMenuLeft {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: var(--onity-space-xs);
+  z-index: 9999;
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+  min-width: 200px;
+  border: 1px solid var(--onity-color-border);
+}
+
+/* Item do menu dropdown */
+.dropdownMenuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+}
+
+.dropdownMenuItem:hover {
+  background: var(--onity-color-bg);
+}
+
+.dropdownMenuItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ícone MoreVertical */
+.iconMore {
+  width: 16px;
+  height: 16px;
 }

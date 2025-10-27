@@ -41,6 +41,7 @@ export default function NovaReceitaDrawer({
   onSave,
   dataCompetencia,
   dadosParaDuplicacao,
+  transacaoId,
 }) {
   const [formData, setFormData] = useState({
     cliente: "",
@@ -86,6 +87,8 @@ export default function NovaReceitaDrawer({
   // Estado para controlar se a data de vencimento foi definida manualmente
   const [vencimentoManual, setVencimentoManual] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoadingTransacao, setIsLoadingTransacao] = useState(false);
 
   // Função para calcular próxima data de vencimento recorrente
   function calcularProximoVencimento(dia, baseDate) {
@@ -161,16 +164,26 @@ export default function NovaReceitaDrawer({
       setIsClosing(false); // Reset do estado de fechamento
       // Desabilita o scroll da página principal
       document.body.style.overflow = 'hidden';
+      
+      // Se há transacaoId, carregar dados para edição
+      if (transacaoId) {
+        loadTransacaoForEdit();
+      } else {
+        setIsEditMode(false);
+      }
     } else {
       // Reabilita o scroll da página principal
       document.body.style.overflow = 'unset';
+      // Resetar estado de edição ao fechar
+      setIsEditMode(false);
     }
 
     // Cleanup: reabilita o scroll quando o componente for desmontado
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, transacaoId]);
 
   useEffect(() => {
     // Buscar empresaId do userData (padrão correto do sistema)
@@ -197,40 +210,45 @@ export default function NovaReceitaDrawer({
 
     const fetchCategorias = async () => {
       try {
-        // Buscar categorias principais de receita
-        const res = await fetch(`${API}/companies/${empresaId}/categorias`, {
+        // Buscar categorias principais (já vêm com subcategorias aninhadas)
+        const res = await fetch(`${API}/financeiro/categorias/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         const data = await res.json();
-
-        // Filtrar apenas categorias de receita
-        const receitaData = data.find((item) => item.tipo === "Receita");
-        const categoriasReceita = receitaData?.categorias || [];
-        setCategorias(categoriasReceita);
-      } catch (error) {
-        console.error("Erro ao buscar categorias:", error);
-      }
-    };
-
-    const fetchSubCategorias = async () => {
-      try {
-        const res = await fetch(`${API}/sub-categorias/empresa/${empresaId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        
+        // A API retorna um array com objetos que têm tipo_id, tipo e categorias
+        // Vamos pegar TODAS as categorias (independente do tipo)
+        const todasCategorias = [];
+        
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (item.categorias && Array.isArray(item.categorias)) {
+              todasCategorias.push(...item.categorias);
+            }
+          });
+        }
+        
+        setCategorias(todasCategorias);
+        
+        // Extrair todas as subcategorias das categorias
+        const todasSubCategorias = [];
+        todasCategorias.forEach(categoria => {
+          if (categoria.subcategorias && Array.isArray(categoria.subcategorias)) {
+            todasSubCategorias.push(...categoria.subcategorias);
+          }
         });
-        const data = await res.json();
-        setSubCategorias(data);
+        
+        setSubCategorias(todasSubCategorias);
       } catch (error) {
-        console.error("Erro ao buscar subcategorias:", error);
+        console.error("❌ Erro ao buscar categorias:", error);
       }
     };
 
     const fetchContas = async () => {
       try {
-        const res = await fetch(`${API}/contas/empresa/${empresaId}`, {
+        const res = await fetch(`${API}/financeiro/caixinha/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -246,7 +264,7 @@ export default function NovaReceitaDrawer({
 
     const fetchContasApi = async () => {
       try {
-        const res = await fetch(`${API}/contas-api/company/${empresaId}/contas`, {
+        const res = await fetch(`${API}/financeiro/contas/company/${empresaId}/contas`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -265,7 +283,7 @@ export default function NovaReceitaDrawer({
 
     const fetchCentrosDeCusto = async () => {
       try {
-        const res = await fetch(`${API}/centro-de-custo/empresa/${empresaId}`, {
+        const res = await fetch(`${API}/financeiro/centro-de-custo/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -279,7 +297,6 @@ export default function NovaReceitaDrawer({
 
     fetchClientes();
     fetchCategorias();
-    fetchSubCategorias();
     fetchContas();
     fetchContasApi();
     fetchCentrosDeCusto();
@@ -295,7 +312,7 @@ export default function NovaReceitaDrawer({
     if (!empresaId || !token) return [];
     
     try {
-      const res = await fetch(`${API}/recorrencias?company_id=${empresaId}`, {
+      const res = await fetch(`${API}/financeiro/recorrencias`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -305,14 +322,11 @@ export default function NovaReceitaDrawer({
       }
       
       const data = await res.json();
-      console.log("📋 Todas as recorrências recebidas:", data);
       
       // Filtrar apenas recorrências da empresa atual (dupla verificação)
       const recorrenciasEmpresa = (data || []).filter((rec) => 
-        rec.company_id && rec.company_id.toString() === empresaId
+        (rec.empresa_id || rec.company_id) && (rec.empresa_id || rec.company_id).toString() === empresaId.toString()
       );
-      
-      console.log("🏢 Recorrências filtradas por empresa:", recorrenciasEmpresa);
       
       // Ordena por created_at desc e pega só as 5 mais recentes
       return recorrenciasEmpresa
@@ -335,8 +349,6 @@ export default function NovaReceitaDrawer({
   // Preenche formulário quando dados de duplicação são fornecidos
   useEffect(() => {
     if (dadosParaDuplicacao && isOpen) {
-      console.log("🔄 Preenchendo formulário com dados de duplicação:", dadosParaDuplicacao);
-      
       setFormData({
         cliente: String(dadosParaDuplicacao.cliente || ""),
         dataCompetencia: dataCompetencia || null,
@@ -364,8 +376,6 @@ export default function NovaReceitaDrawer({
       } else {
         setParcelamento("A vista");
       }
-      
-      console.log("✅ Formulário preenchido com sucesso");
     }
   }, [dadosParaDuplicacao, isOpen, dataCompetencia]);
 
@@ -379,16 +389,13 @@ export default function NovaReceitaDrawer({
   };
 
   const handleCriarRecorrenciaPersonalizada = async (dados) => {
-    console.log("🔄 handleCriarRecorrenciaPersonalizada chamada com:", dados);
     // Buscar empresaId do userData (padrão correto do sistema)
     const userData = localStorage.getItem("userData");
     const user = userData ? JSON.parse(userData) : null;
     const empresaId = user?.EmpresaId || user?.empresa?.id || null;
     const token = localStorage.getItem("token");
-    if (!empresaId || !token) {
-      console.error("❌ EmpresaId ou token não encontrados");
-      return;
-    }
+    if (!empresaId || !token) return;
+    
     const payload = {
       frequencia: mapTipoParaFrequencia(dados.tipo, dados.intervalo),
       total_parcelas: dados.total,
@@ -396,12 +403,10 @@ export default function NovaReceitaDrawer({
       intervalo_personalizado: dados.intervalo,
       tipo_intervalo: dados.tipo,
       status: "ativo",
-      company_id: parseInt(empresaId),
+      empresa_id: parseInt(empresaId),
     };
     
-    console.log("📦 Payload para criar recorrência:", payload);
-    
-    const res = await fetch(`${API}/recorrencias`, {
+    const res = await fetch(`${API}/financeiro/recorrencias`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -409,9 +414,9 @@ export default function NovaReceitaDrawer({
       },
       body: JSON.stringify(payload),
     });
+    
     if (res.ok) {
       const nova = await res.json();
-      console.log("✅ Nova recorrência personalizada criada:", nova);
       // Atualiza lista e seleciona a nova recorrência
       const novas = await fetchUltimasRecorrencias();
       setRecorrencias(novas);
@@ -423,8 +428,6 @@ export default function NovaReceitaDrawer({
       toast.success("Recorrência personalizada criada com sucesso!");
       setShowModalRecorrencia(false);
     } else {
-      const errorData = await res.json();
-      console.error("❌ Erro ao criar recorrência:", errorData);
       toast.error("Erro ao criar recorrência personalizada.");
     }
   };
@@ -447,8 +450,10 @@ export default function NovaReceitaDrawer({
 
     // Filtrar apenas subcategorias de receita
     subCategorias.forEach((subCategoria) => {
-      // Verificar se a categoria pai é de receita
+      // Verificar se a categoria pai existe
       const categoriaPai = categorias.find(cat => cat.id === subCategoria.categoria_id);
+      
+      // Se encontrou a categoria pai, adiciona à lista
       if (categoriaPai) {
         items.push({
           id: subCategoria.id,
@@ -486,31 +491,26 @@ export default function NovaReceitaDrawer({
 
     // Validação de campos obrigatórios
     if (!formData.descricao) {
-      console.log("🔔 Exibindo toast: Descrição é obrigatória!");
       toast("Descrição é obrigatória!", { type: "error" });
       return;
     }
 
     if (!formData.valor) {
-      console.log("🔔 Exibindo toast: Valor é obrigatório!");
       toast("Valor é obrigatório!", { type: "error" });
       return;
     }
 
     if (!formData.categoria) {
-      console.log("🔔 Exibindo toast: Categoria é obrigatória!");
       toast("Categoria é obrigatória!", { type: "error" });
       return;
     }
 
     if (!formData.contaRecebimento) {
-      console.log("🔔 Exibindo toast: Conta de recebimento é obrigatória!");
       toast("Conta de recebimento é obrigatória!", { type: "error" });
       return;
     }
 
     if (!formData.cliente) {
-      console.log("🔔 Exibindo toast: Cliente é obrigatório!");
       toast("Cliente é obrigatório!", { type: "error" });
       return;
     }
@@ -557,7 +557,7 @@ export default function NovaReceitaDrawer({
         const recorrenciaPayload = {
           conta_id: contaIdParsed,
           conta_api_id: contaApiIdParsed || null,
-          company_id: parseInt(empresaId),
+          empresa_id: parseInt(empresaId),
           tipo: "entrada",
           valor: valorPorParcela,
           descricao: formData.descricao,
@@ -567,22 +567,22 @@ export default function NovaReceitaDrawer({
               : null,
           origem: formData.formaPagamento,
           data_vencimento: formData.vencimento.toISOString().split("T")[0],
-          situacao: formData.recebido ? "recebido" : "em_aberto",
-          observacoes: formData.observacoes || null,
+          situacao: formData.recebido ? "recebido" : "em aberto",
+          observacao: formData.observacoes || null,
           parcelamento: parseInt(parcelamento.replace("x", "")),
           intervalo_parcelas: 30,
           categoria_id: itemSelecionado.isSubcategoria
             ? itemSelecionado.categoria_id
             : itemSelecionado.id,
-          sub_categoria_id: itemSelecionado.isSubcategoria
+          subcategoria_id: itemSelecionado.isSubcategoria
             ? itemSelecionado.id
             : null,
           cliente_id: formData.cliente ? parseInt(formData.cliente) : null,
           anexo_base64: formData.anexo_base64 || null,
-          centro_de_custo_id: formData.centroCusto
+          centro_custo_id: formData.centroCusto
             ? parseInt(formData.centroCusto)
             : null,
-          boleto_id: boletoId, // Sempre null, pois não há criação automática de boleto
+          boleto_id: boletoId,
           frequencia: "mensal",
           total_parcelas: parseInt(parcelamento.replace("x", "")),
           indeterminada: false,
@@ -590,7 +590,7 @@ export default function NovaReceitaDrawer({
           tipo_intervalo: "meses",
           status: "ativo",
         };
-        const response = await fetch(`${API}/recorrencias`, {
+        const response = await fetch(`${API}/financeiro/recorrencias`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -623,13 +623,11 @@ export default function NovaReceitaDrawer({
         const contaIdParsed = isErp ? parseInt(formData.contaRecebimento.split(':')[1]) : null;
         const contaApiIdParsed = isApi ? parseInt(formData.contaRecebimento.split(':')[1]) : null;
 
-        console.log("🔄 Usando configuração de recorrência existente:", recorrencia.id);
-        
         // Criar recorrência usando configuração existente (com flag para não duplicar na lista)
         const recorrenciaPayload = {
           conta_id: contaIdParsed,
           conta_api_id: contaApiIdParsed || null,
-          company_id: parseInt(empresaId),
+          empresa_id: parseInt(empresaId),
           tipo: "entrada",
           valor: valorPorParcela,
           descricao: formData.descricao,
@@ -639,22 +637,22 @@ export default function NovaReceitaDrawer({
               : null,
           origem: formData.formaPagamento,
           data_vencimento: formData.vencimento.toISOString().split("T")[0],
-          situacao: formData.recebido ? "recebido" : "em_aberto",
-          observacoes: formData.observacoes || null,
+          situacao: formData.recebido ? "recebido" : "em aberto",
+          observacao: formData.observacoes || null,
           parcelamento: 1,
           intervalo_parcelas: 30,
           categoria_id: itemSelecionado.isSubcategoria
             ? itemSelecionado.categoria_id
             : itemSelecionado.id,
-          sub_categoria_id: itemSelecionado.isSubcategoria
+          subcategoria_id: itemSelecionado.isSubcategoria
             ? itemSelecionado.id
             : null,
           cliente_id: formData.cliente ? parseInt(formData.cliente) : null,
           anexo_base64: formData.anexo_base64 || null,
-          centro_de_custo_id: formData.centroCusto
+          centro_custo_id: formData.centroCusto
             ? parseInt(formData.centroCusto)
             : null,
-          boleto_id: boletoId, // Sempre null, pois não há criação automática de boleto
+          boleto_id: boletoId,
           // Dados da configuração de recorrência
           frequencia: recorrencia.frequencia,
           total_parcelas: recorrencia.total_parcelas,
@@ -667,7 +665,7 @@ export default function NovaReceitaDrawer({
           recorrencia_template_id: recorrencia.id,
         };
         
-        const response = await fetch(`${API}/recorrencias`, {
+        const response = await fetch(`${API}/financeiro/recorrencias`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -682,7 +680,6 @@ export default function NovaReceitaDrawer({
         }
         
         const data = await response.json();
-        console.log("✅ Recorrência criada usando template existente:", data);
         toast.success("Recorrência criada com sucesso!");
         resetForm();
         onClose();
@@ -698,8 +695,7 @@ export default function NovaReceitaDrawer({
 
       const transacaoPayload = {
         conta_id: contaIdParsed,
-        conta_api_id: contaApiIdParsed || null,
-        company_id: parseInt(empresaId),
+        empresa_id: parseInt(empresaId),
         tipo: "entrada",
         valor: valorPorParcela,
         descricao: formData.descricao,
@@ -709,26 +705,26 @@ export default function NovaReceitaDrawer({
             : null,
         origem: formData.formaPagamento,
         data_vencimento: formData.vencimento.toISOString().split("T")[0],
-        situacao: formData.recebido ? "recebido" : "em_aberto",
-        observacoes: formData.observacoes || null,
+        situacao: formData.recebido ? "recebido" : "em aberto",
+        observacao: formData.observacoes || null,
         parcelamento: 1,
         intervalo_parcelas: 30,
         categoria_id: itemSelecionado.isSubcategoria
           ? itemSelecionado.categoria_id
           : itemSelecionado.id,
-        sub_categoria_id: itemSelecionado.isSubcategoria
+        subcategoria_id: itemSelecionado.isSubcategoria
           ? itemSelecionado.id
           : null,
         cliente_id: formData.cliente ? parseInt(formData.cliente) : null,
-        anexo_base64: formData.anexo_base64 || null,
-        centro_de_custo_id: formData.centroCusto
+        anexo: formData.anexo_base64 || null,
+        centro_custo_id: formData.centroCusto
           ? parseInt(formData.centroCusto)
           : null,
-        boleto_id: boletoId // Sempre null, pois não há criação automática de boleto
+        boleto_id: boletoId
       };
 
       // 3️⃣ Cria a transação no backend
-      const resTransacao = await fetch(`${API}/transacoes`, {
+      const resTransacao = await fetch(`${API}/financeiro/transacoes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -751,6 +747,106 @@ export default function NovaReceitaDrawer({
       console.error("Erro ao criar transação:", error);
       toast.error("Erro ao criar transação.");
     }
+  };
+
+  // Função para atualizar transação existente
+  const updateTransaction = async () => {
+    const token = localStorage.getItem("token");
+    // Buscar empresaId do userData (padrão correto do sistema)
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || user?.empresa?.id || null;
+
+    if (!token || !empresaId || !transacaoId) {
+      toast.error("Token, empresaId ou transacaoId não encontrados.");
+      return;
+    }
+
+    // Validação de campos obrigatórios
+    if (!formData.descricao) {
+      toast("Descrição é obrigatória!", { type: "error" });
+      return;
+    }
+
+    if (!formData.valor) {
+      toast("Valor é obrigatório!", { type: "error" });
+      return;
+    }
+
+    if (!formData.categoria) {
+      toast("Categoria é obrigatória!", { type: "error" });
+      return;
+    }
+
+    if (!formData.contaRecebimento) {
+      toast("Conta de recebimento é obrigatória!", { type: "error" });
+      return;
+    }
+
+    // Encontrar o item selecionado (categoria ou subcategoria)
+    const itemSelecionado = getSubCategoriasReceita().find(
+      (item) => item.id.toString() === formData.categoria
+    );
+
+    if (!itemSelecionado) {
+      toast.error("Por favor, selecione uma categoria.");
+      return;
+    }
+
+    // Monta conta_id/conta_api_id conforme valor escolhido
+    const isApi = formData.contaRecebimento?.startsWith('api:');
+    const isErp = formData.contaRecebimento?.startsWith('erp:');
+    const contaIdParsed = isErp ? parseInt(formData.contaRecebimento.split(':')[1]) : null;
+    const contaApiIdParsed = isApi ? parseInt(formData.contaRecebimento.split(':')[1]) : null;
+
+    const transacaoPayload = {
+      conta_id: contaIdParsed,
+      conta_api_id: contaApiIdParsed || null,
+      empresa_id: parseInt(empresaId),
+      tipo: "entrada",
+      valor: parseFloat(formData.valor.replace(",", ".")),
+      descricao: formData.descricao,
+      data_transacao:
+        formData.recebido && formData.dataRecebimento
+          ? formData.dataRecebimento.toISOString().split("T")[0]
+          : null,
+      origem: formData.formaPagamento,
+      data_vencimento: formData.vencimento.toISOString().split("T")[0],
+      situacao: formData.recebido ? "recebido" : "em aberto",
+      observacoes: formData.observacoes || null,
+      categoria_id: itemSelecionado.isSubcategoria
+        ? itemSelecionado.categoria_id
+        : itemSelecionado.id,
+      sub_categoria_id: itemSelecionado.isSubcategoria
+        ? itemSelecionado.id
+        : null,
+      cliente_id: formData.cliente ? parseInt(formData.cliente) : null,
+      anexo_base64: formData.anexo_base64 || null,
+      centro_custo_id: formData.centroCusto
+        ? parseInt(formData.centroCusto)
+        : null,
+    };
+
+    const resTransacao = await fetch(`${API}/financeiro/transacoes/${transacaoId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(transacaoPayload),
+    });
+
+    if (!resTransacao.ok) {
+      toast.error("Erro ao atualizar transação.");
+      return;
+    }
+
+    const transacaoData = await resTransacao.json();
+    toast.success("Transação atualizada com sucesso!");
+    resetForm();
+    setIsEditMode(false);
+    onSave(transacaoData);
+    onClose();
   };
 
   // Função para resetar o formulário
@@ -783,8 +879,76 @@ export default function NovaReceitaDrawer({
     setAvisoConflito(false);
   };
 
+  // Função para carregar dados da transação para edição
+  const loadTransacaoForEdit = async () => {
+    if (!transacaoId) return;
+
+    setIsLoadingTransacao(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/financeiro/transacoes/${transacaoId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Erro ao buscar transação.");
+
+      const data = await res.json();
+
+      // Determinar qual categoria/subcategoria selecionar
+      let categoriaSelecionada = "";
+      if (data.sub_categoria_id) {
+        categoriaSelecionada = data.sub_categoria_id.toString();
+      } else if (data.categoria_id) {
+        categoriaSelecionada = data.categoria_id.toString();
+      }
+
+      // Determinar conta
+      let contaRecebimento = "";
+      if (data.conta_id) {
+        contaRecebimento = `erp:${data.conta_id}`;
+      } else if (data.conta_api_id) {
+        contaRecebimento = `api:${data.conta_api_id}`;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        cliente: data.cliente_id?.toString() || "",
+        dataCompetencia: data.data_transacao ? new Date(data.data_transacao) : new Date(),
+        descricao: data.descricao || "",
+        valor: data.valor?.toString() || "",
+        habilitarRateio: false,
+        categoria: categoriaSelecionada,
+        centroCusto: data.centro_custo_id?.toString() || "",
+        codigoReferencia: "",
+        repetirLancamento: false,
+        parcelamento: "A vista",
+        vencimento: data.data_vencimento ? new Date(data.data_vencimento) : new Date(),
+        formaPagamento: data.origem || "",
+        contaRecebimento: contaRecebimento,
+        recebido: data.situacao === "recebido",
+        dataRecebimento: data.data_transacao ? new Date(data.data_transacao) : null,
+        informarNSU: false,
+        observacoes: data.observacoes || "",
+        anexo_base64: data.anexo_base64 || data.anexo || "",
+      }));
+
+      setIsEditMode(true);
+    } catch (error) {
+      console.error("Erro ao carregar transação:", error);
+      toast.error("Erro ao carregar dados para edição.");
+    } finally {
+      setIsLoadingTransacao(false);
+    }
+  };
+
   const handleSave = async () => {
-    await createTransaction();
+    if (isEditMode && transacaoId) {
+      await updateTransaction();
+    } else {
+      await createTransaction();
+    }
   };
 
   // Função para buscar clientes (será reutilizada após criar novo cliente)
@@ -798,14 +962,12 @@ export default function NovaReceitaDrawer({
     if (!empresaId || !token) return;
 
     try {
-      console.log("Buscando clientes...");
       const res = await fetch(`${API}/financeiro/clientes/empresa/${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await res.json();
-      console.log("Clientes carregados:", data);
       setClientes(data);
     } catch (error) {
       console.error("Erro ao buscar clientes:", error);
@@ -814,23 +976,15 @@ export default function NovaReceitaDrawer({
 
   // Função para lidar com o salvamento de novo cliente
   const handleNovoClienteSave = async (data) => {
-    console.log("Novo cliente criado:", data);
-
     // Atualizar a lista de clientes
     await fetchClientes();
 
     // Se o novo cliente foi criado com sucesso, selecioná-lo automaticamente
     if (data && data.id) {
-      console.log("Selecionando novo cliente:", data.id);
       setFormData((prev) => ({
         ...prev,
         cliente: data.id.toString(),
       }));
-
-      // Aguardar um pouco para garantir que o estado foi atualizado
-      setTimeout(() => {
-        console.log("Estado atualizado, cliente selecionado:", data.id);
-      }, 100);
     }
 
     setShowNovoClienteDrawer(false);
@@ -883,7 +1037,7 @@ export default function NovaReceitaDrawer({
           
           {/* Header */}
           <div className={styles.novaReceitaHeader}>
-            <h2 className={styles.novaReceitaTitle}>Nova receita</h2>
+            <h2 className={styles.novaReceitaTitle}>{isEditMode ? "Editar receita" : "Nova receita"}</h2>
             <button
               onClick={handleClose}
               className={styles.novaReceitaCloseButton}
@@ -924,18 +1078,22 @@ export default function NovaReceitaDrawer({
                               }
                             : null
                         }
-                        onChange={(selected) => {
-                          console.log("Cliente selecionado:", selected);
-                          handleInputChange(
-                            "cliente",
-                            selected ? selected.value : ""
-                          );
-                        }}
+                         onChange={(selected) => {
+                           handleInputChange(
+                             "cliente",
+                             selected ? selected.value : ""
+                           );
+                         }}
                         options={clientes.map((item) => ({
                           value: item.id.toString(),
                           label: item.nome_fantasia,
                         }))}
                         isClearable
+                        menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                        menuPosition="fixed"
+                        styles={{
+                          menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                        }}
                       />
                     </div>
                     <button
@@ -981,7 +1139,6 @@ export default function NovaReceitaDrawer({
                         .map((item) => ({
                           value: item.id.toString(),
                           label: `${item.categoria_pai_nome} → ${item.nome}`,
-                          id: item.id,
                         }))
                         .find((opt) => opt.value === formData.categoria) || null
                     }
@@ -994,9 +1151,13 @@ export default function NovaReceitaDrawer({
                     options={subCategoriasReceita.map((item) => ({
                       value: item.id.toString(),
                       label: `${item.categoria_pai_nome} → ${item.nome}`,
-                      id: item.id,
                     }))}
                     isClearable
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                    }}
                   />
                 </div>
 
@@ -1032,6 +1193,11 @@ export default function NovaReceitaDrawer({
                       id: item.id,
                     }))}
                     isClearable
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                    }}
                   />
                 </div>
 
@@ -1072,7 +1238,6 @@ export default function NovaReceitaDrawer({
                       <Select
                         value={recorrenciaSelecionada}
                         onValueChange={(val) => {
-                          console.log("🔄 Selecionando recorrência:", val);
                           if (val === "personalizar") {
                             setShowModalRecorrencia(true);
                           } else {
@@ -1144,6 +1309,11 @@ export default function NovaReceitaDrawer({
                       }))
                     ]}
                     isClearable
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                    }}
                   />
                   {parcelamento !== "A vista" && valorParcela && (
                     <div className={styles.novaReceitaParcelaInfo}>
@@ -1213,6 +1383,11 @@ export default function NovaReceitaDrawer({
                       { value: "boleto", label: "Boleto" }
                     ]}
                     isClearable
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                    }}
                   />
                 </div>
 
@@ -1259,6 +1434,11 @@ export default function NovaReceitaDrawer({
                     ]}
                     isClearable
                     noOptionsMessage={() => "Nenhuma conta encontrada"}
+                    menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                    }}
                   />
                 </div>
               </div>

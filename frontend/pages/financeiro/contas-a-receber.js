@@ -7,14 +7,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Button } from "../../components/financeiro/botao";
 import { Input } from "../../components/financeiro/input";
 import { Badge } from "../../components/financeiro/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/financeiro/table';
 import { Checkbox } from '../../components/financeiro/checkbox';
 import styles from "../../styles/financeiro/ContasAReceber.module.css";
 import {
@@ -57,7 +49,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/financeiro/dropdown-menu";
-import { EditReceitaDrawer } from "../../components/financeiro/EditReceitaDrawer";
 import { ExportarReceber } from "../../components/financeiro/ExportarReceber";
 import { ImportarReceber } from "../../components/financeiro/ImportarReceber";
 import { ImportarOFXModal } from "../../components/financeiro/ImportarOFXModal";
@@ -176,7 +167,7 @@ function mapEntrada(raw) {
       raw.data_transacao || raw.date || raw.data_recebimento || "",
     data_vencimento:
       raw.data_vencimento || raw.date || raw.data_transacao || "",
-    situacao: raw.situacao || (isPluggy ? "recebido" : "em_aberto"),
+    situacao: raw.situacao || (isPluggy ? "recebido" : "em aberto"),
     observacoes: raw.observacoes || raw.observacao || "",
     parcelamento: raw.parcelamento || 0,
     intervalo_parcelas: raw.intervalo_parcelas || 0,
@@ -204,7 +195,6 @@ export default function ContasAReceber() {
   const [isNovaReceitaOpen, setIsNovaReceitaOpen] = useState(false);
   const [downloadPlanilhasModal, setDownloadPlanilhasModal] = useState(false);
   const [entradas, setEntradas] = useState([]);
-  const [isEditReceitaOpen, setIsEditReceitaOpen] = useState(false);
   const [selectedReceita, setSelectedReceita] = useState(null);
   const [dadosParaDuplicacao, setDadosParaDuplicacao] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState("Este mês");
@@ -223,6 +213,8 @@ export default function ContasAReceber() {
   const [isImportarOFXOpen, setIsImportarOFXOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dadosConciliacao, setDadosConciliacao] = useState(new Map());
+  const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const [isBatchMenuOpen, setIsBatchMenuOpen] = useState(false);
   const API = process.env.NEXT_PUBLIC_API_URL;
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -259,9 +251,9 @@ export default function ContasAReceber() {
       RECEBIDO: "recebido",
       PAGO: "recebido", // Mapear "pago" para "recebido" (vindo do relatório)
       CONCILIADO: "recebido", // Mostra como "recebido" mas mantém a badge "Conciliada"
-      EM_ABERTO: "em_aberto",
-      "EM ABERTO": "em_aberto",
-      ABERTO: "em_aberto",
+      EM_ABERTO: "em aberto",
+      "EM ABERTO": "em aberto",
+      ABERTO: "em aberto",
     };
 
     return statusMap[status.toUpperCase()] || status.toLowerCase();
@@ -321,14 +313,16 @@ export default function ContasAReceber() {
 
   // Função para recarregar os dados das entradas (empresa)
   const recarregarEntradas = useCallback(async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || null;
     const token = localStorage.getItem("token");
     if (!empresaId || !token || !API) {
       console.error("EmpresaId, Token ou API não encontrados");
       return;
     }
     try {
-      let url = `${API}/transacoes/empresa/${empresaId}/entradas`;
+      let url = `${API}/financeiro/transacoes/empresa/${empresaId}/entradas`;
       const queryParams = [];
       if (status) queryParams.push(`status=${status}`);
       if (vencimento) queryParams.push(`vencimento=${vencimento}`);
@@ -358,7 +352,9 @@ export default function ContasAReceber() {
   }, [API, status, vencimento, subcategoria, dataInicio, dataFim, extractSubcategorias, buscarDadosConciliacao]);
 
   useEffect(() => {
-    const empresaId = localStorage.getItem("empresaId");
+    const userData = localStorage.getItem("userData");
+    const user = userData ? JSON.parse(userData) : null;
+    const empresaId = user?.EmpresaId || null;
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) {
@@ -574,13 +570,13 @@ export default function ContasAReceber() {
   const vencemHoje = filteredTransactions
     .filter((e) => {
       const dataVenc = new Date(e.data_vencimento);
-      return isToday(dataVenc) && e.situacao === "em_aberto";
+      return isToday(dataVenc) && e.situacao === "em aberto";
     })
     .reduce((acc, e) => acc + Number(e.a_receber || 0), 0);
   const aVencer = filteredTransactions
     .filter((e) => {
       const dataVenc = new Date(e.data_vencimento);
-      return isAfter(dataVenc, hoje) && e.situacao === "em_aberto";
+      return isAfter(dataVenc, hoje) && e.situacao === "em aberto";
     })
     .reduce((acc, e) => acc + Number(e.a_receber || 0), 0);
   const totalPeriodo = filteredTransactions.reduce(
@@ -668,8 +664,8 @@ export default function ContasAReceber() {
       const token = localStorage.getItem("token");
       let body = { situacao: novaSituacao };
 
-      // Para situações "em_aberto" ou "vencidos", enviar data_transacao como null
-      if (novaSituacao === "em_aberto" || novaSituacao === "vencidos") {
+      // Para situações "em aberto" ou "vencidos", enviar data_transacao como null
+      if (novaSituacao === "em aberto" || novaSituacao === "vencidos") {
         body.data_transacao = null;
       }
       // Para situação "recebido", enviar a data de hoje
@@ -677,7 +673,7 @@ export default function ContasAReceber() {
         body.data_transacao = formatDate(new Date(), "yyyy-MM-dd");
       }
 
-      const response = await fetch(`${API}/transacoes/${id}`, {
+      const response = await fetch(`${API}/financeiro/transacoes/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -700,7 +696,7 @@ export default function ContasAReceber() {
 
   const handleEditReceita = (entrada) => {
     setSelectedReceita(entrada);
-    setIsEditReceitaOpen(true);
+    setIsNovaReceitaOpen(true);
   };
 
   // Função para duplicar receita
@@ -715,7 +711,7 @@ export default function ContasAReceber() {
       }
 
       // Busca os dados completos da transação via GET
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transacoes/${entrada.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/${entrada.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -788,8 +784,11 @@ export default function ContasAReceber() {
 
       let response;
       if (entrada?.origem === "pluggy") {
-        // Para transações Pluggy, usar a rota pluggy
-        response = await fetch(`${API}/transacoes-api/pluggy/${entradaParaExcluir.id}`, {
+        // Para transações Pluggy, usar a rota de transacoes-api
+        const userData = localStorage.getItem("userData");
+        const user = userData ? JSON.parse(userData) : null;
+        const empresaId = user?.EmpresaId || null;
+        response = await fetch(`${API}/financeiro/transacoes-api/company/${empresaId}/transacao/${entradaParaExcluir.id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -797,7 +796,7 @@ export default function ContasAReceber() {
         });
       } else if (entrada?.origem === "Importação OFX") {
         // Para transações OFX, usar a rota transacoes (mesmo que empresa)
-        response = await fetch(`${API}/transacoes/${entradaParaExcluir.id}`, {
+        response = await fetch(`${API}/financeiro/transacoes/${entradaParaExcluir.id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -805,7 +804,7 @@ export default function ContasAReceber() {
         });
       } else {
         // Para transações da empresa, usar a rota transacoes
-        response = await fetch(`${API}/transacoes/${entradaParaExcluir.id}`, {
+        response = await fetch(`${API}/financeiro/transacoes/${entradaParaExcluir.id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -860,8 +859,8 @@ export default function ContasAReceber() {
       const promises = itemsToUpdate.map(async (id) => {
         let body = { situacao: novaSituacao };
 
-        // Para situações "em_aberto" ou "vencidos", enviar data_transacao como null
-        if (novaSituacao === "em_aberto" || novaSituacao === "vencidos") {
+        // Para situações "em aberto" ou "vencidos", enviar data_transacao como null
+        if (novaSituacao === "em aberto" || novaSituacao === "vencidos") {
           body.data_transacao = null;
         }
         // Para situação "recebido", enviar a data de hoje
@@ -869,7 +868,7 @@ export default function ContasAReceber() {
           body.data_transacao = formatDate(new Date(), "yyyy-MM-dd");
         }
 
-        const response = await fetch(`${API}/transacoes/${id}`, {
+        const response = await fetch(`${API}/financeiro/transacoes/${id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -931,21 +930,24 @@ export default function ContasAReceber() {
 
         let response;
         if (entrada?.origem === "pluggy") {
-          response = await fetch(`${API}/transacoes-api/pluggy/${id}`, {
+          const userData = localStorage.getItem("userData");
+          const user = userData ? JSON.parse(userData) : null;
+          const empresaId = user?.EmpresaId || null;
+          response = await fetch(`${API}/financeiro/transacoes-api/company/${empresaId}/transacao/${id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
         } else if (entrada?.origem === "Importação OFX") {
-          response = await fetch(`${API}/transacoes/${id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
         } else {
-          response = await fetch(`${API}/transacoes/${id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1004,6 +1006,20 @@ export default function ContasAReceber() {
     clearSelection();
   }, [currentPage, searchTerm, selectedPeriod, currentMonth, status, vencimento, subcategoria, dataInicio, dataFim]);
 
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openMenuIndex !== null) {
+        setOpenMenuIndex(null);
+      }
+      if (isBatchMenuOpen) {
+        setIsBatchMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuIndex, isBatchMenuOpen]);
+
   // Função para limpar filtros da URL
   const clearFilters = () => {
     router.push("/financeiro/contas-a-receber");
@@ -1017,7 +1033,7 @@ export default function ContasAReceber() {
     try {
       const token = localStorage.getItem("token");
       // 1. Buscar o codigo_solicitacao
-      const resCodigo = await fetch(`${API}/transacoes/${transacaoId}/codigo-solicitacao`, {
+      const resCodigo = await fetch(`${API}/financeiro/transacoes/${transacaoId}/codigo-solicitacao`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!resCodigo.ok) {
@@ -1031,7 +1047,7 @@ export default function ContasAReceber() {
       }
 
       // 2. Baixar o PDF
-      const resPdf = await fetch(`${API}/inter-boletos/pdf-direto/${codigo_solicitacao}`, {
+      const resPdf = await fetch(`${API}/financeiro/boletos/pdf-simples/${codigo_solicitacao}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!resPdf.ok) {
@@ -1059,7 +1075,9 @@ export default function ContasAReceber() {
   // Função para buscar o transacao_api_id correto automaticamente
   const buscarTransacaoApiIdCorreto = async (entrada, token) => {
     try {
-      const empresaId = localStorage.getItem("empresaId");
+      const userData = localStorage.getItem("userData");
+      const user = userData ? JSON.parse(userData) : null;
+      const empresaId = user?.EmpresaId || null;
       if (!empresaId) return null;
 
       console.log("🔍 Buscando transacao_api_id para:", {
@@ -1069,7 +1087,7 @@ export default function ContasAReceber() {
       });
 
       // Buscar todas as contas API da empresa
-      const contasApiRes = await fetch(`${API}/contas-api/company/${empresaId}/contas`, {
+      const contasApiRes = await fetch(`${API}/financeiro/contas/company/${empresaId}/contas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -1089,7 +1107,7 @@ export default function ContasAReceber() {
           const contaId = conta.account || conta.id;
           if (!contaId) continue;
 
-          const transacoesApiRes = await fetch(`${API}/transacoes-api/${contaId}`, {
+          const transacoesApiRes = await fetch(`${API}/financeiro/transacoes-api/${contaId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -1202,7 +1220,7 @@ export default function ContasAReceber() {
         usuario_id: userId
       });
 
-      const response = await fetch(`${API}/conciliacoes/revogar`, {
+      const response = await fetch(`${API}/financeiro/conciliacoes/revogar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1253,8 +1271,11 @@ export default function ContasAReceber() {
 
         let response;
         if (entrada?.origem === "pluggy") {
-          // Para transações Pluggy, usar a rota pluggy
-          response = await fetch(`${API}/transacoes-api/pluggy/${entradaParaRevogar.id}`, {
+          // Para transações Pluggy, usar a rota de transacoes-api
+          const userData = localStorage.getItem("userData");
+          const user = userData ? JSON.parse(userData) : null;
+          const empresaId = user?.EmpresaId || null;
+          response = await fetch(`${API}/financeiro/transacoes-api/company/${empresaId}/transacao/${entradaParaRevogar.id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1262,7 +1283,7 @@ export default function ContasAReceber() {
           });
         } else if (entrada?.origem === "Importação OFX") {
           // Para transações OFX, usar a rota transacoes
-          response = await fetch(`${API}/transacoes/${entradaParaRevogar.id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${entradaParaRevogar.id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1270,7 +1291,7 @@ export default function ContasAReceber() {
           });
         } else {
           // Para transações da empresa, usar a rota transacoes
-          response = await fetch(`${API}/transacoes/${entradaParaRevogar.id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${entradaParaRevogar.id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1361,15 +1382,6 @@ export default function ContasAReceber() {
               disabled
               className={styles.contasReceberSecondaryBtn}
             >
-              <FileText className="h-4 w-4 mr-2" />
-              Relatórios
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              className={styles.contasReceberSecondaryBtn}
-            >
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
@@ -1420,15 +1432,6 @@ export default function ContasAReceber() {
           <Button
             variant="outline"
             size="sm"
-            disabled
-            className={styles.contasReceberSecondaryBtn}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Relatórios
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
             onClick={() => setIsExportarReceberOpen(true)}
             className={styles.contasReceberExportBtn}
           >
@@ -1473,15 +1476,6 @@ export default function ContasAReceber() {
         </div>
       </div>
 
-      {/* Botão para abrir o fluxo Open Finance Pluggy */}
-      {/* <div className="flex justify-end mb-4">
-        <Button
-          className={`${styles.bgGreen600} ${styles.hoverBgGreen700} ${styles.textWhite} ${styles.fontSemibold} ${styles.px4} ${styles.py2} ${styles.rounded} ${styles.shadow}`}
-          onClick={() => setShowOpenFinance(true)}
-        >
-          Conectar Conta Bancária (Open Finance)
-        </Button>
-      </div> */}
 
       {/* Modal simples para exibir o componente OpenFinancePluggy */}
       {showOpenFinance && (
@@ -1678,30 +1672,22 @@ export default function ContasAReceber() {
               <label className={`${styles.textSm} ${styles.fontMedium} ${styles.mb2} ${styles.block}`}>
                 Subcategoria
               </label>
-              <Select
+              <select
                 value={selectedSubcategoria}
-                onValueChange={setSelectedSubcategoria}
+                onChange={(e) => setSelectedSubcategoria(e.target.value)}
                 disabled={!shouldApplyLocalFilters}
+                className={`${styles.contasReceberPaginationSelect}`}
               >
-                <SelectTrigger >
-                  <SelectValue placeholder="Todas as subcategorias" />
-                </SelectTrigger>
-                <SelectContent className={styles.statCard}>
-                  <SelectItem
-                    value="all"
+                <option value="all">Todas as subcategorias</option>
+                {subcategoriasDisponiveis.map((subcategoria) => (
+                  <option
+                    key={subcategoria}
+                    value={subcategoria}
                   >
-                    Todas as subcategorias
-                  </SelectItem>
-                  {subcategoriasDisponiveis.map((subcategoria) => (
-                    <SelectItem
-                      key={subcategoria}
-                      value={subcategoria}
-                    >
-                      {subcategoria}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    {subcategoria}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -1715,37 +1701,51 @@ export default function ContasAReceber() {
              
                 {selectedItems.size > 0 && (
                   <>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={styles.contasReceberSecondaryBtn}
+                    <div className={styles.dropdownContainer}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsBatchMenuOpen(!isBatchMenuOpen);
+                        }}
+                        className={`${styles.contasReceberSecondaryBtn} ${styles.batchMenuButton}`}
+                      >
+                        Alterar Status
+                      </button>
+                      {isBatchMenuOpen && (
+                        <div
+                          className={`${styles.contasReceberDropdown} ${styles.dropdownMenuLeft}`}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          Alterar Status
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className={styles.contasReceberDropdown}>
-                        <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('recebido')}
-                          className={styles.contasReceberDropdownItem}
-                        >
-                          Marcar como Pago
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('em_aberto')}
-                          className={styles.contasReceberDropdownItem}
-                        >
-                          Marcar como Em Aberto
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('vencidos')}
-                          className={styles.contasReceberDropdownItem}
-                        >
-                          Marcar como Vencido
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <button
+                            onClick={() => {
+                              handleBatchStatusChange('recebido');
+                              setIsBatchMenuOpen(false);
+                            }}
+                            className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                          >
+                            Marcar como Pago
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleBatchStatusChange('em aberto');
+                              setIsBatchMenuOpen(false);
+                            }}
+                            className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                          >
+                            Marcar como Em Aberto
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleBatchStatusChange('vencidos');
+                              setIsBatchMenuOpen(false);
+                            }}
+                            className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                          >
+                            Marcar como Vencido
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   <Button
                     variant="outline"
                     size="sm"
@@ -1786,10 +1786,10 @@ export default function ContasAReceber() {
             </div>
 
             <div className={styles.contasReceberTableContainer}>
-              <Table>
-                <TableHeader className={styles.contasReceberTableHeader}>
-                  <TableRow>
-                    <TableHead className={styles.contasReceberTableHeaderCell}>
+              <table className={styles.nativeTable}>
+                <thead className={`${styles.contasReceberTableHeader} ${styles.nativeThead}`}>
+                  <tr>
+                    <th className={`${styles.contasReceberTableHeaderCell} ${styles.nativeTh}`}>
                       <Checkbox
                         checked={
                           selectedItems.size === paginatedTransactions.length &&
@@ -1797,34 +1797,34 @@ export default function ContasAReceber() {
                         }
                         onCheckedChange={handleSelectAll}
                       />
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       Venci.
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       Rece.
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       Descrição
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       Total (R$)
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       A receber
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       Situação
-                    </TableHead>
-                    <TableHead className={styles.contasReceberTableHeaderText}>
+                    </th>
+                    <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
                       Ações
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
                   {paginatedTransactions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className={styles.contasReceberTableRowEmpty}>
+                    <tr>
+                      <td colSpan={8} className={styles.contasReceberTableRowEmpty}>
                         <div className={styles.contasReceberEmptyState}>
                           <div className={styles.contasReceberEmptyIcon}>
                             <div className={styles.contasReceberQuestionMark}>?</div>
@@ -1832,28 +1832,28 @@ export default function ContasAReceber() {
                           <p className={styles.contasReceberEmptyTitle}>Not found</p>
                           <p className={styles.contasReceberEmptyText}>Nenhuma transação encontrada</p>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ) : (
                     paginatedTransactions.map((entrada, index) => (
-                      <TableRow
+                      <tr
                         key={index}
                         className={styles.contasReceberTableRow}
                       >
-                        <TableCell>
+                        <td className={styles.nativeTd}>
                           <Checkbox
                             checked={selectedItems.has(entrada.id)}
                             onCheckedChange={(checked) =>
                               handleSelectItem(entrada.id, checked)
                             }
                           />
-                        </TableCell>
-                        <TableCell className={styles.contasReceberTableCellSecondary}>
+                        </td>
+                        <td className={`${styles.contasReceberTableCellSecondary} ${styles.nativeTd}`}>
                           {entrada.origem === "Importação OFX" && entrada.data_transacao
                             ? new Date(entrada.data_transacao).toLocaleDateString()
                             : new Date(entrada.data_vencimento).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className={styles.contasReceberTableCellSecondary}>
+                        </td>
+                        <td className={`${styles.contasReceberTableCellSecondary} ${styles.nativeTd}`}>
                           {(() => {
                             // Debug: log para entender o problema
                             if (entrada.situacao === "recebido") {
@@ -1871,8 +1871,8 @@ export default function ContasAReceber() {
                               ? new Date(entrada.data_transacao).toLocaleDateString()
                               : <Clock className="h-4 w-4" />;
                           })()}
-                        </TableCell>
-                        <TableCell>
+                        </td>
+                        <td className={styles.nativeTd}>
                         <div>
                           <div>
                             <p className={styles.contasReceberTableCellPrimary}>{entrada.descricao}</p>
@@ -1898,19 +1898,19 @@ export default function ContasAReceber() {
                             <p className={styles.contasReceberTableCellSecondary}>{entrada.cliente}</p>
                           )}
                         </div>
-                        </TableCell>
-                        <TableCell className={styles.contasReceberTableCellValue}>
+                        </td>
+                        <td className={`${styles.contasReceberTableCellValue} ${styles.nativeTd}`}>
                           R$ {Number(entrada.a_receber || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell className={styles.contasReceberTableCellValue}>
+                        </td>
+                        <td className={`${styles.contasReceberTableCellValue} ${styles.nativeTd}`}>
                           R$ {Number(entrada.a_receber || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell>
+                        </td>
+                        <td className={styles.nativeTd}>
                           <span
                             className={cn({
                               [styles.badgePago]: entrada.situacao === "recebido" || entrada.situacao === "conciliado",
                               [styles.badgeVencido]: entrada.situacao === "vencidos",
-                              [styles.badgeEmAberto]: entrada.situacao === "em_aberto"
+                              [styles.badgeEmAberto]: entrada.situacao === "em aberto"
                             })}
                           >
                             {entrada.situacao === "recebido"
@@ -1921,122 +1921,147 @@ export default function ContasAReceber() {
                               ? "Vencidos"
                               : "Em Aberto"}
                           </span>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={styles.contasReceberActionBtn}
-                              >
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className={styles.contasReceberDropdown}>
-                            {entrada.situacao === "em_aberto" && (
-                              <>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(entrada.id, "recebido")
-                                  }
-                                  className={styles.contasReceberDropdownItem}
-                                >
-                                  Marcar como Pago
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(entrada.id, "vencidos")
-                                  }
-                                  className={styles.contasReceberDropdownItem}
-                                >
-                                  Marcar como Vencido
-                                </DropdownMenuItem>
-                              </>
-                            )}
-
-                            {entrada.situacao === "recebido" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleUpdateSituacao(entrada.id, "em_aberto")
-                                }
-                                className={styles.contasReceberDropdownItem}
-                              >
-                                Voltar para Em Aberto
-                              </DropdownMenuItem>
-                            )}
-
-                            {entrada.situacao === "vencidos" && (
-                              <>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(entrada.id, "em_aberto")
-                                  }
-                                  className={styles.contasReceberDropdownItem}
-                                >
-                                  Voltar para Em Aberto
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(entrada.id, "recebido")
-                                  }
-                                  className={styles.contasReceberDropdownItem}
-                                >
-                                  Marcar como Pago
-                                </DropdownMenuItem>
-                              </>
-                            )}
-
-                            <DropdownMenuItem
-                              onClick={() => handleEditReceita(entrada)}
-                              disabled={entrada.origem === "pluggy"}
-                              className={styles.contasReceberDropdownItem}
+                        </td>
+                        <td className={`${styles.tableCellWithDropdown} ${styles.nativeTd}`}>
+                          <div className={styles.dropdownContainer}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuIndex(openMenuIndex === index ? null : index);
+                              }}
+                              className={`${styles.contasReceberActionBtn} ${styles.actionButton}`}
                             >
-                              Editar Lançamento
-                              {entrada.origem === "pluggy" &&
-                                " (não disponível)"}
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              onClick={() => handleDuplicarReceita(entrada)}
-                              className={styles.contasReceberDropdownItem}
-                            >
-                              Duplicar Lançamento
-                            </DropdownMenuItem>
-
-                            {entrada.boleto_id && (
-                              <DropdownMenuItem
-                                onClick={() => handleDownloadBoleto(entrada.id)}
-                                className={styles.contasReceberDropdownItem}
+                              <MoreVertical className={styles.iconMore} />
+                            </button>
+                            {openMenuIndex === index && (
+                              <div
+                                className={`${styles.contasReceberDropdown} ${styles.dropdownMenu}`}
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                Baixar boleto
-                              </DropdownMenuItem>
-                            )}
+                                {entrada.situacao === "em aberto" && (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        handleUpdateSituacao(entrada.id, "recebido");
+                                        setOpenMenuIndex(null);
+                                      }}
+                                      className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                    >
+                                      Marcar como Pago
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        handleUpdateSituacao(entrada.id, "vencidos");
+                                        setOpenMenuIndex(null);
+                                      }}
+                                      className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                    >
+                                      Marcar como Vencido
+                                    </button>
+                                  </>
+                                )}
 
-                            {/* Item para revogar conciliação - mostrar para transações conciliadas */}
-                            {entrada.situacao === "conciliado" && (
-                              <DropdownMenuItem
-                                onClick={() => handleRevogarConciliacao(entrada)}
-                                className={styles.contasReceberDropdownItem}
-                              >
-                                Revogar Conciliação
-                              </DropdownMenuItem>
-                            )}
+                                {entrada.situacao === "recebido" && (
+                                  <button
+                                    onClick={() => {
+                                      handleUpdateSituacao(entrada.id, "em aberto");
+                                      setOpenMenuIndex(null);
+                                    }}
+                                    className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                  >
+                                    Voltar para Em Aberto
+                                  </button>
+                                )}
 
-                            <DropdownMenuItem
-                              className={styles.contasReceberDropdownItem}
-                              onClick={() => handleOpenDeleteModal(entrada.id, entrada.descricao, entrada.a_receber)}
-                            >
-                              Excluir Lançamento
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                                {entrada.situacao === "vencidos" && (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        handleUpdateSituacao(entrada.id, "em aberto");
+                                        setOpenMenuIndex(null);
+                                      }}
+                                      className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                    >
+                                      Voltar para Em Aberto
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        handleUpdateSituacao(entrada.id, "recebido");
+                                        setOpenMenuIndex(null);
+                                      }}
+                                      className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                    >
+                                      Marcar como Pago
+                                    </button>
+                                  </>
+                                )}
+
+                                <button
+                                  onClick={() => {
+                                    handleEditReceita(entrada);
+                                    setOpenMenuIndex(null);
+                                  }}
+                                  disabled={entrada.origem === "pluggy"}
+                                  className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                >
+                                  Editar Lançamento
+                                  {entrada.origem === "pluggy" &&
+                                    " (não disponível)"}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    handleDuplicarReceita(entrada);
+                                    setOpenMenuIndex(null);
+                                  }}
+                                  className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                >
+                                  Duplicar Lançamento
+                                </button>
+
+                                {entrada.boleto_id && (
+                                  <button
+                                    onClick={() => {
+                                      handleDownloadBoleto(entrada.id);
+                                      setOpenMenuIndex(null);
+                                    }}
+                                    className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                  >
+                                    Baixar boleto
+                                  </button>
+                                )}
+
+                                {/* Item para revogar conciliação - mostrar para transações conciliadas */}
+                                {entrada.situacao === "conciliado" && (
+                                  <button
+                                    onClick={() => {
+                                      handleRevogarConciliacao(entrada);
+                                      setOpenMenuIndex(null);
+                                    }}
+                                    className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                  >
+                                    Revogar Conciliação
+                                  </button>
+                                )}
+
+                                <button
+                                  className={`${styles.contasReceberDropdownItem} ${styles.dropdownMenuItem}`}
+                                  onClick={() => {
+                                    handleOpenDeleteModal(entrada.id, entrada.descricao, entrada.a_receber);
+                                    setOpenMenuIndex(null);
+                                  }}
+                                >
+                                  Excluir Lançamento
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     ))
                   )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
           </div>
 
           {/* Footer with totals and pagination */}
@@ -2124,15 +2149,10 @@ export default function ContasAReceber() {
         onClose={() => {
           setIsNovaReceitaOpen(false);
           setDadosParaDuplicacao(null); // Limpa os dados de duplicação ao fechar
+          setSelectedReceita(null); // Limpa a receita selecionada ao fechar
         }}
         onSave={handleSaveReceita}
         dadosParaDuplicacao={dadosParaDuplicacao}
-      />
-
-      <EditReceitaDrawer
-        isOpen={isEditReceitaOpen}
-        onClose={() => setIsEditReceitaOpen(false)}
-        onSave={handleSaveReceita}
         transacaoId={selectedReceita?.id?.toString()}
       />
 

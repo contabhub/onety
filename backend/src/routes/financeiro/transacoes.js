@@ -443,9 +443,11 @@ router.put("/:id", verifyToken, async (req, res) => {
     subcategoria_id,
     cliente_id,
     anexo,
+    anexo_base64,
     centro_custo_id,
-    pluggy_transaction_id, // ✅ NOVO CAMPO
-    boleto_id // ✅ NOVO CAMPO
+    pluggy_transacao_id,
+    boleto_id,
+    recorrencia_id
   } = req.body;
 
   try {
@@ -504,7 +506,7 @@ router.put("/:id", verifyToken, async (req, res) => {
         categoria_id,
         subcategoria_id || null,
         cliente_id || null,
-        anexo || null,
+        (anexo || anexo_base64) || null,
         centro_custo_id || null,
         pluggy_transacao_id || null,
         boleto_id || null,
