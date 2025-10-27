@@ -134,7 +134,7 @@ router.get("/:accountId/entradas", verifyToken, async (req, res) => {
     let query = `
       SELECT 
         id,
-        pluggy_transaction_id,
+        pluggy_transacao_id,
         conta_id,
         descricao,
         valor,
@@ -144,8 +144,9 @@ router.get("/:accountId/entradas", verifyToken, async (req, res) => {
         anexo,
         empresa_id,
         cliente_id,
+        contas_id,
         criado_em,
-        updatad_at
+        atualizado_em
       FROM transacoes_api
       WHERE conta_id = ? AND valor > 0 AND situacao <> 'ignorada'
     `;
@@ -176,7 +177,7 @@ router.get("/:accountId/saidas", verifyToken, async (req, res) => {
     let query = `
       SELECT 
         id,
-        pluggy_transaction_id,
+        pluggy_transacao_id,
         conta_id,
         descricao,
         valor,
@@ -186,8 +187,9 @@ router.get("/:accountId/saidas", verifyToken, async (req, res) => {
         anexo,
         empresa_id,
         cliente_id,
+        contas_id,
         criado_em,
-        updatad_at
+        atualizado_em
       FROM transacoes_api
       WHERE conta_id = ? AND valor < 0 AND situacao <> 'ignorada'
     `;
@@ -267,7 +269,7 @@ router.put("/company/:companyId/transacao/:id", verifyToken, async (req, res) =>
 
   try {
     const [result] = await pool.query(
-      `UPDATE transacoes_api SET descricao = ?, valor = ?, data = ?, situacao = ?, anexo = ?, updatad_at = NOW() WHERE id = ? AND empresa_id = ?`,
+      `UPDATE transacoes_api SET descricao = ?, valor = ?, data = ?, situacao = ?, anexo = ?, atualizado_em = NOW() WHERE id = ? AND empresa_id = ?`,
       [descricao, valor, data, situacao, anexo, id, companyId]
     );
     if (result.affectedRows === 0) {
@@ -310,7 +312,7 @@ router.post("/ignore", verifyToken, async (req, res) => {
   try {
     const [result] = await pool.query(
       `UPDATE transacoes_api 
-         SET situacao = 'ignorada', updatad_at = NOW()
+         SET situacao = 'ignorada', atualizado_em = NOW()
        WHERE empresa_id = ? AND id IN (?)`,
       [empresa_id, toUpdata]
     );
@@ -333,7 +335,7 @@ router.post("/unignore", verifyToken, async (req, res) => {
   try {
     const [result] = await pool.query(
       `UPDATE transacoes_api 
-         SET situacao = 'recebido', updatad_at = NOW()
+         SET situacao = 'recebido', atualizado_em = NOW()
        WHERE empresa_id = ? AND id IN (?)`,
       [empresa_id, toUpdata]
     );
