@@ -118,5 +118,45 @@ router.put("/reordenar", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/empresa/:companyId", verifyToken, async (req, res) => {
 
+  const { companyId } = req.params;
+
+  try {
+    // Busca todos os tipos da empresa
+    const [tipos] = await pool.query(
+      `SELECT * FROM tipos WHERE empresa_id = ?`,
+      [companyId]
+    );
+
+    const resultado = [];
+
+    for (const tipo of tipos) {
+      const [categorias] = await pool.query(
+        `SELECT * FROM straton_categorias WHERE tipo_id = ? ORDER BY ordem ASC`,
+        [tipo.id]
+      );
+
+      for (const categoria of categorias) {
+        const [subcategorias] = await pool.query(
+          `SELECT * FROM straton_subcategorias WHERE categoria_id = ? ORDER BY ordem ASC`,
+          [categoria.id]
+        );
+
+        categoria.subcategorias = subcategorias;
+      }
+
+      resultado.push({
+        tipo: tipo.nome,
+        tipo_id: tipo.id,
+        categorias
+      });
+    }
+
+    res.json(resultado);
+  } catch (err) {
+    console.error("Erro ao buscar categorias da empresa:", err);
+    res.status(500).json({ error: "Erro ao buscar categorias." });
+  }
+});
 module.exports = router;
