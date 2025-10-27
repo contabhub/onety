@@ -204,6 +204,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  flex: 1;
 }
 
 .capturaFacilActionBtn:hover {
@@ -815,9 +816,21 @@
 
 .capturaFacilInfoHeader {
   display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-l);
+}
+
+.capturaFacilInfoHeaderTop {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.capturaFacilInfoHeaderBottom {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--onity-space-l);
 }
 
 .capturaFacilInfoBadges {
@@ -861,6 +874,7 @@
   display: flex;
   gap: var(--onity-space-m);
   align-items: center;
+  width: 100%;
 }
 
 .capturaFacilOutlineBtn {
@@ -877,6 +891,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 1;
 }
 
 .capturaFacilOutlineBtn:hover {

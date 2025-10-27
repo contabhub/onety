@@ -1,13 +1,7 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/financeiro/card";
-import { Button } from "../../components/financeiro/botao";
-import { Badge } from "../../components/financeiro/badge";
-import { Separator } from "../../components/financeiro/separator";
 import {
   Upload,
   Image as ImageIcon,
-  Mail,
-  MessageCircle,
   CheckCircle2,
   Download,
   ZoomIn,
@@ -500,8 +494,8 @@ export default function CapturaFacilPage() {
         <div className={styles.capturaFacilGrid}>
           {/* Coluna esquerda */}
           <div className={styles.capturaFacilLeftColumn}>
-            <Card className={styles.capturaFacilUploadCard}>
-              <CardContent className={styles.capturaFacilCardContent}>
+            <div className={styles.capturaFacilUploadCard}>
+              <div className={styles.capturaFacilCardContent}>
                 <label
                   htmlFor="file-input"
                   className={styles.capturaFacilUploadArea}
@@ -512,16 +506,14 @@ export default function CapturaFacilPage() {
                   </div>
                   <input id="file-input" type="file" accept="application/pdf" className={styles.capturaFacilHiddenInput} onChange={e => handleUpload(e.target.files)} />
                 </label>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
 
             <div className={styles.capturaFacilSection}>
               <div className={styles.capturaFacilSectionHeader}>
                 <h2 className={styles.capturaFacilSectionTitle}>Esta semana</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <button 
                   onClick={handleAtualizarDrafts}
                   disabled={loadingDrafts}
                   className={styles.capturaFacilRefreshBtn}
@@ -537,7 +529,7 @@ export default function CapturaFacilPage() {
                       Atualizar
                     </>
                   )}
-                </Button>
+                </button>
               </div>
               <div className={styles.capturaFacilListContainer}>
                 <div className={styles.capturaFacilListContent}>
@@ -601,8 +593,8 @@ export default function CapturaFacilPage() {
           {/* Coluna direita */}
           <div className={styles.capturaFacilRightColumn}>
             {!selectedBoleto ? (
-              <Card className={styles.capturaFacilEmptyCard}>
-                <CardContent className={styles.capturaFacilEmptyCardContent}>
+              <div className={styles.capturaFacilEmptyCard}>
+                <div className={styles.capturaFacilEmptyCardContent}>
                   <div className={styles.capturaFacilEmptyContent}>
                     <div className={styles.capturaFacilEmptyImage}>
                       <img src="/interface.png" alt="Ilustração Upload" className={styles.capturaFacilEmptyImageImg} />
@@ -627,8 +619,8 @@ export default function CapturaFacilPage() {
                     </div>
 
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <>
                 <div className={styles.capturaFacilMainCard}>
@@ -745,21 +737,7 @@ export default function CapturaFacilPage() {
                 <div className={styles.capturaFacilInfoCard}>
                   <div className={styles.capturaFacilInfoCardContent}>
                     <div className={styles.capturaFacilInfoHeader}>
-                      <div className={styles.capturaFacilInfoBadges}>
-                        <span className={`${styles.capturaFacilInfoBadge} ${
-                          selectedBoleto.status === 'processado' ? styles.capturaFacilInfoBadgeSuccess :
-                          selectedBoleto.status === 'processando' ? styles.capturaFacilInfoBadgeProcessing :
-                          styles.capturaFacilInfoBadgeError
-                        }`}>
-                          {selectedBoleto.status === 'processado' ? 'Dados extraídos' :
-                           selectedBoleto.status === 'processando' ? 'Processando' : 'Erro'}
-                        </span>
-                        <span className={styles.capturaFacilInfoType}>
-                          {selectedBoleto.tipoBoleto === 'pix' ? 'Boleto PIX' : 'Boleto Bancário'}
-                        </span>
-                      </div>
-
-                      <div className={styles.capturaFacilInfoActions}>
+                      <div className={styles.capturaFacilInfoHeaderBottom}>
                         <button 
                           className={styles.capturaFacilActionBtn}
                           onClick={handleRevisarECriar}
@@ -770,6 +748,22 @@ export default function CapturaFacilPage() {
                         <button className={styles.capturaFacilOutlineBtn}>
                           Buscar lançamento
                         </button>
+                      </div>
+
+                      <div className={styles.capturaFacilInfoHeaderTop}>
+                        <div className={styles.capturaFacilInfoBadges}>
+                          <span className={`${styles.capturaFacilInfoBadge} ${
+                            selectedBoleto.status === 'processado' ? styles.capturaFacilInfoBadgeSuccess :
+                            selectedBoleto.status === 'processando' ? styles.capturaFacilInfoBadgeProcessing :
+                            styles.capturaFacilInfoBadgeError
+                          }`}>
+                            {selectedBoleto.status === 'processado' ? 'Dados extraídos' :
+                             selectedBoleto.status === 'processando' ? 'Processando' : 'Erro'}
+                          </span>
+                          <span className={styles.capturaFacilInfoType}>
+                            {selectedBoleto.tipoBoleto === 'pix' ? 'Boleto PIX' : 'Boleto Bancário'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -799,7 +793,6 @@ export default function CapturaFacilPage() {
                     {selectedBoleto.form?.observacao && (
                       <div className={styles.capturaFacilObservationsSection}>
                         <div className={styles.capturaFacilObservationsHeader}>
-                          <FileText className={styles.capturaFacilObservationsIcon} />
                           <h3 className={styles.capturaFacilObservationsTitle}>Observações</h3>
                         </div>
                           <div className={styles.capturaFacilObservationsContainer}>

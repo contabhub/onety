@@ -1,33 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from './botao';
-import { Input } from './input';
-import { Label } from './label';
-import { Textarea } from './textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './select';
-import { Calendar } from './calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './popover';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Checkbox } from './checkbox';
-import { X, Calendar as CalendarIcon, ChevronDown, Info, Plus, FileText, CheckCircle2 } from "lucide-react";
-import { format, formatISO } from "date-fns";
+import { X, Calendar as CalendarIcon, Info, Plus, FileText, CheckCircle2 } from "lucide-react";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import ReactSelect from "react-select";
 import { NovoClienteDrawer } from "./NovoClienteDrawer";
-import { Switch } from './switch';
 import ModalRecorrenciaPersonalizada from "./ModalRecorrenciaPersonalizada";
 import { PDFViewer } from "./pdf-viewer";
 import styles from '../../styles/financeiro/nova-despesa.module.css';
@@ -102,6 +82,8 @@ export function NovaDespesaDrawer({
   // Estado para controlar se a data de vencimento foi definida manualmente
   const [vencimentoManual, setVencimentoManual] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  // Estado para controlar qual tab está ativa
+  const [activeTab, setActiveTab] = useState("observacoes");
 
   // Reset do estado de fechamento quando modal abre
   useEffect(() => {
@@ -988,7 +970,7 @@ export function NovaDespesaDrawer({
                   <div className={styles.novaDespesaGrid}>
                     {/* Valor */}
                     <div className={styles.novaDespesaField}>
-                      <Label className={styles.novaDespesaLabel}>Valor</Label>
+                      <label className={styles.novaDespesaLabel}>Valor</label>
                       <div className={styles.novaDespesaParcelaValor} style={{color: '#1E88E5', fontSize: '18px'}}>
                         {dadosBoleto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </div>
@@ -996,7 +978,7 @@ export function NovaDespesaDrawer({
 
                     {/* Vencimento */}
                     <div className={styles.novaDespesaField}>
-                      <Label className={styles.novaDespesaLabel}>Vencimento</Label>
+                      <label className={styles.novaDespesaLabel}>Vencimento</label>
                       <div className={styles.novaDespesaLabel}>
                         {dadosBoleto.dataVencimento.toLocaleDateString('pt-BR')}
                       </div>
@@ -1004,7 +986,7 @@ export function NovaDespesaDrawer({
 
                     {/* Tipo */}
                     <div className={styles.novaDespesaField}>
-                      <Label className={styles.novaDespesaLabel}>Tipo</Label>
+                      <label className={styles.novaDespesaLabel}>Tipo</label>
                       <div className={styles.novaDespesaLabel}>
                         {dadosBoleto.tipoBoleto === 'pix' ? 'Boleto PIX' : 'Boleto Bancário'}
                       </div>
@@ -1012,7 +994,7 @@ export function NovaDespesaDrawer({
 
                     {/* Origem */}
                     <div className={styles.novaDespesaField}>
-                      <Label className={styles.novaDespesaLabel}>Origem</Label>
+                      <label className={styles.novaDespesaLabel}>Origem</label>
                       <div className={styles.novaDespesaLabel} style={{textTransform: 'capitalize'}}>
                         {dadosBoleto.origem}
                       </div>
@@ -1021,7 +1003,7 @@ export function NovaDespesaDrawer({
                     {/* Beneficiário */}
                     {dadosBoleto.boletoMeta?.beneficiario && (
                       <div className={styles.novaDespesaField}>
-                        <Label className={styles.novaDespesaLabel}>Beneficiário</Label>
+                        <label className={styles.novaDespesaLabel}>Beneficiário</label>
                         <div className={styles.novaDespesaLabel}>
                           {dadosBoleto.boletoMeta.beneficiario}
                         </div>
@@ -1031,7 +1013,7 @@ export function NovaDespesaDrawer({
                     {/* Dados técnicos */}
                     {dadosBoleto.boletoMeta && (
                       <div className={styles.novaDespesaField}>
-                        <Label className={styles.novaDespesaLabel}>Dados técnicos</Label>
+                        <label className={styles.novaDespesaLabel}>Dados técnicos</label>
                         <div className={styles.novaDespesaLabel} style={{fontSize: '14px', opacity: 0.7}}>
                           {dadosBoleto.tipoBoleto === 'linha_digitavel' ? 
                             `Banco: ${dadosBoleto.boletoMeta.bank_code}, Código: ${dadosBoleto.boletoMeta.barcode?.slice(0, 8)}...` :
@@ -1053,9 +1035,9 @@ export function NovaDespesaDrawer({
                 <div className={styles.novaDespesaGrid}>
                   {/* Fornecedor */}
                   <div className={styles.novaDespesaField}>
-                    <Label htmlFor="cliente" className={styles.novaDespesaLabel}>
+                    <label htmlFor="cliente" className={styles.novaDespesaLabel}>
                       Cliente/Fornecedor <span className={styles.novaDespesaLabelRequired}>*</span>
-                    </Label>
+                    </label>
                     <div className={styles.novaDespesaClientContainer}>
                       <div className={styles.novaDespesaClientField}>
                         <ReactSelect
@@ -1096,64 +1078,14 @@ export function NovaDespesaDrawer({
                     </div>
                   </div>
 
-                  {/* Data de competência */}
-                  {/* <div className="space-y-2">
-                    <Label>Data de Competência</Label>
-                    <div className="flex gap-2">
-                      <Popover
-                        open={showCalendar === "competencia"}
-                        onOpenChange={(open) =>
-                          setShowCalendar(open ? "competencia" : null)
-                        }
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "flex-1 justify-start text-left font-normal theme-input",
-                              !formData.dataCompetencia && "theme-text-secondary"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.dataCompetencia
-                              ? format(formData.dataCompetencia, "dd/MM/yyyy", {
-                                  locale: ptBR,
-                                })
-                              : "Selecione a data"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={formData.dataCompetencia || undefined}
-                            onSelect={(date) => {
-                              handleInputChange("dataCompetencia", date);
-                              setShowCalendar(null);
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {formData.dataCompetencia && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleInputChange("dataCompetencia", null)}
-                          className="px-3"
-                          title="Limpar data"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div> */}
 
                   {/* Descrição */}
                   <div className={styles.novaDespesaField}>
-                    <Label htmlFor="descricao" className={styles.novaDespesaLabel}>
+                    <label htmlFor="descricao" className={styles.novaDespesaLabel}>
                       Descrição <span className={styles.novaDespesaLabelRequired}>*</span>
-                    </Label>
-                    <Input
+                    </label>
+                    <input
+                      type="text"
                       id="descricao"
                       value={formData.descricao}
                       onChange={(e) =>
@@ -1163,76 +1095,6 @@ export function NovaDespesaDrawer({
                       className={styles.novaDespesaInput}
                     />
                   </div>
-
-                  {/* Já pago? */}
-                  {/* <div className="flex items-center gap-4 mt-4">
-                    <Label htmlFor="pago" className="theme-text-white">Já pago?</Label>
-                    <Switch
-                      id="pago"
-                      checked={formData.pago}
-                      onCheckedChange={(checked) => {
-                        handleInputChange("recebido", checked);
-                        if (checked && !formData.dataPagamento) {
-                          handleInputChange("dataPagamento", new Date());
-                        } else if (!checked) {
-                          // Limpa a data de pagamento quando desmarca o toggle
-                          handleInputChange("dataPagamento", null);
-                        }
-                      }}
-                    />
-                    {formData.pago && (
-                      <div className="flex-1 min-w-[200px]">
-                        <Label className="theme-text-white">Data de Pagamento</Label>
-                        <div className="flex gap-2 mt-1">
-                          <Popover
-                            open={showCalendar === "pagamento"}
-                            onOpenChange={(open) =>
-                              setShowCalendar(open ? "pagamento" : null)
-                            }
-                          >
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "flex-1 justify-start text-left font-normal theme-input",
-                                  !formData.dataPagamento && "theme-text-secondary"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {formData.dataPagamento
-                                  ? format(formData.dataPagamento, "dd/MM/yyyy", {
-                                      locale: ptBR,
-                                    })
-                                  : "Selecione a data"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={formData.dataPagamento || undefined}
-                                onSelect={(date) => {
-                                  handleInputChange("dataPagamento", date);
-                                  setShowCalendar(null);
-                                }}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          {formData.dataPagamento && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleInputChange("dataPagamento", null)}
-                              className="px-3 theme-input hover:theme-text-white "
-                              title="Limpar data"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div> */}
                 </div>
 
                 {/* Categoria, Centro de Custo e Valor alinhados */}
@@ -1240,9 +1102,9 @@ export function NovaDespesaDrawer({
                   {/* Categoria */}
                   <div className={styles.novaDespesaField}>
                     <div className={styles.novaDespesaLabelContainer}>
-                      <Label className={styles.novaDespesaLabel}>
+                      <label className={styles.novaDespesaLabel}>
                         Subcategoria Despesa <span className={styles.novaDespesaLabelRequired}>*</span>
-                      </Label>
+                      </label>
                       <Info className={styles.novaDespesaInfoIcon} />
                     </div>
                     <ReactSelect
@@ -1278,7 +1140,7 @@ export function NovaDespesaDrawer({
                   {/* Centro de Custo */}
                   <div className={styles.novaDespesaField}>
                     <div className={styles.novaDespesaLabelContainer}>
-                      <Label className={styles.novaDespesaLabel}>Centro de Custo</Label>
+                      <label className={styles.novaDespesaLabel}>Centro de Custo</label>
                       <Info className={styles.novaDespesaInfoIconInvisible} />
                     </div>
                     <ReactSelect
@@ -1312,14 +1174,15 @@ export function NovaDespesaDrawer({
                   {/* Valor */}
                   <div className={styles.novaDespesaField}>
                     <div className={styles.novaDespesaLabelContainer}>
-                      <Label htmlFor="valor" className={styles.novaDespesaLabel}>
+                      <label htmlFor="valor" className={styles.novaDespesaLabel}>
                         Valor <span className={styles.novaDespesaLabelRequired}>*</span>
-                      </Label>
+                      </label>
                       <span className={styles.novaDespesaSpacer} />
                     </div>
                     <div className={styles.novaDespesaInputWithIcon}>
                       <span className={styles.novaDespesaInputIcon}>R$</span>
-                      <Input
+                      <input
+                        type="text"
                         id="valor"
                         value={formData.valor}
                         onChange={(e) =>
@@ -1337,17 +1200,20 @@ export function NovaDespesaDrawer({
               {/* Toggle de recorrência - MOVIDO PARA CIMA DE CONDIÇÃO DE PAGAMENTO */}
               <div className={styles.novaDespesaField}>
                 <div className={styles.novaDespesaSwitchContainer}>
-                  <Label htmlFor="repetirLancamento" className={styles.novaDespesaLabel}>Repetir lançamento?</Label>
-                  <Switch
+                  <label htmlFor="repetirLancamento" className={styles.novaDespesaLabel}>Repetir lançamento?</label>
+                  <input
+                    type="checkbox"
                     id="repetirLancamento"
                     checked={repetirLancamento}
-                    onCheckedChange={setRepetirLancamento}
+                    onChange={(e) => setRepetirLancamento(e.target.checked)}
+                    className={styles.novaDespesaCheckbox}
                   />
                   {repetirLancamento && (
                     <div className={styles.novaDespesaRecurrenceSelect}>
-                      <Select
+                      <select
                         value={recorrenciaSelecionada}
-                        onValueChange={(val) => {
+                        onChange={(e) => {
+                          const val = e.target.value;
                           console.log("🔄 Selecionando recorrência:", val);
                           if (val === "personalizar") {
                             setShowModalRecorrencia(true);
@@ -1355,29 +1221,27 @@ export function NovaDespesaDrawer({
                             setRecorrenciaSelecionada(val);
                           }
                         }}
+                        className={styles.novaDespesaSelectTrigger}
                       >
-                        <SelectTrigger className={styles.novaDespesaSelectTrigger}>
-                          <SelectValue placeholder="Selecione a recorrência" />
-                        </SelectTrigger>
-                        <SelectContent className={styles.novaDespesaSelectContent}>
-                          {recorrencias.length > 0 ? (
-                            recorrencias.map((rec, index) => (
-                              <SelectItem 
-                                key={`${rec.id}-${index}`} 
-                                value={rec.id.toString()} 
-                                className={styles.novaDespesaSelectItem}
-                              >
-                                {`${rec.frequencia === "mensal" ? "Mensal" : rec.frequencia.charAt(0).toUpperCase() + rec.frequencia.slice(1)}: A cada ${rec.intervalo_personalizado || 1} ${rec.tipo_intervalo || "mês(es)"}, ${rec.total_parcelas || "∞"} vez(es)${rec.indeterminada ? " (indeterminada)" : ""}`}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <div className={styles.novaDespesaNoRecurrenceMessage}>Nenhuma recorrência personalizada encontrada</div>
-                          )}
-                          <SelectItem value="personalizar" className={styles.novaDespesaSelectItem}>
-                            ➕ Criar nova recorrência personalizada...
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="">Selecione a recorrência</option>
+                        {recorrencias.length > 0 && (
+                          recorrencias.map((rec, index) => (
+                            <option 
+                              key={`${rec.id}-${index}`} 
+                              value={rec.id.toString()} 
+                              className={styles.novaDespesaSelectItem}
+                            >
+                              {`${rec.frequencia === "mensal" ? "Mensal" : rec.frequencia.charAt(0).toUpperCase() + rec.frequencia.slice(1)}: A cada ${rec.intervalo_personalizado || 1} ${rec.tipo_intervalo || "mês(es)"}, ${rec.total_parcelas || "∞"} vez(es)${rec.indeterminada ? " (indeterminada)" : ""}`}
+                            </option>
+                          ))
+                        )}
+                        <option value="personalizar" className={styles.novaDespesaSelectItem}>
+                          ➕ Criar nova recorrência personalizada...
+                        </option>
+                      </select>
+                      {recorrencias.length === 0 && (
+                        <div className={styles.novaDespesaNoRecurrenceMessage}>Nenhuma recorrência personalizada encontrada</div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1395,7 +1259,7 @@ export function NovaDespesaDrawer({
                     <>
                       {/* Parcelamento */}
                       <div className={styles.novaDespesaField}>
-                        <Label className={styles.novaDespesaLabel}>Parcelamento</Label>
+                        <label className={styles.novaDespesaLabel}>Parcelamento</label>
                         <ReactSelect
                           className="react-select-container"
                           classNamePrefix="react-select"
@@ -1414,9 +1278,9 @@ export function NovaDespesaDrawer({
 
                       {/* Data de Vencimento */}
                       <div className={styles.novaDespesaField}>
-                        <Label className={styles.novaDespesaLabel}>
+                        <label className={styles.novaDespesaLabel}>
                           Data de vencimento <span className={styles.novaDespesaLabelRequired}>*</span>
-                        </Label>
+                        </label>
                         <div className={styles.novaDespesaCalendarWrapper}>
                           <button
                             type="button"
@@ -1435,16 +1299,16 @@ export function NovaDespesaDrawer({
                           
                           {showCalendar === "vencimento" && (
                             <div className={styles.novaDespesaCalendarDropdown}>
-                              <Calendar
-                                mode="single"
-                                selected={formData.vencimento}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    handleInputChange("vencimento", date);
+                              <input
+                                type="date"
+                                value={formData.vencimento.toISOString().split('T')[0]}
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleInputChange("vencimento", new Date(e.target.value));
                                   }
                                   setShowCalendar(null);
                                 }}
-                                initialFocus
+                                className={styles.novaDespesaDateInput}
                               />
                             </div>
                           )}
@@ -1455,9 +1319,9 @@ export function NovaDespesaDrawer({
                     <>
                       {/* 1º vencimento */}
                       <div className={styles.novaDespesaField}>
-                        <Label className={styles.novaDespesaLabel}>
+                        <label className={styles.novaDespesaLabel}>
                           1º vencimento <span className={styles.novaDespesaLabelRequired}>*</span>
-                        </Label>
+                        </label>
                         <div className={styles.novaDespesaCalendarWrapper}>
                           <button
                             type="button"
@@ -1476,17 +1340,17 @@ export function NovaDespesaDrawer({
                           
                           {showCalendar === "vencimento" && (
                             <div className={styles.novaDespesaCalendarDropdown}>
-                              <Calendar
-                                mode="single"
-                                selected={formData.vencimento}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    handleInputChange("vencimento", date);
+                              <input
+                                type="date"
+                                value={formData.vencimento.toISOString().split('T')[0]}
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleInputChange("vencimento", new Date(e.target.value));
                                     setVencimentoManual(true);
                                   }
                                   setShowCalendar(null);
                                 }}
-                                initialFocus
+                                className={styles.novaDespesaDateInput}
                               />
                             </div>
                           )}
@@ -1497,7 +1361,7 @@ export function NovaDespesaDrawer({
 
                   {/* Forma de pagamento */}
                   <div className={styles.novaDespesaField}>
-                    <Label className={styles.novaDespesaLabel}>Forma de pagamento</Label>
+                    <label className={styles.novaDespesaLabel}>Forma de pagamento</label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -1524,9 +1388,9 @@ export function NovaDespesaDrawer({
 
                   {/* Conta de pagamento */}
                   <div className={styles.novaDespesaField}>
-                    <Label className={styles.novaDespesaLabel}>
+                    <label className={styles.novaDespesaLabel}>
                       Conta de pagamento <span className={styles.novaDespesaLabelRequired}>*</span>
-                    </Label>
+                    </label>
                     <div className={styles.novaDespesaContaContainer}>
                       <ReactSelect
                         className="react-select-container"
@@ -1572,30 +1436,45 @@ export function NovaDespesaDrawer({
 
               {/* Tabs - Observações e Anexo */}
               <div className={styles.novaDespesaSection}>
-                <Tabs defaultValue="observacoes" className={styles.novaDespesaTabs}>
-                  <TabsList className={styles.novaDespesaTabsList}>
-                    <TabsTrigger value="observacoes" className={styles.novaDespesaTabsTrigger}>Observações</TabsTrigger>
-                    <TabsTrigger value="anexo" className={styles.novaDespesaTabsTrigger}>Anexo</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="observacoes" className={styles.novaDespesaTabsContent}>
-                    <div className={styles.novaDespesaField}>
-                      <Label htmlFor="observacoes" className={styles.novaDespesaLabel}>Observações</Label>
-                      <Textarea
-                        id="observacoes"
-                        value={formData.observacoes}
-                        onChange={(e) =>
-                          handleInputChange("observacoes", e.target.value)
-                        }
-                        placeholder="Descreva observações relevantes sobre esse lançamento financeiro"
-                        className={styles.novaDespesaTextarea}
-                      />
+                <div className={styles.novaDespesaTabs}>
+                  <div className={styles.novaDespesaTabsList}>
+                    <button 
+                      value="observacoes" 
+                      onClick={() => setActiveTab("observacoes")}
+                      className={`${styles.novaDespesaTabsTrigger} ${activeTab === "observacoes" ? styles.novaDespesaTabsTriggerActive : ""}`}
+                    >
+                      Observações
+                    </button>
+                    <button 
+                      value="anexo" 
+                      onClick={() => setActiveTab("anexo")}
+                      className={`${styles.novaDespesaTabsTrigger} ${activeTab === "anexo" ? styles.novaDespesaTabsTriggerActive : ""}`}
+                    >
+                      Anexo
+                    </button>
+                  </div>
+                  {activeTab === "observacoes" && (
+                    <div className={styles.novaDespesaTabsContent}>
+                      <div className={styles.novaDespesaField}>
+                        <label htmlFor="observacoes" className={styles.novaDespesaLabel}>Observações</label>
+                        <textarea
+                          id="observacoes"
+                          value={formData.observacoes}
+                          onChange={(e) =>
+                            handleInputChange("observacoes", e.target.value)
+                          }
+                          placeholder="Descreva observações relevantes sobre esse lançamento financeiro"
+                          className={styles.novaDespesaTextarea}
+                        />
+                      </div>
                     </div>
-                  </TabsContent>
-                  <TabsContent value="anexo" className={styles.novaDespesaTabsContent}>
+                  )}
+                  {activeTab === "anexo" && (
+                    <div className={styles.novaDespesaTabsContent}>
                     <div className={styles.novaDespesaField}>
                       {/* Upload de PDF */}
                       <div className={styles.novaDespesaPdfSection}>
-                        <Label htmlFor="fileInput" className="cursor-pointer">
+                        <label htmlFor="fileInput" className="cursor-pointer">
                           <div className={styles.novaDespesaField}>
                             <FileText className={styles.novaDespesaPdfIcon} style={{color: '#673AB7'}} />
                             <p className={styles.novaDespesaPdfTitle}>
@@ -1605,7 +1484,7 @@ export function NovaDespesaDrawer({
                               O valor será extraído automaticamente do boleto
                             </p>
                           </div>
-                        </Label>
+                        </label>
                         <input
                           id="fileInput"
                           type="file"
@@ -1631,7 +1510,7 @@ export function NovaDespesaDrawer({
                       {/* Visualização do PDF */}
                       {formData.anexo_base64 && (
                         <div className={styles.novaDespesaField}>
-                          <Label className={styles.novaDespesaLabel}>Visualização do PDF</Label>
+                          <label className={styles.novaDespesaLabel}>Visualização do PDF</label>
                           <div className={styles.novaDespesaPdfSection}>
                             <PDFViewer 
                               base64Data={formData.anexo_base64}
@@ -1647,8 +1526,9 @@ export function NovaDespesaDrawer({
                         </div>
                       )}
                     </div>
-                  </TabsContent>
-                </Tabs>
+                  </div>
+                  )}
+                </div>
               </div>
 
           {/* Footer */}
@@ -1665,6 +1545,7 @@ export function NovaDespesaDrawer({
               </button>
             </div>
           </div>
+          
         </div>
       </div>
 
