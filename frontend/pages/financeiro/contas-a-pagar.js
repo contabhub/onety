@@ -118,7 +118,7 @@ function mapSaida(raw) {
     data_transacao: raw.data_transacao || "",
     descricao: raw.descricao || raw.description || "",
     a_pagar: Number(raw.valor || raw.amount || raw.a_pagar || 0),
-    situacao: raw.situacao || (isPluggy ? "recebido" : "em_aberto"),
+    situacao: raw.situacao || (isPluggy ? "recebido" : "em aberto"),
     categoria: categoria,
     cliente: raw.cliente_nome_fantasia || undefined,
     origem: raw.origem || "empresa", // Usar a origem da transação ou "empresa" como padrão
@@ -252,9 +252,9 @@ export default function ContasAPagar() {
       VENCIDO: "vencidos",
       VENCIDOS: "vencidos",
       PAGO: "recebido",
-      EM_ABERTO: "em_aberto",
-      "EM ABERTO": "em_aberto",
-      ABERTO: "em_aberto",
+      EM_ABERTO: "em aberto",
+      "EM ABERTO": "em aberto",
+      ABERTO: "em aberto",
     };
 
     return statusMap[status.toUpperCase()] || status.toLowerCase();
@@ -502,13 +502,13 @@ export default function ContasAPagar() {
   const pagos = filteredSaidas
     .filter((e) => e.situacao === "recebido")
     .reduce((acc, e) => acc + Number(e.a_pagar || 0), 0);
-  const vencemHoje = filteredSaidas
+      const vencemHoje = filteredSaidas
     .filter((e) => {
       const dataVenc =
         typeof e.data_vencimento === "string"
           ? parseISO(e.data_vencimento)
           : new Date(e.data_vencimento);
-      return isToday(dataVenc) && e.situacao === "em_aberto";
+      return isToday(dataVenc) && e.situacao === "em aberto";
     })
     .reduce((acc, e) => acc + Number(e.a_pagar || 0), 0);
   const aVencer = filteredSaidas
@@ -517,7 +517,7 @@ export default function ContasAPagar() {
         typeof e.data_vencimento === "string"
           ? parseISO(e.data_vencimento)
           : new Date(e.data_vencimento);
-      return isAfter(dataVenc, hoje) && e.situacao === "em_aberto";
+      return isAfter(dataVenc, hoje) && e.situacao === "em aberto";
     })
     .reduce((acc, e) => acc + Number(e.a_pagar || 0), 0);
   const totalPeriodo = filteredSaidas.reduce(
@@ -652,11 +652,16 @@ export default function ContasAPagar() {
   // Função para recarregar os dados das saídas (empresa + transacoes-api/accountId/saidas)
 
   const recarregarSaidas = useCallback(async () => {
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
     if (!empresaId || !token || !API) return;
 
-    let url = `${API}/transacoes/empresa/${empresaId}/saidas`;
+    let url = `${API}/financeiro/transacoes/empresa/${empresaId}/saidas`;
     const queryParams = [];
     if (status) queryParams.push(`status=${status}`);
     if (vencimento) queryParams.push(`vencimento=${vencimento}`);
@@ -706,7 +711,12 @@ export default function ContasAPagar() {
   };
 
   useEffect(() => {
-    const empresaId = localStorage.getItem("empresaId");
+    let empresaId = localStorage.getItem("empresaId");
+    // Se não encontrou empresaId diretamente, buscar do userData
+    if (!empresaId) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      empresaId = userData.EmpresaId || null;
+    }
     const token = localStorage.getItem("token");
 
     if (!empresaId || !token) {
@@ -738,8 +748,8 @@ export default function ContasAPagar() {
       const token = localStorage.getItem("token");
       let body = { situacao: novaSituacao };
       
-      // Para situações "em_aberto" ou "vencidos", enviar data_transacao como null
-      if (novaSituacao === "em_aberto" || novaSituacao === "vencidos") {
+      // Para situações "em aberto" ou "vencidos", enviar data_transacao como null
+      if (novaSituacao === "em aberto" || novaSituacao === "vencidos") {
         body.data_transacao = null;
       }
       // Para situação "recebido", enviar a data de hoje
@@ -748,7 +758,7 @@ export default function ContasAPagar() {
       }
       
       console.log("Body enviado para atualização de situação:", body); // <-- Log para depuração
-      const response = await fetch(`${API}/transacoes/${id}`, {
+      const response = await fetch(`${API}/financeiro/transacoes/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -770,7 +780,7 @@ export default function ContasAPagar() {
                   ? formatDate(new Date(), "yyyy-MM-dd")
                   : novaSituacao === "vencidos" && saida.data_transacao
                   ? saida.data_transacao // Manter data_transacao se já existir para vencidos
-                  : "" // Limpar data_transacao para em_aberto
+                  : "" // Limpar data_transacao para em aberto
               }
             : saida
         )
@@ -806,7 +816,7 @@ export default function ContasAPagar() {
         });
       } else if (saida?.origem === "Importação OFX") {
         // Para transações OFX, usar a rota transacoes (mesmo que empresa)
-        response = await fetch(`${API}/transacoes/${id}`, {
+        response = await fetch(`${API}/financeiro/transacoes/${id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -814,7 +824,7 @@ export default function ContasAPagar() {
         });
       } else {
         // Para transações da empresa, usar a rota transacoes
-        response = await fetch(`${API}/transacoes/${id}`, {
+        response = await fetch(`${API}/financeiro/transacoes/${id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -879,8 +889,8 @@ export default function ContasAPagar() {
       const promises = itemsToUpdate.map(async (id) => {
         let body = { situacao: novaSituacao };
         
-        // Para situações "em_aberto" ou "vencidos", enviar data_transacao como null
-        if (novaSituacao === "em_aberto" || novaSituacao === "vencidos") {
+        // Para situações "em aberto" ou "vencidos", enviar data_transacao como null
+        if (novaSituacao === "em aberto" || novaSituacao === "vencidos") {
           body.data_transacao = null;
         }
         // Para situação "recebido", enviar a data de hoje
@@ -888,7 +898,7 @@ export default function ContasAPagar() {
           body.data_transacao = formatDate(new Date(), "yyyy-MM-dd");
         }
         
-        const response = await fetch(`${API}/transacoes/${id}`, {
+        const response = await fetch(`${API}/financeiro/transacoes/${id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -957,14 +967,14 @@ export default function ContasAPagar() {
             },
           });
         } else if (saida?.origem === "Importação OFX") {
-          response = await fetch(`${API}/transacoes/${id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
         } else {
-          response = await fetch(`${API}/transacoes/${id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1012,7 +1022,7 @@ export default function ContasAPagar() {
       }
 
       // Busca os dados completos da transação via GET
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transacoes/${saida.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/transacoes/${saida.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -1085,7 +1095,12 @@ export default function ContasAPagar() {
   // Função para buscar o transacao_api_id correto automaticamente
   const buscarTransacaoApiIdCorreto = async (saida, token) => {
     try {
-      const empresaId = localStorage.getItem("empresaId");
+      let empresaId = localStorage.getItem("empresaId");
+      // Se não encontrou empresaId diretamente, buscar do userData
+      if (!empresaId) {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        empresaId = userData.EmpresaId || null;
+      }
       if (!empresaId) return null;
 
       console.log("🔍 Buscando transacao_api_id para:", {
@@ -1309,7 +1324,7 @@ export default function ContasAPagar() {
           });
         } else if (saida?.origem === "Importação OFX") {
           // Para transações OFX, usar a rota transacoes
-          response = await fetch(`${API}/transacoes/${saidaParaRevogar.id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${saidaParaRevogar.id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1317,7 +1332,7 @@ export default function ContasAPagar() {
           });
         } else {
           // Para transações da empresa, usar a rota transacoes
-          response = await fetch(`${API}/transacoes/${saidaParaRevogar.id}`, {
+          response = await fetch(`${API}/financeiro/transacoes/${saidaParaRevogar.id}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1368,7 +1383,7 @@ export default function ContasAPagar() {
         setSaidas(prevSaidas => 
           prevSaidas.map(saida => 
             saida.id === saidaParaRevogar.id 
-              ? { ...saida, situacao: "em_aberto" }
+              ? { ...saida, situacao: "em aberto" }
               : saida
           )
         );
@@ -1816,7 +1831,7 @@ export default function ContasAPagar() {
                           Marcar como Pago
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('em_aberto')}
+                          onClick={() => handleBatchStatusChange('em aberto')}
                           className={styles.contasPagarDropdownItem}
                         >
                           Marcar como Em Aberto
@@ -1989,7 +2004,7 @@ export default function ContasAPagar() {
                             className={cn({
                               [styles.badgePago]: saida.situacao === "recebido" || saida.situacao === "conciliado",
                               [styles.badgeVencido]: saida.situacao === "vencidos",
-                              [styles.badgeEmAberto]: saida.situacao === "em_aberto"
+                              [styles.badgeEmAberto]: saida.situacao === "em aberto"
                             })}
                           >
                             {saida.situacao === "recebido"
@@ -2013,7 +2028,7 @@ export default function ContasAPagar() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className={styles.contasPagarDropdown}>
-                            {saida.situacao === "em_aberto" && (
+                            {saida.situacao === "em aberto" && (
                               <>
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -2037,7 +2052,7 @@ export default function ContasAPagar() {
                             {saida.situacao === "recebido" && (
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleUpdateSituacao(saida.id, "em_aberto")
+                                  handleUpdateSituacao(saida.id, "em aberto")
                                 }
                                 className={styles.contasPagarDropdownItem}
                               >
@@ -2049,7 +2064,7 @@ export default function ContasAPagar() {
                               <>
                                 <DropdownMenuItem
                                   onClick={() =>
-                                    handleUpdateSituacao(saida.id, "em_aberto")
+                                    handleUpdateSituacao(saida.id, "em aberto")
                                   }
                                   className={styles.contasPagarDropdownItem}
                                 >

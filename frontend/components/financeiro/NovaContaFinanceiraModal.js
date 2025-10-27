@@ -268,7 +268,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
       }
 
       // 1. Criar conta na tabela contas tradicional
-      const responseContaTradicional = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contas-api`, {
+      const responseContaTradicional = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -355,7 +355,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
       // 3. Criar conta via contas-api APENAS se tiver integração (Inter habilitado)
       if (interEnabled) {
         console.log('Inter habilitado, criando conta na API...');
-        const responseConta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contas-api`, {
+        const responseConta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contas`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1267,7 +1267,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
       }
 
       // 1. Primeiro, buscar as contas do item para pegar o account
-      const resSync = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contas-api/sync`, {
+      const resSync = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contas/sync`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1287,7 +1287,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
       const accountId = accounts.length > 0 ? accounts[0].account : `account-${Date.now()}`;
 
       // 2. Criar conta APENAS na tabela contas-api (OpenFinance não cria na tradicional)
-      const resConta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contas-api`, {
+      const resConta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
