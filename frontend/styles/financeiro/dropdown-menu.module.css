@@ -23,10 +23,8 @@
 }
 
 .dropdownContent {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 1000;
+  position: fixed;
+  z-index: 999999;
   min-width: 160px;
   background-color: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);

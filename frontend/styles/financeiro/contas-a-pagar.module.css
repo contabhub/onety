@@ -72,7 +72,7 @@
 /* Botões secundários */
 .contasPagarSecondaryBtn {
   background-color: transparent;
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   border: 1px solid var(--onity-color-primary);
   border-radius: var(--onity-radius-xs);
   padding: var(--onity-space-s) var(--onity-space-m);
@@ -560,14 +560,17 @@
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-med);
+  overflow: visible !important;
 }
 
 .contasPagarTableContent {
   padding: 0;
+  overflow: visible !important;
 }
 
 .contasPagarTableContainer {
   overflow-x: auto;
+  overflow-y: visible !important;
 }
 
 .contasPagarTable {
@@ -633,6 +636,11 @@
 
 .contasPagarTableCellValue {
   font-weight: 500;
+}
+
+.contasPagarTableCellActions {
+  position: relative;
+  z-index: 10;
 }
 
 .contasPagarTableSortIcon {
@@ -713,7 +721,7 @@
   padding: 8px;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 9999;
+  z-index: 99999;
 }
 
 .contasPagarDropdownItem {
@@ -805,12 +813,19 @@
 /* Paginação */
 .contasPagarPagination {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-top: var(--onity-space-l);
   padding-top: var(--onity-space-m);
   border-top: 1px solid var(--onity-color-border);
   width: 100%;
+  margin-right: 20px;
+}
+
+.contasPagarPaginationInfo {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
 }
 
 .contasPagarPaginationContainer {
@@ -828,6 +843,7 @@
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
+  margin-left: -3px;
 }
 
 .contasPagarPaginationGroup {
@@ -845,6 +861,35 @@
   display: flex;
   align-items: center;
   gap: var(--onity-space-xs);
+}
+
+.contasPagarPaginationSelect {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 6px;
+  color: var(--onity-color-text);
+  padding: 6px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  min-width: 70px;
+}
+
+.contasPagarPaginationSelect:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.contasPagarPaginationSelect:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.1);
+}
+
+.contasPagarPaginationSelect option {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
 }
 
 .contasPagarPaginationButton {
@@ -880,7 +925,6 @@
 .contasPagarPaginationArrow:hover:not(:disabled) {
   background: var(--onity-color-surface);
   border-color: var(--onity-color-primary);
-  color: var(--onity-color-text);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(68, 84, 100, 0.1);
 }

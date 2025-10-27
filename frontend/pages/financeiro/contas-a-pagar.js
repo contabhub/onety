@@ -2016,7 +2016,7 @@ export default function ContasAPagar() {
                               : "Em Aberto"}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={styles.contasPagarTableCellActions}>
                           <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
@@ -2129,17 +2129,6 @@ export default function ContasAPagar() {
 
           {/* Footer with totals and pagination */}
           <div className={styles.contasPagarPagination}>
-            <span className={styles.contasPagarPaginationInfo}>
-              {filteredSaidas.length > 0 ? (
-                <>
-                  Mostrando {(currentPage - 1) * itemsPerPage + 1}
-                  {" - "}
-                  {Math.min(currentPage * itemsPerPage, filteredSaidas.length)} de {filteredSaidas.length}
-                </>
-              ) : (
-                "Nenhum registro encontrado"
-              )}
-            </span>
             <div className={styles.contasPagarPaginationControls}>
               <div className={styles.contasPagarPaginationButtons}>
               <select
