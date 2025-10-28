@@ -746,11 +746,6 @@ export default function ClientesPage() {
             className={`${styles.statusCard} ${statusFilter === "Ativo" ? styles.statusCardAtivoSelected : styles.statusCardAtivo}`}
             onClick={() => setStatusFilter("Ativo")}
           >
-            {statusFilter === "Ativo" && (
-              <div className={styles.cardCheckIconWrap}>
-                <CheckCircle className={styles.iconAtivo} />
-              </div>
-            )}
             <CardContent className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Ativo</p>
@@ -763,11 +758,6 @@ export default function ClientesPage() {
             className={`${styles.statusCard} ${statusFilter === "Inativo" ? styles.statusCardInativoSelected : styles.statusCardInativo}`}
             onClick={() => setStatusFilter("Inativo")}
           >
-            {statusFilter === "Inativo" && (
-              <div className={styles.cardCheckIconWrap}>
-                <CheckCircle className={styles.iconInativo} />
-              </div>
-            )}
             <CardContent className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Inativo</p>
@@ -780,11 +770,6 @@ export default function ClientesPage() {
             className={`${styles.statusCard} ${statusFilter === "Todos" ? styles.statusCardTodosSelected : styles.statusCardTodos}`}
             onClick={() => setStatusFilter("Todos")}
           >
-            {statusFilter === "Todos" && (
-              <div className={styles.cardCheckIconWrap}>
-                <CheckCircle className={styles.iconTodos} />
-              </div>
-            )}
             <CardContent className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Todos</p>
@@ -1060,73 +1045,72 @@ export default function ClientesPage() {
                     )}
                   </tbody>
                 </table>
-              </div>
-
-              {/* Pagination */}
-              {filteredClientes.length > 0 && (
-                <div className={styles.pagination}>
-                  <span className={styles.paginationInfo}>
-                    Mostrando {(currentPage - 1) * itemsPerPage + 1}
-                    {" - "}
-                    {Math.min(currentPage * itemsPerPage, filteredClientes.length)} de {filteredClientes.length}
-                  </span>
-                  <div className={styles.paginationButtons}>
-                    <select
-                      value={itemsPerPage}
-                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                      className={styles.paginationSelect}
-                      style={{ marginRight: 16 }}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <button
-                      className={styles.paginationArrow}
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                      aria-label="Primeira página"
-                    >
-                      {"<<"}
-                    </button>
-                    <button
-                      className={styles.paginationArrow}
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      aria-label="Página anterior"
-                    >
-                      {"<"}
-                    </button>
-                    {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                {/* Pagination (movida para dentro do container da tabela) */}
+                {filteredClientes.length > 0 && (
+                  <div className={`${styles.pagination} ${styles.paginationInline}`}>
+                    <span className={styles.paginationInfo}>
+                      Mostrando {(currentPage - 1) * itemsPerPage + 1}
+                      {" - "}
+                      {Math.min(currentPage * itemsPerPage, filteredClientes.length)} de {filteredClientes.length}
+                    </span>
+                    <div className={styles.paginationButtons}>
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                        className={styles.paginationSelect}
+                        style={{ marginRight: 16 }}
                       >
-                        {p}
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <button
+                        className={styles.paginationArrow}
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        aria-label="Primeira página"
+                      >
+                        {"<<"}
                       </button>
-                    ))}
-                    <button
-                      className={styles.paginationArrow}
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      aria-label="Próxima página"
-                    >
-                      {">"}
-                    </button>
-                    <button
-                      className={styles.paginationArrow}
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                      aria-label="Última página"
-                    >
-                      {">>"}
-                    </button>
+                      <button
+                        className={styles.paginationArrow}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        aria-label="Página anterior"
+                      >
+                        {"<"}
+                      </button>
+                      {Array.from({ length: paginaFim - paginaInicio + 1 }, (_, i) => paginaInicio + i).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p)}
+                          className={p === currentPage ? styles.paginationButtonActive : styles.paginationArrow}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        className={styles.paginationArrow}
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        aria-label="Próxima página"
+                      >
+                        {">"}
+                      </button>
+                      <button
+                        className={styles.paginationArrow}
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        aria-label="Última página"
+                      >
+                        {">>"}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
         </>
       )}
 
