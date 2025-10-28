@@ -29,7 +29,8 @@ import {
   TrendingDown,
   TrendingUp,
   Upload,
-  FileBarChart
+  FileBarChart,
+  Package
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -208,70 +209,28 @@ const MODULE_REGISTRY = {
         route: '/financeiro/visao-geral'
       },
       {
-        id: 'clientes',
-        label: 'Clientes',
+        id: 'cadastros',
+        label: 'Cadastros',
         icon: <Users size={18} />,
         route: '/financeiro/clientes'
       },
       {
-        id: 'produtos',
-        label: 'Produtos',
-        icon: <DollarSign size={18} />,
-        route: '/financeiro/produtos'
-      },
-      {
-        id: 'contratos',
-        label: 'Contratos',
-        icon: <FileText size={18} />,
-        route: '/financeiro/contratos'
-      },
-      {
-        id: 'vendas-orcamentos',
-        label: 'Vendas e orçamentos',
+        id: 'vendas',
+        label: 'Vendas',
         icon: <ShoppingCart size={18} />,
-        route: '/financeiro/vendas-e-orcamentos'
+        route: '/financeiro/vendas'
       },
       {
-        id: 'centro-custo',
-        label: 'Centros de Custo',
+        id: 'financeiro',
+        label: 'Financeiro',
         icon: <DollarSign size={18} />,
-        route: '/financeiro/centro-custo'
-      },
-      {
-        id: 'contas-a-pagar',
-        label: 'Contas a Pagar',
-        icon: <TrendingDown size={18} />,
         route: '/financeiro/contas-a-pagar'
-      },
-      {
-        id: 'contas-a-receber',
-        label: 'Contas a Receber',
-        icon: <TrendingUp size={18} />,
-        route: '/financeiro/contas-a-receber'
-      },
-      {
-        id: 'outras-contas',
-        label: 'Outras Contas',
-        icon: <Settings size={18} />,
-        route: '/financeiro/outras-contas'
       },
       {
         id: 'captura-facil',
         label: 'Captura Fácil',
         icon: <Upload size={18} />,
         route: '/financeiro/captura-facil'
-      },
-      {
-        id: 'extrato-movimentacoes',
-        label: 'Extrato de movimentações',
-        icon: <FileText size={18} />,
-        route: '/financeiro/extrato-movimentacoes'
-      },
-      {
-        id: 'fluxo-caixa-mensal',
-        label: 'Fluxo de Caixa Mensal',
-        icon: <FileBarChart size={18} />,
-        route: '/financeiro/fluxo-caixa-mensal'
       }
     ]
   },
@@ -382,6 +341,9 @@ export default function PrincipalSidebar() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [ajustesExpanded, setAjustesExpanded] = useState(false);
+  const [vendasExpanded, setVendasExpanded] = useState(false);
+  const [financeiroExpanded, setFinanceiroExpanded] = useState(false);
+  const [cadastrosExpanded, setCadastrosExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
@@ -761,6 +723,41 @@ export default function PrincipalSidebar() {
     }
   }, [router.pathname, router.query.section]);
 
+  // Detectar seção ativa do submenu de vendas
+  useEffect(() => {
+    if (router.pathname === '/financeiro/vendas-e-orcamentos' || router.pathname === '/financeiro/contratos') {
+      // Se estamos em uma página de vendas, expandir o submenu
+      setVendasExpanded(true);
+    }
+  }, [router.pathname]);
+
+  // Detectar seção ativa do submenu de financeiro
+  useEffect(() => {
+    if (
+      router.pathname === '/financeiro/outras-contas' ||
+      router.pathname === '/financeiro/contas-a-pagar' ||
+      router.pathname === '/financeiro/contas-a-receber' ||
+      router.pathname === '/financeiro/extrato-movimentacoes' ||
+      router.pathname === '/financeiro/fluxo-caixa-mensal' ||
+      router.pathname === '/financeiro/categorias' ||
+      router.pathname === '/financeiro/centro-custo'
+    ) {
+      // Se estamos em uma página de financeiro, expandir o submenu
+      setFinanceiroExpanded(true);
+    }
+  }, [router.pathname]);
+
+  // Detectar seção ativa do submenu de cadastros
+  useEffect(() => {
+    if (
+      router.pathname === '/financeiro/clientes' ||
+      router.pathname === '/financeiro/produtos'
+    ) {
+      // Se estamos em uma página de cadastros, expandir o submenu
+      setCadastrosExpanded(true);
+    }
+  }, [router.pathname]);
+
   const handleModuleChange = (moduleId) => {
     const module = modules.find(m => m.id === moduleId);
     if (module && module.id !== currentModule?.id) {
@@ -857,6 +854,18 @@ export default function PrincipalSidebar() {
     setAjustesExpanded(!ajustesExpanded);
   };
 
+  const toggleVendas = () => {
+    setVendasExpanded(!vendasExpanded);
+  };
+
+  const toggleFinanceiro = () => {
+    setFinanceiroExpanded(!financeiroExpanded);
+  };
+
+  const toggleCadastros = () => {
+    setCadastrosExpanded(!cadastrosExpanded);
+  };
+
   // Itens de ajustes
   const ajustesItems = [
     {
@@ -914,6 +923,95 @@ export default function PrincipalSidebar() {
       description: 'Configure integrações automáticas',
       icon: Webhook,
       route: '/atendimento/ajustes?section=webhooks'
+    }
+  ];
+
+  // Itens de vendas
+  const vendasItems = [
+    {
+      id: 'vendas-orcamentos',
+      title: 'Vendas e orçamentos',
+      description: 'Gerencie suas vendas e orçamentos',
+      icon: ShoppingCart,
+      route: '/financeiro/vendas-e-orcamentos'
+    },
+    {
+      id: 'contratos',
+      title: 'Contratos',
+      description: 'Gerencie seus contratos',
+      icon: FileText,
+      route: '/financeiro/contratos'
+    }
+  ];
+
+  // Itens de cadastros
+  const cadastrosItems = [
+    {
+      id: 'clientes',
+      title: 'Clientes',
+      description: 'Gerencie seus clientes',
+      icon: Users,
+      route: '/financeiro/clientes'
+    },
+    {
+      id: 'produtos',
+      title: 'Produtos e Serviços',
+      description: 'Gerencie produtos e serviços',
+      icon: Package,
+      route: '/financeiro/produtos'
+    }
+  ];
+
+  // Itens de financeiro
+  const financeiroItems = [
+    {
+      id: 'outras-contas',
+      title: 'Outras Contas',
+      description: 'Gerencie suas contas financeiras',
+      icon: Settings,
+      route: '/financeiro/outras-contas'
+    },
+    {
+      id: 'contas-a-pagar',
+      title: 'Contas a Pagar',
+      description: 'Gerencie suas contas a pagar',
+      icon: TrendingDown,
+      route: '/financeiro/contas-a-pagar'
+    },
+    {
+      id: 'contas-a-receber',
+      title: 'Contas a Receber',
+      description: 'Gerencie suas contas a receber',
+      icon: TrendingUp,
+      route: '/financeiro/contas-a-receber'
+    },
+    {
+      id: 'extrato-movimentacoes',
+      title: 'Extrato de movimentações',
+      description: 'Visualize extrato de movimentações',
+      icon: FileText,
+      route: '/financeiro/extrato-movimentacoes'
+    },
+    {
+      id: 'fluxo-caixa-mensal',
+      title: 'Fluxo de Caixa Mensal',
+      description: 'Acompanhe o fluxo de caixa',
+      icon: FileBarChart,
+      route: '/financeiro/fluxo-caixa-mensal'
+    },
+    {
+      id: 'categorias-financeiras',
+      title: 'Categorias Financeiras',
+      description: 'Gerencie categorias e subcategorias',
+      icon: Tag,
+      route: '/financeiro/categorias'
+    },
+    {
+      id: 'centro-custo',
+      title: 'Centros de Custo',
+      description: 'Gerencie os centros de custo',
+      icon: DollarSign,
+      route: '/financeiro/centro-custo'
     }
   ];
 
@@ -1040,6 +1138,199 @@ export default function PrincipalSidebar() {
                             <div className={styles.submenuContent}>
                               <span className={styles.submenuTitle}>{ajusteItem.title}</span>
                               <span className={styles.submenuDescription}>{ajusteItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            
+            // Se for o item "vendas", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'vendas') {
+              // Verifica qual item do submenu está ativo
+              const isVendaItemActive = router.pathname === '/financeiro/vendas-e-orcamentos' || router.pathname === '/financeiro/contratos';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isVendaItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      // Para vendas, navega diretamente para a primeira opção
+                      router.push('/financeiro/vendas-e-orcamentos');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleVendas();
+                        }}
+                        title={vendasExpanded ? "Fechar vendas" : "Abrir vendas"}
+                      >
+                        {vendasExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de vendas */}
+                  {vendasExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {vendasItems.map((vendaItem) => {
+                        const IconComponent = vendaItem.icon;
+                        const isActive = router.pathname === vendaItem.route;
+                        return (
+                          <button
+                            key={vendaItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(vendaItem.route)}
+                            title={vendaItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{vendaItem.title}</span>
+                              <span className={styles.submenuDescription}>{vendaItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            
+            // Se for o item "cadastros", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'cadastros') {
+              // Verifica qual item do submenu está ativo
+              const isCadastroItemActive = router.pathname === '/financeiro/clientes' || router.pathname === '/financeiro/produtos';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isCadastroItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      // Para cadastros, navega diretamente para a primeira opção
+                      router.push('/financeiro/clientes');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCadastros();
+                        }}
+                        title={cadastrosExpanded ? "Fechar cadastros" : "Abrir cadastros"}
+                      >
+                        {cadastrosExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de cadastros */}
+                  {cadastrosExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {cadastrosItems.map((cadastroItem) => {
+                        const IconComponent = cadastroItem.icon;
+                        const isActive = router.pathname === cadastroItem.route;
+                        return (
+                          <button
+                            key={cadastroItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(cadastroItem.route)}
+                            title={cadastroItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{cadastroItem.title}</span>
+                              <span className={styles.submenuDescription}>{cadastroItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            
+            // Se for o item "financeiro", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'financeiro') {
+              // Verifica qual item do submenu está ativo
+              const isFinanceiroItemActive = 
+                router.pathname === '/financeiro/outras-contas' ||
+                router.pathname === '/financeiro/contas-a-pagar' ||
+                router.pathname === '/financeiro/contas-a-receber' ||
+                router.pathname === '/financeiro/extrato-movimentacoes' ||
+                router.pathname === '/financeiro/fluxo-caixa-mensal' ||
+                router.pathname === '/financeiro/categorias' ||
+                router.pathname === '/financeiro/centro-custo';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isFinanceiroItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      // Para financeiro, navega diretamente para a primeira opção
+                      router.push('/financeiro/contas-a-pagar');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFinanceiro();
+                        }}
+                        title={financeiroExpanded ? "Fechar financeiro" : "Abrir financeiro"}
+                      >
+                        {financeiroExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de financeiro */}
+                  {financeiroExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {financeiroItems.map((financeiroItem) => {
+                        const IconComponent = financeiroItem.icon;
+                        const isActive = router.pathname === financeiroItem.route;
+                        return (
+                          <button
+                            key={financeiroItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(financeiroItem.route)}
+                            title={financeiroItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{financeiroItem.title}</span>
+                              <span className={styles.submenuDescription}>{financeiroItem.description}</span>
                             </div>
                           </button>
                         );

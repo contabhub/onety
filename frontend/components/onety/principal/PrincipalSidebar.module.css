@@ -33,23 +33,44 @@
   box-shadow: none;
 }
 
-/* Background linhas SVG animadas */
-.sidebar::before {
+
+/* Animação neural de fundo */
+.sidebar::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.4;
-  background-image: url("data:image/svg+xml;utf8,<svg width='100%' height='100%' viewBox='0 0 80 600' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M40 0 Q60 100 20 200 Q60 300 40 400 Q20 500 60 600' stroke='%23030842' stroke-width='2' stroke-opacity='0.22' fill='none'/><path d='M10 0 Q30 120 60 220 Q30 320 10 420 Q60 520 30 600' stroke='%232E4AFF' stroke-width='1.5' stroke-opacity='0.18' fill='none'/><path d='M70 0 Q50 80 30 180 Q50 280 70 380 Q30 480 50 600' stroke='%23030842' stroke-width='1.2' stroke-opacity='0.13' fill='none'/><path d='M20 0 Q40 90 60 190 Q40 290 20 390 Q60 490 40 600' stroke='%232E4AFF' stroke-width='1.2' stroke-opacity='0.11' fill='none'/><path d='M5 0 Q25 80 45 180 Q25 280 5 380 Q45 480 25 600' stroke='%23030842' stroke-width='1' stroke-opacity='0.02' fill='none'/><path d='M75 0 Q55 120 35 220 Q55 320 75 420 Q35 520 55 600' stroke='%232E4AFF' stroke-width='0.8' stroke-opacity='0.015' fill='none'/><path d='M15 0 Q35 100 55 200 Q35 300 15 400 Q55 500 35 600' stroke='%23030842' stroke-width='0.6' stroke-opacity='0.012' fill='none'/><path d='M65 0 Q45 90 25 190 Q45 290 65 390 Q25 490 45 600' stroke='%232E4AFF' stroke-width='0.7' stroke-opacity='0.02' fill='none'/><path d='M25 0 Q45 70 65 170 Q45 270 25 370 Q65 470 45 570' stroke='%23030842' stroke-width='0.9' stroke-opacity='0.018' fill='none'/><path d='M55 0 Q35 90 15 190 Q35 290 55 390 Q15 490 35 590' stroke='%232E4AFF' stroke-width='0.8' stroke-opacity='0.015' fill='none'/><path d='M30 0 Q50 110 70 210 Q50 310 30 410 Q70 510 50 610' stroke='%23030842' stroke-width='0.7' stroke-opacity='0.012' fill='none'/><path d='M50 0 Q30 85 10 185 Q30 285 50 385 Q10 485 30 585' stroke='%232E4AFF' stroke-width='0.6' stroke-opacity='0.01' fill='none'/><path d='M35 0 Q55 95 75 195 Q55 295 35 395 Q75 495 55 595' stroke='%23030842' stroke-width='0.5' stroke-opacity='0.008' fill='none'/><path d='M45 0 Q25 105 5 205 Q25 305 45 405 Q5 505 25 605' stroke='%232E4AFF' stroke-width='0.4' stroke-opacity='0.012' fill='none'/></svg>");
+  opacity: 0.15;
+  background-image: url('/img/neural2.gif');
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
+  mix-blend-mode: screen;
+  animation: neuralPulse 8s ease-in-out infinite;
 }
 
-/* Background dark */
-:root[data-theme='dark'] .sidebar::before {
-  background-image: url("data:image/svg+xml;utf8,<svg width='100%' height='100%' viewBox='0 0 80 600' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M40 0 Q60 100 20 200 Q60 300 40 400 Q20 500 60 600' stroke='%23E1E4F2' stroke-width='2' stroke-opacity='0.35' fill='none'/><path d='M10 0 Q30 120 60 220 Q30 320 10 420 Q60 520 30 600' stroke='%233B6EFF' stroke-width='1.5' stroke-opacity='0.28' fill='none'/><path d='M70 0 Q50 80 30 180 Q50 280 70 380 Q30 480 50 600' stroke='%23E1E4F2' stroke-width='1.2' stroke-opacity='0.23' fill='none'/><path d='M20 0 Q40 90 60 190 Q40 290 20 390 Q60 490 40 600' stroke='%233B6EFF' stroke-width='1.2' stroke-opacity='0.21' fill='none'/><path d='M5 0 Q25 80 45 180 Q25 280 5 380 Q45 480 25 600' stroke='%23E1E4F2' stroke-width='1' stroke-opacity='0.04' fill='none'/><path d='M75 0 Q55 120 35 220 Q55 320 75 420 Q35 520 55 600' stroke='%233B6EFF' stroke-width='0.8' stroke-opacity='0.03' fill='none'/><path d='M15 0 Q35 100 55 200 Q35 300 15 400 Q55 500 35 600' stroke='%23E1E4F2' stroke-width='0.6' stroke-opacity='0.025' fill='none'/><path d='M65 0 Q45 90 25 190 Q45 290 65 390 Q25 490 45 600' stroke='%233B6EFF' stroke-width='0.7' stroke-opacity='0.02' fill='none'/><path d='M25 0 Q45 70 65 170 Q45 270 25 370 Q65 470 45 570' stroke='%23E1E4F2' stroke-width='0.9' stroke-opacity='0.035' fill='none'/><path d='M55 0 Q35 90 15 190 Q35 290 55 390 Q15 490 35 590' stroke='%233B6EFF' stroke-width='0.8' stroke-opacity='0.03' fill='none'/><path d='M30 0 Q50 110 70 210 Q50 310 30 410 Q70 510 50 610' stroke='%23E1E4F2' stroke-width='0.7' stroke-opacity='0.025' fill='none'/><path d='M50 0 Q30 85 10 185 Q30 285 50 385 Q10 485 30 585' stroke='%233B6EFF' stroke-width='0.6' stroke-opacity='0.02' fill='none'/><path d='M35 0 Q55 95 75 195 Q55 295 35 395 Q75 495 55 595' stroke='%23E1E4F2' stroke-width='0.5' stroke-opacity='0.015' fill='none'/><path d='M45 0 Q25 105 5 205 Q25 305 45 405 Q5 505 25 605' stroke='%233B6EFF' stroke-width='0.4' stroke-opacity='0.012' fill='none'/></svg>");
-  opacity: 0.5;
+:root[data-theme='dark'] .sidebar::after {
+  opacity: 0.25;
+  mix-blend-mode: screen;
+}
+
+:root[data-theme='light'] .sidebar::after {
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+}
+
+@keyframes neuralPulse {
+  0%, 100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+:root[data-theme='dark'] .sidebar::after {
+  animation: none;
 }
 
 /* Scrollbar */
