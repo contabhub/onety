@@ -369,3 +369,139 @@
     padding: var(--onity-space-s);
   }
   }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Button Component Genérico */
+.buttonComponent {
+  border: none;
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  text-decoration: none;
+  background: none;
+  outline: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+}
+
+.buttonComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 2px solid var(--onity-color-primary);
+  box-shadow: 0 2px 4px rgba(68, 84, 100, 0.2);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.3);
+}
+
+.buttonComponentOutline {
+  background-color: transparent;
+  color: var(--onity-icon-secondary);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background-color: var(--onity-color-hover);
+  border-color: var(--onity-color-border-hover);
+  color: var(--onity-color-text);
+}
+
+.buttonComponentGhost {
+  background: none;
+  border: none;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-icon-secondary);
+}
+
+.buttonComponentGhost:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.buttonComponentSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}
+
+/* Input Component */
+.inputComponent {
+  width: 100%;
+  padding: var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+}
+
+.inputComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px var(--onity-color-primary-surface);
+}
+
+.inputComponent::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Label Component */
+.labelComponent {
+  display: block;
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
+  cursor: pointer;
+}
+
+/* Card Component */
+.cardComponent {
+  background: var(--onity-color-surface);
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.2s ease;
+}
+
+.cardComponent:hover {
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-1px);
+}
+
+.cardHeaderComponent {
+  padding: var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.cardContentComponent {
+  padding: var(--onity-space-m);
+}
+
+.cardTitleComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}

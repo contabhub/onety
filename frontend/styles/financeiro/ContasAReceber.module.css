@@ -1238,3 +1238,350 @@
   width: 16px;
   height: 16px;
 }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Button Component Genérico */
+.buttonComponent {
+  border: none;
+  border-radius: var(--onity-radius-md);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-xs);
+  text-decoration: none;
+  background: none;
+  outline: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.buttonComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background-color: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-shadow-lg);
+}
+
+.buttonComponentOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-icon-secondary);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background-color: var(--onity-color-hover);
+  border-color: var(--onity-color-border-hover);
+  color: var(--onity-color-text);
+}
+
+.buttonComponentGhost {
+  background-color: transparent;
+  color: var(--onity-icon-secondary);
+  border: 1px solid transparent;
+}
+
+.buttonComponentGhost:hover:not(:disabled) {
+  background-color: var(--onity-color-hover);
+  color: var(--onity-color-text);
+}
+
+.buttonComponentSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}
+
+/* Input Component */
+.inputComponent {
+  width: 100%;
+  padding: var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-md);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+}
+
+.inputComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px var(--onity-color-primary-surface);
+}
+
+.inputComponent::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Label Component */
+.labelComponent {
+  display: block;
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
+  cursor: pointer;
+}
+
+/* Card Component */
+.cardComponent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-lg);
+  box-shadow: var(--onity-shadow-sm);
+}
+
+.cardHeaderComponent {
+  padding: var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.cardContentComponent {
+  padding: var(--onity-space-m);
+}
+
+.cardTitleComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+/* Badge Component */
+.badgeComponent {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--onity-type-caption-size);
+  font-weight: var(--onity-type-caption-weight);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-sm);
+  white-space: nowrap;
+}
+
+.badgeComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.badgeComponentSecondary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+/* Checkbox Component */
+.checkboxComponent {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  background-color: var(--onity-color-surface);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkboxComponent:checked {
+  background-color: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.checkboxComponent:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--onity-color-primary-contrast);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.checkboxComponent:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--onity-color-primary-surface);
+}
+
+/* Select Component */
+.selectComponent {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.selectTriggerComponent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-md);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectTriggerComponent:hover {
+  border-color: var(--onity-color-border-hover);
+}
+
+.selectTriggerComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px var(--onity-color-primary-surface);
+}
+
+.selectContentComponent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: var(--onity-space-xs);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-md);
+  box-shadow: var(--onity-shadow-lg);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.selectItemComponent {
+  padding: var(--onity-space-s);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+}
+
+.selectItemComponent:hover {
+  background-color: var(--onity-color-hover);
+}
+
+.selectIcon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.selectIconOpen {
+  transform: rotate(180deg);
+}
+
+/* Modal Component */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-m);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 11px;
+  box-shadow: var(--onity-shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease-out;
+  position: relative;
+}
+
+.modalHeader {
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h2-size);
+  font-weight: var(--onity-type-h2-weight);
+  margin: 0;
+}
+
+.modalDescription {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line-height);
+  margin-top: var(--onity-space-xs);
+  margin-bottom: 0;
+}
+
+.modalBody {
+  padding: var(--onity-space-l);
+}
+
+.modalFooter {
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Responsividade para componentes nativos */
+@media (max-width: 768px) {
+  .modalContent {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .buttonComponent {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}

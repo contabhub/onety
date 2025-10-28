@@ -2,20 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/financeiro/card";
+// Componentes externos removidos - usando HTML nativo
 import 'react-toastify/dist/ReactToastify.css';
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Badge } from "../../components/financeiro/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/financeiro/table';
-import { Checkbox } from '../../components/financeiro/checkbox';
 import styles from "../../styles/financeiro/contas-a-pagar.module.css";
 
 // Função cn para combinar classes CSS
@@ -38,12 +26,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { NovaDespesaDrawer } from "../../components/financeiro/NovaDespesaDrawer.js";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/financeiro/dropdown-menu";
+// DropdownMenu removido - usando HTML nativo
 import { MoreVertical } from "lucide-react";
 import { EditDespesaDrawer } from "../../components/financeiro/EditDespesaDrawer";
 import { ExportarPagar } from "../../components/financeiro/ExportarPagar";
@@ -70,19 +53,7 @@ import {
   format as formatDate,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/financeiro/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/financeiro/dialog";
+// Select e Dialog removidos - usando HTML nativo
 // Removido import do Lottie - usando CSS spinner
 // Removido import do loader - usando CSS spinner
 import { toast } from "react-toastify";
@@ -1087,10 +1058,43 @@ export default function ContasAPagar() {
   const [saidaParaExcluir, setSaidaParaExcluir] = useState(null);
   const [isExcluindo, setIsExcluindo] = useState(false);
 
+  // Estados para componentes customizados
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [isPeriodSelectOpen, setIsPeriodSelectOpen] = useState(false);
+  const [selectedPeriodValue, setSelectedPeriodValue] = useState(selectedPeriod);
+
   const clearSelection = () => {
     setSelectedItems(new Set());
     setSelectAll(false);
   };
+
+  // Funções para lidar com dropdowns customizados
+  const handleToggleDropdown = (dropdownId) => {
+    setOpenDropdownId(openDropdownId === dropdownId ? null : dropdownId);
+  };
+
+  const handleCloseDropdown = () => {
+    setOpenDropdownId(null);
+    setIsPeriodSelectOpen(false);
+  };
+
+  // Função para lidar com cliques fora dos dropdowns
+  const handleClickOutside = useCallback((e) => {
+    if (!e.target.closest('.dropdown-container') && !e.target.closest('.select-container')) {
+      handleCloseDropdown();
+    }
+  }, []);
+
+  // Adicionar listener para fechar dropdowns ao clicar fora
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [handleClickOutside]);
+
+  // Atualizar selectedPeriodValue quando selectedPeriod mudar
+  useEffect(() => {
+    setSelectedPeriodValue(selectedPeriod);
+  }, [selectedPeriod]);
 
   // Função para buscar o transacao_api_id correto automaticamente
   const buscarTransacaoApiIdCorreto = async (saida, token) => {
@@ -1449,41 +1453,39 @@ export default function ContasAPagar() {
             </p>
           </div>
           <div className={styles.contasPagarHeaderRight}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               disabled
-              className={styles.contasPagarSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
             >
               <Download className={styles.contasPagarActionIcon} />
               Exportar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               disabled
-              className={styles.contasPagarSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
             >
               <Upload className={styles.contasPagarActionIcon} />
               Importar planilha
-            </Button>
-            <Button
-              size="sm"
-              disabled
-              className={styles.contasPagarPrimaryBtn}
+            </button>
+            <button
+              type="button"
+              disabled 
+              className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.buttonComponentSmall, styles.contasPagarPrimaryBtn)}
             >
               <Plus className={styles.contasPagarActionIcon} />
               Nova despesa
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Loading State */}
-        <Card className={styles.contasPagarTransactionsCard}>
-          <CardContent className={styles.contasPagarTableContent}>
+        <div className={cn(styles.cardComponent, styles.contasPagarTransactionsCard)}>
+          <div className={cn(styles.cardContentComponent, styles.contasPagarTableContent)}>
             <LoadingState />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1502,57 +1504,53 @@ export default function ContasAPagar() {
         </div>
         <div className={styles.contasPagarHeaderRight}>
           <div className={styles.contasPagarActionContainer}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={handleExportar}
-              className={styles.contasPagarExportBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarExportBtn)}
             >
               <Download className={styles.contasPagarActionIcon} />
               Exportar
-            </Button>
+            </button>
           </div>
           <div className={styles.contasPagarActionContainer}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={handleImportar}
-              className={styles.contasPagarImportBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarImportBtn)}
             >
               <Upload className={styles.contasPagarActionIcon} />
               Importar planilha
-            </Button>
+            </button>
           </div>
           <div className={styles.contasPagarActionContainer}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={handleImportarOFX}
-              className={styles.contasPagarOfxBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarOfxBtn)}
             >
               <FileText className={styles.contasPagarActionIcon} />
               Importar OFX
-            </Button>
+            </button>
           </div>
           <div className={styles.contasPagarActionContainer}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setDownloadPlanilhasModal(true)}
-              className={styles.contasPagarSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
             >
               <FileText className={styles.contasPagarActionIcon} />
               Planilhas
-            </Button>
+            </button>
           </div>
-          <Button
-            size="sm"
+          <button
+            type="button"
             onClick={handleNovaDespesa}
-            className={styles.contasPagarPrimaryBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.buttonComponentSmall, styles.contasPagarPrimaryBtn)}
           >
             <Plus className={styles.contasPagarActionIcon} />
             Nova despesa
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -1583,11 +1581,11 @@ export default function ContasAPagar() {
       {/* Stats Cards */}
       <div className={styles.contasPagarStatsGrid}>
         {stats.map((stat, index) => (
-          <Card
+          <div
             key={index}
-            className={styles.contasPagarStatCard}
+            className={cn(styles.cardComponent, styles.contasPagarStatCard)}
           >
-            <CardContent className={styles.contasPagarStatCardContent}>
+            <div className={cn(styles.cardContentComponent, styles.contasPagarStatCardContent)}>
               <div className={styles.contasPagarStatCardInner}>
                 <div className={styles.contasPagarStatCardInfo}>
                   <p className={styles.contasPagarStatCardTitle}>
@@ -1602,15 +1600,15 @@ export default function ContasAPagar() {
                 </div>
                 <stat.icon className={cn(styles.contasPagarStatCardIcon, styles[stat.color])} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
       {/* Indicador de Filtros Ativos */}
       {hasActiveFilters && (
-        <Card className={styles.filtrosAtivosCard}>
-          <CardContent className="pt-4">
+        <div className={cn(styles.cardComponent, styles.filtrosAtivosCard)}>
+          <div className={cn(styles.cardContentComponent, "pt-4")}>
             <div className={styles.filtrosAtivosContainer}>
               <div className={styles.filtrosAtivosLeft}>
                 <Filter className={styles.filtrosAtivosIcon} />
@@ -1618,54 +1616,49 @@ export default function ContasAPagar() {
                   Filtros ativos:
                 </span>
                 {status && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadge}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeSecondary, styles.filtrosAtivosBadge)}
                   >
                     Status: {rawStatus}
-                  </Badge>
+                  </span>
                 )}
                 {vencimento && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadge}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeSecondary, styles.filtrosAtivosBadge)}
                   >
                     Vencimento: {vencimento}
-                  </Badge>
+                  </span>
                 )}
                 {subcategoria && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadge}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeSecondary, styles.filtrosAtivosBadge)}
                   >
                     Subcategoria: {subcategoria}
-                  </Badge>
+                  </span>
                 )}
                 {dataInicio && dataFim && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadge}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeSecondary, styles.filtrosAtivosBadge)}
                   >
                     Período: {dataInicio} a {dataFim}
-                  </Badge>
+                  </span>
                 )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={clearFilters}
-                className={styles.contasPagarSecondaryBtn}
+                className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
               >
                 Limpar filtros
-              </Button>
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Filters */}
-      <Card className={styles.contasPagarFiltersCard}>
-        <CardContent className="pt-6">
+      <div className={cn(styles.cardComponent, styles.contasPagarFiltersCard)}>
+        <div className={cn(styles.cardContentComponent, "pt-6")}>
           <div className={styles.contasPagarFiltersContainer}>
             <div className={styles.contasPagarFilterRow}>
               <div className={styles.contasPagarFilterGroup}>
@@ -1673,49 +1666,54 @@ export default function ContasAPagar() {
                   Vencimento
                 </label>
                 <div className={styles.contasPagarPeriodContainer}>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={() => navigateMonth("prev")}
-                    className={styles.contasPagarNavBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarNavBtn)}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Select
-                    value={selectedPeriod}
-                    onValueChange={handlePeriodChange}
-                  >
-                    <SelectTrigger className="min-w-[150px] theme-input">
-                      <SelectValue>
-                        {selectedPeriod === "Este mês" 
+                  </button>
+                  <div className={cn(styles.selectComponent, "select-container")} style={{ minWidth: '150px' }}>
+                    <div
+                      className={cn(styles.selectTriggerComponent, "theme-input")}
+                      onClick={() => setIsPeriodSelectOpen(!isPeriodSelectOpen)}
+                    >
+                      <span className={styles.selectValue}>
+                        {selectedPeriodValue === "Este mês" 
                           ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
-                          : selectedPeriod
+                          : selectedPeriodValue
                         }
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="theme-modal theme-border-secondary">
-                      {periodOptions.map((option) => (
-                        <SelectItem
-                          key={option}
-                          value={option}
-                          className="theme-text-white hover:bg-[#673AB7]/20"
-                        >
-                          {option === "Este mês" 
-                            ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
-                            : option
-                          }
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                      </span>
+                      <ChevronRight className={cn(styles.selectIcon, isPeriodSelectOpen && styles.selectIconOpen)} />
+                    </div>
+                    {isPeriodSelectOpen && (
+                      <div className={cn(styles.selectContentComponent, "theme-modal theme-border-secondary")}>
+                        {periodOptions.map((option) => (
+                          <div
+                            key={option}
+                            className={cn(styles.selectItemComponent, "theme-text-white hover:bg-[#673AB7]/20")}
+                            onClick={() => {
+                              handlePeriodChange(option);
+                              setSelectedPeriodValue(option);
+                              setIsPeriodSelectOpen(false);
+                            }}
+                          >
+                            {option === "Este mês" 
+                              ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
+                              : option
+                            }
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
                     onClick={() => navigateMonth("next")}
-                    className={styles.contasPagarNavBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarNavBtn)}
                   >
                     <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
               <div className={styles.contasPagarFilterGroup}>
@@ -1724,9 +1722,10 @@ export default function ContasAPagar() {
                 </label>
                 <div className={styles.contasPagarSearchContainer}>
                   <Search className={styles.contasPagarSearchIcon} />
-                  <Input
+                  <input
+                    type="text"
                     placeholder="Pesquisar por descrição, categoria, cliente, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
-                    className={styles.contasPagarSearchInput}
+                    className={cn(styles.inputComponent, styles.contasPagarSearchInput)}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -1770,70 +1769,76 @@ export default function ContasAPagar() {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Transactions Table */}
-      <Card className={styles.contasPagarTransactionsCard}>
-        <CardContent className={styles.contasPagarTableContent}>
+      <div className={cn(styles.cardComponent, styles.contasPagarTransactionsCard)}>
+        <div className={cn(styles.cardContentComponent, styles.contasPagarTableContent)}>
           <div className={styles.contasPagarTableContainer}>
             <div className={styles.contasPagarPaginationControls}>
              
                 {selectedItems.size > 0 && (
                   <>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={styles.contasPagarSecondaryBtn}
-                        >
-                          Alterar Status
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className={styles.contasPagarDropdown}>
-                        <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('recebido')}
-                          className={styles.contasPagarDropdownItem}
-                        >
-                          Marcar como Pago
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('em aberto')}
-                          className={styles.contasPagarDropdownItem}
-                        >
-                          Marcar como Em Aberto
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleBatchStatusChange('vencidos')}
-                          className={styles.contasPagarDropdownItem}
-                        >
-                          Marcar como Vencido
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                    <div className={cn(styles.dropdownComponent, "dropdown-container")}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleDropdown('batch-status')}
+                        className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
+                      >
+                        Alterar Status
+                      </button>
+                      {openDropdownId === 'batch-status' && (
+                        <div className={cn(styles.dropdownContentComponent, styles.contasPagarDropdown, styles.dropdownLeft)}>
+                          <div 
+                            onClick={() => {
+                              handleBatchStatusChange('recebido');
+                              handleCloseDropdown();
+                            }}
+                            className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                          >
+                            Marcar como Pago
+                          </div>
+                          <div 
+                            onClick={() => {
+                              handleBatchStatusChange('em aberto');
+                              handleCloseDropdown();
+                            }}
+                            className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                          >
+                            Marcar como Em Aberto
+                          </div>
+                          <div 
+                            onClick={() => {
+                              handleBatchStatusChange('vencidos');
+                              handleCloseDropdown();
+                            }}
+                            className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                          >
+                            Marcar como Vencido
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  <button
+                    type="button"
                     disabled
-                    className={styles.contasPagarSecondaryBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
                   >
                     Renegociar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
+                    type="button"
                     onClick={clearSelection}
-                    className={styles.contasPagarSecondaryBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
                   >
                     Limpar seleção
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleDeleteMultiple}
                     disabled={isDeletingMultiple}
-                    className={styles.contasPagarSecondaryBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarSecondaryBtn)}
                   >
                     {isDeletingMultiple ? (
                       <>
@@ -1845,77 +1850,81 @@ export default function ContasAPagar() {
                         Excluir selecionados ({selectedItems.size})
                       </>
                     )}
-                  </Button>
+                  </button>
                 </>
               )}
               </div>
             </div>
 
             <div className={styles.contasPagarTableContainer}>
-              <Table>
-                <TableHeader className={styles.contasPagarTableHeader}>
-                  <TableRow>
-                    <TableHead className={styles.contasPagarTableHeaderCell}>
-                      <Checkbox
+              <table className={cn(styles.tableComponent)}>
+                <thead className={cn(styles.tableHeaderComponent, styles.contasPagarTableHeader)}>
+                  <tr className={cn(styles.tableRowComponent)}>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderCell)}>
+                      <input
+                        type="checkbox"
                         checked={
                           selectedItems.size === paginatedSaidas.length &&
                           paginatedSaidas.length > 0
                         }
-                        onCheckedChange={handleSelectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className={styles.checkboxComponent}
                       />
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       Venci.
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       Paga.
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       Descrição
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       Total (R$)
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       A pagar
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       Situação
-                    </TableHead>
-                    <TableHead className={styles.contasPagarTableHeaderText}>
+                    </th>
+                    <th className={cn(styles.tableHeadComponent, styles.contasPagarTableHeaderText)}>
                       Ações
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className={cn(styles.tableBodyComponent)}>
                   {paginatedSaidas.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className={styles.contasPagarTableRowEmpty}>
+                    <tr className={cn(styles.tableRowComponent)}>
+                      <td colSpan={8} className={cn(styles.tableCellComponent, styles.contasPagarTableRowEmpty)}>
                         <div className={styles.contasPagarTableRowEmptyText}>
                           Nenhuma transação encontrada
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ) : (
                     paginatedSaidas.map((saida, index) => (
-                      <TableRow
+                      <tr
                         key={index}
-                        className={styles.contasPagarTableRow}
+                        className={cn(styles.tableRowComponent, styles.contasPagarTableRow)}
                       >
-                        <TableCell>
-                          <Checkbox
+                        <td className={cn(styles.tableCellComponent)}>
+                          <input
+                            type="checkbox"
                             checked={selectedItems.has(saida.id)}
-                            onCheckedChange={(checked) =>
-                              handleSelectItem(saida.id, checked)
+                            onChange={(e) =>
+                              handleSelectItem(saida.id, e.target.checked)
                             }
+                            className={styles.checkboxComponent}
                           />
-                        </TableCell>
-                        <TableCell className={styles.contasPagarTableCellSecondary}>
+                        </td>
+                        <td className={cn(styles.tableCellComponent, styles.contasPagarTableCellSecondary)}>
                           {saida.origem === "Importação OFX" && saida.data_transacao
                             ? new Date(saida.data_transacao).toLocaleDateString()
                             : new Date(saida.data_vencimento).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className={styles.contasPagarTableCellSecondary}>
+                        </td>
+                        <td className={cn(styles.tableCellComponent, styles.contasPagarTableCellSecondary)}>
                           {(() => {
                             // Debug: log para entender o problema
                             if (saida.situacao === "recebido") {
@@ -1933,26 +1942,26 @@ export default function ContasAPagar() {
                               ? new Date(saida.data_transacao).toLocaleDateString()
                               : <Clock className="h-4 w-4" />;
                           })()}
-                        </TableCell>
-                        <TableCell>
+                        </td>
+                        <td className={cn(styles.tableCellComponent)}>
                         <div>
                           <div>
                             <p className={styles.contasPagarTableCellPrimary}>{saida.descricao}</p>
                             {saida.origem === "pluggy" && (
-                              <Badge className={styles.badgePluggy}>
+                              <span className={cn(styles.badgeComponent, styles.badgeInfo, styles.badgePluggy)}>
                                 Pluggy
-                              </Badge>
+                              </span>
                             )}
                             {saida.origem === "Importação OFX" && (
-                              <Badge className={styles.badgeOfx}>
+                              <span className={cn(styles.badgeComponent, styles.badgeInfo, styles.badgeOfx)}>
                                 OFX
-                              </Badge>
+                              </span>
                             )}
                             {/* Badge para transações conciliadas */}
                             {saida.situacao === "conciliado" && (
-                              <Badge className={styles.badgeConciliado}>
+                              <span className={cn(styles.badgeComponent, styles.badgeSuccess, styles.badgeConciliado)}>
                                 Conciliada
-                              </Badge>
+                              </span>
                             )}
                           </div>
                           <p className={styles.contasPagarTableCellSecondary}>{saida.categoria}</p>
@@ -1960,14 +1969,14 @@ export default function ContasAPagar() {
                             <p className={styles.contasPagarTableCellSecondary}>{saida.cliente}</p>
                           )}
                         </div>
-                        </TableCell>
-                        <TableCell className={styles.contasPagarTableCellValue}>
+                        </td>
+                        <td className={cn(styles.tableCellComponent, styles.contasPagarTableCellValue)}>
                           R$ {Number(saida.a_pagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell className={styles.contasPagarTableCellValue}>
+                        </td>
+                        <td className={cn(styles.tableCellComponent, styles.contasPagarTableCellValue)}>
                           R$ {Number(saida.a_pagar || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell>
+                        </td>
+                        <td className={cn(styles.tableCellComponent)}>
                           <span
                             className={cn({
                               [styles.badgePago]: saida.situacao === "recebido" || saida.situacao === "conciliado",
@@ -1983,116 +1992,137 @@ export default function ContasAPagar() {
                               ? "Vencidos"
                               : "Em Aberto"}
                           </span>
-                        </TableCell>
-                        <TableCell className={styles.contasPagarTableCellActions}>
-                          <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={styles.contasPagarActionBtn}
-                              >
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className={styles.contasPagarDropdown}>
+                        </td>
+                        <td className={cn(styles.tableCellComponent, styles.contasPagarTableCellActions)}>
+                          <div className={cn(styles.dropdownComponent, "dropdown-container")}>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleDropdown(`action-${saida.id}`)}
+                            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarActionBtn)}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          {openDropdownId === `action-${saida.id}` && (
+                          <div className={cn(styles.dropdownContentComponent, styles.contasPagarDropdown, styles.dropdownLeft)}>
                             {saida.situacao === "em aberto" && (
                               <>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(saida.id, "recebido")
-                                  }
-                                  className={styles.contasPagarDropdownItem}
+                                <div
+                                  onClick={() => {
+                                    handleUpdateSituacao(saida.id, "recebido");
+                                    handleCloseDropdown();
+                                  }}
+                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                                 >
                                   Marcar como Pago
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(saida.id, "vencidos")
-                                  }
-                                  className={styles.contasPagarDropdownItem}
+                                </div>
+                                <div
+                                  onClick={() => {
+                                    handleUpdateSituacao(saida.id, "vencidos");
+                                    handleCloseDropdown();
+                                  }}
+                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                                 >
                                   Marcar como Vencido
-                                </DropdownMenuItem>
+                                </div>
                               </>
                             )}
 
                             {saida.situacao === "recebido" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleUpdateSituacao(saida.id, "em aberto")
-                                }
-                                className={styles.contasPagarDropdownItem}
+                              <div
+                                onClick={() => {
+                                  handleUpdateSituacao(saida.id, "em aberto");
+                                  handleCloseDropdown();
+                                }}
+                                className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                               >
                                 Voltar para Em Aberto
-                              </DropdownMenuItem>
+                              </div>
                             )}
 
                             {saida.situacao === "vencidos" && (
                               <>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(saida.id, "em aberto")
-                                  }
-                                  className={styles.contasPagarDropdownItem}
+                                <div
+                                  onClick={() => {
+                                    handleUpdateSituacao(saida.id, "em aberto");
+                                    handleCloseDropdown();
+                                  }}
+                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                                 >
                                   Voltar para Em Aberto
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleUpdateSituacao(saida.id, "recebido")
-                                  }
-                                  className={styles.contasPagarDropdownItem}
+                                </div>
+                                <div
+                                  onClick={() => {
+                                    handleUpdateSituacao(saida.id, "recebido");
+                                    handleCloseDropdown();
+                                  }}
+                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                                 >
                                   Marcar como Pago
-                                </DropdownMenuItem>
+                                </div>
                               </>
                             )}
 
-                            <DropdownMenuItem
+                            <div
                               onClick={() => {
-                                setDespesaSelecionada(saida);
-                                setIsEditDespesaOpen(true);
+                                if (saida.origem !== "pluggy") {
+                                  setDespesaSelecionada(saida);
+                                  setIsEditDespesaOpen(true);
+                                  handleCloseDropdown();
+                                }
                               }}
-                              disabled={saida.origem === "pluggy"}
-                              className={styles.contasPagarDropdownItem}
+                              className={cn(
+                                styles.dropdownItemComponent, 
+                                styles.contasPagarDropdownItem,
+                                saida.origem === "pluggy" && styles.buttonComponentDisabled
+                              )}
+                              style={{ opacity: saida.origem === "pluggy" ? 0.5 : 1, cursor: saida.origem === "pluggy" ? 'not-allowed' : 'pointer' }}
                             >
                               Editar
                               {saida.origem === "pluggy" &&
                                 " (não disponível)"}
-                            </DropdownMenuItem>
+                            </div>
 
-                            <DropdownMenuItem
-                              onClick={() => handleDuplicarDespesa(saida)}
-                              className={styles.contasPagarDropdownItem}
+                            <div
+                              onClick={() => {
+                                handleDuplicarDespesa(saida);
+                                handleCloseDropdown();
+                              }}
+                              className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                             >
                               Duplicar Lançamento
-                            </DropdownMenuItem>
+                            </div>
 
                             {/* Item para revogar conciliação - mostrar para transações conciliadas */}
                             {saida.situacao === "conciliado" && (
-                              <DropdownMenuItem
-                                onClick={() => handleRevogarConciliacao(saida)}
-                                className={styles.contasPagarDropdownItem}
+                              <div
+                                onClick={() => {
+                                  handleRevogarConciliacao(saida);
+                                  handleCloseDropdown();
+                                }}
+                                className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                               >
                                 Revogar Conciliação
-                              </DropdownMenuItem>
+                              </div>
                             )}
 
-                            <DropdownMenuItem
-                              className={styles.contasPagarDropdownItem}
-                              onClick={() => handleConfirmarExclusao(saida)}
+                            <div
+                              onClick={() => {
+                                handleConfirmarExclusao(saida);
+                                handleCloseDropdown();
+                              }}
+                              className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
                             >
                               Excluir Lançamento
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                            </div>
+                          </div>
+                          )}
+                        </div>
+                        </td>
+                      </tr>
                     ))
                   )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
           </div>
 
           {/* Footer with totals and pagination */}
@@ -2158,8 +2188,8 @@ export default function ContasAPagar() {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Nova Despesa Drawer */}
       <NovaDespesaDrawer
@@ -2210,18 +2240,23 @@ export default function ContasAPagar() {
       />
 
       {/* Modal de Revogação de Conciliação */}
-      <Dialog open={isRevogacaoModalOpen} onOpenChange={setIsRevogacaoModalOpen}>
-        <DialogContent className="bg-[#1B1229] border-[#673AB7]/30 text-white max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#FF9800]/20 rounded flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-[#FF9800]" />
+      {isRevogacaoModalOpen && (
+        <div className={styles.dialogOverlay} onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setIsRevogacaoModalOpen(false);
+          }
+        }}>
+          <div className={cn(styles.dialogContentComponent, "bg-[#1B1229] border-[#673AB7]/30 text-white max-w-md")}>
+            <div className={cn(styles.dialogHeaderComponent)}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-[#FF9800]/20 rounded flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-[#FF9800]" />
+                </div>
+                <h2 className={cn(styles.dialogTitleComponent, "text-xl font-bold text-white")}>
+                  Revogar Conciliação
+                </h2>
               </div>
-              <DialogTitle className="text-xl font-bold text-white">
-                Revogar Conciliação
-              </DialogTitle>
             </div>
-          </DialogHeader>
           
           <div className="space-y-6">
             <div className="text-center">
@@ -2252,10 +2287,11 @@ export default function ContasAPagar() {
                   Escolha uma das opções abaixo:
                 </p>
                 
-                <Button
+                <button
+                  type="button"
                   onClick={handleApenasRevogar}
                   disabled={isRevogando}
-                  className="w-full bg-[#1E88E5] hover:bg-[#1565C0] text-white mb-2"
+                  className={cn(styles.buttonComponent, styles.buttonComponentPrimary, "w-full bg-[#1E88E5] hover:bg-[#1565C0] text-white mb-2")}
                 >
                   {isRevogando ? (
                     <>
@@ -2267,12 +2303,13 @@ export default function ContasAPagar() {
                       Apenas Revogar Conciliação
                     </>
                   )}
-                </Button>
+                </button>
                 
-                <Button
+                <button
+                  type="button"
                   onClick={handleRevogarEExcluir}
                   disabled={isRevogando}
-                  className="w-full bg-[#F50057] hover:bg-[#D1004E] text-white"
+                  className={cn(styles.buttonComponent, "w-full bg-[#F50057] hover:bg-[#D1004E] text-white")}
                 >
                   {isRevogando ? (
                     <>
@@ -2284,7 +2321,7 @@ export default function ContasAPagar() {
                       Revogar e Excluir Transação
                     </>
                   )}
-                </Button>
+                </button>
               </div>
             </div>
             
@@ -2296,21 +2333,22 @@ export default function ContasAPagar() {
             )}
           </div>
 
-          <div className="flex justify-end gap-3 mt-6">
-            <Button
-              variant="outline"
+          <div className={cn(styles.dialogFooterComponent, "flex justify-end gap-3 mt-6")}>
+            <button
+              type="button"
               onClick={() => {
                 setIsRevogacaoModalOpen(false);
                 setSaidaParaRevogar(null);
               }}
               disabled={isRevogando}
-              className="border-[#673AB7] text-[#B0AFC1] hover:bg-[#673AB7]/10"
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, "border-[#673AB7] text-[#B0AFC1] hover:bg-[#673AB7]/10")}
             >
               Cancelar
-            </Button>
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+        </div>
+      )}
 
       {/* Modal de Confirmação de Exclusão */}
       <ModalConfirmarExclusaoConta

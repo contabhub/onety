@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
+import styles from '../../../styles/financeiro/open-finance.module.css';
 
 // ⚡️ Importa PluggyConnect só no Client:
 const PluggyConnect = dynamic(
@@ -9,7 +10,7 @@ const PluggyConnect = dynamic(
   { ssr: false }
 );
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://straton-back.vercel.app';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * @param {Object} props
@@ -50,13 +51,13 @@ export default function OpenFinancePluggy({ onSuccess }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 bg-white rounded shadow max-w-md mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6 text-center">
+    <div className={styles.container}>
+      <h1 className={styles.title}>
         Conectar Conta Bancária (Open Finance)
       </h1>
 
       <button
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded w-full transition disabled:opacity-60"
+        className={`${styles.connectButton} ${loading ? styles.loading : ''}`}
         onClick={handleConnect}
         disabled={loading}
       >
@@ -64,46 +65,47 @@ export default function OpenFinancePluggy({ onSuccess }) {
       </button>
 
       {error && (
-        <div className="text-red-600 text-sm mt-4 text-center">{error}</div>
+        <div className={styles.errorMessage}>{error}</div>
       )}
 
       {isConnectVisible && connectToken && (
-        <PluggyConnect
-        connectToken={connectToken}
-        onSuccess={async (data) => {
-          console.log('🔗 Pluggy conectado:', data);
-          const itemId = data.item.id;
-      
-          // Supondo que seu JWT esteja no localStorage:
-          const token = localStorage.getItem('token');
-          const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-          const company_id = userData.EmpresaId;
-      
-          const res = await fetch(`${API_BASE}/contas-api`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              item_id: itemId,
-              client_user_id: 'user-abc',
-              connector_id: data.item.connector.id,
-              status: data.item.status,
-              execution_status: data.item.executionStatus,
-              empresa_id: company_id,
-            }),
-          });
-      
-          if (!res.ok) {
-            console.error('Erro ao salvar item_id na contasapi');
-          } else {
-            console.log('✅ item_id salvo com sucesso');
-            if (onSuccess) onSuccess(itemId);
-          }
-        }}
-      />
-      
+        <div className={styles.pluggyContainer}>
+          <PluggyConnect
+            connectToken={connectToken}
+            onSuccess={async (data) => {
+              console.log('🔗 Pluggy conectado:', data);
+              const itemId = data.item.id;
+          
+              // Supondo que seu JWT esteja no localStorage:
+              const token = localStorage.getItem('token');
+              const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+              const company_id = userData.EmpresaId;
+          
+              const res = await fetch(`${API_BASE}/contas-api`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  item_id: itemId,
+                  client_user_id: 'user-abc',
+                  connector_id: data.item.connector.id,
+                  status: data.item.status,
+                  execution_status: data.item.executionStatus,
+                  empresa_id: company_id,
+                }),
+              });
+          
+              if (!res.ok) {
+                console.error('Erro ao salvar item_id na contasapi');
+              } else {
+                console.log('✅ item_id salvo com sucesso');
+                if (onSuccess) onSuccess(itemId);
+              }
+            }}
+          />
+        </div>
       )}
     </div>
   );

@@ -1,0 +1,128 @@
+/* ===== OPEN FINANCE STYLES ===== */
+
+/* Container principal */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: var(--onety-spacing-md);
+  background: var(--onety-bg-card);
+  border-radius: var(--onety-border-radius);
+  box-shadow: var(--onety-shadow);
+  max-width: 28rem;
+  margin: 2.5rem auto 0;
+}
+
+/* Título principal */
+.title {
+  font-size: var(--onety-font-2xl);
+  font-weight: var(--onety-font-bold);
+  margin-bottom: var(--onety-spacing-xl);
+  text-align: center;
+  color: var(--onety-text-main);
+}
+
+/* Botão principal de conectar */
+.connectButton {
+  background: var(--onety-primary);
+  color: var(--onety-text-main);
+  font-weight: var(--onety-font-semibold);
+  padding: var(--onety-spacing-md) var(--onety-spacing-xl);
+  border-radius: var(--onety-border-radius);
+  border: none;
+  width: 100%;
+  transition: var(--onety-transition);
+  cursor: pointer;
+  font-size: var(--onety-font-base);
+}
+
+.connectButton:hover:not(:disabled) {
+  background: var(--onety-primary-hover);
+}
+
+.connectButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mensagem de erro */
+.errorMessage {
+  color: var(--onety-error-text);
+  font-size: var(--onety-font-sm);
+  margin-top: var(--onety-spacing-md);
+  text-align: center;
+  background: var(--onety-error-light);
+  border: 1px solid var(--onety-error-border);
+  padding: var(--onety-spacing-sm) var(--onety-spacing-md);
+  border-radius: var(--onety-border-radius-sm);
+}
+
+/* Container do componente Pluggy */
+.pluggyContainer {
+  width: 100%;
+  margin-top: var(--onety-spacing-lg);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    margin: var(--onety-spacing-lg) auto 0;
+    max-width: 90%;
+    min-height: 40vh;
+    padding: var(--onety-spacing-lg);
+  }
+
+  .title {
+    font-size: var(--onety-font-xl);
+    margin-bottom: var(--onety-spacing-lg);
+  }
+
+  .connectButton {
+    padding: var(--onety-spacing-lg) var(--onety-spacing-xl);
+    font-size: var(--onety-font-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    margin: var(--onety-spacing-md) auto 0;
+    max-width: 95%;
+    padding: var(--onety-spacing-md);
+  }
+
+  .title {
+    font-size: var(--onety-font-lg);
+  }
+
+  .connectButton {
+    padding: var(--onety-spacing-md);
+  }
+}
+
+/* Estados de loading com animação */
+.connectButton.loading {
+  position: relative;
+  color: transparent;
+}
+
+.connectButton.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--onety-text-main);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}

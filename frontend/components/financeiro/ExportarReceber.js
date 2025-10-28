@@ -1,27 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "./botao";
+import { useState, useCallback, useEffect, useRef } from "react";
 import styles from "../../styles/financeiro/ExportarReceber.module.css";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-    } from "./dialog";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import { Label } from "./label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, ChevronDown } from "lucide-react";
 import { toast } from "react-toastify";
+
+// Utility para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export function ExportarReceber({ isOpen, onClose }) {
   const [tipoExportacao, setTipoExportacao] = useState("todos");
   const [mesSelecionado, setMesSelecionado] = useState("");
   const [anoSelecionado, setAnoSelecionado] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [isMesSelectOpen, setIsMesSelectOpen] = useState(false);
+  const [isAnoSelectOpen, setIsAnoSelectOpen] = useState(false);
+  
+  const modalRef = useRef(null);
+  const mesSelectRef = useRef(null);
+  const anoSelectRef = useRef(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -132,110 +129,187 @@ export function ExportarReceber({ isOpen, onClose }) {
     }
   };
 
+  // Handlers para modal e dropdowns
+  const handleClickOutside = useCallback((event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleClose();
+    }
+  }, []);
+
+  const handleClickOutsideDropdowns = useCallback((event) => {
+    if (mesSelectRef.current && !mesSelectRef.current.contains(event.target)) {
+      setIsMesSelectOpen(false);
+    }
+    if (anoSelectRef.current && !anoSelectRef.current.contains(event.target)) {
+      setIsAnoSelectOpen(false);
+    }
+  }, []);
+
+  const handleKeyDown = useCallback((event) => {
+    if (event.key === 'Escape') {
+      setIsMesSelectOpen(false);
+      setIsAnoSelectOpen(false);
+      handleClose();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutsideDropdowns);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutsideDropdowns);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handleClickOutside, handleClickOutsideDropdowns, handleKeyDown]);
+
   const handleClose = () => {
     if (!isExporting) {
       setTipoExportacao("todos");
       setMesSelecionado("");
       setAnoSelecionado("");
+      setIsMesSelectOpen(false);
+      setIsAnoSelectOpen(false);
       onClose();
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={styles.modal}>
-        <DialogHeader>
-          <DialogTitle className={styles.title}>
+    <div className={styles.modalOverlay} onClick={handleClickOutside}>
+      <div className={cn(styles.modalContent, styles.modal)} ref={modalRef}>
+        <div className={styles.modalHeader}>
+          <h2 className={cn(styles.modalTitle, styles.title)}>
             <Download className={styles.icon} />
             Exportar Contas a Receber
-          </DialogTitle>
-          <DialogDescription className={styles.description}>
+          </h2>
+          <p className={cn(styles.modalDescription, styles.description)}>
             Escolha o período para exportar a planilha de contas a receber.
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
 
-        <div className="space-y-4 py-4">
-          <RadioGroup
-            value={tipoExportacao}
-            onValueChange={(value) => setTipoExportacao(value)}
-            className={styles.radioGroup}
-          >
-            <div className={styles.radioItem}>
-              <RadioGroupItem value="todos" id="todos" className={styles.radio} />
-              <Label htmlFor="todos" className={styles.label}>
+        <div className={cn(styles.modalBody, "space-y-4 py-4")}>
+          <div className={cn(styles.radioGroupComponent, styles.radioGroup)}>
+            <div className={cn(styles.radioItemComponent, styles.radioItem)}>
+              <input 
+                type="radio"
+                id="todos"
+                name="tipoExportacao"
+                value="todos"
+                checked={tipoExportacao === "todos"}
+                onChange={(e) => setTipoExportacao(e.target.value)}
+                className={cn(styles.radioInputComponent, styles.radio)}
+              />
+              <label htmlFor="todos" className={cn(styles.labelComponent, styles.label)}>
                 Todo o período
-              </Label>
+              </label>
             </div>
-            <div className={styles.radioItem}>
-              <RadioGroupItem value="especifico" id="especifico" className={styles.radio} />
-              <Label htmlFor="especifico" className={styles.label}>
+            <div className={cn(styles.radioItemComponent, styles.radioItem)}>
+              <input 
+                type="radio"
+                id="especifico"
+                name="tipoExportacao"
+                value="especifico"
+                checked={tipoExportacao === "especifico"}
+                onChange={(e) => setTipoExportacao(e.target.value)}
+                className={cn(styles.radioInputComponent, styles.radio)}
+              />
+              <label htmlFor="especifico" className={cn(styles.labelComponent, styles.label)}>
                 Período específico
-              </Label>
+              </label>
             </div>
-          </RadioGroup>
+          </div>
 
           {tipoExportacao === "especifico" && (
             <div className={styles.specificPeriod}>
               <div className={styles.selectContainer}>
-                <Label htmlFor="mes" className={styles.selectLabel}>
+                <label htmlFor="mes" className={cn(styles.labelComponent, styles.selectLabel)}>
                   Mês
-                </Label>
-                <Select value={mesSelecionado} onValueChange={setMesSelecionado}>
-                  <SelectTrigger className={styles.selectTrigger}>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent className={styles.selectContent}>
-                    {meses.map((mes) => (
-                      <SelectItem 
-                        key={mes.value} 
-                        value={mes.value}
-                        className={styles.selectItem}
-                      >
-                        {mes.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </label>
+                <div className={styles.selectComponent} ref={mesSelectRef}>
+                  <div
+                    className={cn(styles.selectTriggerComponent, styles.selectTrigger)}
+                    onClick={() => setIsMesSelectOpen(!isMesSelectOpen)}
+                  >
+                    <span className={mesSelecionado ? "" : styles.selectPlaceholder}>
+                      {mesSelecionado ? meses.find(m => m.value === mesSelecionado)?.label : "Selecione o mês"}
+                    </span>
+                    <ChevronDown className={cn(styles.selectIcon, isMesSelectOpen && styles.selectIconOpen)} />
+                  </div>
+                  {isMesSelectOpen && (
+                    <div className={cn(styles.selectContentComponent, styles.selectContent)}>
+                      {meses.map((mes) => (
+                        <div
+                          key={mes.value}
+                          className={cn(styles.selectItemComponent, styles.selectItem)}
+                          onClick={() => {
+                            setMesSelecionado(mes.value);
+                            setIsMesSelectOpen(false);
+                          }}
+                        >
+                          {mes.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className={styles.selectContainer}>
-                <Label htmlFor="ano" className={styles.selectLabel}>
+                <label htmlFor="ano" className={cn(styles.labelComponent, styles.selectLabel)}>
                   Ano
-                </Label>
-                <Select value={anoSelecionado} onValueChange={setAnoSelecionado}>
-                  <SelectTrigger className={styles.selectTrigger}>
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent className={styles.selectContent}>
-                    {anos.map((ano) => (
-                      <SelectItem 
-                        key={ano.value} 
-                        value={ano.value}
-                        className={styles.selectItem}
-                      >
-                        {ano.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </label>
+                <div className={styles.selectComponent} ref={anoSelectRef}>
+                  <div
+                    className={cn(styles.selectTriggerComponent, styles.selectTrigger)}
+                    onClick={() => setIsAnoSelectOpen(!isAnoSelectOpen)}
+                  >
+                    <span className={anoSelecionado ? "" : styles.selectPlaceholder}>
+                      {anoSelecionado ? anos.find(a => a.value === anoSelecionado)?.label : "Selecione o ano"}
+                    </span>
+                    <ChevronDown className={cn(styles.selectIcon, isAnoSelectOpen && styles.selectIconOpen)} />
+                  </div>
+                  {isAnoSelectOpen && (
+                    <div className={cn(styles.selectContentComponent, styles.selectContent)}>
+                      {anos.map((ano) => (
+                        <div
+                          key={ano.value}
+                          className={cn(styles.selectItemComponent, styles.selectItem)}
+                          onClick={() => {
+                            setAnoSelecionado(ano.value);
+                            setIsAnoSelectOpen(false);
+                          }}
+                        >
+                          {ano.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <DialogFooter className={styles.footer}>
-          <Button
-            variant="outline"
+        <div className={cn(styles.modalFooter, styles.footer)}>
+          <button
+            type="button"
             onClick={handleClose}
             disabled={isExporting}
-            className={styles.cancelBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.cancelBtn)}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleExportar}
             disabled={isExporting || (tipoExportacao === "especifico" && (!mesSelecionado || !anoSelecionado))}
-            className={styles.exportBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.exportBtn)}
           >
             {isExporting ? (
               <>
@@ -248,9 +322,9 @@ export function ExportarReceber({ isOpen, onClose }) {
                 Exportar
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 

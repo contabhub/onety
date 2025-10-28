@@ -171,3 +171,273 @@
     color: #673AB7 !important;
     transform: scale(1.05);
   }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Modal Component Customizado */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-m);
+  animation: fadeIn 0.2s ease;
+}
+
+.modalContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 425px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+}
+
+.modalHeader {
+  margin-bottom: var(--onity-space-m);
+}
+
+.modalTitle {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin: 0 0 var(--onity-space-s) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.modalDescription {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  margin: 0;
+  opacity: 0.8;
+}
+
+.modalFooter {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+/* Button Component Genérico */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid;
+  text-decoration: none;
+  gap: var(--onity-space-xs);
+  outline: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.buttonComponentOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+/* Label Component Genérico */
+.labelComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  line-height: var(--onity-type-body-line);
+  margin-bottom: var(--onity-space-xs);
+  display: block;
+}
+
+/* RadioGroup Component Genérico */
+.radioGroupComponent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.radioItemComponent {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.radioInputComponent {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 50%;
+  background: var(--onity-color-surface);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  position: relative;
+  margin: 0;
+}
+
+.radioInputComponent:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-primary-10);
+}
+
+.radioInputComponent:checked {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.radioInputComponent:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+.radioInputComponent:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(103, 58, 183, 0.2);
+}
+
+/* Select Component Genérico */
+.selectComponent {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.selectTriggerComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-s);
+  width: 100%;
+  min-height: 40px;
+}
+
+.selectTriggerComponent:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.selectContentComponent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xs);
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.selectItemComponent {
+  display: flex;
+  align-items: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.selectItemComponent:hover {
+  background: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+}
+
+.selectPlaceholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+.selectValue {
+  color: var(--onity-color-text);
+}
+
+.selectIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+  transition: transform 0.12s ease;
+}
+
+.selectIconOpen {
+  transform: rotate(180deg);
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

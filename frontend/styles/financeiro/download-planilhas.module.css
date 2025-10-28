@@ -306,3 +306,224 @@
     padding: var(--onity-space-s);
   }
   }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Modal Component */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-m);
+  animation: fadeIn 0.3s ease;
+}
+
+.modalContent {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideInFromBottom 0.3s ease;
+  position: relative;
+}
+
+.modalHeader {
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.modalDescription {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+.modalBody {
+  padding: var(--onity-space-l);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  margin-top: var(--onity-space-l);
+}
+
+/* Button Component Genérico */
+.buttonComponent {
+  border: none;
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  text-decoration: none;
+  background: none;
+  outline: none;
+  min-width: 100px;
+  box-shadow: 0 2px 4px rgba(68, 84, 100, 0.1);
+}
+
+.buttonComponent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+}
+
+.buttonComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.2);
+}
+
+.buttonComponentWarning {
+  background-color: var(--onity-color-warning);
+  color: var(--onity-color-warning-contrast);
+  border: 1px solid var(--onity-color-warning);
+}
+
+.buttonComponentWarning:hover:not(:disabled) {
+  background-color: var(--onity-color-warning-hover);
+  border-color: var(--onity-color-warning-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.2);
+}
+
+.buttonComponentOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(68, 84, 100, 0.2);
+}
+
+.buttonComponentSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  min-width: auto;
+}
+
+/* Card Component */
+.cardComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+  transition: all 0.2s ease;
+}
+
+.cardComponent:hover {
+  box-shadow: var(--onity-elev-med);
+  transform: translateY(-1px);
+}
+
+.cardHeaderComponent {
+  padding: var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.cardContentComponent {
+  padding: var(--onity-space-l) var(--onity-space-l) 0 var(--onity-space-l);
+}
+
+.cardTitleComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+/* Variantes de card específicas */
+.cardComponentModelo {
+  border-left: 4px solid var(--onity-color-primary);
+}
+
+.cardComponentExemplo {
+  border-left: 4px solid var(--onity-color-warning);
+}
+
+.cardComponentInfo {
+  border-left: 4px solid var(--onity-color-success);
+}
+
+/* Responsividade para componentes nativos */
+@media (max-width: 768px) {
+  .modalContent {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .cardContentComponent {
+    padding: var(--onity-space-m) var(--onity-space-m) 0 var(--onity-space-m);
+  }
+  
+  .buttonComponent {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .modalFooter {
+    padding: var(--onity-space-m);
+    flex-direction: column;
+    gap: var(--onity-space-s);
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .cardContentComponent {
+    padding: var(--onity-space-s) var(--onity-space-s) 0 var(--onity-space-s);
+  }
+  
+  .modalFooter {
+    padding: var(--onity-space-s);
+  }
+}

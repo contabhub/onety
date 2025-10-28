@@ -1071,3 +1071,500 @@
     padding: 6px 10px;
   }
 }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Button Component Genérico */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid;
+  text-decoration: none;
+  gap: var(--onity-space-xs);
+  outline: none;
+  white-space: nowrap;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.buttonComponentOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponentSecondary {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonComponentSecondary:hover:not(:disabled) {
+  background-color: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponentSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}
+
+.buttonComponentDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentGhost {
+  background-color: transparent;
+  color: var(--onity-color-text);
+  border-color: transparent;
+}
+
+.buttonComponentGhost:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+}
+
+/* Input Component Genérico */
+.inputComponent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  transition: all 0.12s ease;
+  width: 100%;
+  outline: none;
+}
+
+.inputComponent::placeholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+.inputComponent:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.1);
+}
+
+.inputComponent:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-primary-10);
+}
+
+/* Card Component Genérico */
+.cardComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+}
+
+.cardHeaderComponent {
+  padding: var(--onity-space-l) var(--onity-space-l) 0;
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.cardTitleComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin: 0 0 var(--onity-space-s) 0;
+}
+
+.cardContentComponent {
+  padding: var(--onity-space-l);
+}
+
+/* Badge Component Genérico */
+.badgeComponent {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badgeDefault {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.badgeSecondary {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-icon-secondary);
+  border: 1px solid var(--onity-color-border);
+}
+
+.badgeSuccess {
+  background-color: var(--onity-success-20);
+  color: var(--onity-color-success);
+  border: 1px solid var(--onity-success-30);
+}
+
+.badgeWarning {
+  background-color: var(--onity-warning-20);
+  color: var(--onity-color-warning);
+  border: 1px solid var(--onity-warning-30);
+}
+
+.badgeError {
+  background-color: var(--onity-error-20);
+  color: var(--onity-color-error);
+  border: 1px solid var(--onity-error-30);
+}
+
+.badgeInfo {
+  background-color: var(--onity-info-20);
+  color: var(--onity-color-info);
+  border: 1px solid var(--onity-info-30);
+}
+
+/* Table Component Genérico */
+.tableComponent {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--onity-color-surface);
+}
+
+.tableHeaderComponent {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableHeaderComponent th {
+  text-align: left;
+  padding: var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  background: var(--onity-color-bg);
+}
+
+.tableBodyComponent {
+}
+
+.tableRowComponent {
+  border-bottom: 1px solid var(--onity-color-border);
+  transition: background-color 0.12s ease;
+}
+
+.tableRowComponent:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.tableCellComponent {
+  padding: var(--onity-space-s);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  vertical-align: middle;
+}
+
+.tableHeadComponent {
+  font-weight: 600;
+  color: var(--onity-color-text);
+  background: var(--onity-color-bg);
+}
+
+/* Checkbox Component Genérico */
+.checkboxComponent {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  background: var(--onity-color-surface);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  position: relative;
+  margin: 0;
+}
+
+.checkboxComponent:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-primary-10);
+}
+
+.checkboxComponent:checked {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.checkboxComponent:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 1px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.checkboxComponent:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(103, 58, 183, 0.2);
+}
+
+/* DropdownMenu Component Genérico */
+.dropdownComponent {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownTriggerComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.dropdownTriggerComponent:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.dropdownContentComponent {
+  position: absolute;
+  top: 100%;
+  z-index: 1000;
+  min-width: 200px;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xs);
+  margin-top: 4px;
+}
+
+.dropdownItemComponent {
+  display: flex;
+  align-items: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.dropdownItemComponent:hover {
+  background: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+}
+
+.dropdownLeft {
+  right: 0;
+  left: auto;
+}
+
+.dropdownRight {
+  left: 0;
+  right: auto;
+}
+
+.dropdownCenter {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Select Component Genérico */
+.selectComponent {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.selectTriggerComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-s);
+  width: 100%;
+  min-height: 40px;
+}
+
+.selectTriggerComponent:hover {
+  border-color: var(--onity-color-primary);
+  background: var(--onity-color-bg);
+}
+
+.selectContentComponent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xs);
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.selectItemComponent {
+  display: flex;
+  align-items: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.selectItemComponent:hover {
+  background: var(--onity-primary-10);
+  color: var(--onity-color-primary);
+}
+
+.selectPlaceholder {
+  color: var(--onity-icon-secondary);
+  opacity: 0.7;
+}
+
+.selectValue {
+  color: var(--onity-color-text);
+}
+
+.selectIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+  transition: transform 0.12s ease;
+}
+
+.selectIconOpen {
+  transform: rotate(180deg);
+}
+
+/* Dialog Component Genérico */
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-m);
+  animation: fadeIn 0.2s ease;
+}
+
+.dialogContentComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+}
+
+.dialogHeaderComponent {
+  margin-bottom: var(--onity-space-m);
+}
+
+.dialogTitleComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin: 0;
+}
+
+.dialogDescriptionComponent {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  margin: var(--onity-space-s) 0 0 0;
+}
+
+.dialogFooterComponent {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+/* Ícones de ação */
+.contasPagarActionIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

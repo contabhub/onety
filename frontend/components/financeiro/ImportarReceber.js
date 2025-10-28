@@ -1,20 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Button } from "../../components/financeiro/botao";
+import { useState, useRef, useCallback, useEffect } from "react";
 import styles from "../../styles/financeiro/ImportarReceber.module.css";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/financeiro/dialog";
-import { Label } from "../../components/financeiro/label";
-import { Input } from "../../components/financeiro/input";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/financeiro/card";
-import { Badge } from "../../components/financeiro/badge";
 import { 
   Upload, 
   FileText, 
@@ -25,6 +12,10 @@ import {
   Download,
   Eye
 } from "lucide-react";
+import { toast } from "react-toastify";
+
+// Utility para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -34,7 +25,9 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [hasPreview, setHasPreview] = useState(false);
+  
   const fileInputRef = useRef(null);
+  const modalRef = useRef(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -193,6 +186,31 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
     }
   };
 
+  // Handlers para modal
+  const handleClickOutside = useCallback((event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleClose();
+    }
+  }, []);
+
+  const handleKeyDown = useCallback((event) => {
+    if (event.key === 'Escape') {
+      handleClose();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handleClickOutside, handleKeyDown]);
+
   const handleClose = () => {
     handleRemoveFile();
     onClose();
@@ -204,30 +222,32 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
     return String(value);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={styles.modal}>
-        <DialogHeader>
-          <DialogTitle className={styles.title}>
+    <div className={styles.modalOverlay} onClick={handleClickOutside}>
+      <div className={cn(styles.modalContent, styles.modal)} ref={modalRef}>
+        <div className={styles.modalHeader}>
+          <h2 className={cn(styles.modalTitle, styles.title)}>
             <Upload className={styles.titleIcon} />
             Importar Contas a Receber
-          </DialogTitle>
-          <DialogDescription className={styles.description}>
+          </h2>
+          <p className={cn(styles.modalDescription, styles.description)}>
             Faça upload de uma planilha Excel ou CSV para importar contas a receber.
             <br />
             <span className={styles.descriptionSmall}>
               Formatos aceitos: .xlsx, .xls, .csv (máximo 10MB)
             </span>
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
 
-        <div className={styles.content}>
+        <div className={cn(styles.modalBody, styles.content)}>
           {/* Upload Section */}
-          <Card className={styles.card}>
-            <CardHeader className={styles.cardHeader}>
-              <CardTitle className={styles.cardTitle}>1. Selecionar Arquivo</CardTitle>
-            </CardHeader>
-            <CardContent className={styles.cardContent}>
+          <div className={cn(styles.cardComponent, styles.card)}>
+            <div className={cn(styles.cardHeaderComponent, styles.cardHeader)}>
+              <h3 className={cn(styles.cardTitleComponent, styles.cardTitle)}>1. Selecionar Arquivo</h3>
+            </div>
+            <div className={cn(styles.cardContentComponent, styles.cardContent)}>
               {!selectedFile ? (
                 <div 
                   className={styles.uploadArea}
@@ -250,21 +270,21 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                   }}
                 >
                   <Upload className={styles.uploadIcon} />
-                  <Label htmlFor="file-upload" className={styles.uploadLabel}>
+                  <label htmlFor="file-upload" className={cn(styles.labelComponent, styles.uploadLabel)}>
                     <div className={styles.uploadLabelText}>
                       Clique para selecionar um arquivo
                     </div>
                     <div className={styles.uploadDescription}>
                       ou arraste e solte aqui
                     </div>
-                  </Label>
-                  <Input
+                  </label>
+                  <input
                     id="file-upload"
                     ref={fileInputRef}
                     type="file"
                     accept=".xlsx,.xls,.csv"
                     onChange={handleFileSelect}
-                    className={styles.fileInput}
+                    className={cn(styles.inputComponent, styles.fileInput)}
                   />
                 </div>
               ) : (
@@ -278,43 +298,43 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={handleRemoveFile}
-                    className={styles.removeButton}
+                    className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.buttonComponentSmall, styles.removeButton)}
                   >
                     <X className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Preview Section */}
           {selectedFile && (
-            <Card className={styles.card}>
-              <CardHeader className={styles.cardHeader}>
-                <CardTitle className={styles.cardTitleWithIcon}>
+            <div className={cn(styles.cardComponent, styles.card)}>
+              <div className={cn(styles.cardHeaderComponent, styles.cardHeader)}>
+                <h3 className={cn(styles.cardTitleComponent, styles.cardTitleWithIcon)}>
                   <Eye className={styles.titleIcon} />
                   2. Visualizar Dados
                   {hasPreview && (
-                    <Badge variant="secondary" className={styles.badge}>
+                    <span className={cn(styles.badgeComponent, styles.badgeComponentSecondary, styles.badge)}>
                       {totalRows} registros
-                    </Badge>
+                    </span>
                   )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className={styles.cardContent}>
+                </h3>
+              </div>
+              <div className={cn(styles.cardContentComponent, styles.cardContent)}>
                 {!hasPreview ? (
                   <div className={styles.previewSection}>
                     <p className={styles.previewDescription}>
                       Clique em &quot;Visualizar&quot; para ver os dados do arquivo antes de importar
                     </p>
-                    <Button 
+                    <button 
+                      type="button"
                       onClick={handlePreview} 
                       disabled={isLoading}
-                      className={styles.previewButton}
+                      className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.previewButton)}
                     >
                       {isLoading ? (
                         <Loader2 className={styles.previewIconSpinning} />
@@ -322,7 +342,7 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                         <Eye className={styles.previewIcon} />
                       )}
                       {isLoading ? "Processando..." : "Visualizar Dados"}
-                    </Button>
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -330,12 +350,11 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                       <p className={styles.previewControlsDescription}>
                         Mostrando os primeiros 5 registros de {totalRows} total
                       </p>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
+                      <button 
+                        type="button"
                         onClick={handlePreview}
                         disabled={isLoading}
-                        className={styles.previewControlsButton}
+                        className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.previewControlsButton)}
                       >
                         {isLoading ? (
                           <Loader2 className={styles.previewIconSpinning} />
@@ -343,7 +362,7 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                           <Eye className={styles.previewIcon} />
                         )}
                         Atualizar Preview
-                      </Button>
+                      </button>
                     </div>
                     
                     <div className={styles.tableContainer}>
@@ -374,13 +393,13 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Instructions */}
-          <Card className={styles.instructions}>
-            <CardContent className={styles.instructionsContent}>
+          <div className={cn(styles.cardComponent, styles.instructions)}>
+            <div className={cn(styles.cardContentComponent, styles.instructionsContent)}>
               <div className={styles.instructionsHeader}>
                 <AlertCircle className={styles.instructionsIcon} />
                 <div>
@@ -403,18 +422,24 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
                   </ul>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className={styles.footer}>
-          <Button variant="outline" onClick={handleClose} disabled={isImporting} className={styles.cancelButton}>
+        <div className={cn(styles.modalFooter, styles.footer)}>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isImporting}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.cancelButton)}
+          >
             Cancelar
-          </Button>
-          <Button 
-            onClick={handleImport} 
+          </button>
+          <button
+            type="button"
+            onClick={handleImport}
             disabled={!selectedFile || !hasPreview || isImporting}
-            className={styles.importButton}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.importButton)}
           >
             {isImporting ? (
               <Loader2 className={styles.importIconSpinning} />
@@ -422,9 +447,9 @@ export function ImportarReceber({ isOpen, onClose, onImportSuccess }) {
               <CheckCircle className={styles.importIcon} />
             )}
             {isImporting ? "Importando..." : "Importar Dados"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 

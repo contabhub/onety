@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/financeiro/card";
 import 'react-toastify/dist/ReactToastify.css';
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Badge } from "../../components/financeiro/badge";
-import { Checkbox } from '../../components/financeiro/checkbox';
 import styles from "../../styles/financeiro/ContasAReceber.module.css";
 import {
   Search,
@@ -28,27 +23,9 @@ import {
   Receipt,
   AlertTriangle,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/financeiro/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/financeiro/dialog";
 import NovaReceitaDrawer from "../../components/financeiro/novaReceitaDrawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/financeiro/dropdown-menu";
 import { ExportarReceber } from "../../components/financeiro/ExportarReceber";
 import { ImportarReceber } from "../../components/financeiro/ImportarReceber";
 import { ImportarOFXModal } from "../../components/financeiro/ImportarOFXModal";
@@ -233,6 +210,10 @@ export default function ContasAReceber() {
   const [isRevogacaoModalOpen, setIsRevogacaoModalOpen] = useState(false);
   const [entradaParaRevogar, setEntradaParaRevogar] = useState(null);
   const [isRevogando, setIsRevogando] = useState(false);
+
+  // Estados para componentes nativos
+  const [isPeriodSelectOpen, setIsPeriodSelectOpen] = useState(false);
+  const [isAccountSelectOpen, setIsAccountSelectOpen] = useState(false);
 
   // Normalizar os parâmetros de query string
   const rawStatus = searchParams.get("status");
@@ -1006,19 +987,42 @@ export default function ContasAReceber() {
     clearSelection();
   }, [currentPage, searchTerm, selectedPeriod, currentMonth, status, vencimento, subcategoria, dataInicio, dataFim]);
 
+  // Handler para clique fora de componentes customizados
+  const handleClickOutsideDropdowns = useCallback((event) => {
+    if (!event.target.closest('.select-container')) {
+      setIsPeriodSelectOpen(false);
+      setIsAccountSelectOpen(false);
+    }
+    if (openMenuIndex !== null) {
+      setOpenMenuIndex(null);
+    }
+    if (isBatchMenuOpen) {
+      setIsBatchMenuOpen(false);
+    }
+  }, [openMenuIndex, isBatchMenuOpen]);
+
   // Fechar menu ao clicar fora
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (openMenuIndex !== null) {
-        setOpenMenuIndex(null);
-      }
-      if (isBatchMenuOpen) {
-        setIsBatchMenuOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [openMenuIndex, isBatchMenuOpen]);
+    document.addEventListener('click', handleClickOutsideDropdowns);
+    return () => document.removeEventListener('click', handleClickOutsideDropdowns);
+  }, [handleClickOutsideDropdowns]);
+
+  // Handler para tecla ESC
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      setIsPeriodSelectOpen(false);
+      setIsAccountSelectOpen(false);
+      setOpenMenuIndex(null);
+      setIsBatchMenuOpen(false);
+      setIsDeleteModalOpen(false);
+      setIsRevogacaoModalOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Função para limpar filtros da URL
   const clearFilters = () => {
@@ -1376,32 +1380,30 @@ export default function ContasAReceber() {
             </p>
           </div>
           <div className={styles.headerActions}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               disabled
-              className={styles.contasReceberSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
             >
               <Download className="h-4 w-4 mr-2" />
               Exportar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               disabled
-              className={styles.contasReceberSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
             >
               <Upload className="h-4 w-4 mr-2" />
               Importar planilha
-            </Button>
-            <Button
-              size="sm"
+            </button>
+            <button
+              type="button"
               disabled
-              className={styles.contasReceberPrimaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.buttonComponentSmall, styles.contasReceberPrimaryBtn)}
             >
               <Plus className="h-4 w-4 mr-2" />
               Nova receita
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -1429,50 +1431,46 @@ export default function ContasAReceber() {
           </p>
         </div>
         <div className={styles.headerActions}>
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={() => setIsExportarReceberOpen(true)}
-            className={styles.contasReceberExportBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberExportBtn)}
           >
             <Download className="h-4 w-4 mr-2" />
             Exportar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={() => setIsImportarReceberOpen(true)}
-            className={styles.contasReceberImportBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberImportBtn)}
           >
             <Upload className="h-4 w-4 mr-2" />
             Importar planilha
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={handleImportarOFX}
-            className={styles.contasReceberOfxBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberOfxBtn)}
           >
             <FileText className="h-4 w-4 mr-2" />
             Importar OFX
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={() => setDownloadPlanilhasModal(true)}
-            className={styles.contasReceberSecondaryBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
           >
             <FileText className="h-4 w-4 mr-2" />
             Planilhas
-          </Button>
-          <Button
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={handleNovaReceita}
-            className={styles.contasReceberPrimaryBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.buttonComponentSmall, styles.contasReceberPrimaryBtn)}
           >
             <Plus className="h-4 w-4 mr-2" />
             Nova receita
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -1526,46 +1524,41 @@ export default function ContasAReceber() {
                   Filtros ativos:
                 </span>
                 {status && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadgeReceber}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeComponentSecondary, styles.filtrosAtivosBadgeReceber)}
                   >
                     Status: {rawStatus}
-                  </Badge>
+                  </span>
                 )}
                 {vencimento && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadgeReceber}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeComponentSecondary, styles.filtrosAtivosBadgeReceber)}
                   >
                     Vencimento: {vencimento}
-                  </Badge>
+                  </span>
                 )}
                 {subcategoria && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadgeReceber}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeComponentSecondary, styles.filtrosAtivosBadgeReceber)}
                   >
                     Subcategoria: {subcategoria}
-                  </Badge>
+                  </span>
                 )}
                 {dataInicio && dataFim && (
-                  <Badge
-                    variant="secondary"
-                    className={styles.filtrosAtivosBadgeReceber}
+                  <span
+                    className={cn(styles.badgeComponent, styles.badgeComponentSecondary, styles.filtrosAtivosBadgeReceber)}
                   >
                     Período: {dataInicio} a {dataFim}
-                  </Badge>
+                  </span>
                 )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={clearFilters}
-                className={styles.contasReceberSecondaryBtn}
+                className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
               >
                 Limpar filtros
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -1580,48 +1573,53 @@ export default function ContasAReceber() {
                 Vencimento
               </label>
               <div className={`${styles.flex} ${styles.itemsCenter} ${styles.gap2}`}>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => navigateMonth("prev")}
-                  className={styles.contasReceberNavBtn}
+                  className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberNavBtn)}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Select
-                  value={selectedPeriod}
-                  onValueChange={handlePeriodChange}
-                >
-                  <SelectTrigger className={`${styles.minW150px}`}>
-                    <SelectValue>
+                </button>
+                <div className={cn(styles.selectComponent, "select-container")}>
+                  <div 
+                    className={cn(styles.selectTriggerComponent, styles.minW150px)}
+                    onClick={() => setIsPeriodSelectOpen(!isPeriodSelectOpen)}
+                  >
+                    <span>
                       {selectedPeriod === "Este mês"
                         ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
                         : selectedPeriod
                       }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className={styles.statCard}>
-                    {periodOptions.map((option) => (
-                      <SelectItem
-                        key={option}
-                        value={option}
-                      >
-                        {option === "Este mês"
-                          ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
-                          : option
-                        }
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
+                    </span>
+                    <ChevronDown className={cn(styles.selectIcon, isPeriodSelectOpen && styles.selectIconOpen)} />
+                  </div>
+                  {isPeriodSelectOpen && (
+                    <div className={cn(styles.selectContentComponent, styles.statCard)}>
+                      {periodOptions.map((option) => (
+                        <div 
+                          key={option}
+                          className={styles.selectItemComponent}
+                          onClick={() => {
+                            handlePeriodChange(option);
+                            setIsPeriodSelectOpen(false);
+                          }}
+                        >
+                          {option === "Este mês"
+                            ? format(currentMonth, "MMMM/yyyy", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
+                            : option
+                          }
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
                   onClick={() => navigateMonth("next")}
-                  className={styles.contasReceberNavBtn}
+                  className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberNavBtn)}
                 >
                   <ChevronRight className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
             </div>
             <div className={styles.flex1}>
@@ -1629,9 +1627,10 @@ export default function ContasAReceber() {
                 Pesquisar no período selecionado
               </label>
               <div className={`${styles.relative}`}>
-                <Input
+                <input
+                  type="text"
                   placeholder="Pesquisar por descrição, categoria, cliente, observações, situação, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
-                  className={`${styles.pl8}`}
+                  className={cn(styles.inputComponent, styles.pl8)}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -1641,32 +1640,15 @@ export default function ContasAReceber() {
               <label className={`${styles.textSm} ${styles.fontMedium} ${styles.mb2} ${styles.block}`}>
                 Conta
               </label>
-              <Select
-                value={selectedAccount}
-                onValueChange={setSelectedAccount}
-                disabled
-              >
-                <SelectTrigger >
-                  <SelectValue placeholder="Selecionar todas" />
-                </SelectTrigger>
-                <SelectContent className={styles.statCard}>
-                  <SelectItem
-                    value="all"
-                  >
-                    Selecionar todas
-                  </SelectItem>
-                  <SelectItem
-                    value="bradesco"
-                  >
-                    Banco Bradesco
-                  </SelectItem>
-                  <SelectItem
-                    value="conta-azul"
-                  >
-                    Conta Straton
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <div className={cn(styles.selectComponent, "select-container")}>
+                <div 
+                  className={cn(styles.selectTriggerComponent, "disabled")}
+                  style={{ opacity: 0.5, cursor: "not-allowed" }}
+                >
+                  <span>Selecionar todas</span>
+                  <ChevronDown className={styles.selectIcon} />
+                </div>
+              </div>
             </div>
             <div className={styles.flex1}>
               <label className={`${styles.textSm} ${styles.fontMedium} ${styles.mb2} ${styles.block}`}>
@@ -1694,8 +1676,8 @@ export default function ContasAReceber() {
       </div>
 
       {/* Transactions Table */}
-      <Card className={styles.contasReceberTransactionsCard}>
-        <CardContent className={styles.contasReceberTableContent}>
+      <div className={cn(styles.cardComponent, styles.contasReceberTransactionsCard)}>
+        <div className={cn(styles.cardContentComponent, styles.contasReceberTableContent)}>
           <div className={styles.contasReceberTableContainer}>
             <div className={styles.contasReceberPaginationControls}>
              
@@ -1746,28 +1728,25 @@ export default function ContasAReceber() {
                         </div>
                       )}
                     </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
+                    type="button"
                     disabled
-                    className={styles.contasReceberSecondaryBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
                   >
                     Renegociar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
+                    type="button"
                     onClick={clearSelection}
-                    className={styles.contasReceberSecondaryBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
                   >
                     Limpar seleção
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleDeleteMultiple}
                     disabled={isDeletingMultiple}
-                    className={styles.contasReceberSecondaryBtn}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasReceberSecondaryBtn)}
                   >
                     {isDeletingMultiple ? (
                       <>
@@ -1779,7 +1758,7 @@ export default function ContasAReceber() {
                         Excluir selecionados ({selectedItems.size})
                       </>
                     )}
-                  </Button>
+                  </button>
                 </>
               )}
               </div>
@@ -1790,12 +1769,14 @@ export default function ContasAReceber() {
                 <thead className={`${styles.contasReceberTableHeader} ${styles.nativeThead}`}>
                   <tr>
                     <th className={`${styles.contasReceberTableHeaderCell} ${styles.nativeTh}`}>
-                      <Checkbox
+                      <input
+                        type="checkbox"
                         checked={
                           selectedItems.size === paginatedTransactions.length &&
                           paginatedTransactions.length > 0
                         }
-                        onCheckedChange={handleSelectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className={styles.checkboxComponent}
                       />
                     </th>
                     <th className={`${styles.contasReceberTableHeaderText} ${styles.nativeTh}`}>
@@ -1841,11 +1822,13 @@ export default function ContasAReceber() {
                         className={styles.contasReceberTableRow}
                       >
                         <td className={styles.nativeTd}>
-                          <Checkbox
+                          <input
+                            type="checkbox"
                             checked={selectedItems.has(entrada.id)}
-                            onCheckedChange={(checked) =>
-                              handleSelectItem(entrada.id, checked)
+                            onChange={(e) =>
+                              handleSelectItem(entrada.id, e.target.checked)
                             }
+                            className={styles.checkboxComponent}
                           />
                         </td>
                         <td className={`${styles.contasReceberTableCellSecondary} ${styles.nativeTd}`}>
@@ -1877,20 +1860,20 @@ export default function ContasAReceber() {
                           <div>
                             <p className={styles.contasReceberTableCellPrimary}>{entrada.descricao}</p>
                             {entrada.origem === "pluggy" && (
-                              <Badge className={styles.badgePluggy}>
+                              <span className={cn(styles.badgeComponent, styles.badgePluggy)}>
                                 Pluggy
-                              </Badge>
+                              </span>
                             )}
                             {entrada.origem === "Importação OFX" && (
-                              <Badge className={styles.badgeOfx}>
+                              <span className={cn(styles.badgeComponent, styles.badgeOfx)}>
                                 OFX
-                              </Badge>
+                              </span>
                             )}
                             {/* Badge para transações conciliadas */}
                             {entrada.situacao === "conciliado" && (
-                              <Badge className={styles.badgeConciliado}>
+                              <span className={cn(styles.badgeComponent, styles.badgeConciliado)}>
                                 Conciliada
-                              </Badge>
+                              </span>
                             )}
                           </div>
                           <p className={styles.contasReceberTableCellSecondary}>{entrada.categoria}</p>
@@ -2140,8 +2123,8 @@ export default function ContasAReceber() {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Nova Receita Drawer */}
       <NovaReceitaDrawer
@@ -2182,18 +2165,21 @@ export default function ContasAReceber() {
       />
 
       {/* Modal de Confirmação de Exclusão */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className={styles.statCard}>
-          <DialogHeader>
-            <div className={`${styles.flex} ${styles.itemsCenter} ${styles.gap3} ${styles.mb4}`}>
-              <div className={`${styles.w10} ${styles.h10} ${styles.rounded} ${styles.flex} ${styles.itemsCenter} ${styles.justifyCenter}`}>
-                <AlertTriangle className={`${styles.w5} ${styles.h5} ${styles.textRed500}`} />
+      {isDeleteModalOpen && (
+        <div className={styles.modalOverlay} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsDeleteModalOpen(false);
+        }}>
+          <div className={cn(styles.modalContent, styles.statCard)}>
+            <div className={styles.modalHeader}>
+              <div className={`${styles.flex} ${styles.itemsCenter} ${styles.gap3} ${styles.mb4}`}>
+                <div className={`${styles.w10} ${styles.h10} ${styles.rounded} ${styles.flex} ${styles.itemsCenter} ${styles.justifyCenter}`}>
+                  <AlertTriangle className={`${styles.w5} ${styles.h5} ${styles.textRed500}`} />
+                </div>
+                <h2 className={cn(styles.modalTitle, styles.textXl, styles.fontBold)}>
+                  Excluir lançamento
+                </h2>
               </div>
-              <DialogTitle className={`${styles.textXl} ${styles.fontBold}`}>
-                Excluir lançamento
-              </DialogTitle>
             </div>
-          </DialogHeader>
 
           <div className={styles.gap4}>
             <div className={styles.textCenter}>
@@ -2229,18 +2215,19 @@ export default function ContasAReceber() {
           </div>
 
           <div className={`${styles.flex} ${styles.justifyEnd} ${styles.gap3} ${styles.mt6}`}>
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setIsDeleteModalOpen(false)}
               disabled={isDeletingEntrada}
-              className={styles.contasReceberSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.contasReceberSecondaryBtn)}
             >
               Cancelar
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={handleDeleteEntrada}
               disabled={isDeletingEntrada}
-              className={styles.contasReceberPrimaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.contasReceberPrimaryBtn)}
             >
               {isDeletingEntrada ? (
                 <>
@@ -2250,24 +2237,28 @@ export default function ContasAReceber() {
               ) : (
                 "Excluir Lançamento"
               )}
-            </Button>
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Revogação de Conciliação */}
-      <Dialog open={isRevogacaoModalOpen} onOpenChange={setIsRevogacaoModalOpen}>
-        <DialogContent className={`${styles.statCard} ${styles.maxWlg}`}>
-          <DialogHeader>
-            <div className={`${styles.flex} ${styles.itemsCenter} ${styles.gap3} ${styles.mb4}`}>
-              <div className={`${styles.w10} ${styles.h10} ${styles.rounded} ${styles.flex} ${styles.itemsCenter} ${styles.justifyCenter}`}>
-                <AlertTriangle className={`${styles.w5} ${styles.h5} ${styles.textOrange500}`} />
+      {isRevogacaoModalOpen && (
+        <div className={styles.modalOverlay} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsRevogacaoModalOpen(false);
+        }}>
+          <div className={cn(styles.modalContent, styles.statCard, styles.maxWlg)}>
+            <div className={styles.modalHeader}>
+              <div className={`${styles.flex} ${styles.itemsCenter} ${styles.gap3} ${styles.mb4}`}>
+                <div className={`${styles.w10} ${styles.h10} ${styles.rounded} ${styles.flex} ${styles.itemsCenter} ${styles.justifyCenter}`}>
+                  <AlertTriangle className={`${styles.w5} ${styles.h5} ${styles.textOrange500}`} />
+                </div>
+                <h2 className={cn(styles.modalTitle, styles.textXl, styles.fontBold)}>
+                  Revogar Conciliação
+                </h2>
               </div>
-              <DialogTitle className={`${styles.textXl} ${styles.fontBold}`}>
-                Revogar Conciliação
-              </DialogTitle>
             </div>
-          </DialogHeader>
 
           <div className={styles.gap4}>
             <div className={styles.textCenter}>
@@ -2298,10 +2289,11 @@ export default function ContasAReceber() {
                   Escolha uma das opções abaixo:
                 </p>
 
-                <Button
+                <button
+                  type="button"
                   onClick={handleApenasRevogar}
                   disabled={isRevogando}
-                  className={`${styles.contasReceberSecondaryBtn} ${styles.mb2}`}
+                  className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.contasReceberSecondaryBtn, styles.mb2)}
                 >
                   {isRevogando ? (
                     <>
@@ -2313,12 +2305,13 @@ export default function ContasAReceber() {
                       Apenas Revogar Conciliação
                     </>
                   )}
-                </Button>
+                </button>
 
-                <Button
+                <button
+                  type="button"
                   onClick={handleRevogarEExcluir}
                   disabled={isRevogando}
-                  className={`${styles.contasReceberPrimaryBtn}`}
+                  className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.contasReceberPrimaryBtn)}
                 >
                   {isRevogando ? (
                     <>
@@ -2330,7 +2323,7 @@ export default function ContasAReceber() {
                       Revogar e Excluir Transação
                     </>
                   )}
-                </Button>
+                </button>
               </div>
             </div>
 
@@ -2343,20 +2336,21 @@ export default function ContasAReceber() {
           </div>
 
           <div className={`${styles.flex} ${styles.justifyEnd} ${styles.gap3} ${styles.mt6}`}>
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => {
                 setIsRevogacaoModalOpen(false);
                 setEntradaParaRevogar(null);
               }}
               disabled={isRevogando}
-              className={styles.contasReceberSecondaryBtn}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.contasReceberSecondaryBtn)}
             >
               Cancelar
-            </Button>
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
       </div>
     </>
   );
