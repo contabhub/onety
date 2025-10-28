@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Button } from './botao';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
 import { X, Calendar, User, Building, DollarSign, FileText, Mail, CreditCard, Download, Package, TrendingUp } from 'lucide-react';
 import { toast } from 'react-toastify';
 import styles from '../../styles/financeiro/DetalhesVendaDrawer.module.css';
@@ -327,54 +324,54 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
   const getSituacaoBadge = (situacao) => {
     if (!situacao) {
       return (
-        <Badge className={`${styles.badge} ${styles.badgeGray}`}>
+        <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeGray}`}>
           Não definido
-        </Badge>
+        </span>
       );
     }
 
     switch (situacao) {
       case "ativo":
         return (
-          <Badge className={`${styles.badge} ${styles.badgeGreen}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeGreen}`}>
             Ativo
-          </Badge>
+          </span>
         );
       case "aprovado":
         return (
-          <Badge className={`${styles.badge} ${styles.badgeBlue}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeBlue}`}>
             Venda liberada
-          </Badge>
+          </span>
         );
       case "em_andamento":
         return (
-          <Badge className={`${styles.badge} ${styles.badgeOrange}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeOrange}`}>
             Em Andamento
-          </Badge>
+          </span>
         );
       case "recusado":
         return (
-          <Badge className={`${styles.badge} ${styles.badgeRed}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeRed}`}>
             Recusado
-          </Badge>
+          </span>
         );
       case "pendente":
         return (
-          <Badge className={`${styles.badge} ${styles.badgeYellow}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeYellow}`}>
             Pendente
-          </Badge>
+          </span>
         );
       case "processado":
         return (
-          <Badge className={`${styles.badge} ${styles.badgeBlueAlt}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeBlueAlt}`}>
             Processado
-          </Badge>
+          </span>
         );
       default:
         return (
-          <Badge className={`${styles.badge} ${styles.badgeGray}`}>
+          <span className={`${styles.badgeComponent} ${styles.badge} ${styles.badgeGray}`}>
             {situacao}
-          </Badge>
+          </span>
         );
     }
   };
@@ -397,14 +394,12 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onClose}
-            className={styles.closeButton}
+            className={`${styles.buttonComponent} ${styles.buttonGhost} ${styles.buttonSmall} ${styles.closeButton}`}
           >
             <X className={`w-5 h-5 ${styles.closeButton}`} />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
@@ -417,21 +412,24 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
           ) : error ? (
             <div className={styles.errorContainer}>
               <p className={styles.errorMessage}>{error}</p>
-              <Button onClick={fetchVendaDetalhes} className="bg-primary hover:bg-primary/80 text-textMain">
+              <button 
+                onClick={fetchVendaDetalhes} 
+                className={`${styles.buttonComponent} ${styles.buttonPrimary}`}
+              >
                 Tentar novamente
-              </Button>
+              </button>
             </div>
           ) : venda ? (
             <>
               {/* Informações da Venda */}
-              <Card className={styles.card}>
-                <CardHeader>
-                  <CardTitle className={styles.cardTitle}>
+              <div className={`${styles.cardComponent} ${styles.card}`}>
+                <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                  <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                     <Building className={styles.cardTitleIcon} />
                     Informações da Venda
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className={styles.cardContent}>
+                  </h3>
+                </div>
+                <div className={`${styles.cardContentComponent} ${styles.cardContent}`}>
                   <div className={styles.infoGrid}>
                     <div className={styles.infoItem}>
                       <label className={styles.infoLabel}>Cliente</label>
@@ -456,38 +454,33 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                             className={styles.dateInput}
                           />
                           <div className={styles.dateEditButtons}>
-                            <Button
-                              size="sm"
+                            <button
                               onClick={handleSalvarVencimento}
-                              className={styles.saveButton}
+                              className={`${styles.buttonComponent} ${styles.buttonSmall} ${styles.buttonSuccess} ${styles.saveButton}`}
                             >
                               Salvar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
+                            </button>
+                            <button
                               onClick={() => {
                                 setEditandoVencimento(false);
                                 setNovoVencimento(toInputDateValue(venda.vencimento));
                               }}
-                              className={styles.cancelButton}
+                              className={`${styles.buttonComponent} ${styles.buttonSmall} ${styles.buttonOutline} ${styles.cancelButton}`}
                             >
                               Cancelar
-                            </Button>
+                            </button>
                           </div>
                         </div>
                       ) : (
                         <div className={styles.dateEditContainer}>
                           <p className={styles.infoValue}>{formatDate(venda.vencimento)}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
+                          <button
                             onClick={() => setEditandoVencimento(true)}
-                            className={styles.editButton}
+                            className={`${styles.buttonComponent} ${styles.buttonSmall} ${styles.buttonGhost} ${styles.editButton}`}
                           >
                             <Calendar className={styles.editIcon} />
                             Editar
-                          </Button>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -508,18 +501,18 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                       <p className={styles.infoValue}>{venda.centro_custo_nome || 'Não definido'}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Valores */}
-              <Card className={styles.card}>
-                <CardHeader>
-                  <CardTitle className={styles.cardTitle}>
+              <div className={`${styles.cardComponent} ${styles.card}`}>
+                <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                  <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                     <DollarSign className={styles.cardTitleIcon} style={{color: '#10b981'}} />
                     Valores
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </h3>
+                </div>
+                <div className={`${styles.cardContentComponent} ${styles.cardContent}`}>
                   <div className={styles.valuesContainer}>
                     <div className={styles.valueRow}>
                       <span className={styles.valueRowSecondary}>Valor Bruto:</span>
@@ -539,33 +532,33 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                       </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Produto/Serviço */}
               {venda.produto_servico_nome && (
-                <Card className={styles.card}>
-                  <CardHeader>
-                    <CardTitle className={styles.cardTitle}>
+                <div className={`${styles.cardComponent} ${styles.card}`}>
+                  <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                    <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                       <Package className={styles.cardTitleIcon} style={{color: '#8b5cf6'}} />
                       Produto/Serviço
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                    </h3>
+                  </div>
+                  <div className={`${styles.cardContentComponent} ${styles.cardContent}`}>
                     <p className={styles.infoValue}>{venda.produto_servico_nome}</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
 
               {/* Informações de Pagamento */}
-              <Card className={styles.card}>
-                <CardHeader>
-                  <CardTitle className={styles.cardTitle}>
+              <div className={`${styles.cardComponent} ${styles.card}`}>
+                <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                  <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                     <CreditCard className={styles.cardTitleIcon} style={{color: '#10b981'}} />
                     Informações de Pagamento
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </h3>
+                </div>
+                <div className={`${styles.cardContentComponent} ${styles.cardContent}`}>
                   <div className={styles.infoGrid}>
                     <div className={styles.infoItem}>
                       <label className={styles.infoLabel}>Forma de Pagamento</label>
@@ -582,18 +575,18 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Boleto */}
-              <Card className={styles.card}>
-                <CardHeader>
-                  <CardTitle className={styles.cardTitle}>
+              <div className={`${styles.cardComponent} ${styles.card}`}>
+                <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                  <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                     <CreditCard className={styles.cardTitleIcon} />
                     Boleto
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </h3>
+                </div>
+                <div className={`${styles.cardContentComponent} ${styles.cardContent}`}>
                   {loadingBoleto ? (
                     <div className={styles.boletoLoadingContainer}>
                       <div className={styles.boletoLoadingSpinner}></div>
@@ -605,15 +598,13 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                         <div className={styles.boletoSuccessHeader}>
                           <p className={styles.boletoSuccessText}>✅ Boleto gerado</p>
                           <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
+                            <button
                               onClick={fetchBoletoVenda}
                               disabled={loadingBoleto}
-                              className={styles.boletoReloadButton}
+                              className={`${styles.buttonComponent} ${styles.buttonSmall} ${styles.buttonOutline} ${styles.boletoReloadButton}`}
                             >
                               {loadingBoleto ? '🔄' : '🔄'} Recarregar
-                            </Button>
+                            </button>
                           </div>
                         </div>
                         <div className={styles.boletoInfoGrid}>
@@ -643,10 +634,10 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                           </div>
                         </div>
                       </div>
-                      <Button
+                      <button
                         onClick={handleBaixarBoleto}
                         disabled={baixandoBoleto}
-                        className={styles.boletoDownloadButton}
+                        className={`${styles.buttonComponent} ${styles.buttonPrimary} ${styles.boletoDownloadButton}`}
                       >
                         {baixandoBoleto ? (
                           <>
@@ -659,15 +650,15 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                             Baixar Boleto
                           </>
                         )}
-                      </Button>
+                      </button>
                     </div>
                   ) : (
                     <div className={styles.boletoGenerateContainer}>
                       <p className={styles.boletoGenerateText}>Nenhum boleto gerado para esta venda</p>
-                      <Button
+                      <button
                         onClick={handleGerarBoleto}
                         disabled={gerandoBoleto}
-                        className={styles.boletoGenerateButton}
+                        className={`${styles.buttonComponent} ${styles.buttonSuccess} ${styles.boletoGenerateButton}`}
                       >
                         {gerandoBoleto ? (
                           <>
@@ -680,22 +671,22 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                             Gerar Boleto
                           </>
                         )}
-                      </Button>
+                      </button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Observações */}
               {(venda.observacoes || venda.observacoes_fiscais) && (
-                <Card className={styles.card}>
-                  <CardHeader>
-                    <CardTitle className={styles.cardTitle}>
+                <div className={`${styles.cardComponent} ${styles.card}`}>
+                  <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                    <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                       <FileText className={styles.cardTitleIcon} />
                       Observações
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className={styles.observationsContainer}>
+                    </h3>
+                  </div>
+                  <div className={`${styles.cardContentComponent} ${styles.cardContent} ${styles.observationsContainer}`}>
                     {venda.observacoes && (
                       <div className={styles.observationItem}>
                         <label className={styles.observationLabel}>Observações Gerais</label>
@@ -708,26 +699,26 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
                         <p className={styles.observationText}>{venda.observacoes_fiscais}</p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
 
               {/* Email Cliente */}
               {venda.cliente_email && (
-                <Card className={styles.card}>
-                  <CardHeader>
-                    <CardTitle className={styles.cardTitle}>
+                <div className={`${styles.cardComponent} ${styles.card}`}>
+                  <div className={`${styles.cardHeaderComponent} ${styles.cardHeader}`}>
+                    <h3 className={`${styles.cardTitleComponent} ${styles.cardTitle}`}>
                       <Mail className={styles.cardTitleIcon} />
                       Contato
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                    </h3>
+                  </div>
+                  <div className={`${styles.cardContentComponent} ${styles.cardContent}`}>
                     <div className={styles.infoItem}>
                       <label className={styles.infoLabel}>E-mail do Cliente</label>
                       <p className={styles.infoValue}>{venda.cliente_email}</p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
             </>
           ) : null}
@@ -737,25 +728,24 @@ export function DetalhesVendaDrawer({ isOpen, onClose, vendaId, onRefresh }) {
         <div className={styles.footer}>
           <div className={styles.footerActions}>
             {boleto && (
-              <Button
-                variant="outline"
+              <button
                 onClick={handleBaixarBoleto}
                 disabled={baixandoBoleto}
-                className={styles.footerDownloadButton}
+                className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.footerDownloadButton}`}
               >
                 <Download className={styles.footerDownloadIcon} />
                 Baixar Boleto
-              </Button>
+              </button>
             )}
             {!boleto && (
-              <Button
+              <button
                 onClick={handleGerarBoleto}
                 disabled={gerandoBoleto}
-                className={styles.footerGenerateButton}
+                className={`${styles.buttonComponent} ${styles.buttonSuccess} ${styles.footerGenerateButton}`}
               >
                 <CreditCard className={styles.footerGenerateIcon} />
                 Gerar Boleto
-              </Button>
+              </button>
             )}
           </div>
         </div>

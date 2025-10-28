@@ -394,6 +394,13 @@
   background: var(--onity-color-bg);
 }
 
+.accordionIcon {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
 .editarClienteAccordionContent {
   padding: 0 16px 16px 16px;
 }
@@ -612,6 +619,16 @@
 .editarClienteCancelButton:hover {
   background: var(--onity-color-bg);
   border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+}
+
+.editarClienteCancelButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+}
+
+.editarClienteCancelButton:active {
+  transform: translateY(0);
 }
 
 .editarClienteSaveButton {
@@ -628,6 +645,17 @@
 
 .editarClienteSaveButton:hover {
   background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.editarClienteSaveButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+}
+
+.editarClienteSaveButton:active {
+  transform: translateY(0);
 }
 
 /* Utility classes */

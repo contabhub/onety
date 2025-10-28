@@ -540,6 +540,118 @@
   border-color: rgba(0, 207, 232, 0.3);
 }
 
+/* Componentes nativos adicionais */
+
+/* Button Component */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-s);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  text-decoration: none;
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.buttonOutline {
+  background-color: transparent;
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonOutline:hover {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonGhost {
+  background-color: transparent;
+  border: none;
+  color: var(--onity-icon-secondary);
+  padding: var(--onity-space-s);
+}
+
+.buttonGhost:hover {
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-bg);
+}
+
+.buttonSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-font-size-xs);
+  height: 1.75rem;
+}
+
+.buttonDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonSuccess {
+  background-color: var(--onity-color-success);
+  color: white;
+  border-color: var(--onity-color-success);
+}
+
+.buttonSuccess:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+/* Card Component */
+.cardComponent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  overflow: hidden;
+}
+
+.cardHeaderComponent {
+  padding: var(--onity-space-l) var(--onity-space-l) 0 var(--onity-space-l);
+}
+
+.cardTitleComponent {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  font-size: var(--onity-type-h3-size);
+  color: var(--onity-color-text);
+  font-weight: 600;
+  margin: 0;
+}
+
+.cardContentComponent {
+  padding: var(--onity-space-l);
+}
+
+/* Badge Component */
+.badgeComponent {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  border: 1px solid;
+}
+
 /* Animations */
 @keyframes spin {
   from {

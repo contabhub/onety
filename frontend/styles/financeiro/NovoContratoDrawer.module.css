@@ -299,6 +299,13 @@
   color: inherit;
 }
 
+/* Popover container */
+.popoverContainer {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
 /* Calendar button */
 .calendarButton {
   width: 100%;
@@ -311,6 +318,24 @@
   color: var(--onity-dark-text);
   display: flex;
   align-items: center;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0 12px;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.calendarButton:hover {
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+}
+
+.calendarButton:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
 }
 
 .calendarButton.placeholder {
@@ -437,6 +462,7 @@
   border: none;
   background: transparent;
   min-width: 40px;
+  position: relative;
 }
 
 .toggleGroupItem:hover {
@@ -444,6 +470,25 @@
   color: var(--onity-color-primary);
 }
 
+.toggleGroupItem:has(input:checked) {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.toggleGroupItem:has(input:checked):hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.toggleRadio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Legacy support for data-state */
 .toggleGroupItem[data-state="on"] {
   background: var(--onity-color-primary);
   color: var(--onity-color-primary-contrast);
@@ -550,11 +595,29 @@
 }
 
 .popoverContent {
+  position: absolute;
+  top: 100%;
+  left: 0;
   width: auto;
   padding: 0;
   background: var(--onity-dark-surface);
   border: 1px solid var(--onity-dark-border);
+  border-radius: 6px;
+  box-shadow: var(--onity-elev-high);
   z-index: 10020 !important;
+  margin-top: 4px;
+  animation: popoverFadeIn 200ms ease;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .openFinanceBadge {
@@ -810,6 +873,12 @@
 }
 
 /* Accordion styles */
+.accordionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
 .accordionItem {
   border: none;
   border-radius: 0;

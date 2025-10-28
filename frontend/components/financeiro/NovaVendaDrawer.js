@@ -2,27 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "../../styles/financeiro/nova-venda.module.css";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-// Select components removidos - agora usando ReactSelect
-import { Calendar } from "./calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./popover";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./accordion";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "./toggle-group";
+// Componentes externos removidos - usando HTML nativo
 import {
   X,
   Calendar as CalendarIcon,
@@ -59,6 +39,15 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
   const [isNovoProdutoServicoOpen, setIsNovoProdutoServicoOpen] = useState(false);
   const [isLoadingVenda, setIsLoadingVenda] = useState(false);
   const [vendaOriginal, setVendaOriginal] = useState(null);
+  // Estados para controlar popovers/dropdowns nativos
+  const [openPopovers, setOpenPopovers] = useState({
+    dataVenda: false,
+    vencimento: false,
+    dataTermino: false
+  });
+  const [openAccordions, setOpenAccordions] = useState({
+    'observacoes-pagamento': false
+  });
   const [formData, setFormData] = useState({
     tipoVenda: "venda-avulsa",
     situacao: "orcamento",
@@ -252,6 +241,22 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  // Função para controlar popovers
+  const togglePopover = (popoverName) => {
+    setOpenPopovers(prev => ({
+      ...prev,
+      [popoverName]: !prev[popoverName]
+    }));
+  };
+
+  // Função para controlar accordions
+  const toggleAccordion = (accordionName) => {
+    setOpenAccordions(prev => ({
+      ...prev,
+      [accordionName]: !prev[accordionName]
     }));
   };
 
@@ -606,29 +611,29 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                   
                   <div className={styles.novaVendaGrid2Colunas}>
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>Número da venda</Label>
-                      <div className={styles.novaVendaReadOnlyField}>
+                      <label className={styles.novaVendaLabel}>Número da venda</label>
+                      <div className={styles.readOnlyField}>
                         {vendaOriginal.numero_venda || vendaOriginal.id}
                       </div>
                     </div>
 
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>Cliente</Label>
-                      <div className={styles.novaVendaReadOnlyField}>
+                      <label className={styles.novaVendaLabel}>Cliente</label>
+                      <div className={styles.readOnlyField}>
                         {vendaOriginal.cliente_nome}
                       </div>
                     </div>
 
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>Data da venda</Label>
-                      <div className={styles.novaVendaReadOnlyField}>
+                      <label className={styles.novaVendaLabel}>Data da venda</label>
+                      <div className={styles.readOnlyField}>
                         {vendaOriginal.data_venda ? new Date(vendaOriginal.data_venda).toLocaleDateString('pt-BR') : 'N/A'}
                       </div>
                     </div>
 
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>Tipo da venda</Label>
-                      <div className={styles.novaVendaReadOnlyField}>
+                      <label className={styles.novaVendaLabel}>Tipo da venda</label>
+                      <div className={styles.readOnlyField}>
                         {vendaOriginal.tipo_venda}
                       </div>
                     </div>
@@ -643,9 +648,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                 <div className={styles.novaVendaGrid2Colunas}>
                   {/* Situação da negociação */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Situação da negociação <span className={styles.novaVendaLabelRequired}>*</span>
-                    </Label>
+                    </label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -677,10 +682,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                   {/* Número da venda */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Número da venda <span className={styles.novaVendaLabelRequired}>*</span>
-                    </Label>
-                      <Input
+                    </label>
+                      <input
+                        type="text"
                         value={formData.numeroVenda}
                         onChange={(e) => handleInputChange('numeroVenda', e.target.value)}
                         className={styles.novaVendaInput}
@@ -689,9 +695,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                   {/* Cliente */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Cliente <span className={styles.novaVendaLabelRequired}>*</span>
-                    </Label>
+                    </label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -724,42 +730,53 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                   {/* Data de venda */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Data de venda <span className={styles.novaVendaLabelRequired}>*</span>
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className={cn(
-                            "theme-input",
-                            styles.novaVendaDateInput,
-                            !formData.dataVenda && styles.novaVendaTextSecondary
-                          )}
-                        >
-                          <CalendarIcon className={styles.novaVendaCalendarIcon} />
-                          {formData.dataVenda ? (
-                            format(formData.dataVenda, "dd/MM/yyyy", { locale: ptBR })
-                          ) : (
-                            <span>Selecione uma data</span>
-                          )}
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="theme-modal">
-                        <Calendar
-                          mode="single"
-                          selected={formData.dataVenda}
-                          onSelect={(date) => handleInputChange('dataVenda', date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    </label>
+                    <div className={styles.popoverContainer}>
+                      <button
+                        type="button"
+                        className={cn(
+                          styles.dateTimeInput,
+                          !formData.dataVenda && styles.novaVendaTextSecondary
+                        )}
+                        onClick={() => togglePopover('dataVenda')}
+                      >
+                        <CalendarIcon className={styles.novaVendaCalendarIcon} />
+                        {formData.dataVenda ? (
+                          format(formData.dataVenda, "dd/MM/yyyy", { locale: ptBR })
+                        ) : (
+                          <span>Selecione uma data</span>
+                        )}
+                      </button>
+                      {openPopovers.dataVenda && (
+                        <>
+                          <div 
+                            className={styles.popoverOverlay} 
+                            onClick={() => togglePopover('dataVenda')}
+                          />
+                          <div className={styles.popoverContent}>
+                            <input
+                              type="date"
+                              value={formData.dataVenda ? format(formData.dataVenda, 'yyyy-MM-dd') : ''}
+                              onChange={(e) => {
+                                const date = e.target.value ? new Date(e.target.value) : null;
+                                handleInputChange('dataVenda', date);
+                                togglePopover('dataVenda');
+                              }}
+                              className={styles.inputComponent}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Categoria financeira */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Categoria financeira <HelpCircle className={styles.novaVendaIcon} />
-                    </Label>
+                    </label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -792,9 +809,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                   {/* Sub-categoria */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Sub-categoria <HelpCircle className={styles.novaVendaIcon} />
-                    </Label>
+                    </label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -826,10 +843,10 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                   </div>
 
                    {/* Centro de custo */}
-                  <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                   <div className={styles.novaVendaField}>
+                    <label className={styles.novaVendaLabel}>
                       Centro de custo <HelpCircle className={styles.novaVendaIcon} />
-                     </Label>
+                     </label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -862,7 +879,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                    {/* Vendedor responsável */}
                   <div className={cn(styles.novaVendaField, styles.novaVendaVendedorField)}>
-                    <Label className={styles.novaVendaLabel}>Vendedor responsável</Label>
+                    <label className={styles.novaVendaLabel}>Vendedor responsável</label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -968,7 +985,8 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                               </div>
                             </td>
                             <td>
-                              <Input
+                              <input
+                                type="text"
                                 value={item.detalhes}
                                 onChange={(e) => handleItemChange(item.id, 'detalhes', e.target.value)}
                                 placeholder="Detalhes do item"
@@ -976,7 +994,8 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                               />
                             </td>
                             <td>
-                              <Input
+                              <input
+                                type="text"
                                 value={item.quantidade}
                                 onChange={(e) => handleItemChange(item.id, 'quantidade', e.target.value)}
                                 placeholder="1,00"
@@ -985,7 +1004,8 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                             </td>
                             <td>
                               <div className={styles.novaVendaInputContainer}>
-                                <Input
+                                <input
+                                  type="text"
                                   value={item.valorUnitario}
                                   onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
                                   placeholder="0,00"
@@ -996,11 +1016,12 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                             </td>
                             <td>
                               <div className={styles.novaVendaTotalContainer}>
-                                <Input
+                                <input
+                                  type="text"
                                   value={item.total}
                                   onChange={(e) => handleItemChange(item.id, 'total', e.target.value)}
                                   placeholder="0,00"
-                                  className={cn(styles.novaVendaInput, styles.novaVendaCurrencyInput)}
+                                  className={cn(styles.novaVendaInput, styles.novaVendaCurrencyInput, styles.inputReadOnly)}
                                   readOnly
                                 />
                                 <span className={styles.novaVendaCurrencySymbol}>R$</span>
@@ -1030,9 +1051,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                   <div className={styles.novaVendaGrid2Colunas}>
                     {/* Tipo de intervalo */}
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>
+                      <label className={styles.novaVendaLabel}>
                         Tipo de intervalo <span className={styles.novaVendaLabelRequired}>*</span>
-                      </Label>
+                      </label>
                       <ReactSelect
                         className="react-select-container"
                         classNamePrefix="react-select"
@@ -1066,10 +1087,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                     {/* Intervalo */}
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>
+                      <label className={styles.novaVendaLabel}>
                         Intervalo <span className={styles.novaVendaLabelRequired}>*</span>
-                      </Label>
-                      <Input
+                      </label>
+                      <input
+                        type="text"
                         value={formData.intervalo}
                         onChange={(e) => handleInputChange('intervalo', e.target.value)}
                         placeholder="1"
@@ -1079,9 +1101,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
                     {/* Término da recorrência */}
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>
+                      <label className={styles.novaVendaLabel}>
                         Término da recorrência <span className={styles.novaVendaLabelRequired}>*</span>
-                      </Label>
+                      </label>
                       <ReactSelect
                         className="react-select-container"
                         classNamePrefix="react-select"
@@ -1115,10 +1137,11 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                     {/* Total de ciclos (apenas se não for indeterminado) */}
                     {!formData.indeterminado && (
                       <div className={styles.novaVendaField}>
-                        <Label className={styles.novaVendaLabel}>
+                        <label className={styles.novaVendaLabel}>
                           Total de ciclos <span className={styles.novaVendaLabelRequired}>*</span>
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.totalCiclos}
                           onChange={(e) => handleInputChange('totalCiclos', e.target.value)}
                           placeholder="12"
@@ -1130,41 +1153,52 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                     {/* Data de término (apenas se for personalizado) */}
                     {formData.terminoRecorrencia === 'personalizado' && (
                       <div className={styles.novaVendaField}>
-                        <Label className={styles.novaVendaLabel}>
+                        <label className={styles.novaVendaLabel}>
                           Data de término
-                        </Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              className={cn(
-                                "theme-input",
-                                styles.novaVendaDateInput,
-                                !formData.dataTermino && styles.novaVendaTextSecondary
-                              )}
-                            >
-                              <CalendarIcon className={styles.novaVendaCalendarIcon} />
-                              {formData.dataTermino ? (
-                                format(formData.dataTermino, "dd/MM/yyyy", { locale: ptBR })
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="theme-modal">
-                            <Calendar
-                              mode="single"
-                              selected={formData.dataTermino || undefined}
-                              onSelect={(date) => handleInputChange('dataTermino', date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        </label>
+                        <div className={styles.popoverContainer}>
+                          <button
+                            type="button"
+                            className={cn(
+                              styles.dateTimeInput,
+                              !formData.dataTermino && styles.novaVendaTextSecondary
+                            )}
+                            onClick={() => togglePopover('dataTermino')}
+                          >
+                            <CalendarIcon className={styles.novaVendaCalendarIcon} />
+                            {formData.dataTermino ? (
+                              format(formData.dataTermino, "dd/MM/yyyy", { locale: ptBR })
+                            ) : (
+                              <span>Selecione uma data</span>
+                            )}
+                          </button>
+                          {openPopovers.dataTermino && (
+                            <>
+                              <div 
+                                className={styles.popoverOverlay} 
+                                onClick={() => togglePopover('dataTermino')}
+                              />
+                              <div className={styles.popoverContent}>
+                                <input
+                                  type="date"
+                                  value={formData.dataTermino ? format(formData.dataTermino, 'yyyy-MM-dd') : ''}
+                                  onChange={(e) => {
+                                    const date = e.target.value ? new Date(e.target.value) : null;
+                                    handleInputChange('dataTermino', date);
+                                    togglePopover('dataTermino');
+                                  }}
+                                  className={styles.inputComponent}
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     )}
 
                     {/* Vigência total */}
                     <div className={styles.novaVendaField}>
-                      <Label className={styles.novaVendaLabel}>Vigência total</Label>
+                      <label className={styles.novaVendaLabel}>Vigência total</label>
                       <div className={styles.novaVendaInfoBox}>
                         {formData.indeterminado ? "Indeterminado" : `${formData.totalCiclos || 0} ciclos`}
                       </div>
@@ -1180,23 +1214,27 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                 <div className={styles.novaVendaValueContainer}>
                   {/* Desconto */}
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>Desconto</Label>
+                    <label className={styles.novaVendaLabel}>Desconto</label>
                     <div className={styles.novaVendaDiscountContainer}>
-                      <ToggleGroup
-                        type="single"
-                        value={formData.descontoTipo}
-                        onValueChange={(value) => value && handleInputChange('descontoTipo', value)}
-                        className={styles.novaVendaToggleGroup}
-                      >
-                        <ToggleGroupItem value="reais" className={styles.novaVendaToggleItem}>
+                      <div className={styles.toggleGroupComponent}>
+                        <button
+                          type="button"
+                          className={`${styles.toggleGroupItem} ${formData.descontoTipo === 'reais' ? styles.toggleGroupItemActive : ''}`}
+                          onClick={() => handleInputChange('descontoTipo', 'reais')}
+                        >
                           R$
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="percentual" className={styles.novaVendaToggleItem}>
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.toggleGroupItem} ${formData.descontoTipo === 'percentual' ? styles.toggleGroupItemActive : ''}`}
+                          onClick={() => handleInputChange('descontoTipo', 'percentual')}
+                        >
                           %
-                        </ToggleGroupItem>
-                      </ToggleGroup>
+                        </button>
+                      </div>
                       <div className={styles.novaVendaDiscountInputContainer}>
-                        <Input
+                        <input
+                          type="text"
                           value={formData.descontoValor}
                           onChange={(e) => handleInputChange('descontoValor', e.target.value)}
                           className={styles.novaVendaDiscountInput}
@@ -1234,7 +1272,7 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                 
                 <div className={styles.novaVendaPaymentGrid}>
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>Forma de pagamento</Label>
+                    <label className={styles.novaVendaLabel}>Forma de pagamento</label>
                     <ReactSelect
                       className="react-select-container"
                       classNamePrefix="react-select"
@@ -1267,9 +1305,9 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                   </div>
 
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Conta de recebimento <HelpCircle className={styles.novaVendaIcon} />
-                    </Label>
+                    </label>
                     <div className={styles.novaVendaAccountContainer}>
                       <ReactSelect
                         className="react-select-container"
@@ -1332,35 +1370,46 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
                   </div>
 
                   <div className={styles.novaVendaField}>
-                    <Label className={styles.novaVendaLabel}>
+                    <label className={styles.novaVendaLabel}>
                       Vencimento <span className={styles.novaVendaLabelRequired}>*</span> <HelpCircle className={styles.novaVendaIcon} />
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className={cn(
-                            "theme-input",
-                            styles.novaVendaDateInput,
-                            !formData.vencimento && styles.novaVendaTextSecondary
-                          )}
-                        >
-                          <CalendarIcon className={styles.novaVendaCalendarIcon} />
-                          {formData.vencimento ? (
-                            format(formData.vencimento, "dd/MM/yyyy", { locale: ptBR })
-                          ) : (
-                            <span>Selecione</span>
-                          )}
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="theme-modal">
-                        <Calendar
-                          mode="single"
-                          selected={formData.vencimento}
-                          onSelect={(date) => handleInputChange('vencimento', date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    </label>
+                    <div className={styles.popoverContainer}>
+                      <button
+                        type="button"
+                        className={cn(
+                          styles.dateTimeInput,
+                          !formData.vencimento && styles.novaVendaTextSecondary
+                        )}
+                        onClick={() => togglePopover('vencimento')}
+                      >
+                        <CalendarIcon className={styles.novaVendaCalendarIcon} />
+                        {formData.vencimento ? (
+                          format(formData.vencimento, "dd/MM/yyyy", { locale: ptBR })
+                        ) : (
+                          <span>Selecione</span>
+                        )}
+                      </button>
+                      {openPopovers.vencimento && (
+                        <>
+                          <div 
+                            className={styles.popoverOverlay} 
+                            onClick={() => togglePopover('vencimento')}
+                          />
+                          <div className={styles.popoverContent}>
+                            <input
+                              type="date"
+                              value={formData.vencimento ? format(formData.vencimento, 'yyyy-MM-dd') : ''}
+                              onChange={(e) => {
+                                const date = e.target.value ? new Date(e.target.value) : null;
+                                handleInputChange('vencimento', date);
+                                togglePopover('vencimento');
+                              }}
+                              className={styles.inputComponent}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1368,29 +1417,34 @@ export function NovaVendaDrawer({ isOpen, onClose, onSave, vendaId = null, mode 
 
               {/* Seções colapsáveis */}
               <div className={styles.novaVendaSection}>
-                <Accordion type="multiple">
+                <div className={styles.accordionComponent}>
                   {/* Observações de pagamento */}
-                  <AccordionItem value="observacoes-pagamento" className={styles.novaVendaAccordion}>
-                    <AccordionTrigger className={styles.novaVendaAccordionTrigger}>
+                  <div className={styles.accordionItem}>
+                    <button
+                      type="button"
+                      className={styles.accordionTrigger}
+                      onClick={() => toggleAccordion('observacoes-pagamento')}
+                    >
                       <span>Observações de pagamento</span>
-                    </AccordionTrigger>
-                    <AccordionContent className={styles.novaVendaAccordionContent}>
+                      <ChevronDown className={`${styles.accordionIcon} ${openAccordions['observacoes-pagamento'] ? styles.accordionIconOpen : ''}`} />
+                    </button>
+                    <div className={`${styles.accordionContent} ${openAccordions['observacoes-pagamento'] ? styles.accordionContentOpen : ''}`}>
                       <div className={styles.novaVendaField}>
-                        <Label className={styles.novaVendaLabel}>Observações</Label>
-                        <Textarea
+                        <label className={styles.novaVendaLabel}>Observações</label>
+                        <textarea
                           value={formData.observacoesPagamento}
                           onChange={(e) => handleInputChange('observacoesPagamento', e.target.value)}
                           placeholder="Inclua informações sobre o pagamento..."
                           rows={3}
-                          className={styles.novaVendaTextarea}
+                          className={styles.textareaComponent}
                         />
                         <p className={styles.novaVendaTextSecondary}>
                           Inclua informações sobre o pagamento que podem ser relevantes para você e seu cliente.
                         </p>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}

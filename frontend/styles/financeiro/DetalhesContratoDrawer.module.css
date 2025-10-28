@@ -998,6 +998,350 @@
   font-size: var(--onity-type-caption-size);
 }
 
+/* Card Components Específicos */
+.cardDarkPurple {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-m);
+  margin-bottom: var(--onity-space-l);
+}
+
+.cardHeaderDark {
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-primary);
+}
+
+.cardTitleWithIcon {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  font-size: var(--onity-type-h4-size);
+  font-weight: var(--onity-type-h4-weight);
+  color: var(--onity-color-text);
+}
+
+.cardSubtitle {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-s);
+}
+
+/* Button Variants Específicos */
+.buttonGhost {
+  background-color: transparent;
+  border: none;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+}
+
+.buttonGhost:hover {
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-bg);
+}
+
+.buttonGhostSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}
+
+/* Badge Variants Específicos */
+.badgeDefault {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.badgeSecondary {
+  background-color: rgba(255, 159, 67, 0.2);
+  color: var(--onity-color-warning);
+  border-color: rgba(255, 159, 67, 0.3);
+}
+
+.badgeOutline {
+  background-color: rgba(0, 207, 232, 0.2);
+  color: var(--onity-color-info);
+  border-color: rgba(0, 207, 232, 0.3);
+}
+
+.badgeDestructive {
+  background-color: rgba(234, 84, 85, 0.2);
+  color: var(--onity-color-error);
+  border-color: rgba(234, 84, 85, 0.3);
+}
+
+/* Configuração de envio automático */
+.configCard {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-m);
+  margin-bottom: var(--onity-space-l);
+}
+
+.configCardHeader {
+  padding: var(--onity-space-l);
+}
+
+.configCardContent {
+  padding: var(--onity-space-l);
+}
+
+.configCardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  font-size: var(--onity-type-h4-size);
+  font-weight: var(--onity-type-h4-weight);
+  color: var(--onity-color-text);
+}
+
+/* Badge específicas de configuração */
+.badgeActive {
+  background-color: rgba(40, 199, 111, 0.2);
+  color: var(--onity-color-success);
+  border-color: rgba(40, 199, 111, 0.3);
+}
+
+.badgeDisabled {
+  background-color: rgba(107, 114, 128, 0.2);
+  color: var(--onity-icon-secondary);
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+/* Input para edição de e-mail */
+.emailInput {
+  width: 100%;
+  padding: var(--onity-space-s);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-caption-size);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+
+.emailInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.2);
+}
+
+.emailInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.emailButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.emailText {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-color-text);
+}
+
+.emailTextSecondary {
+  color: var(--onity-icon-secondary);
+  font-style: italic;
+}
+
+.emailTextSmall {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+  margin-top: var(--onity-space-xs);
+}
+
+/* Badges para situação do contrato */
+.badgeAprovado {
+  background-color: rgba(40, 199, 111, 0.2);
+  color: var(--onity-color-success);
+  border-color: rgba(40, 199, 111, 0.3);
+}
+
+.badgePendente {
+  background-color: rgba(255, 159, 67, 0.2);
+  color: var(--onity-color-warning);
+  border-color: rgba(255, 159, 67, 0.3);
+}
+
+.badgeProcessado {
+  background-color: rgba(0, 207, 232, 0.2);
+  color: var(--onity-color-info);
+  border-color: rgba(0, 207, 232, 0.3);
+}
+
+/* Modal Components */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modalContent {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+}
+
+.modalBody {
+  padding: var(--onity-space-l);
+  background-color: var(--onity-color-surface);
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-l);
+  border-top: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+}
+
+/* Radio Button Group */
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.radioItem:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.radioInput {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-s);
+  accent-color: var(--onity-color-primary);
+}
+
+.radioLabel {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-caption-size);
+}
+
+/* Date Input */
+.dateInputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.dateInput {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-caption-size);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  cursor: pointer;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.2);
+}
+
+.dateInputButton {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-caption-size);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease-in-out;
+}
+
+.dateInputButton:hover {
+  border-color: var(--onity-color-primary);
+  background-color: var(--onity-color-bg);
+}
+
+.dateInputButton:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.2);
+}
+
+.dateInputButtonIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--onity-space-s);
+  color: var(--onity-icon-secondary);
+}
+
+.dateInputButtonText {
+  color: var(--onity-color-text);
+}
+
+.dateInputButtonPlaceholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Modal Animation */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalContent {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
 @media (min-width: 768px) {
   .historicoResumoGrid {
     grid-template-columns: 1fr 1fr;

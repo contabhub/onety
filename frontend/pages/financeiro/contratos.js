@@ -1,43 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "../../components/financeiro/card";
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Badge } from "../../components/financeiro/badge";
 import {
-  Plus,
   Search,
   Download,
-  Upload,
-  Filter,
-  Edit,
   Trash2,
   MoreVertical,
   ChevronLeft,
   ChevronRight,
   CheckCircle,
-  XCircle,
   X,
   Calendar,
-  Info,
   Loader2,
-  Printer,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/financeiro/dialog";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../components/financeiro/dropdown-menu";
 import { toast } from "react-toastify";
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
 import styles from '../../styles/financeiro/contratos.module.css';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
-import NovoContratoDrawer from "../../components/financeiro/NovoContratoDrawer";
-import { DetalhesContratoDrawer } from "../../components/financeiro/DetalhesContratoDrawer";
-import EditarContratoDrawer from "../../components/financeiro/EditarContratoDrawer";
 import { useContratos } from "../../hooks/financeiro/useContratos";
 
 
@@ -49,27 +28,21 @@ export default function ContratosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
-  const [isNovoContratoOpen, setIsNovoContratoOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("todos");
   
   // Estados para download de boleto
   const [isDownloadingBoleto, setIsDownloadingBoleto] = useState(null);
-  
-  // Estados para detalhes do contrato
-  const [isDetalhesContratoOpen, setIsDetalhesContratoOpen] = useState(false);
-  const [contratoSelecionado, setContratoSelecionado] = useState(null);
-  
-  // Estados para edição do contrato
-  const [isEditarContratoOpen, setIsEditarContratoOpen] = useState(false);
-  const [contratoParaEditar, setContratoParaEditar] = useState(null);
 
   // Estados para filtros de data
   const [currentDate, setCurrentDate] = useState(new Date());
   const [periodFilter, setPeriodFilter] = useState("month");
   const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
+  
+  // Estados para dropdown de ações
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   // Usar o hook personalizado
-  const { contratos, isLoading, error, buscarContratos, criarContrato } =
+  const { contratos, isLoading, error, buscarContratos } =
     useContratos();
 
   // Carregar contratos na inicialização
@@ -325,70 +298,60 @@ export default function ContratosPage() {
   const getSituacaoBadge = (situacao) => {
     if (!situacao)
       return (
-        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+        <span className="bg-gray-500/20 text-gray-400 border-gray-500/30">
           Não definido
-        </Badge>
+        </span>
       );
 
     switch (situacao) {
       case "ativo":
         return (
-          <Badge className="bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30">
+          <span className="bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30">
             Ativo
-          </Badge>
+          </span>
         );
       case "inativo":
         return (
-          <Badge className="bg-[#FF9800]/20 text-[#FF9800] border-[#FF9800]/30">
+          <span className="bg-[#FF9800]/20 text-[#FF9800] border-[#FF9800]/30">
             Inativo
-          </Badge>
+          </span>
         );
       case "cancelado":
         return (
-          <Badge className="bg-[#F50057]/20 text-[#ff1769] border-[#F50057]/30">
+          <span className="bg-[#F50057]/20 text-[#ff1769] border-[#F50057]/30">
             Cancelado
-          </Badge>
+          </span>
         );
       default:
         return (
-          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+          <span className="bg-gray-500/20 text-gray-400 border-gray-500/30">
             {situacao}
-          </Badge>
+          </span>
         );
     }
   };
 
-  const handleNovoContratoSave = async (data) => {
-    try {
-      // Usar a função do hook para criar o contrato
-      await criarContrato(data);
 
-      // Fechar o drawer
-      setIsNovoContratoOpen(false);
-    } catch (error) {
-      console.error("Erro ao salvar contrato:", error);
+  // Funções para dropdown customizado
+  const handleToggleDropdown = (contratoId) => {
+    setActiveDropdown(activeDropdown === contratoId ? null : contratoId);
+  };
+
+  const handleCloseDropdown = () => {
+    setActiveDropdown(null);
+  };
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveDropdown(null);
+    };
+    
+    if (activeDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
     }
-  };
-
-  const handleAbrirDetalhesContrato = (contratoId) => {
-    setContratoSelecionado(contratoId);
-    setIsDetalhesContratoOpen(true);
-  };
-
-  const handleFecharDetalhesContrato = () => {
-    setIsDetalhesContratoOpen(false);
-    setContratoSelecionado(null);
-  };
-
-  const handleAbrirEditarContrato = (contratoId) => {
-    setContratoParaEditar(contratoId);
-    setIsEditarContratoOpen(true);
-  };
-
-  const handleFecharEditarContrato = () => {
-    setIsEditarContratoOpen(false);
-    setContratoParaEditar(null);
-  };
+  }, [activeDropdown]);
 
   // Função para baixar boleto
   const handleDownloadBoleto = async (contratoId) => {
@@ -475,17 +438,17 @@ export default function ContratosPage() {
   const StatsCardSkeleton = () => (
     <div className={styles.statsGrid}>
       {[1, 2, 3, 4].map((index) => (
-        <Card 
+        <div 
           key={index}
           className={styles.skeletonCard}
         >
-          <CardContent className={styles.skeletonCardContent}>
+          <div className={styles.skeletonCardContent}>
             <div className={styles.skeletonInner}>
               <div className={styles.skeletonLineSmall}></div>
               <div className={styles.skeletonLineLarge}></div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -554,16 +517,6 @@ export default function ContratosPage() {
             Gerencie seus contratos e acompanhe o status
           </p>
         </div>
-        <div className={styles.headerActions}>
-          <Button
-            size="sm"
-            className={styles.btnNew}
-            onClick={() => setIsNovoContratoOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo contrato
-          </Button>
-        </div>
       </div>
 
       {/* Stats Cards */}
@@ -571,7 +524,7 @@ export default function ContratosPage() {
         <StatsCardSkeleton />
       ) : (
         <div className={styles.statsGrid}>
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "cancelado" ? styles.statusCardCanceladoSelected : ""}`}
             onClick={() => handleStatusFilter("cancelado")}
           >
@@ -580,7 +533,7 @@ export default function ContratosPage() {
                 <CheckCircle className={styles.iconCancelado} />
               </div>
             )}
-            <CardContent className={styles.cardContentPadded}>
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Cancelados</p>
                 <AnimatedNumber value={totalCancelados} color={styles.textCancelado} />
@@ -588,10 +541,10 @@ export default function ContratosPage() {
                   {formatCurrency(valorCancelados)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "inativo" ? styles.statusCardInativoSelected : ""}`}
             onClick={() => handleStatusFilter("inativo")}
           >
@@ -600,7 +553,7 @@ export default function ContratosPage() {
                 <CheckCircle className={styles.iconInativo} />
               </div>
             )}
-            <CardContent className={styles.cardContentPadded}>
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Inativos</p>
                 <AnimatedNumber value={totalInativos} color={styles.textInativo} />
@@ -608,10 +561,10 @@ export default function ContratosPage() {
                   {formatCurrency(valorInativos)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "ativo" ? styles.statusCardAtivoSelected : ""}`}
             onClick={() => handleStatusFilter("ativo")}
           >
@@ -620,7 +573,7 @@ export default function ContratosPage() {
                 <CheckCircle className={styles.iconAtivo} />
               </div>
             )}
-            <CardContent className={styles.cardContentPadded}>
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Ativos</p>
                 <AnimatedNumber value={totalAtivos} color={styles.textAtivo} />
@@ -628,10 +581,10 @@ export default function ContratosPage() {
                   {formatCurrency(valorAtivos)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "todos" ? styles.statusCardTodosSelected : ""}`}
             onClick={() => handleStatusFilter("todos")}
           >
@@ -640,7 +593,7 @@ export default function ContratosPage() {
                 <CheckCircle className={styles.iconTodos} />
               </div>
             )}
-            <CardContent className={styles.cardContentPadded}>
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Todos</p>
                 <AnimatedNumber value={totalTodos} color={styles.textTodos} />
@@ -648,91 +601,90 @@ export default function ContratosPage() {
                   {formatCurrency(valorTodos)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Filters */}
-      <Card className={styles.filtersCard}>
-        <CardContent className={styles.cardContentPadded}>
+      <div className={styles.filtersCard}>
+        <div className={styles.cardContentPadded}>
           <div className={styles.filtersRow}>
             <div className={styles.flex1}>
               <label className={styles.labelSmall}>
                 Período
               </label>
               <div className={styles.periodControls}>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => navigateMonth("prev")}
                   className={styles.btnPeriodNav}
                 >
                   <ChevronLeft className="w-4 h-4" />
-                </Button>
+                </button>
                 
-                <DropdownMenu open={isPeriodDropdownOpen} onOpenChange={setIsPeriodDropdownOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={styles.btnPeriodSelect}
-                    >
-                      <span>{formatCurrentPeriod()}</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="center"
-                    className={styles.dropdownContent}
+                <div className={styles.dropdownContainer}>
+                  <button
+                    type="button"
+                    className={styles.btnPeriodSelect}
+                    onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
                   >
-                    <DropdownMenuItem 
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setPeriodFilter("week");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Esta semana
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setPeriodFilter("month");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Este mês
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setPeriodFilter("year");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Este ano
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className={styles.dropdownItem}
-                      onClick={() => {
-                        setPeriodFilter("all");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Todo o período
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <span>{formatCurrentPeriod()}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  {isPeriodDropdownOpen && (
+                    <div className={styles.dropdownContent}>
+                      <button 
+                        type="button"
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setPeriodFilter("week");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Esta semana
+                      </button>
+                      <button 
+                        type="button"
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setPeriodFilter("month");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Este mês
+                      </button>
+                      <button 
+                        type="button"
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setPeriodFilter("year");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Este ano
+                      </button>
+                      <button 
+                        type="button"
+                        className={styles.dropdownItem}
+                        onClick={() => {
+                          setPeriodFilter("all");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Todo o período
+                      </button>
+                    </div>
+                  )}
+                </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => navigateMonth("next")}
                   className={styles.btnPeriodNav}
                 >
                   <ChevronRight className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             </div>
 
@@ -742,7 +694,8 @@ export default function ContratosPage() {
               </label>
               <div className={styles.searchWrap}>
                 <Search className={styles.searchIcon} />
-                <Input
+                <input
+                  type="text"
                   placeholder="Pesquisar por cliente, ID, número, valor (R$ 1.500,00) ou data (11/08/2025, 11/8/25)"
                   className={styles.searchInput}
                   value={searchTerm}
@@ -758,38 +711,37 @@ export default function ContratosPage() {
               <span className={styles.textMutedSmall}>Filtros ativos:</span>
               
               {statusFilter !== "todos" && (
-                <Badge 
+                <span 
                   className={styles.badgeFilter}
                   onClick={() => setStatusFilter("todos")}
                 >
                   Status: {statusFilter === "ativo" ? "Ativos" : statusFilter === "inativo" ? "Inativos" : statusFilter === "cancelado" ? "Cancelados" : statusFilter}
                   <X className={styles.badgeCloseIcon} />
-                </Badge>
+                </span>
               )}
               
               {periodFilter !== "month" && (
-                <Badge 
+                <span 
                   className={styles.badgeFilter}
                   onClick={() => setPeriodFilter("month")}
                 >
                   Período: {formatCurrentPeriod()}
                   <X className={styles.badgeCloseIcon} />
-                </Badge>
+                </span>
               )}
               
               {searchTerm && (
-                <Badge 
+                <span 
                   className={styles.badgeFilter}
                   onClick={() => setSearchTerm("")}
                 >
                   Busca: &quot;{searchTerm}&quot;
                   <X className={styles.badgeCloseIcon} />
-                </Badge>
+                </span>
               )}
               
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => {
                   handleStatusFilter("todos");
                   setPeriodFilter("month");
@@ -799,11 +751,11 @@ export default function ContratosPage() {
                 className={styles.btnClearAll}
               >
                 Limpar todos
-              </Button>
+              </button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Actions */}
       {selectedItems.length > 0 && (
@@ -812,26 +764,25 @@ export default function ContratosPage() {
             <p className={styles.textMutedSmall}>
               {selectedItems.length} registro(s) selecionado(s)
             </p>
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              type="button"
               className={styles.btnSecondary}
             >
               Migrar contratos para Cobranças Conta Azul
-            </Button>
-            <Button
-              size="sm"
+            </button>
+            <button
+              type="button"
               className={styles.btnPrimary}
             >
               Atualizar contratos
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <Card className={styles.tableCard}>
-        <CardContent className={styles.cardContentPadded}>
+      <div className={styles.tableCard}>
+        <div className={styles.cardContentPadded}>
           {isLoading ? (
             <LoadingState />
           ) : (
@@ -903,7 +854,6 @@ export default function ContratosPage() {
                         <tr 
                           key={contrato.id} 
                           className={styles.tableRow}
-                          onClick={() => handleAbrirDetalhesContrato(contrato.id)}
                         >
                           <td className={styles.tableCellCheckbox}>
                             <input 
@@ -943,70 +893,68 @@ export default function ContratosPage() {
                             {getSituacaoBadge(contrato.status)}
                           </td>
                           <td className={styles.tableCell}>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={styles.dropdownTrigger}
+                            <div className={styles.dropdownContainer}>
+                              <button
+                                type="button"
+                                className={styles.dropdownTrigger}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleDropdown(contrato.id);
+                                }}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </button>
+                              {activeDropdown === contrato.id && (
+                                <div 
+                                  className={styles.dropdownContent}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                align="end"
-                                className={styles.dropdownContent}
-                              >
-                                <DropdownMenuItem 
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAbrirDetalhesContrato(contrato.id);
-                                  }}
-                                >
-                                  <Info className="w-4 h-4 mr-2" />
-                                  Ver detalhes
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAbrirEditarContrato(contrato.id);
-                                  }}
-                                >
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className={styles.dropdownItem}>
-                                  Duplicar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDownloadBoleto(contrato.id);
-                                  }}
-                                  disabled={isDownloadingBoleto === contrato.id}
-                                >
-                                  {isDownloadingBoleto === contrato.id ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                      Baixando...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Download className="w-4 h-4 mr-2" />
-                                      Baixar boleto
-                                    </>
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className={styles.dropdownItemDanger}>
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                  <button 
+                                    type="button"
+                                    className={styles.dropdownItem}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCloseDropdown();
+                                    }}
+                                  >
+                                    Duplicar
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    className={styles.dropdownItem}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownloadBoleto(contrato.id);
+                                      handleCloseDropdown();
+                                    }}
+                                    disabled={isDownloadingBoleto === contrato.id}
+                                  >
+                                    {isDownloadingBoleto === contrato.id ? (
+                                      <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Baixando...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Baixar boleto
+                                      </>
+                                    )}
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    className={styles.dropdownItemDanger}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCloseDropdown();
+                                    }}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -1082,30 +1030,9 @@ export default function ContratosPage() {
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Novo Contrato Drawer */}
-      <NovoContratoDrawer
-        isOpen={isNovoContratoOpen}
-        onClose={() => setIsNovoContratoOpen(false)}
-        onSave={handleNovoContratoSave}
-      />
-
-      {/* Detalhes do Contrato Drawer */}
-      <DetalhesContratoDrawer
-        isOpen={isDetalhesContratoOpen}
-        onClose={handleFecharDetalhesContrato}
-        contratoId={contratoSelecionado}
-      />
-
-      {/* Editar Contrato Drawer */}
-      <EditarContratoDrawer
-        isOpen={isEditarContratoOpen}
-        onClose={handleFecharEditarContrato}
-        contratoId={contratoParaEditar}
-      />
-      
       <PrincipalSidebar />
     </div>
   );
