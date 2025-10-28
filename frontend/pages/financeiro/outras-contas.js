@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import styles from '../../styles/financeiro/outras-contas.module.css';
-import { Card, CardContent } from '../../components/financeiro/card';
-import { Button } from '../../components/financeiro/botao';
-import { Input } from '../../components/financeiro/input';
-import { Badge } from '../../components/financeiro/badge';
-import { Plus, Search, Settings, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Settings, Edit, Trash2, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { NovaContaFinanceiraModal } from '../../components/financeiro/NovaContaFinanceiraModal';
 import { ModalConfirmarExclusaoConta } from '../../components/financeiro/ModalConfirmarExclusaoConta';
@@ -114,6 +110,8 @@ export default function OutrasContasPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0, sucessos: 0, falhas: 0 });
   const [syncExecuted, setSyncExecuted] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const dropdownRef = useRef(null);
 
   // Função para sincronizar transações Pluggy com retry (versão manual com toast)
   const syncTransacoesPluggy = async () => {
@@ -568,6 +566,20 @@ export default function OutrasContasPage() {
     }
   }, [contasFinanceiras.length, syncing, syncExecuted, syncTransacoesPluggySilencioso]); // Só executa quando necessário
 
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const filteredContas = useMemo(() => {
     return contasFinanceiras.filter((conta) => {
       const termo = searchTerm.toLowerCase();
@@ -584,9 +596,9 @@ export default function OutrasContasPage() {
     // Se a conta é de origem "contas-api", sempre retorna "OpenFinance"
     if (origem === "contas-api") {
       return (
-        <Badge className="outras-contas-badge-openfinance">
+        <span className="outras-contas-badge-openfinance">
           OpenFinance
-        </Badge>
+        </span>
       );
     }
 
@@ -594,27 +606,27 @@ export default function OutrasContasPage() {
     switch (integracao) {
       case "Automática":
         return (
-          <Badge className="outras-contas-badge-automatica">
+          <span className="outras-contas-badge-automatica">
             Automática
-          </Badge>
+          </span>
         );
       case "Manual":
         return (
-          <Badge className="outras-contas-badge-manual">
+          <span className="outras-contas-badge-manual">
             -
-          </Badge>
+          </span>
         );
       case "Não configurada":
         return (
-          <Badge className="outras-contas-badge-nao-configurada">
+          <span className="outras-contas-badge-nao-configurada">
             Não configurada
-          </Badge>
+          </span>
         );
       default:
         return (
-          <Badge className="outras-contas-badge-manual">
+          <span className="outras-contas-badge-manual">
             {integracao}
-          </Badge>
+          </span>
         );
     }
   };
@@ -664,45 +676,45 @@ export default function OutrasContasPage() {
               )}
             </div>
           )}
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={() => syncTransacoesPluggy()}
             disabled={syncing}
             className={styles.outrasContasSyncBtn}
           >
             <Settings className={styles.outrasContasIcon} />
             {syncing ? "Sincronizando..." : "Sincronizar transações"}
-          </Button>
-          <Button
-            size="sm"
+          </button>
+          <button
+            type="button"
             className={styles.outrasContasPrimaryBtn}
             onClick={() => setIsNovaContaOpen(true)}
           >
             <Plus className={styles.outrasContasIcon} />
             Nova conta financeira
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Search */}
-      <Card className={styles.outrasContasSearchCard}>
-        <CardContent className={styles.outrasContasSearchContent}>
+      <div className={styles.outrasContasSearchCard}>
+        <div className={styles.outrasContasSearchContent}>
           <div className={styles.outrasContasSearchContainer}>
             <Search className={styles.outrasContasSearchIcon} />
-            <Input
+            <input
+              type="text"
               placeholder="Descrição, Nome da conta..."
               className={styles.outrasContasSearchInput}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Table */}
-      <Card className={styles.outrasContasTableCard}>
-        <CardContent className={styles.outrasContasTableContent}>
+      <div className={styles.outrasContasTableCard}>
+        <div className={styles.outrasContasTableContent}>
           {loading ? (
             <LoadingState />
           ) : (
@@ -774,33 +786,54 @@ export default function OutrasContasPage() {
                           {getIntegracaoBadge(conta.integracao, conta.origem)}
                         </td>
                         <td className={styles.outrasContasTableCell}>
-                          <div className={styles.outrasContasActionButtons}>
-                            <Link
-                              href={`/financeiro/outras-contas/${conta.id}/editar`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className={styles.outrasContasActionBtnEdit}
-                              >
-                                <Edit className={styles.outrasContasActionIcon} />
-                                Editar
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={styles.outrasContasActionBtnDelete}
+                          <div className={styles.outrasContasActionDropdownWrapper}>
+                            <button
+                              type="button"
+                              className={styles.outrasContasActionMenuBtn}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setContaSelecionada(conta);
-                                setIsModalExcluirOpen(true);
+                                setOpenDropdownId(openDropdownId === conta.id ? null : conta.id);
                               }}
                             >
-                              <Trash2 className={styles.outrasContasActionIcon} />
-                              Excluir
-                            </Button>
+                              <MoreVertical className={styles.outrasContasActionMenuIcon} />
+                            </button>
+                            
+                            {openDropdownId === conta.id && (
+                              <div 
+                                ref={dropdownRef}
+                                className={styles.outrasContasActionDropdown}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Link
+                                  href={`/financeiro/outras-contas/${conta.id}/editar`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenDropdownId(null);
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    className={styles.outrasContasDropdownItem}
+                                  >
+                                    <Edit className={styles.outrasContasDropdownIcon} />
+                                    Editar
+                                  </button>
+                                </Link>
+                                <button
+                                  type="button"
+                                  className={`${styles.outrasContasDropdownItem} ${styles.outrasContasDropdownItemDelete}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setContaSelecionada(conta);
+                                    setIsModalExcluirOpen(true);
+                                    setOpenDropdownId(null);
+                                  }}
+                                >
+                                  <Trash2 className={styles.outrasContasDropdownIcon} />
+                                  Excluir
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -810,8 +843,8 @@ export default function OutrasContasPage() {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Nova Conta Financeira Modal */}
       <NovaContaFinanceiraModal

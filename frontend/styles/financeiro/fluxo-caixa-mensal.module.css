@@ -98,14 +98,68 @@
 
 .filtroSelect {
   width: 128px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtroSelect:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.filtroSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
 }
 
 .filtroSelectWide {
   width: 160px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtroSelectWide:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.filtroSelectWide:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
 }
 
 .filtroSelectNarrow {
   width: 80px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtroSelectNarrow:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.filtroSelectNarrow:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
 }
 
 .filtroToggleGroup {
@@ -118,6 +172,101 @@
   display: flex;
   align-items: center;
   gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text-secondary);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtroToggleButton:hover {
+  background: var(--onity-color-surface-hover);
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+}
+
+.filtroToggleButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+}
+
+.filtroToggleButton:active {
+  transform: translateY(0);
+}
+
+.filtroToggleButtonActive {
+  background: var(--onity-color-primary);
+  color: white;
+  border-color: var(--onity-color-primary);
+}
+
+.filtroToggleButtonActive:hover {
+  background: var(--onity-color-primary-hover);
+}
+
+.filtroSelectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.filtroSelectWrapper select {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtroSelectWrapper select:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.filtroSelectWrapper select:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+}
+
+.filtroUpdateButton {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: none;
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-primary);
+  color: white;
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filtroUpdateButton:hover:not(:disabled) {
+  background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.filtroUpdateButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+}
+
+.filtroUpdateButton:active {
+  transform: translateY(0);
+}
+
+.filtroUpdateButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Resumo Geral */

@@ -158,7 +158,33 @@
     color: var(--onity-color-text);
     border: 1px solid var(--onity-color-border);
     border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    font-size: var(--onity-type-body-size);
+    cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+
+  .outrasContasSyncBtn:hover:not(:disabled) {
+    background-color: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    transform: translateY(-1px);
+  }
+
+  .outrasContasSyncBtn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+  }
+
+  .outrasContasSyncBtn:active {
+    transform: translateY(0);
+  }
+
+  .outrasContasSyncBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
 .outrasContasPrimaryBtn {
@@ -166,7 +192,30 @@
     color: var(--onity-color-primary-contrast);
     border: 1px solid var(--onity-color-primary);
     border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+
+  .outrasContasPrimaryBtn:hover {
+    background-color: var(--onity-color-primary-hover);
+    border-color: var(--onity-color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--onity-elev-low);
+  }
+
+  .outrasContasPrimaryBtn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+  }
+
+  .outrasContasPrimaryBtn:active {
+    transform: translateY(0);
   }
 
 .outrasContasSearchCard {
@@ -190,8 +239,22 @@
     background-color: var(--onity-color-surface);
     border: 2px solid var(--onity-color-border);
     color: var(--onity-color-text);
+    padding: var(--onity-space-s);
     padding-left: 40px;
-    border-radius: 11px
+    border-radius: 11px;
+    font-size: var(--onity-type-body-size);
+    width: 100%;
+    transition: all 0.15s ease;
+  }
+
+  .outrasContasSearchInput:hover {
+    border-color: var(--onity-color-primary);
+  }
+
+  .outrasContasSearchInput:focus {
+    outline: none;
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 2px var(--onity-color-primary-light);
   }
 
 .outrasContasTableCard {
@@ -258,7 +321,29 @@
     color: var(--onity-color-text);
     border: 1px solid var(--onity-color-border);
     border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    font-size: var(--onity-type-caption-size);
+    cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+
+  .outrasContasActionBtnEdit:hover {
+    background-color: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    color: var(--onity-color-primary);
+    transform: translateY(-1px);
+  }
+
+  .outrasContasActionBtnEdit:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--onity-color-primary-light);
+  }
+
+  .outrasContasActionBtnEdit:active {
+    transform: translateY(0);
   }
 
 .outrasContasActionBtnDelete {
@@ -266,7 +351,29 @@
     color: var(--onity-color-error);
     border: 1px solid var(--onity-color-border);
     border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    font-size: var(--onity-type-caption-size);
+    cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+
+  .outrasContasActionBtnDelete:hover {
+    background-color: var(--onity-color-error-light);
+    border-color: var(--onity-color-error);
+    color: var(--onity-color-error);
+    transform: translateY(-1px);
+  }
+
+  .outrasContasActionBtnDelete:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--onity-color-error-light);
+  }
+
+  .outrasContasActionBtnDelete:active {
+    transform: translateY(0);
   }
 
 .outrasContasLoadingText {
@@ -817,6 +924,188 @@
   /* Mensagem de nenhuma conta encontrada no modo light */
   [data-theme="light"] .outras-contas-empty-text {
     color: #6b7280;
+  }
+
+  /* Dropdown de ações */
+  .outrasContasActionDropdownWrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .outrasContasActionMenuBtn {
+    background-color: transparent;
+    border: none;
+    padding: var(--onity-space-xs);
+    cursor: pointer;
+    border-radius: var(--onity-radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .outrasContasActionMenuBtn:hover {
+    background-color: var(--onity-color-bg);
+  }
+
+  .outrasContasActionMenuIcon {
+    width: 20px;
+    height: 20px;
+    color: var(--onity-icon-secondary);
+  }
+
+  .outrasContasActionDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--onity-space-xs);
+    background-color: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    box-shadow: var(--onity-elev-high);
+    z-index: 1000;
+    min-width: 160px;
+    overflow: hidden;
+  }
+
+  .outrasContasDropdownItem {
+    width: 100%;
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+    font-size: var(--onity-type-caption-size);
+    color: var(--onity-color-text);
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .outrasContasDropdownItem:hover {
+    background-color: var(--onity-color-bg);
+  }
+
+  .outrasContasDropdownItemDelete {
+    color: var(--onity-color-error);
+  }
+
+  .outrasContasDropdownItemDelete:hover {
+    background-color: var(--onity-color-error-light);
+  }
+
+  .outrasContasDropdownIcon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Dropdown de ações - modo dark (padrão) */
+  .outras-contas-action-dropdown-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .outras-contas-action-menu-btn {
+    background-color: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .outras-contas-action-menu-btn:hover {
+    background-color: rgba(103, 58, 183, 0.1);
+  }
+
+  .outras-contas-action-menu-icon {
+    width: 20px;
+    height: 20px;
+    color: #B0AFC1;
+  }
+
+  .outras-contas-action-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background-color: rgba(27, 18, 41, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(103, 58, 183, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    min-width: 160px;
+    overflow: hidden;
+  }
+
+  .outras-contas-dropdown-item {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #ffffff;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .outras-contas-dropdown-item:hover {
+    background-color: rgba(103, 58, 183, 0.2);
+  }
+
+  .outras-contas-dropdown-item-delete {
+    color: #F50057;
+  }
+
+  .outras-contas-dropdown-item-delete:hover {
+    background-color: rgba(245, 0, 87, 0.1);
+  }
+
+  .outras-contas-dropdown-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Dropdown de ações - modo light */
+  [data-theme="light"] .outras-contas-action-menu-btn:hover {
+    background-color: rgba(147, 51, 234, 0.05);
+  }
+
+  [data-theme="light"] .outras-contas-action-menu-icon {
+    color: #6b7280;
+  }
+
+  [data-theme="light"] .outras-contas-action-dropdown {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme="light"] .outras-contas-dropdown-item {
+    color: #111827;
+  }
+
+  [data-theme="light"] .outras-contas-dropdown-item:hover {
+    background-color: rgba(147, 51, 234, 0.05);
+  }
+
+  [data-theme="light"] .outras-contas-dropdown-item-delete {
+    color: #ef4444;
+  }
+
+  [data-theme="light"] .outras-contas-dropdown-item-delete:hover {
+    background-color: rgba(239, 68, 68, 0.05);
   }
   
   /* Responsividade */

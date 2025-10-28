@@ -1,9 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Button } from '../../components/financeiro/botao';
-import { Input } from '../../components/financeiro/input';
-import { Label } from '../../components/financeiro/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/financeiro/select';
-import { Checkbox } from '../../components/financeiro/checkbox';
 import {
   X,
   Building2,
@@ -606,13 +601,13 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
           
           {/* Botão para voltar e configurar Inter se necessário */}
           <div className={styles.novaContaBackButtonContainer}>
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setCurrentStep(2)}
               className={styles.novaContaBackButton}
             >
               ← Voltar para configurar Inter
-            </Button>
+            </button>
           </div>
         </div>
       ) : (
@@ -621,7 +616,8 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
             Como deseja cadastrar sua conta?
           </h2>
           <div className={styles.novaContaIntegrationButtons}>
-            <Button
+            <button
+              type="button"
               className={styles.novaContaIntegrationButton}
               onClick={() => {
                 setIntegracaoEscolhida('openfinance');
@@ -630,9 +626,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
             >
               <span>Conectar via Open Finance</span>
               <span className={styles.novaContaIntegrationSubtitle}>Importação automática do extrato</span>
-            </Button>
-            <Button
-              variant="outline"
+            </button>
+            <button
+              type="button"
               className={styles.novaContaIntegrationButtonOutline}
               onClick={() => {
                 setIntegracaoEscolhida('manual');
@@ -641,7 +637,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
             >
               <span>Continuar sem integração</span>
               <span className={styles.novaContaIntegrationSubtitle}>Cadastro manual da conta</span>
-            </Button>
+            </button>
           </div>
         </>
       )}
@@ -652,7 +648,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
   const renderStepOpenFinance = () => (
     <div className={styles.novaContaOpenFinanceContainer}>
       <OpenFinancePluggy onSuccess={handleOpenFinanceSuccess} />
-      <Button onClick={() => setCurrentStep(4)} className={styles.novaContaOpenFinanceButton}>Avançar para cadastro manual</Button>
+      <button type="button" onClick={() => setCurrentStep(4)} className={styles.novaContaOpenFinanceButton}>Avançar para cadastro manual</button>
     </div>
   );
 
@@ -707,9 +703,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
 
             <div className={styles.novaContaFormGrid}>
               <div className={styles.novaContaField}>
-                <Label htmlFor="banco" className={styles.novaContaLabel}>
+                <label htmlFor="banco" className={styles.novaContaLabel}>
                   {selectedTipo === 'caixinha' ? 'Tipo de Caixinha *' : 'Banco *'}
-                </Label>
+                </label>
                 <ReactSelect
                   options={
                     selectedTipo === 'caixinha' 
@@ -798,8 +794,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
               </div>
 
               <div className={styles.novaContaField}>
-                <Label htmlFor="descricao" className={styles.novaContaLabel}>Descrição *</Label>
-                <Input
+                <label htmlFor="descricao" className={styles.novaContaLabel}>Descrição *</label>
+                <input
+                  type="text"
                   id="descricao"
                   value={formData.descricao}
                   onChange={(e) => handleInputChange('descricao', e.target.value)}
@@ -812,8 +809,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
               {selectedTipo !== 'caixinha' && (
                 <>
                   <div className={styles.novaContaField}>
-                    <Label htmlFor="agencia" className={styles.novaContaLabel}>Agência *</Label>
-                    <Input
+                    <label htmlFor="agencia" className={styles.novaContaLabel}>Agência *</label>
+                    <input
+                      type="text"
                       id="agencia"
                       value={formData.agencia}
                       onChange={(e) => handleInputChange('agencia', e.target.value)}
@@ -824,8 +822,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                   </div>
 
                   <div className={styles.novaContaField}>
-                    <Label htmlFor="numero_conta" className={styles.novaContaLabel}>Número da Conta *</Label>
-                    <Input
+                    <label htmlFor="numero_conta" className={styles.novaContaLabel}>Número da Conta *</label>
+                    <input
+                      type="text"
                       id="numero_conta"
                       value={formData.numero_conta}
                       onChange={(e) => handleInputChange('numero_conta', e.target.value)}
@@ -841,25 +840,27 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
 
             {selectedTipo !== 'caixinha' && (
               <div className={styles.novaContaCheckboxGroup}>
-                <Checkbox
+                <input
+                  type="checkbox"
                   id="pf"
                   checked={tipoContaPessoa === 'pf'}
-                  onCheckedChange={() => handleTipoContaPessoa('pf')}
+                  onChange={() => handleTipoContaPessoa('pf')}
                   className={styles.novaContaCheckbox}
                 />
-                <Label htmlFor="pf" className={styles.novaContaCheckboxLabel}>
+                <label htmlFor="pf" className={styles.novaContaCheckboxLabel}>
                   Pessoa Física
-                </Label>
+                </label>
 
-                <Checkbox
+                <input
+                  type="checkbox"
                   id="pj"
                   checked={tipoContaPessoa === 'pj'}
-                  onCheckedChange={() => handleTipoContaPessoa('pj')}
+                  onChange={() => handleTipoContaPessoa('pj')}
                   className={styles.novaContaCheckbox}
                 />
-                <Label htmlFor="pj" className={styles.novaContaCheckboxLabel}>
+                <label htmlFor="pj" className={styles.novaContaCheckboxLabel}>
                   Pessoa Jurídica
-                </Label>
+                </label>
               </div>
             )}
 
@@ -867,17 +868,18 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
             {selectedTipo && selectedTipo !== 'caixinha' && (
               <div className={styles.novaContaInterSection}>
                 <div className={styles.novaContaInterHeader}>
-                  <Checkbox
+                  <input
+                    type="checkbox"
                     id="inter_enabled"
                     checked={interEnabled}
-                    onCheckedChange={(checked) => setInterEnabled(checked)}
+                    onChange={(e) => setInterEnabled(e.target.checked)}
                     className={styles.novaContaCheckbox}
                   />
                   <div className={styles.novaContaInterTitleContainer}>
                     <Banknote className={styles.novaContaInterIcon} />
-                    <Label htmlFor="inter_enabled" className={styles.novaContaInterTitle}>
+                    <label htmlFor="inter_enabled" className={styles.novaContaInterTitle}>
                       Habilitar integração com Banco Inter
-                    </Label>
+                    </label>
                   </div>
                 </div>
                 
@@ -889,8 +891,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                 <div className={styles.novaContaInterForm}>
                   <div className={styles.novaContaInterGrid}>
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_client_id" className={styles.novaContaLabel}>Client ID *</Label>
-                      <Input
+                      <label htmlFor="inter_client_id" className={styles.novaContaLabel}>Client ID *</label>
+                      <input
+                        type="text"
                         id="inter_client_id"
                         value={interData.client_id}
                         onChange={(e) => setInterData(prev => ({ ...prev, client_id: e.target.value }))}
@@ -901,10 +904,10 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                     </div>
 
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_client_secret" className={styles.novaContaLabel}>Client Secret *</Label>
-                      <Input
-                        id="inter_client_secret"
+                      <label htmlFor="inter_client_secret" className={styles.novaContaLabel}>Client Secret *</label>
+                      <input
                         type="password"
+                        id="inter_client_secret"
                         value={interData.client_secret}
                         onChange={(e) => setInterData(prev => ({ ...prev, client_secret: e.target.value }))}
                         placeholder="Digite o Client Secret do Inter"
@@ -914,8 +917,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                     </div>
 
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_conta_corrente" className={styles.novaContaLabel}>Conta Corrente *</Label>
-                      <Input
+                      <label htmlFor="inter_conta_corrente" className={styles.novaContaLabel}>Conta Corrente *</label>
+                      <input
+                        type="text"
                         id="inter_conta_corrente"
                         value={interData.conta_corrente}
                         onChange={(e) => setInterData(prev => ({ ...prev, conta_corrente: e.target.value }))}
@@ -926,8 +930,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                     </div>
 
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_apelido" className={styles.novaContaLabel}>Apelido da Conta</Label>
-                      <Input
+                      <label htmlFor="inter_apelido" className={styles.novaContaLabel}>Apelido da Conta</label>
+                      <input
+                        type="text"
                         id="inter_apelido"
                         value={interData.apelido}
                         onChange={(e) => setInterData(prev => ({ ...prev, apelido: e.target.value }))}
@@ -939,56 +944,51 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
 
                   <div className={styles.novaContaInterGrid}>
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_ambiente" className={styles.novaContaLabel}>Ambiente</Label>
-                      <Select
+                      <label htmlFor="inter_ambiente" className={styles.novaContaLabel}>Ambiente</label>
+                      <select
+                        id="inter_ambiente"
                         value={interData.ambiente}
-                        onValueChange={(value) => setInterData(prev => ({ ...prev, ambiente: value }))}
+                        onChange={(e) => setInterData(prev => ({ ...prev, ambiente: e.target.value }))}
+                        className={styles.novaContaSelect}
                       >
-                        <SelectTrigger className={styles.novaContaSelect}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className={styles.novaContaSelectContent}>
-                          <SelectItem value="prod">Produção</SelectItem>
-                          <SelectItem value="hml">Homologação</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="prod">Produção</option>
+                        <option value="hml">Homologação</option>
+                      </select>
                     </div>
 
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_status" className={styles.novaContaLabel}>Status</Label>
-                      <Select
+                      <label htmlFor="inter_status" className={styles.novaContaLabel}>Status</label>
+                      <select
+                        id="inter_status"
                         value={interData.status}
-                        onValueChange={(value) => setInterData(prev => ({ ...prev, status: value }))}
+                        onChange={(e) => setInterData(prev => ({ ...prev, status: e.target.value }))}
+                        className={styles.novaContaSelect}
                       >
-                        <SelectTrigger className={styles.novaContaSelect}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className={styles.novaContaSelectContent}>
-                          <SelectItem value="ativo">Ativo</SelectItem>
-                          <SelectItem value="inativo">Inativo</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                      </select>
                     </div>
                   </div>
 
                   <div className={styles.novaContaInterOptions}>
                     <div className={styles.novaContaCheckboxGroup}>
-                      <Checkbox
+                      <input
+                        type="checkbox"
                         id="inter_is_default"
                         checked={interData.is_default}
-                        onCheckedChange={(checked) => setInterData(prev => ({ ...prev, is_default: checked }))}
+                        onChange={(e) => setInterData(prev => ({ ...prev, is_default: e.target.checked }))}
                         className={styles.novaContaCheckbox}
                       />
-                      <Label htmlFor="inter_is_default" className={styles.novaContaCheckboxLabel}>
+                      <label htmlFor="inter_is_default" className={styles.novaContaCheckboxLabel}>
                         Definir como conta padrão do Inter
-                      </Label>
+                      </label>
                     </div>
                   </div>
 
                   <div className={styles.novaContaInterGrid}>
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_cert_file" className={styles.novaContaLabel}>Certificado (.crt) *</Label>
-                      <Input
+                      <label htmlFor="inter_cert_file" className={styles.novaContaLabel}>Certificado (.crt) *</label>
+                      <input
                         id="inter_cert_file"
                         type="file"
                         accept=".crt,.pem"
@@ -1000,8 +1000,8 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                     </div>
 
                     <div className={styles.novaContaField}>
-                      <Label htmlFor="inter_key_file" className={styles.novaContaLabel}>Chave Privada (.key) *</Label>
-                      <Input
+                      <label htmlFor="inter_key_file" className={styles.novaContaLabel}>Chave Privada (.key) *</label>
+                      <input
                         id="inter_key_file"
                         type="file"
                         accept=".key,.pem"
@@ -1091,17 +1091,18 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
             <div className={styles.novaContaUploadContent}>
               {selectedTipo === 'caixinha' ? (
                 <div className={styles.novaContaButtonGroup}>
-                  <Button 
-                    variant="outline" 
+                  <button 
+                    type="button"
                     onClick={() => setShowSaldoFields(true)}
                     className={styles.novaContaSecondaryButton}
                   >
                     Finalizar cadastro da caixinha
-                  </Button>
+                  </button>
                 </div>
               ) : (
                 <div className={styles.novaContaButtonGroup}>
-                  <Button
+                  <button
+                    type="button"
                     className={cn(
                       styles.novaContaPrimaryButton,
                       ofxBase64 && styles.novaContaPrimaryButtonSelected
@@ -1110,7 +1111,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                   >
                     <Upload className={styles.novaContaButtonIcon} />
                     {ofxBase64 ? 'Arquivo selecionado ✓' : 'Importar arquivo'}
-                  </Button>
+                  </button>
                   <input
                     type="file"
                     accept=".ofx"
@@ -1119,14 +1120,14 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                     onChange={handleFileChange}
                   />
 
-                  <Button 
-                    variant="outline" 
+                  <button 
+                    type="button"
                     onClick={() => setShowSaldoFields(true)}
                     disabled={!!ofxBase64}
                     className={styles.novaContaSecondaryButton}
                   >
                     Continuar sem importação
-                  </Button>
+                  </button>
                 </div>
               )}
 
@@ -1137,8 +1138,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
               )}>
                 <div className={styles.novaContaSaldoGrid}>
                   <div className={styles.novaContaField}>
-                    <Label htmlFor="inicio_lancamento" className={styles.novaContaLabel}>Início dos lançamentos na Straton</Label>
-                    <Input
+                    <label htmlFor="inicio_lancamento" className={styles.novaContaLabel}>Início dos lançamentos na Straton</label>
+                    <input
+                      type="text"
                       id="inicio_lancamento"
                       placeholder="DD/MM/AAAA"
                       value={inicioLancamento}
@@ -1150,8 +1152,9 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                   </div>
 
                   <div className={styles.novaContaField}>
-                    <Label htmlFor="saldo_bancario" className={styles.novaContaLabel}>Saldo final bancário *</Label>
-                    <Input
+                    <label htmlFor="saldo_bancario" className={styles.novaContaLabel}>Saldo final bancário *</label>
+                    <input
+                      type="text"
                       id="saldo_bancario"
                       placeholder="R$"
                       value={saldoBancario}
@@ -1164,9 +1167,8 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Botão para fechar os campos */}
                 <div className={styles.novaContaHideButtonContainer}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={() => {
                       setShowSaldoFields(false);
                       // Limpar campos quando fechar (opcional)
@@ -1179,7 +1181,7 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
                   >
                     <ChevronUp className={styles.novaContaHideButtonIcon} />
                     Ocultar campos
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1361,14 +1363,13 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
         {/* Header */}
         <div className={styles.novaContaHeader}>
           <h1 className={styles.novaContaTitle}>Nova conta financeira</h1>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={onClose}
             className={styles.novaContaCloseButton}
           >
             <X className={styles.novaContaIcon} />
-          </Button>
+          </button>
         </div>
         {/* Content */}
         <div className={styles.novaContaContent}>
@@ -1382,8 +1383,8 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
         </div>
         {/* Footer */}
         <div className={styles.novaContaFooter}>
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={() => {
               if (currentStep === 1) onClose();
               else setCurrentStep(currentStep - 1);
@@ -1392,52 +1393,57 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
             className={styles.novaContaSecondaryButton}
           >
             {currentStep === 1 ? 'Cancelar' : 'Voltar'}
-          </Button>
+          </button>
 
           {/* Botão avançar/continuar */}
           {currentStep === 1 && (
-            <Button
+            <button
+              type="button"
               onClick={() => selectedTipo && setCurrentStep(2)}
               disabled={!selectedTipo}
               className={styles.novaContaPrimaryButton}
             >
               Continuar
-            </Button>
+            </button>
           )}
           {currentStep === 2 && (
-            <Button
+            <button
+              type="button"
               onClick={() => setCurrentStep(selectedTipo === 'caixinha' ? 4 : 3)}
               disabled={isLoading || (selectedTipo !== 'caixinha' && !tipoContaPessoa)}
               className={styles.novaContaPrimaryButton}
             >
               Continuar
-            </Button>
+            </button>
           )}
           {currentStep === 3 && integracaoEscolhida === 'manual' && (
-            <Button
+            <button
+              type="button"
               onClick={() => setCurrentStep(4)}
               disabled={isLoading}
               className={styles.novaContaPrimaryButton}
             >
               Continuar
-            </Button>
+            </button>
           )}
           {currentStep === 4 && (
-            <Button
+            <button
+              type="button"
               onClick={handleNext}
               disabled={isLoading}
               className={styles.novaContaPrimaryButton}
             >
               Finalizar
-            </Button>
+            </button>
           )}
           {currentStep === 5 && (
-            <Button
+            <button
+              type="button"
               onClick={onClose}
               className={styles.novaContaPrimaryButton}
             >
               Concluir
-            </Button>
+            </button>
           )}
           {isLoading && (
             <div className={styles.novaContaLoading}>
