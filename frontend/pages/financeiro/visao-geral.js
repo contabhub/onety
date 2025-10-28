@@ -9,7 +9,6 @@ import {
   TrendingDown, 
   DollarSign, 
   Calendar,
-  MoreHorizontal,
   X,
   Mail,
   BarChart3,
@@ -1426,15 +1425,6 @@ export default function VisaoGeral() {
         <Card className={styles.fluxoCard}>
           <CardHeader className={styles.contasHeader}>
             <CardTitle className={styles.cardTitle}>Fluxo de caixa diário</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={styles.refreshButton}
-              onClick={fetchFluxoCaixaData}
-              disabled={fluxoCaixaLoading}
-            >
-              <RefreshCw className={`h-4 w-4 ${fluxoCaixaLoading ? 'animate-spin' : ''}`} />
-            </Button>
           </CardHeader>
           <CardContent className={styles.fluxoContent}>
             {fluxoCaixaLoading ? (
@@ -1583,9 +1573,6 @@ export default function VisaoGeral() {
         <Card className={styles.fluxoCard}>
           <CardHeader className={styles.contasHeader}>
             <CardTitle className={styles.cardTitle}>Gráfico de vendas</CardTitle>
-            <Button variant="ghost" size="sm" className={styles.refreshButton}>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
           </CardHeader>
           <CardContent className={styles.fluxoContent}>
             <div className={styles.chartContainer}>
