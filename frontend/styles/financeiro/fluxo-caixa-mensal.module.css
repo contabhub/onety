@@ -100,7 +100,7 @@
   width: 128px;
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-s);
+  border-radius: 8px;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
@@ -122,7 +122,7 @@
   width: 160px;
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-s);
+  border-radius: 8px;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
@@ -144,7 +144,7 @@
   width: 80px;
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-s);
+  border-radius: 8px;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
@@ -174,7 +174,7 @@
   gap: var(--onity-space-s);
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-s);
+  border-radius: 8px;
   background: var(--onity-color-surface);
   color: var(--onity-color-text-secondary);
   font-size: var(--onity-type-body-size);
@@ -217,7 +217,7 @@
 .filtroSelectWrapper select {
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-s);
+  border-radius: 8px;
   background: var(--onity-color-surface);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
@@ -241,7 +241,7 @@
   gap: var(--onity-space-s);
   padding: var(--onity-space-s) var(--onity-space-m);
   border: none;
-  border-radius: var(--onity-radius-s);
+  border-radius: 8px;
   background: var(--onity-color-primary);
   color: white;
   font-size: var(--onity-type-body-size);

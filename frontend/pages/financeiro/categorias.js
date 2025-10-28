@@ -187,7 +187,7 @@ export default function CategoriasFinanceiras() {
         console.log("🔐 token:", token);
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/companies/${companyId}/categorias`,
+          `${process.env.NEXT_PUBLIC_API_URL}/financeiro/categorias/empresa/${companyId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -267,7 +267,7 @@ export default function CategoriasFinanceiras() {
 
     const fetchTipos = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tipos?company_id=${empresaId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/tipos/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -364,8 +364,8 @@ export default function CategoriasFinanceiras() {
     console.log("📦 Payload enviado:", payload);
 
     const urlBase = isSub
-      ? `${process.env.NEXT_PUBLIC_API_URL}/sub-categorias`
-      : `${process.env.NEXT_PUBLIC_API_URL}/categorias`;
+      ? `${process.env.NEXT_PUBLIC_API_URL}/financeiro/sub-categorias`
+      : `${process.env.NEXT_PUBLIC_API_URL}/financeiro/categorias`;
 
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing ? `${urlBase}/${idToEdit}` : urlBase;
@@ -493,7 +493,7 @@ export default function CategoriasFinanceiras() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/${isSub ? 'sub-categorias' : 'categorias'}/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/financeiro/${isSub ? 'sub-categorias' : 'categorias'}/${id}`,
         {
           method: 'DELETE',
           headers: {

@@ -472,8 +472,23 @@ export function NovaContaFinanceiraModal({ isOpen, onClose, onSuccess }) {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/openfinance/connectors`);
         const data = await res.json();
         
+        console.log('Dados recebidos da API connectors:', data);
+        
+        // Verificar se a estrutura de dados está correta
+        let connectors = [];
+        if (data && data.connectors && data.connectors.results) {
+          connectors = data.connectors.results;
+        } else if (data && data.results) {
+          connectors = data.results;
+        } else if (Array.isArray(data)) {
+          connectors = data;
+        } else {
+          console.warn('Estrutura de dados inesperada:', data);
+          return;
+        }
+        
         // Filtra os conectores, removendo aqueles com IDs bloqueados
-        const filteredConnectors = data.connectors.results.filter(
+        const filteredConnectors = connectors.filter(
           (connector) => 
             !blockedConnectorIds.includes(connector.id)
         );
