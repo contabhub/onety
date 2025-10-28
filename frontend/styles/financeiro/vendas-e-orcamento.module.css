@@ -526,14 +526,41 @@
   font-weight: 500;
 }
 
+
 .vendas-orcamentos-badge-em-andamento {
-  background-color: var(--onity-warning-20);
-  color: var(--onity-color-warning);
-  border: 1px solid var(--onity-warning-30);
-  border-radius: var(--onity-radius-xs);
-  padding: 4px 8px;
-  font-size: var(--onity-type-caption-size);
-  font-weight: 500;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--onity-color-info) 15%, var(--onity-color-surface)) 0%, color-mix(in srgb, var(--onity-color-info) 25%, var(--onity-color-surface)) 100%);
+  color: var(--onity-color-info);
+  border: 1px solid color-mix(in srgb, var(--onity-color-info) 40%, var(--onity-color-border));
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 75px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(30, 136, 229, 0.15);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.vendas-orcamentos-badge-em-andamento::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendas-orcamentos-badge-em-andamento:hover::before {
+  left: 100%;
 }
 
 .vendas-orcamentos-badge-recusado {
@@ -546,24 +573,112 @@
   font-weight: 500;
 }
 
-.vendas-orcamentos-badge-contrato {
-  background-color: var(--onity-primary-20);
+.vendas-orcamentos-badge-orcamento {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--onity-color-primary) 15%, var(--onity-color-surface)) 0%, color-mix(in srgb, var(--onity-color-primary) 25%, var(--onity-color-surface)) 100%);
   color: var(--onity-color-primary);
-  border: 1px solid var(--onity-primary-30);
-  border-radius: var(--onity-radius-xs);
-  padding: 4px 8px;
-  font-size: var(--onity-type-caption-size);
-  font-weight: 500;
+  border: 1px solid color-mix(in srgb, var(--onity-color-primary) 40%, var(--onity-color-border));
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 75px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.15);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.vendas-orcamentos-badge-venda {
-  background-color: var(--onity-info-20);
-  color: var(--onity-color-info);
-  border: 1px solid var(--onity-info-30);
-  border-radius: var(--onity-radius-xs);
-  padding: 4px 8px;
-  font-size: var(--onity-type-caption-size);
-  font-weight: 500;
+.vendas-orcamentos-badge-orcamento::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendas-orcamentos-badge-orcamento:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosBadgeContrato {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--onity-color-warning) 15%, var(--onity-color-surface)) 0%, color-mix(in srgb, var(--onity-color-warning) 25%, var(--onity-color-surface)) 100%);
+  color: var(--onity-color-warning);
+  border: 1px solid color-mix(in srgb, var(--onity-color-warning) 40%, var(--onity-color-border));
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 75px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 159, 67, 0.15);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosBadgeContrato::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosBadgeContrato:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosBadgeVenda {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--onity-color-success) 15%, var(--onity-color-surface)) 0%, color-mix(in srgb, var(--onity-color-success) 25%, var(--onity-color-surface)) 100%);
+  color: var(--onity-color-success);
+  border: 1px solid color-mix(in srgb, var(--onity-color-success) 40%, var(--onity-color-border));
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 75px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(40, 199, 111, 0.15);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosBadgeVenda::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosBadgeVenda:hover::before {
+  left: 100%;
 }
 
 .vendas-orcamentos-secondary-btn {
@@ -692,23 +807,69 @@
   background-color: var(--onity-color-bg);
 }
 
-.vendas-orcamentos-nfs-btn {
-  background-color: var(--onity-info-10);
+.vendasOrcamentosNfsBtn {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--onity-color-info) 15%, var(--onity-color-surface)) 0%, color-mix(in srgb, var(--onity-color-info) 25%, var(--onity-color-surface)) 100%);
   color: var(--onity-color-info);
-  border: 1px solid var(--onity-info-30);
-  border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-s) var(--onity-space-m);
-  font-weight: 500;
-  transition: all 0.2s ease;
+  border: 1px solid color-mix(in srgb, var(--onity-color-info) 40%, var(--onity-color-border));
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  transition: all 0.3s ease;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(30, 136, 229, 0.15);
+  position: relative;
+  overflow: hidden;
+  min-width: 100px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.vendas-orcamentos-nfs-btn:hover {
-  background-color: var(--onity-info-20);
-  border-color: var(--onity-info-50);
+.vendasOrcamentosNfsBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosNfsBtn:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosNfsBtn:hover {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--onity-color-info) 25%, var(--onity-color-surface)) 0%, color-mix(in srgb, var(--onity-color-info) 35%, var(--onity-color-surface)) 100%);
+  border-color: var(--onity-color-info);
   color: var(--onity-color-info);
-  transform: translateY(-1px);
-  box-shadow: var(--onity-elev-low);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(30, 136, 229, 0.3);
+}
+
+.vendasOrcamentosNfsBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: color-mix(in srgb, var(--onity-icon-secondary) 10%, var(--onity-color-surface));
+  color: var(--onity-icon-secondary);
+  border-color: color-mix(in srgb, var(--onity-icon-secondary) 30%, var(--onity-color-border));
+  transform: none;
+  box-shadow: none;
+}
+
+.vendasOrcamentosNfsBtn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--onity-icon-secondary) 10%, var(--onity-color-surface));
+}
+
+.vendasOrcamentosNfsBtn:disabled::before {
+  display: none;
 }
 
 .vendas-orcamentos-dropdown {
@@ -1015,12 +1176,19 @@
   .vendasOrcamentosFiltersRow {
     flex-direction: row;
     align-items: end;
-    gap: 20px;
+    gap: 12px;
   }
 }
 
 .vendasOrcamentosFilterGroup {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vendasOrcamentosFilterGroupPeriod {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1040,10 +1208,9 @@
 .vendasOrcamentosPeriodControls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: transparent;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 0;
   border: none;
   box-shadow: none;
   transition: all 0.3s ease;
@@ -1084,7 +1251,7 @@
 
 .vendasOrcamentosSearchInput {
   width: 100%;
-  padding: 6px 8px 6px 28px;
+  padding: 10px 20px;
   background: transparent;
   border: none;
   color: var(--onity-color-text);
@@ -1188,12 +1355,17 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Tabela */
+/* Tabela - Estilos da página de clientes */
 .vendasOrcamentosTableCard {
-  background: var(--onity-color-surface);
-  border: 1px solid var(--onity-color-border);
+  background: transparent;
+  border: 1px solid var(--onity-color-primary);
   border-radius: var(--onity-radius-m);
-  box-shadow: var(--onity-elev-med);
+  transition: all 120ms ease;
+}
+
+.vendasOrcamentosTableCard:hover {
+  border-color: var(--onity-color-border);
+  box-shadow: var(--onity-elev-medium);
 }
 
 .vendasOrcamentosTableContent {
@@ -1205,20 +1377,45 @@
 }
 
 .vendasOrcamentosTableHeader {
-  border-bottom: 1px solid var(--onity-primary-purple-20);
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+  border-radius: 8px 8px 0 0;
 }
 
 .vendasOrcamentosTableHeaderCell {
+  background-color: var(--onity-color-bg);
+  text-align: left;
+  padding: 16px 24px;
   width: 48px;
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
 }
 
 .vendasOrcamentosTableHeaderText {
+  background-color: var(--onity-color-bg);
+  text-align: left;
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
   color: var(--onity-color-text);
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
   cursor: pointer;
 }
 
+.vendasOrcamentosTableHeaderTextCenter {
+  background-color: var(--onity-color-bg);
+  text-align: center;
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  font-weight: 600;
+  color: var(--onity-color-text);
+  border-bottom: 2px solid var(--onity-color-primary);
+  position: relative;
+}
+
 .vendasOrcamentosTableRow {
-  border-bottom: 1px solid var(--onity-primary-purple-20);
+  border-bottom: 1px solid var(--onity-color-border);
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
@@ -1229,7 +1426,9 @@
 
 .vendasOrcamentosTableRowEmpty {
   text-align: center;
-  padding: var(--onity-space-xl);
+  color: var(--onity-icon-secondary);
+  padding: var(--onity-space-l);
+  font-size: var(--onity-type-body-size);
 }
 
 .vendasOrcamentosTableRowEmptyText {
@@ -1237,12 +1436,34 @@
 }
 
 .vendasOrcamentosTableCellSecondary {
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
   color: var(--onity-icon-secondary);
 }
 
 .vendasOrcamentosTableCellPrimary {
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
   color: var(--onity-color-text);
   font-weight: 500;
+}
+
+.vendasOrcamentosTableCell {
+  padding: 16px 24px;
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  vertical-align: middle;
+}
+
+.vendasOrcamentosTableCellCheckbox {
+  padding: 16px 24px;
+  width: 48px;
+}
+
+.vendasOrcamentosTableCellActions {
+  padding: 16px 24px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .vendasOrcamentosClienteContainer {
@@ -1934,6 +2155,61 @@
   box-shadow: 0 4px 16px rgba(103, 58, 183, 0.3);
 }
 
+.vendasOrcamentosPeriodButton:hover svg {
+  color: var(--onity-color-primary-contrast) !important;
+}
+
+.vendasOrcamentosPeriodNavBtn {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosPeriodNavBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosPeriodNavBtn:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosPeriodNavBtn:hover {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosPeriodNavBtn:hover svg {
+  color: var(--onity-color-primary-contrast) !important;
+}
+
+.vendasOrcamentosPeriodNavBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.2);
+}
+
 .vendasOrcamentosFiltrosAtivosContent {
   display: flex;
   align-items: center;
@@ -1996,22 +2272,29 @@
 .vendasOrcamentosActionIcon {
   width: 16px;
   height: 16px;
-  margin-right: var(--onity-space-xs);
 }
 
 .vendasOrcamentosActionButton {
   background-color: transparent;
   color: var(--onity-icon-secondary);
-  border: none;
-  padding: var(--onity-space-xs);
+  border: 1px solid var(--onity-color-border);
+  padding: 8px;
   border-radius: var(--onity-radius-xs);
   transition: all 0.2s ease;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .vendasOrcamentosActionButton:hover {
   background-color: var(--onity-primary-20);
   color: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.15);
 }
 
 .vendasOrcamentosTableSortIcon {
@@ -2170,16 +2453,15 @@
   cursor: not-allowed;
 }
 
-/* Checkbox Component */
+/* Checkbox Component - Estilos da página de clientes */
 .checkbox {
-  width: 1rem;
-  height: 1rem;
   border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
   border-radius: var(--onity-radius-xs);
-  background-color: var(--onity-color-surface);
+  width: 16px;
+  height: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  accent-color: var(--onity-color-primary);
+  transition: all 120ms ease;
 }
 
 .checkbox:hover {
@@ -2187,7 +2469,7 @@
 }
 
 .checkbox:checked {
-  background-color: var(--onity-color-primary);
+  background: var(--onity-color-primary);
   border-color: var(--onity-color-primary);
 }
 
@@ -2322,7 +2604,7 @@
 .selectComponent {
   position: relative;
   display: inline-block;
-  width: 100%;
+  width: auto;
 }
 
 .selectTrigger {
