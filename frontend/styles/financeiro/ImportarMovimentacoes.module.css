@@ -542,3 +542,65 @@
   font-weight: 500;
   margin-left: var(--onity-space-s);
 }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Button Component Genérico */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid;
+  text-decoration: none;
+  gap: var(--onity-space-xs);
+  outline: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.buttonComponentOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponentGhost {
+  background-color: transparent;
+  color: var(--onity-color-text);
+  border: none;
+  padding: var(--onity-space-xs);
+}
+
+.buttonComponentGhost:hover:not(:disabled) {
+  background-color: var(--onity-color-bg);
+}
+
+.buttonComponentSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}

@@ -2,30 +2,6 @@
 
 import { useState, useEffect } from "react";
 import styles from "../../styles/financeiro/extrato-movimentacoes.module.css";
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/financeiro/card';
-import { Button } from '../../components/financeiro/botao';
-import { Badge } from '../../components/financeiro/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../components/financeiro/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../../components/financeiro/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../components/financeiro/dialog';
 import {
   Search,
   Plus,
@@ -175,6 +151,11 @@ export default function ExtratoMovimentacoesPage() {
   // Estados para filtros de data
   const [currentDate, setCurrentDate] = useState(new Date());
   const [periodFilter, setPeriodFilter] = useState("month");
+
+  // Estados para dropdowns customizados
+  const [isNovaDropdownOpen, setIsNovaDropdownOpen] = useState(false);
+  const [isPeriodDropdownOpen, setIsPeriodDropdownOpen] = useState(false);
+  const [isAccountSelectOpen, setIsAccountSelectOpen] = useState(false);
 
   // Função para buscar transações da API
   const fetchTransacoes = async () => {
@@ -687,6 +668,17 @@ export default function ExtratoMovimentacoesPage() {
       if (openDropdown && !event.target.closest(`[data-dropdown-id="${openDropdown}"]`)) {
         setOpenDropdown(null);
       }
+      
+      // Fechar dropdowns customizados
+      if (!event.target.closest('.nova-dropdown')) {
+        setIsNovaDropdownOpen(false);
+      }
+      if (!event.target.closest('.period-dropdown')) {
+        setIsPeriodDropdownOpen(false);
+      }
+      if (!event.target.closest('.account-select')) {
+        setIsAccountSelectOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -839,39 +831,39 @@ export default function ExtratoMovimentacoesPage() {
     switch (situacao) {
       case "Recebido":
         return (
-          <Badge className={styles.extratoMovimentacoesBadgePago}>
+          <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgePago}`}>
             Recebido
-          </Badge>
+          </span>
         );
       case "Vencido":
         return (
-          <Badge className={styles.extratoMovimentacoesBadgeVencido}>
+          <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgeVencido}`}>
             Vencido
-          </Badge>
+          </span>
         );
       case "Pago":
         return (
-          <Badge className={styles.extratoMovimentacoesBadgePago}>
+          <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgePago}`}>
             Pago
-          </Badge>
+          </span>
         );
       case "Transferido":
         return (
-          <Badge className={styles.extratoMovimentacoesBadgeConciliado}>
+          <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgeConciliado}`}>
             Transferido
-          </Badge>
+          </span>
         );
       case "Em Aberto":
         return (
-          <Badge className={styles.extratoMovimentacoesBadgeEmAberto}>
+          <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgeEmAberto}`}>
             Em Aberto
-          </Badge>
+          </span>
         );
       default:
         return (
-          <Badge className={styles.extratoMovimentacoesBadgeEmAberto}>
+          <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgeEmAberto}`}>
             {situacao}
-          </Badge>
+          </span>
         );
     }
   };
@@ -1120,9 +1112,9 @@ export default function ExtratoMovimentacoesPage() {
             {movimentacoes.some((m) => m.origem === "pluggy") && (
               <span className={styles.extratoMovimentacoesInlineSpan}>
                 •{" "}
-                <Badge className={styles.extratoMovimentacoesBadgePluggy}>
+                <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgePluggy}`}>
                   OpenFinance
-                </Badge>
+                </span>
                 {movimentacoes.filter((m) => m.origem === "pluggy").length}{" "}
                 transações sincronizadas
               </span>
@@ -1130,154 +1122,155 @@ export default function ExtratoMovimentacoesPage() {
           </p>
         </div>
         <div className={styles.extratoMovimentacoesHeaderActions}>
-          <Button
-            size="sm"
-            variant="outline"
+          <button
             onClick={fetchTransacoes}
             disabled={isLoading}
-            className={styles.extratoMovimentacoesSecondaryBtn}
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesSecondaryBtn}`}
           >
             <RefreshCw className={styles.extratoMovimentacoesActionIcon} />
             {isLoading ? "Carregando..." : "Atualizar"}
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className={styles.extratoMovimentacoesSecondaryBtn}
-              >
-                <Plus className={styles.extratoMovimentacoesActionIcon} />
-                Nova
-                <ChevronDown className={styles.extratoMovimentacoesActionIcon} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className={styles.extratoMovimentacoesDropdown}
+          </button>
+          <div className={`${styles.dropdownComponent} nova-dropdown`}>
+            <button
+              onClick={() => setIsNovaDropdownOpen(!isNovaDropdownOpen)}
+              className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesSecondaryBtn}`}
             >
-              <DropdownMenuItem
-                onClick={handleOpenNovaReceita}
-                className={styles.extratoMovimentacoesDropdownItem}
-              >
-                <TrendingUp className={styles.extratoMovimentacoesActionIcon} />
-                Receita
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleOpenNovaDespesa}
-                className={styles.extratoMovimentacoesDropdownItem}
-              >
-                <TrendingDown className={styles.extratoMovimentacoesActionIcon} />
-                Despesa
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setNovaTransferenciaModal(true)}
-                className={styles.extratoMovimentacoesDropdownItem}
-              >
-                <ArrowRight className={styles.extratoMovimentacoesActionIcon} />
-                Transferência
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <Plus className={styles.extratoMovimentacoesActionIcon} />
+              Nova
+              <ChevronDown className={styles.extratoMovimentacoesActionIcon} />
+            </button>
+            {isNovaDropdownOpen && (
+              <div className={`${styles.dropdownContent} ${styles.dropdownRight} ${styles.extratoMovimentacoesDropdown}`}>
+                <button
+                  onClick={() => {
+                    handleOpenNovaReceita();
+                    setIsNovaDropdownOpen(false);
+                  }}
+                  className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                >
+                  <TrendingUp className={styles.extratoMovimentacoesActionIcon} />
+                  Receita
+                </button>
+                <button
+                  onClick={() => {
+                    handleOpenNovaDespesa();
+                    setIsNovaDropdownOpen(false);
+                  }}
+                  className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                >
+                  <TrendingDown className={styles.extratoMovimentacoesActionIcon} />
+                  Despesa
+                </button>
+                <button
+                  onClick={() => {
+                    setNovaTransferenciaModal(true);
+                    setIsNovaDropdownOpen(false);
+                  }}
+                  className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                >
+                  <ArrowRight className={styles.extratoMovimentacoesActionIcon} />
+                  Transferência
+                </button>
+              </div>
+            )}
+          </div>
 
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             onClick={() => setExportarMovimentacoesModal(true)}
-            className={styles.extratoMovimentacoesExportBtn}
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesExportBtn}`}
           >
             <Download className={styles.extratoMovimentacoesActionIcon} />
             Exportar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
             onClick={() => setImportarMovimentacoesModal(true)}
-            className={styles.extratoMovimentacoesImportBtn}
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesImportBtn}`}
           >
             <Upload className={styles.extratoMovimentacoesActionIcon} />
             Importar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
             onClick={() => setDownloadPlanilhasModal(true)}
-            className={styles.extratoMovimentacoesOfxBtn}
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesOfxBtn}`}
           >
             <FileText className={styles.extratoMovimentacoesActionIcon} />
             Planilhas
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className={styles.extratoMovimentacoesFiltersCard}>
-        <CardContent className={styles.extratoMovimentacoesFiltersContent}>
+      <div className={`${styles.cardComponent} ${styles.extratoMovimentacoesFiltersCard}`}>
+        <div className={`${styles.cardContent} ${styles.extratoMovimentacoesFiltersContent}`}>
           <div className={styles.extratoMovimentacoesFiltersRow}>
             <div className={styles.extratoMovimentacoesFilterGroup}>
               <label className={styles.extratoMovimentacoesFilterLabel}>
                 Período
               </label>
               <div className={styles.extratoMovimentacoesPeriodContainer}>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => navigateMonth("prev")}
-                  className={styles.extratoMovimentacoesNavBtn}
+                  className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesNavBtn}`}
                 >
                   <ChevronLeft className={styles.extratoMovimentacoesNavIcon} />
-                </Button>
+                </button>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={styles.extratoMovimentacoesPeriodButton}
-                    >
-                      <span>{formatCurrentPeriod()}</span>
-                      <ChevronDown className={styles.extratoMovimentacoesNavIcon} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="center"
-                    className={styles.extratoMovimentacoesDropdown}
+                <div className={`${styles.dropdownComponent} period-dropdown`}>
+                  <button
+                    onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
+                    className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesPeriodButton}`}
                   >
-                    <DropdownMenuItem 
-                      className={styles.extratoMovimentacoesDropdownItem}
-                      onClick={() => setPeriodFilter("week")}
-                    >
-                      Esta semana
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className={styles.extratoMovimentacoesDropdownItem}
-                      onClick={() => setPeriodFilter("month")}
-                    >
-                      Este mês
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className={styles.extratoMovimentacoesDropdownItem}
-                      onClick={() => setPeriodFilter("year")}
-                    >
-                      Este ano
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className={styles.extratoMovimentacoesDropdownItem}
-                      onClick={() => setPeriodFilter("all")}
-                    >
-                      Todo o período
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <span>{formatCurrentPeriod()}</span>
+                    <ChevronDown className={styles.extratoMovimentacoesNavIcon} />
+                  </button>
+                  {isPeriodDropdownOpen && (
+                    <div className={`${styles.dropdownContent} ${styles.dropdownCenter} ${styles.extratoMovimentacoesDropdown}`}>
+                      <button
+                        onClick={() => {
+                          setPeriodFilter("week");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                        className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                      >
+                        Esta semana
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPeriodFilter("month");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                        className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                      >
+                        Este mês
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPeriodFilter("year");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                        className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                      >
+                        Este ano
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPeriodFilter("all");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                        className={`${styles.dropdownItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                      >
+                        Todo o período
+                      </button>
+                    </div>
+                  )}
+                </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => navigateMonth("next")}
-                  className={styles.extratoMovimentacoesNavBtn}
+                  className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesNavBtn}`}
                 >
                   <ChevronRight className={styles.extratoMovimentacoesNavIcon} />
-                </Button>
+                </button>
               </div>
             </div>
             <div className={styles.extratoMovimentacoesFilterGroup}>
@@ -1299,51 +1292,68 @@ export default function ExtratoMovimentacoesPage() {
               <label className={styles.extratoMovimentacoesFilterLabel}>
                 Conta
               </label>
-              <Select
-                value={selectedAccount}
-                onValueChange={setSelectedAccount}
-                disabled
-              >
-                <SelectTrigger className={styles.extratoMovimentacoesSearchInput}>
-                  <SelectValue placeholder="Selecionar todas" />
-                </SelectTrigger>
-                <SelectContent className={styles.extratoMovimentacoesDropdown}>
-                  <SelectItem
-                    value="all"
-                    className={styles.extratoMovimentacoesDropdownItem}
-                  >
-                    Selecionar todas
-                  </SelectItem>
-                  <SelectItem
-                    value="bradesco"
-                    className={styles.extratoMovimentacoesDropdownItem}
-                  >
-                    Banco Bradesco
-                  </SelectItem>
-                  <SelectItem
-                    value="conta-azul"
-                    className={styles.extratoMovimentacoesDropdownItem}
-                  >
-                    Conta Azul
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <div className={`${styles.selectComponent} account-select`}>
+                <button
+                  onClick={() => setIsAccountSelectOpen(!isAccountSelectOpen)}
+                  disabled
+                  className={`${styles.selectTrigger} ${styles.extratoMovimentacoesSearchInput} ${styles.buttonDisabled}`}
+                >
+                  <span className={styles.selectValue}>
+                    {selectedAccount === "all" ? "Selecionar todas" : 
+                     selectedAccount === "bradesco" ? "Banco Bradesco" :
+                     selectedAccount === "conta-azul" ? "Conta Azul" : 
+                     "Selecionar todas"}
+                  </span>
+                  <ChevronDown className={styles.selectIcon} />
+                </button>
+                {isAccountSelectOpen && (
+                  <div className={`${styles.selectContent} ${styles.extratoMovimentacoesDropdown}`}>
+                    <button
+                      onClick={() => {
+                        setSelectedAccount("all");
+                        setIsAccountSelectOpen(false);
+                      }}
+                      className={`${styles.selectItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                    >
+                      Selecionar todas
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedAccount("bradesco");
+                        setIsAccountSelectOpen(false);
+                      }}
+                      className={`${styles.selectItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                    >
+                      Banco Bradesco
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedAccount("conta-azul");
+                        setIsAccountSelectOpen(false);
+                      }}
+                      className={`${styles.selectItem} ${styles.extratoMovimentacoesDropdownItem}`}
+                    >
+                      Conta Azul
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className={styles.extratoMovimentacoesStatsGrid}>
-        <Card
-          className={`${styles.extratoMovimentacoesStatCard} ${
+        <div
+          className={`${styles.cardComponent} ${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "receitas-aberto"
               ? styles.extratoMovimentacoesStatCardActive
               : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("receitas-aberto")}
         >
-          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+          <div className={`${styles.cardContent} ${styles.extratoMovimentacoesStatCardContent}`}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
                 <p className={styles.extratoMovimentacoesStatCardTitle}>
@@ -1354,18 +1364,18 @@ export default function ExtratoMovimentacoesPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
-          className={`${styles.extratoMovimentacoesStatCard} ${
+        <div
+          className={`${styles.cardComponent} ${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "receitas-realizadas"
               ? styles.extratoMovimentacoesStatCardActive
               : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("receitas-realizadas")}
         >
-          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+          <div className={`${styles.cardContent} ${styles.extratoMovimentacoesStatCardContent}`}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
                 <p className={styles.extratoMovimentacoesStatCardTitle}>
@@ -1376,18 +1386,18 @@ export default function ExtratoMovimentacoesPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
-          className={`${styles.extratoMovimentacoesStatCard} ${
+        <div
+          className={`${styles.cardComponent} ${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "despesas-aberto"
               ? styles.extratoMovimentacoesStatCardActive
               : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("despesas-aberto")}
         >
-          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+          <div className={`${styles.cardContent} ${styles.extratoMovimentacoesStatCardContent}`}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
                 <p className={styles.extratoMovimentacoesStatCardTitle}>
@@ -1398,18 +1408,18 @@ export default function ExtratoMovimentacoesPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
-          className={`${styles.extratoMovimentacoesStatCard} ${
+        <div
+          className={`${styles.cardComponent} ${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "despesas-realizadas"
               ? styles.extratoMovimentacoesStatCardActive
               : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("despesas-realizadas")}
         >
-          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+          <div className={`${styles.cardContent} ${styles.extratoMovimentacoesStatCardContent}`}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
                 <p className={styles.extratoMovimentacoesStatCardTitle}>
@@ -1420,18 +1430,18 @@ export default function ExtratoMovimentacoesPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
-          className={`${styles.extratoMovimentacoesStatCard} ${
+        <div
+          className={`${styles.cardComponent} ${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "vencidas"
               ? styles.extratoMovimentacoesStatCardActive
               : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("vencidas")}
         >
-          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+          <div className={`${styles.cardContent} ${styles.extratoMovimentacoesStatCardContent}`}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
                 <p className={styles.extratoMovimentacoesStatCardTitle}>
@@ -1442,18 +1452,18 @@ export default function ExtratoMovimentacoesPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
-          className={`${styles.extratoMovimentacoesStatCard} ${
+        <div
+          className={`${styles.cardComponent} ${styles.extratoMovimentacoesStatCard} ${
             activeFilter === "total"
               ? styles.extratoMovimentacoesStatCardActive
               : styles.extratoMovimentacoesStatCardInactive
           }`}
           onClick={() => handleApplyFilter("total")}
         >
-          <CardContent className={styles.extratoMovimentacoesStatCardContent}>
+          <div className={`${styles.cardContent} ${styles.extratoMovimentacoesStatCardContent}`}>
             <div className={styles.extratoMovimentacoesStatCardInner}>
               <div className={styles.extratoMovimentacoesStatCardInfo}>
                 <div className={styles.extratoMovimentacoesFlexCenter}>
@@ -1466,8 +1476,8 @@ export default function ExtratoMovimentacoesPage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
@@ -1476,23 +1486,19 @@ export default function ExtratoMovimentacoesPage() {
           <span className={styles.extratoMovimentacoesTableFooterSecondary}>
             {selectedItems.length} registro(s) selecionado(s)
           </span>
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             disabled={selectedItems.length === 0}
-            className={styles.extratoMovimentacoesSecondaryBtn}
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesSecondaryBtn} ${selectedItems.length === 0 ? styles.buttonDisabled : ''}`}
           >
             Pagar pelo CA de Bolso
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          </button>
+          <button
             disabled={selectedItems.length === 0}
-            className={styles.extratoMovimentacoesSecondaryBtn}
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesSecondaryBtn} ${selectedItems.length === 0 ? styles.buttonDisabled : ''}`}
           >
             Ações em lote
             <ChevronDown className={styles.extratoMovimentacoesActionIcon} />
-          </Button>
+          </button>
         </div>
 
         {/* Botão para limpar filtros */}
@@ -1520,19 +1526,17 @@ export default function ExtratoMovimentacoesPage() {
                 periodFilter === "all" ? "Todo o período" : "Período personalizado"
               )}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => {
                 handleClearFilters();
                 setPeriodFilter("month");
                 setCurrentDate(new Date());
               }}
-              className={styles.extratoMovimentacoesSecondaryBtn}
+              className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.buttonSmall} ${styles.extratoMovimentacoesSecondaryBtn}`}
             >
               <X className={styles.extratoMovimentacoesActionIcon} />
               Limpar filtros
-            </Button>
+            </button>
           </div>
         )}
       </div>
@@ -1617,14 +1621,14 @@ export default function ExtratoMovimentacoesPage() {
                             Ver completo
                           </button>
                             {movimentacao.origem === "pluggy" && (
-                              <Badge className={styles.extratoMovimentacoesBadgePluggy}>
+                              <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgePluggy}`}>
                                 OpenFinance
-                              </Badge>
+                              </span>
                             )}
                             {movimentacao.origem === "Importação OFX" && (
-                              <Badge className={styles.extratoMovimentacoesBadgeOfx}>
+                              <span className={`${styles.badgeComponent} ${styles.extratoMovimentacoesBadgeOfx}`}>
                                 OFX
-                              </Badge>
+                              </span>
                           )}
                         </div>
                       </td>
@@ -1921,7 +1925,7 @@ export default function ExtratoMovimentacoesPage() {
             <div className={styles.extratoMovimentacoesModalFooter}>
               <button
                 onClick={() => setDetailModal({ isOpen: false, movimentacao: null })}
-                className={styles.extratoMovimentacoesSecondaryBtn}
+                className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.extratoMovimentacoesSecondaryBtn}`}
               >
                 Fechar
               </button>
@@ -1968,17 +1972,17 @@ export default function ExtratoMovimentacoesPage() {
             <div className={styles.extratoMovimentacoesModalFooter}>
               <button
                 onClick={() => !isDeleting && setDeleteModal({ isOpen: false, transacao: null })}
-              disabled={isDeleting}
-              className={styles.extratoMovimentacoesSecondaryBtn}
-            >
-              Cancelar
+                disabled={isDeleting}
+                className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.extratoMovimentacoesSecondaryBtn} ${isDeleting ? styles.buttonDisabled : ''}`}
+              >
+                Cancelar
               </button>
               <button
-              onClick={handleDeleteTransacao}
-              disabled={isDeleting}
-                className={styles.extratoMovimentacoesDeleteBtn}
-            >
-              {isDeleting ? "Excluindo..." : "Excluir"}
+                onClick={handleDeleteTransacao}
+                disabled={isDeleting}
+                className={`${styles.extratoMovimentacoesDeleteBtn} ${isDeleting ? styles.buttonDisabled : ''}`}
+              >
+                {isDeleting ? "Excluindo..." : "Excluir"}
               </button>
             </div>
           </div>

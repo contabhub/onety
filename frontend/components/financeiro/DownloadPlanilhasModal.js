@@ -1,17 +1,11 @@
 import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog";
-import { Button } from "./botao";
-import { Card, CardContent } from "./card";
+// Componentes externos removidos - usando HTML nativo
 import { Download, FileText, Info } from "lucide-react";
 import { toast } from "react-toastify";
 import styles from "../../styles/financeiro/DownloadPlanilhasModal.module.css";
+
+// Função cn para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export function DownloadPlanilhasModal({ isOpen, onClose }) {
   const handleDownload = async (filename, displayName) => {
@@ -34,23 +28,32 @@ export function DownloadPlanilhasModal({ isOpen, onClose }) {
     }
   };
 
+  // Função para fechar modal ao clicar no overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.dialogContent}>
-        <DialogHeader>
-          <DialogTitle className={styles.dialogTitle}>
+    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      <div className={cn(styles.modalContent, styles.dialogContent)}>
+        <div className={cn(styles.modalHeader)}>
+          <h2 className={cn(styles.modalTitle, styles.dialogTitle)}>
             <FileText className={styles.dialogIcon} />
             Download de Planilhas
-          </DialogTitle>
-          <DialogDescription className={styles.dialogDescription}>
+          </h2>
+          <p className={cn(styles.modalDescription, styles.dialogDescription)}>
             Escolha qual planilha você deseja baixar para importar movimentações financeiras.
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
 
         <div className={styles.formContainer}>
           {/* Planilha Modelo */}
-          <Card className={styles.cardModel}>
-            <CardContent className={styles.cardContent}>
+          <div className={cn(styles.cardComponent, styles.cardModel)}>
+            <div className={cn(styles.cardContentComponent, styles.cardContent)}>
               <div className={styles.cardInfo}>
                 <FileText className={styles.cardIcon} />
                 <div className={styles.cardDetails}>
@@ -66,22 +69,21 @@ export function DownloadPlanilhasModal({ isOpen, onClose }) {
                     <span>Arquivo: planilha-modelo-movimentacoes.xlsx</span>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => handleDownload('planilha-modelo-movimentacoes.xlsx', 'Planilha Modelo')}
-                  className={styles.downloadButton}
+                  className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.downloadButton)}
                 >
                   <Download className={styles.downloadButtonIcon} />
                   Baixar
-                </Button>
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Planilha Exemplo */}
-          <Card className={styles.cardExample}>
-            <CardContent className={styles.cardContent}>
+          <div className={cn(styles.cardComponent, styles.cardExample)}>
+            <div className={cn(styles.cardContentComponent, styles.cardContent)}>
               <div className={styles.cardInfo}>
                 <FileText className={styles.cardIcon} />
                 <div className={styles.cardDetails}>
@@ -97,22 +99,21 @@ export function DownloadPlanilhasModal({ isOpen, onClose }) {
                     <span>Arquivo: exemplo-planilha-movimentacoes.xlsx</span>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => handleDownload('exemplo-planilha-movimentacoes.xlsx', 'Planilha Exemplo')}
-                  className={styles.downloadButton}
+                  className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.downloadButton)}
                 >
                   <Download className={styles.downloadButtonIcon} />
                   Baixar
-                </Button>
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Informações Adicionais */}
-          <Card className={styles.cardInfo}>
-            <CardContent className={styles.cardContentFull}>
+          <div className={cn(styles.cardComponent, styles.cardInfo)}>
+            <div className={cn(styles.cardContentComponent, styles.cardContentFull)}>
               <div className={styles.cardInfo}>
                 <Info className={styles.cardIcon} />
                 <div>
@@ -128,20 +129,20 @@ export function DownloadPlanilhasModal({ isOpen, onClose }) {
                   </ul>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className={styles.dialogFooter}>
-          <Button 
-            variant="outline" 
+        <div className={cn(styles.modalFooter, styles.dialogFooter)}>
+          <button 
+            type="button"
             onClick={onClose}
-            className={`${styles.button} ${styles.buttonInfo}`}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.button, styles.buttonOutline, styles.buttonInfo)}
           >
             Fechar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 

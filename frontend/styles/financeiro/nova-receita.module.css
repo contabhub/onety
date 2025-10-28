@@ -1112,3 +1112,343 @@
   padding: 12px 16px !important;
   font-style: italic !important;
 }
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Button Component Genérico */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  text-decoration: none;
+  gap: var(--onity-space-xs);
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonSecondary:hover {
+  background-color: var(--onity-color-bg-hover);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonSmall {
+  height: 2rem;
+  width: 2rem;
+  padding: 0;
+}
+
+/* Input Component Genérico */
+.inputComponent {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.inputComponent::placeholder {
+  color: var(--onity-color-text-secondary);
+}
+
+.inputComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+/* Label Component Genérico */
+.labelComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+}
+
+/* Textarea Component Genérico */
+.textareaComponent {
+  min-height: 120px;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+  width: 100%;
+  resize: vertical;
+}
+
+.textareaComponent::placeholder {
+  color: var(--onity-color-text-secondary);
+}
+
+.textareaComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+/* Switch Component Customizado */
+.switchComponent {
+  display: inline-flex;
+  height: 24px;
+  width: 44px;
+  flex-shrink: 0;
+  cursor: pointer;
+  align-items: center;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  background-color: var(--onity-color-border);
+  outline: none;
+  position: relative;
+}
+
+.switchComponent:focus-visible {
+  outline: 2px solid var(--onity-color-primary);
+  outline-offset: 2px;
+}
+
+.switchComponent:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.switchChecked {
+  background-color: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.switchUnchecked {
+  background-color: var(--onity-color-border);
+  border-color: var(--onity-color-border);
+}
+
+.switchThumb {
+  pointer-events: none;
+  display: block;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background-color: var(--onity-color-surface);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  transform: translateX(0);
+}
+
+.switchThumbChecked {
+  transform: translateX(20px);
+}
+
+.switchThumbUnchecked {
+  transform: translateX(0);
+}
+
+/* Select Component Customizado */
+.selectComponent {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.selectTriggerComponent {
+  width: 100%;
+  height: 2.5rem;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-xs);
+  transition: all 0.2s ease;
+}
+
+.selectTriggerComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.selectContentComponent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xs);
+  margin-top: var(--onity-space-xs);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.selectItemComponent {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  font-size: var(--onity-type-body-size);
+}
+
+.selectItemComponent:hover {
+  background-color: var(--onity-color-bg-hover);
+}
+
+.selectPlaceholder {
+  color: var(--onity-color-text-secondary);
+}
+
+.selectValue {
+  color: var(--onity-color-text);
+}
+
+.selectIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--onity-color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.selectIconOpen {
+  transform: rotate(180deg);
+}
+
+/* Calendar Component Customizado */
+.calendarComponent {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-m);
+}
+
+.calendarNavButton {
+  background: none;
+  border: none;
+  color: var(--onity-color-text);
+  cursor: pointer;
+  padding: var(--onity-space-s);
+  border-radius: var(--onity-radius-xs);
+  transition: all 0.2s ease;
+}
+
+.calendarNavButton:hover {
+  background-color: var(--onity-color-bg-hover);
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--onity-space-xs);
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  transition: all 0.2s ease;
+  color: var(--onity-color-text);
+  background: none;
+  border: none;
+}
+
+.calendarDay:hover {
+  background-color: var(--onity-color-bg-hover);
+}
+
+.calendarDaySelected {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-surface);
+}
+
+.calendarDayToday {
+  background-color: var(--onity-color-primary-subtle);
+  color: var(--onity-color-primary);
+}
+
+/* Tabs Component Customizado */
+.tabsComponentNative {
+  width: 100%;
+}
+
+.tabsListComponentNative {
+  display: flex;
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-xs);
+  margin-bottom: var(--onity-space-m);
+}
+
+.tabsTriggerComponentNative {
+  flex: 1;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  color: var(--onity-icon-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabsTriggerComponentNative:hover {
+  background-color: var(--onity-color-bg-hover);
+}
+
+.tabsTriggerActive {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.tabsContentComponentNative {
+  display: block;
+  padding: 0;
+}
