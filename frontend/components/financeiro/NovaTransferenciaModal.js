@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './dialog';
-import { Button } from './botao';
-import { Input } from './input';
-import { Label } from './label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+// Componentes externos removidos - usando HTML nativo
 import { toast } from 'react-toastify';
-import { Upload } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import styles from '../../styles/financeiro/NovaTransferenciaModal.module.css';
+
+// Função cn para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export function NovaTransferenciaModal({ isOpen, onClose, onSuccess }) {
   const [contas, setContas] = useState([]);
@@ -18,6 +17,9 @@ export function NovaTransferenciaModal({ isOpen, onClose, onSuccess }) {
   const [anexo, setAnexo] = useState(null);
   const [anexoBase64, setAnexoBase64] = useState(null);
   const [loading, setLoading] = useState(false);
+  // Estados para controlar dropdowns customizados
+  const [isOrigemSelectOpen, setIsOrigemSelectOpen] = useState(false);
+  const [isDestinoSelectOpen, setIsDestinoSelectOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -38,6 +40,23 @@ export function NovaTransferenciaModal({ isOpen, onClose, onSuccess }) {
             : []
         );
       });
+  }, [isOpen]);
+
+  // Efeito para fechar selects quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.selectComponent')) {
+        setIsOrigemSelectOpen(false);
+        setIsDestinoSelectOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
   }, [isOpen]);
 
   function handleFileChange(e) {
@@ -103,72 +122,124 @@ export function NovaTransferenciaModal({ isOpen, onClose, onSuccess }) {
     }
   }
 
+  // Função para fechar modal ao clicar no overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.dialogContent}>
-        <DialogHeader>
-          <DialogTitle className={styles.dialogTitle}>Nova transferência entre contas</DialogTitle>
-        </DialogHeader>
+    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      <div className={cn(styles.modalContent, styles.dialogContent)}>
+        <div className={cn(styles.modalHeader)}>
+          <h2 className={cn(styles.modalTitle, styles.dialogTitle)}>Nova transferência entre contas</h2>
+        </div>
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.fieldContainer}>
-            <Label className={styles.label}>Conta de origem *</Label>
-            <Select value={contaOrigem} onValueChange={setContaOrigem}>
-              <SelectTrigger className={styles.selectTrigger}>
-                <SelectValue placeholder="Selecione a conta de origem" />
-              </SelectTrigger>
-              <SelectContent className={styles.selectContent}>
-                {contas.map((c) => (
-                  <SelectItem key={c.id} value={c.id} className={styles.selectItem}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className={cn(styles.labelComponent, styles.label)}>Conta de origem *</label>
+            <div className={cn(styles.selectComponent)}>
+              <button
+                type="button"
+                onClick={() => setIsOrigemSelectOpen(!isOrigemSelectOpen)}
+                className={cn(styles.selectTriggerComponent, styles.selectTrigger)}
+              >
+                <span className={contaOrigem ? styles.selectValue : styles.selectPlaceholder}>
+                  {contaOrigem
+                    ? contas.find(c => c.id === contaOrigem)?.nome || "Conta não encontrada"
+                    : "Selecione a conta de origem"}
+                </span>
+                <ChevronDown className={cn(styles.selectIcon, isOrigemSelectOpen && styles.selectIconOpen)} />
+              </button>
+              {isOrigemSelectOpen && (
+                <div className={cn(styles.selectContentComponent, styles.selectContent)}>
+                  {contas.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setContaOrigem(c.id);
+                        setIsOrigemSelectOpen(false);
+                      }}
+                      className={cn(styles.selectItemComponent, styles.selectItem)}
+                    >
+                      {c.nome}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className={styles.fieldContainer}>
-            <Label className={styles.label}>Conta de destino *</Label>
-            <Select value={contaDestino} onValueChange={setContaDestino}>
-              <SelectTrigger className={styles.selectTrigger}>
-                <SelectValue placeholder="Selecione a conta de destino" />
-              </SelectTrigger>
-              <SelectContent className={styles.selectContent}>
-                {contas.map((c) => (
-                  <SelectItem key={c.id} value={c.id} className={styles.selectItem}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className={cn(styles.labelComponent, styles.label)}>Conta de destino *</label>
+            <div className={cn(styles.selectComponent)}>
+              <button
+                type="button"
+                onClick={() => setIsDestinoSelectOpen(!isDestinoSelectOpen)}
+                className={cn(styles.selectTriggerComponent, styles.selectTrigger)}
+              >
+                <span className={contaDestino ? styles.selectValue : styles.selectPlaceholder}>
+                  {contaDestino
+                    ? contas.find(c => c.id === contaDestino)?.nome || "Conta não encontrada"
+                    : "Selecione a conta de destino"}
+                </span>
+                <ChevronDown className={cn(styles.selectIcon, isDestinoSelectOpen && styles.selectIconOpen)} />
+              </button>
+              {isDestinoSelectOpen && (
+                <div className={cn(styles.selectContentComponent, styles.selectContent)}>
+                  {contas.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setContaDestino(c.id);
+                        setIsDestinoSelectOpen(false);
+                      }}
+                      className={cn(styles.selectItemComponent, styles.selectItem)}
+                    >
+                      {c.nome}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className={styles.fieldContainer}>
-            <Label className={styles.label}>Descrição</Label>
-            <Input 
+            <label className={cn(styles.labelComponent, styles.label)}>Descrição</label>
+            <input 
+              type="text"
               value={descricao} 
               onChange={e => setDescricao(e.target.value)} 
               placeholder="Descrição da transferência" 
-              className={styles.input}
+              className={cn(styles.inputComponent, styles.input)}
             />
           </div>
           <div className={styles.fieldContainer}>
-            <Label className={styles.label}>Data da transferência *</Label>
-            <Input 
+            <label className={cn(styles.labelComponent, styles.label)}>Data da transferência *</label>
+            <input 
               type="date" 
               value={dataTransferencia} 
               onChange={e => setDataTransferencia(e.target.value)} 
-              className={styles.input}
+              className={cn(styles.inputComponent, styles.input)}
             />
           </div>
           <div className={styles.fieldContainer}>
-            <Label className={styles.label}>Valor *</Label>
-            <Input 
+            <label className={cn(styles.labelComponent, styles.label)}>Valor *</label>
+            <input 
               type="number" 
               min="0" 
               step="0.01" 
               value={valor} 
               onChange={e => setValor(e.target.value)} 
               placeholder="0,00" 
-              className={styles.input}
+              className={cn(styles.inputComponent, styles.input)}
             />
           </div>
           <div className={styles.fieldContainer}>
-            <Label className={styles.label}>Anexar comprovante</Label>
-            <Input 
+            <label className={cn(styles.labelComponent, styles.label)}>Anexar comprovante</label>
+            <input 
               type="file" 
               accept="image/*,application/pdf" 
               onChange={handleFileChange} 
@@ -176,26 +247,25 @@ export function NovaTransferenciaModal({ isOpen, onClose, onSuccess }) {
             />
             {anexo && <span className={styles.fileName}>{anexo.name}</span>}
           </div>
-          <DialogFooter className={styles.dialogFooter}>
-            <Button 
-              variant="outline" 
+          <div className={cn(styles.modalFooter, styles.dialogFooter)}>
+            <button 
               type="button" 
               onClick={onClose} 
               disabled={loading}
-              className={`${styles.button} ${styles.buttonOutline}`}
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.button, styles.buttonOutline)}
             >
               Cancelar
-            </Button>
-            <Button 
+            </button>
+            <button 
               type="submit" 
               disabled={loading}
-              className={`${styles.button} ${styles.buttonPrimary}`}
+              className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.button, styles.buttonPrimary)}
             >
               {loading ? 'Salvando...' : 'Salvar'}
-            </Button>
-          </DialogFooter>
+            </button>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

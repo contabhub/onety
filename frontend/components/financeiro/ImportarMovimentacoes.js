@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Button } from "./botao";
 import { 
   Upload, 
   FileText, 
@@ -14,6 +13,9 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import styles from "../../styles/financeiro/ImportarMovimentacoes.module.css";
+
+// Função cn para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -274,14 +276,13 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={handleRemoveFile}
-                    className={styles.removeButton}
+                    className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.removeButton)}
                   >
                     <X className={styles.removeIcon} />
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
@@ -307,10 +308,11 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                     <p className={styles.previewDescription}>
                       Clique em &quot;Visualizar&quot; para ver os dados do arquivo antes de importar
                     </p>
-                    <Button 
+                    <button 
+                      type="button"
                       onClick={handlePreview} 
                       disabled={isLoading}
-                      className={styles.previewButton}
+                      className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.previewButton)}
                     >
                       {isLoading ? (
                         <Loader2 className={styles.loadingIcon} />
@@ -318,7 +320,7 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                         <Eye className={styles.buttonIcon} />
                       )}
                       {isLoading ? "Processando..." : "Visualizar Dados"}
-                    </Button>
+                    </button>
                   </div>
                 ) : (
                   <div className={styles.formContainer}>
@@ -326,12 +328,11 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                       <p className={styles.previewStats}>
                         Mostrando os primeiros 5 registros de {totalRows} total
                       </p>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
+                      <button 
+                        type="button"
                         onClick={handlePreview}
                         disabled={isLoading}
-                        className={styles.refreshButton}
+                        className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.refreshButton)}
                       >
                         {isLoading ? (
                           <Loader2 className={styles.loadingIcon} />
@@ -339,7 +340,7 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                           <Eye className={styles.buttonIcon} />
                         )}
                         Atualizar Preview
-                      </Button>
+                      </button>
                     </div>
                     
                     <div className={styles.tableContainer}>
@@ -423,10 +424,9 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                   <p className={styles.templateDescription}>
                     Baixe o modelo de planilha para garantir que os dados estejam no formato correto.
                   </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className={styles.templateButton}
+                  <button 
+                    type="button"
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.templateButton)}
                     onClick={() => {
                       // Aqui você pode implementar o download do template
                       toast.info("Funcionalidade de download do template será implementada em breve");
@@ -434,7 +434,7 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
                   >
                     <Download className={styles.buttonIcon} />
                     Baixar Modelo
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -442,13 +442,19 @@ export function ImportarMovimentacoes({ isOpen, onClose, onImportSuccess }) {
         </div>
 
         <div className={styles.modalFooter}>
-          <button onClick={handleClose} disabled={isImporting} className={`${styles.button} ${styles.buttonOutline}`}>
+          <button 
+            type="button"
+            onClick={handleClose} 
+            disabled={isImporting} 
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.button, styles.buttonOutline)}
+          >
             Cancelar
           </button>
           <button 
+            type="button"
             onClick={handleImport} 
             disabled={!selectedFile || !hasPreview || isImporting}
-            className={`${styles.button} ${styles.buttonPrimary}`}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.button, styles.buttonPrimary)}
           >
             {isImporting ? (
               <Loader2 className={styles.loadingIcon} />

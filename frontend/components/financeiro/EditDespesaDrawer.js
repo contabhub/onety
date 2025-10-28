@@ -1,25 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "../../styles/financeiro/edit-despesa.module.css";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
-import { Calendar } from "./calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
-import { Checkbox } from "./checkbox";
-import { Badge } from "./badge";
+// Componentes externos removidos - usando HTML nativo
 import { X, Calendar as CalendarIcon, ChevronDown, Info, FileText, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -60,6 +41,11 @@ export function EditDespesaDrawer({
 
   const [parcelas, setParcelas] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isSupplierSelectOpen, setIsSupplierSelectOpen] = useState(false);
+  const [isAccountSelectOpen, setIsAccountSelectOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("observacoes");
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
   const [clientes, setClientes] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -342,6 +328,26 @@ export function EditDespesaDrawer({
     }
   }, [isOpen, transacaoId]);
 
+  // Efeito para fechar selects quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.selectComponent')) {
+        setIsSupplierSelectOpen(false);
+        setIsAccountSelectOpen(false);
+      }
+      if (!event.target.closest('.popoverContainer')) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen]);
+
   const formatDateTime = (date) => {
     if (!date) return null;
     const d = new Date(date);
@@ -490,6 +496,30 @@ export function EditDespesaDrawer({
     }, 400); // Duração da animação de fechamento
   };
 
+  // Funções auxiliares para o calendário
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month, year) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const isSameDay = (date1, date2) => {
+    if (!date1 || !date2) return false;
+    return date1.toDateString() === date2.toDateString();
+  };
+
+  const isToday = (date) => {
+    return isSameDay(date, new Date());
+  };
+
+  const handleDateSelect = (day) => {
+    const selectedDate = new Date(currentYear, currentMonth, day);
+    handleInputChange("dataCompetencia", selectedDate);
+    setShowCalendar(false);
+  };
+
   if (!isOpen) return null;
 
   const subCategoriasDespesa = getSubCategoriasDespesa();
@@ -512,14 +542,12 @@ export function EditDespesaDrawer({
           <h2 className={cn(styles.editDespesaTitle, "text-xl font-semibold theme-text-white")}>
             Editar lançamento
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={handleClose}
-            className="h-8 w-8 p-0 theme-text-white hover:theme-text-secondary"
+            className={cn(styles.buttonComponent, styles.buttonGhost, styles.buttonSmall, "theme-text-white hover:theme-text-secondary")}
           >
             <X className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
@@ -540,40 +568,49 @@ export function EditDespesaDrawer({
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Cliente */}
                     <div className="space-y-2">
-                      <Label htmlFor="fornecedor" className="theme-text-white">Fornecedor</Label>
-                      <Select
-                        value={formData.fornecedor}
-                        onValueChange={(value) =>
-                          handleInputChange("fornecedor", value)
-                        }
-                        disabled={temCliente}
-                      >
-                        <SelectTrigger
+                      <label htmlFor="fornecedor" className={cn(styles.labelComponent, "theme-text-white")}>Fornecedor</label>
+                      <div className={styles.selectComponent}>
+                        <button
+                          type="button"
+                          onClick={() => !temCliente && setIsSupplierSelectOpen(!isSupplierSelectOpen)}
+                          disabled={temCliente}
                           className={cn(
+                            styles.selectTriggerComponent,
                             "theme-bg-modal theme-border-primary theme-text-white",
                             temCliente ? "theme-bg-modal/50" : ""
                           )}
                         >
-                          <SelectValue placeholder="Selecione o cliente" />
-                        </SelectTrigger>
-                        <SelectContent className="theme-bg-modal theme-border-primary">
-                          {clientes.length > 0 ? (
-                            clientes.map((cliente) => (
-                              <SelectItem
-                                key={cliente.id}
-                                value={cliente.id.toString()}
-                                className="theme-text-white hover:theme-bg-secondary"
-                              >
-                                {cliente.nome_fantasia}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <div className="theme-text-secondary px-2 py-1">
-                              Nenhum cliente encontrado
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
+                          <span className={formData.fornecedor ? styles.selectValue : styles.selectPlaceholder}>
+                            {formData.fornecedor
+                              ? clientes.find(c => c.id.toString() === formData.fornecedor)?.nome_fantasia || "Cliente não encontrado"
+                              : "Selecione o cliente"}
+                          </span>
+                          <ChevronDown className={cn(styles.selectIcon, isSupplierSelectOpen && styles.selectIconOpen)} />
+                        </button>
+                        {isSupplierSelectOpen && !temCliente && (
+                          <div className={cn(styles.selectContentComponent, "theme-bg-modal theme-border-primary")}>
+                            {clientes.length > 0 ? (
+                              clientes.map((cliente) => (
+                                <button
+                                  key={cliente.id}
+                                  type="button"
+                                  onClick={() => {
+                                    handleInputChange("fornecedor", cliente.id.toString());
+                                    setIsSupplierSelectOpen(false);
+                                  }}
+                                  className={cn(styles.selectItemComponent, "theme-text-white hover:theme-bg-secondary")}
+                                >
+                                  {cliente.nome_fantasia}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="theme-text-secondary px-2 py-1">
+                                Nenhum cliente encontrado
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                       {temCliente && (
                         <p className="text-xs theme-text-secondary">
                           Cliente não pode ser alterado quando já existe na
@@ -584,44 +621,101 @@ export function EditDespesaDrawer({
 
                     {/* Data de competência */}
                     <div className="space-y-2">
-                      <Label className="theme-text-white">Data de vencimento <span className="text-[#F50057]">*</span></Label>
-                      <Popover
-                        open={showCalendar}
-                        onOpenChange={setShowCalendar}
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            disabled={temCliente}
-                            className={cn(
-                              "w-full justify-start text-left font-normal theme-bg-modal theme-border-primary theme-text-white hover:theme-bg-secondary hover:theme-text-white",
-                              !formData.dataCompetencia &&
-                                "theme-text-secondary",
-                              temCliente && "theme-bg-modal/50"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.dataCompetencia
-                              ? format(formData.dataCompetencia, "dd/MM/yyyy", {
-                                  locale: ptBR,
-                                })
-                              : "Selecione a data"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 theme-bg-modal theme-border-primary edit-despesa-popover">
-                          <Calendar
-                            mode="single"
-                            selected={formData.dataCompetencia}
-                            onSelect={(date) => {
-                              if (date)
-                                handleInputChange("dataCompetencia", date);
-                              setShowCalendar(false);
-                            }}
-                            initialFocus
-                            className="theme-bg-modal theme-text-white"
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <label className={cn(styles.labelComponent, "theme-text-white")}>Data de vencimento <span className="text-[#F50057]">*</span></label>
+                      <div className={styles.popoverContainer}>
+                        <button
+                          type="button"
+                          onClick={() => !temCliente && setShowCalendar(!showCalendar)}
+                          disabled={temCliente}
+                          className={cn(
+                            styles.buttonComponent,
+                            styles.buttonOutline,
+                            "w-full justify-start text-left font-normal theme-bg-modal theme-border-primary theme-text-white hover:theme-bg-secondary hover:theme-text-white",
+                            !formData.dataCompetencia && "theme-text-secondary",
+                            temCliente && "theme-bg-modal/50"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.dataCompetencia
+                            ? format(formData.dataCompetencia, "dd/MM/yyyy", {
+                                locale: ptBR,
+                              })
+                            : "Selecione a data"}
+                        </button>
+                        {showCalendar && !temCliente && (
+                          <>
+                            <div className={styles.popoverOverlay} onClick={() => setShowCalendar(false)} />
+                            <div className={cn(styles.popoverContent, "theme-bg-modal theme-border-primary edit-despesa-popover")}>
+                              <div className={cn(styles.calendarComponent, "theme-bg-modal theme-text-white")}>
+                                <div className={styles.calendarHeader}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (currentMonth === 0) {
+                                        setCurrentMonth(11);
+                                        setCurrentYear(currentYear - 1);
+                                      } else {
+                                        setCurrentMonth(currentMonth - 1);
+                                      }
+                                    }}
+                                    className={styles.calendarNavButton}
+                                  >
+                                    ‹
+                                  </button>
+                                  <span>
+                                    {new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', {
+                                      month: 'long',
+                                      year: 'numeric',
+                                    })}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (currentMonth === 11) {
+                                        setCurrentMonth(0);
+                                        setCurrentYear(currentYear + 1);
+                                      } else {
+                                        setCurrentMonth(currentMonth + 1);
+                                      }
+                                    }}
+                                    className={styles.calendarNavButton}
+                                  >
+                                    ›
+                                  </button>
+                                </div>
+                                <div className={styles.calendarGrid}>
+                                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                                    <div key={day} className="text-center text-sm font-medium p-2">{day}</div>
+                                  ))}
+                                  {Array.from({ length: getFirstDayOfMonth(currentMonth, currentYear) }).map((_, i) => (
+                                    <div key={`empty-${i}`} />
+                                  ))}
+                                  {Array.from({ length: getDaysInMonth(currentMonth, currentYear) }).map((_, i) => {
+                                    const day = i + 1;
+                                    const date = new Date(currentYear, currentMonth, day);
+                                    const isSelected = isSameDay(date, formData.dataCompetencia);
+                                    const isTodayDate = isToday(date);
+                                    return (
+                                      <button
+                                        key={day}
+                                        type="button"
+                                        onClick={() => handleDateSelect(day)}
+                                        className={cn(
+                                          styles.calendarDay,
+                                          isSelected && styles.calendarDaySelected,
+                                          isTodayDate && !isSelected && styles.calendarDayToday
+                                        )}
+                                      >
+                                        {day}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                       {temCliente && (
                         <p className="text-xs theme-text-secondary">
                           Data não pode ser alterada quando há cliente na
@@ -632,34 +726,40 @@ export function EditDespesaDrawer({
 
                     {/* Descrição */}
                     <div className="space-y-2">
-                      <Label htmlFor="descricao" className="theme-text-white">Descrição <span className="text-[#F50057]">*</span></Label>
-                      <Input
+                      <label htmlFor="descricao" className={cn(styles.labelComponent, "theme-text-white")}>Descrição <span className="text-[#F50057]">*</span></label>
+                      <input
                         id="descricao"
+                        type="text"
                         value={formData.descricao}
                         onChange={(e) =>
                           handleInputChange("descricao", e.target.value)
                         }
                         placeholder="Digite a descrição"
-                        className="theme-bg-modal theme-border-primary theme-text-white placeholder:theme-text-secondary"
+                        className={cn(styles.inputComponent, "theme-bg-modal theme-border-primary theme-text-white placeholder:theme-text-secondary")}
                       />
                     </div>
 
                     {/* Valor */}
                     <div className="space-y-2">
-                      <Label htmlFor="valor" className="theme-text-white">Valor <span className="text-[#F50057]">*</span></Label>
+                      <label htmlFor="valor" className={cn(styles.labelComponent, "theme-text-white")}>Valor <span className="text-[#F50057]">*</span></label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-secondary">
                           R$
                         </span>
-                        <Input
+                        <input
                           id="valor"
+                          type="text"
                           value={formData.valor}
                           onChange={(e) =>
                             handleInputChange("valor", e.target.value)
                           }
                           placeholder="0,00"
-                          className="pl-10 theme-bg-modal theme-border-primary theme-text-white placeholder:theme-text-secondary"
                           disabled={temCliente}
+                          className={cn(
+                            styles.inputComponent,
+                            "pl-10 theme-bg-modal theme-border-primary theme-text-white placeholder:theme-text-secondary",
+                            temCliente && styles.inputDisabled
+                          )}
                         />
                       </div>
                       {temCliente && (
@@ -673,59 +773,73 @@ export function EditDespesaDrawer({
                     {/* Linha Conta de pagamento, Categoria, Centro de Custo */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Label className="theme-text-white">Conta de pagamento</Label>
+                        <label className={cn(styles.labelComponent, "theme-text-white")}>Conta de pagamento</label>
                         <Info className="h-4 w-4 invisible" />
                       </div>
-                      <Select
-                        value={formData.contaPagamento}
-                        onValueChange={(value) =>
-                          handleInputChange("contaPagamento", value)
-                        }
-                      >
-                        <SelectTrigger className="w-full h-10 theme-bg-modal theme-border-primary theme-text-white">
-                          <SelectValue placeholder="Selecione a conta" />
-                        </SelectTrigger>
-                        <SelectContent className="theme-bg-modal theme-border-primary">
-                          {/* Contas ERP */}
-                          {contas
-                            .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`erp-${conta.id}`}
-                                value={`erp:${conta.id}`}
-                                className="theme-text-white hover:theme-bg-secondary"
-                              >
-                                {conta.banco} — {conta.descricao_banco}
-                              </SelectItem>
-                            ))}
+                      <div className={styles.selectComponent}>
+                        <button
+                          type="button"
+                          onClick={() => setIsAccountSelectOpen(!isAccountSelectOpen)}
+                          className={cn(styles.selectTriggerComponent, "w-full h-10 theme-bg-modal theme-border-primary theme-text-white")}
+                        >
+                          <span className={formData.contaPagamento ? styles.selectValue : styles.selectPlaceholder}>
+                            {formData.contaPagamento
+                              ? getNomeConta(formData.contaPagamento)
+                              : "Selecione a conta"}
+                          </span>
+                          <ChevronDown className={cn(styles.selectIcon, isAccountSelectOpen && styles.selectIconOpen)} />
+                        </button>
+                        {isAccountSelectOpen && (
+                          <div className={cn(styles.selectContentComponent, "theme-bg-modal theme-border-primary")}>
+                            {/* Contas ERP */}
+                            {contas
+                              .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
+                              .map((conta) => (
+                                <button
+                                  key={`erp-${conta.id}`}
+                                  type="button"
+                                  onClick={() => {
+                                    handleInputChange("contaPagamento", `erp:${conta.id}`);
+                                    setIsAccountSelectOpen(false);
+                                  }}
+                                  className={cn(styles.selectItemComponent, "theme-text-white hover:theme-bg-secondary")}
+                                >
+                                  {conta.banco} — {conta.descricao_banco}
+                                </button>
+                              ))}
 
-                          {/* Contas API (OpenFinance) */}
-                          {contasApi
-                            .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`api-${conta.id}`}
-                                value={`api:${conta.id}`}
-                                className="theme-text-white hover:theme-bg-secondary flex justify-between items-center"
-                              >
-                                <span>{conta.descricao_banco}</span>
-                                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
-                              </SelectItem>
-                            ))}
+                            {/* Contas API (OpenFinance) */}
+                            {contasApi
+                              .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
+                              .map((conta) => (
+                                <button
+                                  key={`api-${conta.id}`}
+                                  type="button"
+                                  onClick={() => {
+                                    handleInputChange("contaPagamento", `api:${conta.id}`);
+                                    setIsAccountSelectOpen(false);
+                                  }}
+                                  className={cn(styles.selectItemComponent, "theme-text-white hover:theme-bg-secondary flex justify-between items-center")}
+                                >
+                                  <span>{conta.descricao_banco}</span>
+                                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
+                                </button>
+                              ))}
 
-                          {contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                           contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
-                            <div className="theme-text-secondary px-2 py-1">
-                              Nenhuma conta encontrada
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
+                            {contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
+                             contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
+                              <div className="theme-text-secondary px-2 py-1">
+                                Nenhuma conta encontrada
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Label className="theme-text-white">Centro de Custo</Label>
+                        <label className={cn(styles.labelComponent, "theme-text-white")}>Centro de Custo</label>
                         <Info className="h-4 w-4 invisible" />
                       </div>
                       <ReactSelect
@@ -792,7 +906,7 @@ export function EditDespesaDrawer({
                     {/* Categoria */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Label className="theme-text-white">Subcategoria Despesa <span className="text-[#F50057]">*</span></Label>
+                        <label className={cn(styles.labelComponent, "theme-text-white")}>Subcategoria Despesa <span className="text-[#F50057]">*</span></label>
                         <Info className="h-4 w-4 theme-text-secondary" />
                       </div>
                       <ReactSelect
@@ -922,14 +1036,15 @@ export function EditDespesaDrawer({
                           </td>
                           <td className="p-3">
                             <span
-                              className={`px-2 py-1 rounded text-xs ${
-                                formData.situacao === "recebido" ||
-                                formData.situacao === "Pago"
+                              className={cn(
+                                styles.badgeComponent,
+                                "px-2 py-1 rounded text-xs",
+                                formData.situacao === "recebido" || formData.situacao === "Pago"
                                   ? "bg-primary theme-text-white"
                                   : formData.situacao === "vencidos"
                                   ? "bg-hotPink theme-text-white"
                                   : "bg-warning text-darkPurple"
-                              }`}
+                              )}
                             >
                               {formData.situacao === "recebido" ||
                               formData.situacao === "Pago"
@@ -946,31 +1061,53 @@ export function EditDespesaDrawer({
                 </div>
 
                 {/* Tabs - Observações e Anexo */}
-                <div>
-                  <Tabs defaultValue="observacoes" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 theme-bg-modal theme-border-primary edit-despesa-tabs">
-                      <TabsTrigger value="observacoes" className="theme-text-white data-[state=active]:bg-neonPurple data-[state=active]:theme-text-white edit-despesa-tab-trigger">Observações</TabsTrigger>
-                      <TabsTrigger value="anexo" className="theme-text-white data-[state=active]:bg-neonPurple data-[state=active]:theme-text-white edit-despesa-tab-trigger">Anexo</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="observacoes" className="space-y-4">
+                <div className={styles.tabsComponent}>
+                  <div className={cn(styles.tabsListComponent, "theme-bg-modal theme-border-primary edit-despesa-tabs")}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("observacoes")}
+                      className={cn(
+                        styles.tabsTriggerComponent,
+                        "theme-text-white edit-despesa-tab-trigger",
+                        activeTab === "observacoes" && cn(styles.tabsTriggerActive, "bg-neonPurple theme-text-white")
+                      )}
+                    >
+                      Observações
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("anexo")}
+                      className={cn(
+                        styles.tabsTriggerComponent,
+                        "theme-text-white edit-despesa-tab-trigger",
+                        activeTab === "anexo" && cn(styles.tabsTriggerActive, "bg-neonPurple theme-text-white")
+                      )}
+                    >
+                      Anexo
+                    </button>
+                  </div>
+                  {activeTab === "observacoes" && (
+                    <div className={cn(styles.tabsContentComponent, "space-y-4")}>
                       <div className="space-y-2">
-                        <Label htmlFor="observacoes" className="theme-text-white">Observações</Label>
-                        <Textarea
+                        <label htmlFor="observacoes" className={cn(styles.labelComponent, "theme-text-white")}>Observações</label>
+                        <textarea
                           id="observacoes"
                           value={formData.observacoes}
                           onChange={(e) =>
                             handleInputChange("observacoes", e.target.value)
                           }
                           placeholder="Descreva observações relevantes sobre este lançamento financeiro"
-                          className="min-h-[120px] theme-bg-modal theme-border-primary theme-text-white placeholder:theme-text-secondary"
+                          className={cn(styles.textareaComponent, "min-h-[120px] theme-bg-modal theme-border-primary theme-text-white placeholder:theme-text-secondary")}
                         />
                       </div>
-                    </TabsContent>
-                    <TabsContent value="anexo" className="space-y-4">
+                    </div>
+                  )}
+                  {activeTab === "anexo" && (
+                    <div className={cn(styles.tabsContentComponent, "space-y-4")}>
                       <div className="space-y-4">
                         {/* Upload de PDF */}
                         <div className="border-2 border-dashed theme-border-primary rounded-lg p-6 text-center edit-despesa-pdf-section">
-                          <Label htmlFor="fileInput" className="cursor-pointer">
+                          <label htmlFor="fileInput" className="cursor-pointer">
                             <div className="space-y-2">
                               <FileText className="h-8 w-8 text-neonPurple mx-auto" />
                               <p className="theme-text-white font-medium">
@@ -980,7 +1117,7 @@ export function EditDespesaDrawer({
                                 O valor será extraído automaticamente do boleto
                               </p>
                             </div>
-                          </Label>
+                          </label>
                           <input
                             id="fileInput"
                             type="file"
@@ -1019,7 +1156,7 @@ export function EditDespesaDrawer({
                         {/* Visualização do PDF */}
                         {formData.anexo && (
                           <div className="space-y-2">
-                            <Label className="theme-text-white">Visualização do PDF</Label>
+                            <label className={cn(styles.labelComponent, "theme-text-white")}>Visualização do PDF</label>
                             <PDFViewer 
                               base64Data={formData.anexo}
                               fileName="boleto.pdf"
@@ -1034,8 +1171,8 @@ export function EditDespesaDrawer({
                           </div>
                         )}
                       </div>
-                    </TabsContent>
-                  </Tabs>
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -1044,13 +1181,21 @@ export function EditDespesaDrawer({
 
         {/* Footer */}
         <div className={cn(styles.editDespesaFooter, "flex items-center justify-between px-6 py-3 theme-border-primary border-t theme-bg-primary mt-auto")}>
-          <Button variant="outline" onClick={onClose} className={cn(styles.editDespesaCancelBtn, "theme-border-primary theme-bg-modal theme-text-white hover:theme-bg-secondary hover:theme-text-white")}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(styles.editDespesaCancelBtn, "theme-border-primary theme-bg-modal theme-text-white hover:theme-bg-secondary hover:theme-text-white")}
+          >
             Voltar
-          </Button>
+          </button>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleSave} className={cn(styles.editDespesaSaveBtn, "bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30 border-[#26a6eb] hover:bg-[#1E88E5]/30 hover:text-[#26a6eb]")}>
+            <button
+              type="button"
+              onClick={handleSave}
+              className={cn(styles.editDespesaSaveBtn, "bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30 border-[#26a6eb] hover:bg-[#1E88E5]/30 hover:text-[#26a6eb]")}
+            >
               Salvar
-            </Button>
+            </button>
           </div>
         </div>
       </div>

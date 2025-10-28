@@ -2,30 +2,16 @@
 
 import { useState, useEffect } from "react";
 import styles from "../../styles/financeiro/EditReceitaDrawer.module.css";
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Label } from "../../components/financeiro/label";
-import { Textarea } from "../../components/financeiro/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/financeiro/select";
-import { Calendar } from "../../components/financeiro/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../../components/financeiro/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/financeiro/tabs";
-import { Checkbox } from "../../components/financeiro/checkbox";
-import { Badge } from "../../components/financeiro/badge";
-import { X, Calendar as CalendarIcon, ChevronDown, Info } from "lucide-react";
+import { X, Calendar as CalendarIcon, ChevronDown, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import ReactSelect from "react-select"; 
+import ReactSelect from "react-select";
+import { toast } from "react-toastify";
+
+// Função para combinar classes CSS
+const cn = (...classes) => {
+  return classes.filter(Boolean).join(' ');
+};
 
 export function EditReceitaDrawer({
   isOpen,
@@ -57,6 +43,13 @@ export function EditReceitaDrawer({
   const [parcelas, setParcelas] = useState([]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Estados para componentes customizados
+  const [isClienteSelectOpen, setIsClienteSelectOpen] = useState(false);
+  const [isContaSelectOpen, setIsContaSelectOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("observacoes");
+  const [calendarDate, setCalendarDate] = useState(new Date());
   const [contas, setContas] = useState([]);
   const [contasApi, setContasApi] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -318,6 +311,61 @@ export function EditReceitaDrawer({
     }
   }, [isOpen, transacaoId]);
 
+  // Fechar dropdowns ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.cliente-select')) {
+        setIsClienteSelectOpen(false);
+      }
+      if (!event.target.closest('.conta-select')) {
+        setIsContaSelectOpen(false);
+      }
+      if (!event.target.closest('.calendar-popover')) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Função para gerar calendário simples
+  const generateCalendar = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    const endDate = new Date(lastDay);
+    
+    // Ajustar para começar no domingo da semana
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+    endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
+    
+    const days = [];
+    const current = new Date(startDate);
+    
+    while (current <= endDate) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  // Navegar entre meses do calendário
+  const navigateCalendar = (direction) => {
+    const newDate = new Date(calendarDate);
+    if (direction === 'prev') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setCalendarDate(newDate);
+  };
+
   const formatDateTime = (date) => {
     if (!date) return null;
     const d = new Date(date);
@@ -445,14 +493,12 @@ export function EditReceitaDrawer({
           <h2 className={styles.title}>
             Editar lançamento
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={handleClose}
-            className={styles.closeButton}
+            className={`${styles.buttonComponent} ${styles.buttonGhost} ${styles.buttonSmall} ${styles.closeButton}`}
           >
             <X className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
@@ -473,40 +519,48 @@ export function EditReceitaDrawer({
                   <div className={styles.grid}>
                     {/* Cliente */}
                     <div className={styles.field}>
-                      <Label htmlFor="cliente" className={styles.fieldLabel}>Cliente</Label>
-                      <Select
-                        value={formData.cliente}
-                        onValueChange={(value) =>
-                          handleInputChange("cliente", value)
-                        }
-                        disabled={temCliente}
-                      >
-                        <SelectTrigger
+                      <label htmlFor="cliente" className={`${styles.labelComponent} ${styles.fieldLabel}`}>Cliente</label>
+                      <div className={`${styles.selectComponent} cliente-select`}>
+                        <button
+                          onClick={() => !temCliente && setIsClienteSelectOpen(!isClienteSelectOpen)}
+                          disabled={temCliente}
                           className={cn(
+                            styles.selectTriggerComponent,
                             styles.selectTrigger,
                             temCliente && styles.inputDisabled
                           )}
                         >
-                          <SelectValue placeholder="Selecione o cliente" />
-                        </SelectTrigger>
-                        <SelectContent className={styles.selectContent}>
-                          {clientes.length > 0 ? (
-                            clientes.map((cliente) => (
-                              <SelectItem
-                                key={cliente.id}
-                                value={cliente.id.toString()}
-                                className={styles.selectItem}
-                              >
-                                {cliente.nome_fantasia}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <div className={styles.selectItemDisabled}>
-                              Nenhum cliente encontrado
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
+                          <span className={formData.cliente ? styles.selectValue : styles.selectPlaceholder}>
+                            {formData.cliente 
+                              ? clientes.find(c => c.id.toString() === formData.cliente)?.nome_fantasia || "Cliente selecionado"
+                              : "Selecione o cliente"
+                            }
+                          </span>
+                          <ChevronDown className={cn(styles.selectIcon, isClienteSelectOpen && styles.selectIconOpen)} />
+                        </button>
+                        {isClienteSelectOpen && !temCliente && (
+                          <div className={`${styles.selectContentComponent} ${styles.selectContent}`}>
+                            {clientes.length > 0 ? (
+                              clientes.map((cliente) => (
+                                <button
+                                  key={cliente.id}
+                                  onClick={() => {
+                                    handleInputChange("cliente", cliente.id.toString());
+                                    setIsClienteSelectOpen(false);
+                                  }}
+                                  className={`${styles.selectItemComponent} ${styles.selectItem}`}
+                                >
+                                  {cliente.nome_fantasia}
+                                </button>
+                              ))
+                            ) : (
+                              <div className={styles.selectItemDisabled}>
+                                Nenhum cliente encontrado
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                       {temCliente && (
                         <p className={styles.helperText}>
                           Cliente não pode ser alterado quando já existe na
@@ -517,43 +571,84 @@ export function EditReceitaDrawer({
 
                     {/* Data de competência */}
                     <div className={styles.field}>
-                      <Label className={styles.fieldLabel}>Data de vencimento <span className={styles.fieldLabelRequired}>*</span></Label>
-                      <Popover
-                        open={showCalendar}
-                        onOpenChange={setShowCalendar}
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            disabled={temCliente}
-                            className={cn(
-                              styles.calendarButton,
-                              !formData.dataCompetencia && styles.calendarButtonEmpty,
-                              temCliente && styles.inputDisabled
-                            )}
-                          >
-                            <CalendarIcon className={styles.calendarIcon} />
-                            {formData.dataCompetencia
-                              ? format(formData.dataCompetencia, "dd/MM/yyyy", {
-                                  locale: ptBR,
-                                })
-                              : "Selecione a data"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className={styles.calendarPopover}>
-                          <Calendar
-                            mode="single"
-                            selected={formData.dataCompetencia}
-                            onSelect={(date) => {
-                              if (date)
-                                handleInputChange("dataCompetencia", date);
-                              setShowCalendar(false);
-                            }}
-                            initialFocus
-                            className={styles.calendar}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <label className={`${styles.labelComponent} ${styles.fieldLabel}`}>Data de vencimento <span className={styles.fieldLabelRequired}>*</span></label>
+                      <div className={`${styles.popoverContainer} calendar-popover`}>
+                        <button
+                          onClick={() => !temCliente && setIsCalendarOpen(!isCalendarOpen)}
+                          disabled={temCliente}
+                          className={cn(
+                            styles.buttonComponent,
+                            styles.buttonOutline,
+                            styles.calendarButton,
+                            !formData.dataCompetencia && styles.calendarButtonEmpty,
+                            temCliente && styles.inputDisabled
+                          )}
+                        >
+                          <CalendarIcon className={styles.calendarIcon} />
+                          {formData.dataCompetencia
+                            ? format(formData.dataCompetencia, "dd/MM/yyyy", {
+                                locale: ptBR,
+                              })
+                            : "Selecione a data"}
+                        </button>
+                        {isCalendarOpen && !temCliente && (
+                          <>
+                            <div className={styles.popoverOverlay} onClick={() => setIsCalendarOpen(false)} />
+                            <div className={`${styles.popoverContent} ${styles.calendarPopover}`}>
+                              <div className={`${styles.calendarComponent} ${styles.calendar}`}>
+                                <div className={styles.calendarHeader}>
+                                  <button 
+                                    onClick={() => navigateCalendar('prev')}
+                                    className={styles.calendarNavButton}
+                                  >
+                                    <ChevronLeft size={16} />
+                                  </button>
+                                  <span className={styles.labelComponent}>
+                                    {format(calendarDate, "MMMM yyyy", { locale: ptBR })}
+                                  </span>
+                                  <button 
+                                    onClick={() => navigateCalendar('next')}
+                                    className={styles.calendarNavButton}
+                                  >
+                                    <ChevronRight size={16} />
+                                  </button>
+                                </div>
+                                <div className={styles.calendarGrid}>
+                                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                                    <div key={day} className={styles.calendarDay} style={{fontWeight: 'bold', cursor: 'default'}}>
+                                      {day}
+                                    </div>
+                                  ))}
+                                  {generateCalendar(calendarDate).map((day, index) => {
+                                    const isSelected = formData.dataCompetencia && 
+                                      format(day, 'yyyy-MM-dd') === format(formData.dataCompetencia, 'yyyy-MM-dd');
+                                    const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                                    const isCurrentMonth = day.getMonth() === calendarDate.getMonth();
+                                    
+                                    return (
+                                      <button
+                                        key={index}
+                                        onClick={() => {
+                                          handleInputChange("dataCompetencia", day);
+                                          setIsCalendarOpen(false);
+                                        }}
+                                        className={cn(
+                                          styles.calendarDay,
+                                          isSelected && styles.calendarDaySelected,
+                                          isToday && !isSelected && styles.calendarDayToday,
+                                          !isCurrentMonth && 'opacity-50'
+                                        )}
+                                      >
+                                        {day.getDate()}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                       {temCliente && (
                         <p className={styles.helperText}>
                           Data não pode ser alterada quando há cliente na
@@ -564,34 +659,36 @@ export function EditReceitaDrawer({
 
                     {/* Descrição */}
                     <div className={styles.field}>
-                      <Label htmlFor="descricao" className={styles.fieldLabel}>Descrição <span className={styles.fieldLabelRequired}>*</span></Label>
-                      <Input
+                      <label htmlFor="descricao" className={`${styles.labelComponent} ${styles.fieldLabel}`}>Descrição <span className={styles.fieldLabelRequired}>*</span></label>
+                      <input
                         id="descricao"
+                        type="text"
                         value={formData.descricao}
                         onChange={(e) =>
                           handleInputChange("descricao", e.target.value)
                         }
                         placeholder="Digite a descrição"
-                        className={styles.input}
+                        className={`${styles.inputComponent} ${styles.input}`}
                       />
                     </div>
 
                     {/* Valor */}
                     <div className={styles.field}>
-                      <Label htmlFor="valor" className={styles.fieldLabel}>Valor <span className={styles.fieldLabelRequired}>*</span></Label>
+                      <label htmlFor="valor" className={`${styles.labelComponent} ${styles.fieldLabel}`}>Valor <span className={styles.fieldLabelRequired}>*</span></label>
                       <div className="relative">
                         <span className={styles.inputIcon}>
                           R$
                         </span>
-                        <Input
+                        <input
                           id="valor"
+                          type="text"
                           value={formData.valor}
                           onChange={(e) =>
                             handleInputChange("valor", e.target.value)
                           }
                           placeholder="0,00"
-                          className={cn(styles.input, styles.inputWithIcon)}
                           disabled={temCliente}
+                          className={cn(styles.inputComponent, styles.input, styles.inputWithIcon, temCliente && styles.inputDisabled)}
                         />
                       </div>
                       {temCliente && (
@@ -604,59 +701,71 @@ export function EditReceitaDrawer({
 
                     <div className={styles.field}>
                       <div className={styles.fieldInfo}>
-                        <Label className={styles.fieldLabel}>Conta de pagamento</Label>
+                        <label className={`${styles.labelComponent} ${styles.fieldLabel}`}>Conta de pagamento</label>
                         <Info className={cn(styles.fieldInfoIcon, styles.invisible)} />
                       </div>
-                      <Select
-                        value={formData.contaPagamento}
-                        onValueChange={(value) =>
-                          handleInputChange("contaPagamento", value)
-                        }
-                      >
-                        <SelectTrigger className={styles.selectTrigger}>
-                          <SelectValue placeholder="Selecione a conta" />
-                        </SelectTrigger>
-                        <SelectContent className={styles.selectContent}>
-                          {/* Contas ERP */}
-                          {contas
-                            .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`erp-${conta.id}`}
-                                value={`erp:${conta.id}`}
-                                className={styles.selectItem}
-                              >
-                                {conta.banco} — {conta.descricao_banco}
-                              </SelectItem>
-                            ))}
+                      <div className={`${styles.selectComponent} conta-select`}>
+                        <button
+                          onClick={() => setIsContaSelectOpen(!isContaSelectOpen)}
+                          className={`${styles.selectTriggerComponent} ${styles.selectTrigger}`}
+                        >
+                          <span className={formData.contaPagamento ? styles.selectValue : styles.selectPlaceholder}>
+                            {formData.contaPagamento 
+                              ? getNomeConta(formData.contaPagamento)
+                              : "Selecione a conta"
+                            }
+                          </span>
+                          <ChevronDown className={cn(styles.selectIcon, isContaSelectOpen && styles.selectIconOpen)} />
+                        </button>
+                        {isContaSelectOpen && (
+                          <div className={`${styles.selectContentComponent} ${styles.selectContent}`}>
+                            {/* Contas ERP */}
+                            {contas
+                              .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
+                              .map((conta) => (
+                                <button
+                                  key={`erp-${conta.id}`}
+                                  onClick={() => {
+                                    handleInputChange("contaPagamento", `erp:${conta.id}`);
+                                    setIsContaSelectOpen(false);
+                                  }}
+                                  className={`${styles.selectItemComponent} ${styles.selectItem}`}
+                                >
+                                  {conta.banco} — {conta.descricao_banco}
+                                </button>
+                              ))}
 
-                          {/* Contas API (OpenFinance) */}
-                          {contasApi
-                            .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
-                            .map((conta) => (
-                              <SelectItem
-                                key={`api-${conta.id}`}
-                                value={`api:${conta.id}`}
-                                className={cn(styles.selectItem, "flex justify-between items-center")}
-                              >
-                                <span>{conta.descricao_banco}</span>
-                                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
-                              </SelectItem>
-                            ))}
+                            {/* Contas API (OpenFinance) */}
+                            {contasApi
+                              .filter((c) => Boolean(c.descricao_banco && String(c.descricao_banco).trim()))
+                              .map((conta) => (
+                                <button
+                                  key={`api-${conta.id}`}
+                                  onClick={() => {
+                                    handleInputChange("contaPagamento", `api:${conta.id}`);
+                                    setIsContaSelectOpen(false);
+                                  }}
+                                  className={cn(styles.selectItemComponent, styles.selectItem, "flex justify-between items-center")}
+                                >
+                                  <span>{conta.descricao_banco}</span>
+                                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">OpenFinance</span>
+                                </button>
+                              ))}
 
-                          {contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                           contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
-                            <div className={styles.selectItemDisabled}>
-                              Nenhuma conta encontrada
-                            </div>
-                          )}
-                        </SelectContent>
-                      </Select>
+                            {contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
+                             contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
+                              <div className={styles.selectItemDisabled}>
+                                Nenhuma conta encontrada
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className={styles.field}>
                       <div className={styles.fieldInfo}>
-                        <Label className={styles.fieldLabel}>Centro de Custo </Label>
+                        <label className={`${styles.labelComponent} ${styles.fieldLabel}`}>Centro de Custo </label>
                         <Info className={cn(styles.fieldInfoIcon, styles.invisible)} />
                       </div>
                       <ReactSelect
@@ -718,7 +827,7 @@ export function EditReceitaDrawer({
                     {/* Categoria */}
                     <div className={styles.field}>
                       <div className={styles.fieldInfo}>
-                        <Label className={styles.fieldLabel}>Subcategoria Receita <span className={styles.fieldLabelRequired}>*</span></Label>
+                        <label className={`${styles.labelComponent} ${styles.fieldLabel}`}>Subcategoria Receita <span className={styles.fieldLabelRequired}>*</span></label>
                         <Info className={styles.fieldInfoIcon} />
                       </div>
                       <ReactSelect
@@ -846,6 +955,7 @@ export function EditReceitaDrawer({
                           <td className={styles.tableCell}>
                             <span
                               className={cn(
+                                styles.badgeComponent,
                                 styles.badge,
                                 formData.situacao === "recebido" || formData.situacao === "Recebido"
                                   ? styles.badgeReceived
@@ -870,33 +980,55 @@ export function EditReceitaDrawer({
 
                 {/* Tabs - Observações e Anexo */}
                 <div className={styles.section}>
-                  <Tabs defaultValue="observacoes" className={styles.tabs}>
-                    <TabsList className={styles.tabsList}>
-                      <TabsTrigger value="observacoes" className={styles.tabsTrigger}>Observações</TabsTrigger>
-                      <TabsTrigger value="anexo" className={styles.tabsTrigger}>Anexo</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="observacoes" className={styles.tabsContent}>
-                      <div className={styles.field}>
-                        <Label htmlFor="observacoes" className={styles.fieldLabel}>Observações</Label>
-                        <Textarea
-                          id="observacoes"
-                          value={formData.observacoes}
-                          onChange={(e) =>
-                            handleInputChange("observacoes", e.target.value)
-                          }
-                          placeholder="Descreva observações relevantes sobre este lançamento financeiro"
-                          className={styles.textarea}
-                        />
+                  <div className={`${styles.tabsComponent} ${styles.tabs}`}>
+                    <div className={`${styles.tabsListComponent} ${styles.tabsList}`}>
+                      <button 
+                        onClick={() => setActiveTab("observacoes")}
+                        className={cn(
+                          styles.tabsTriggerComponent,
+                          styles.tabsTrigger,
+                          activeTab === "observacoes" && styles.tabsTriggerActive
+                        )}
+                      >
+                        Observações
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab("anexo")}
+                        className={cn(
+                          styles.tabsTriggerComponent,
+                          styles.tabsTrigger,
+                          activeTab === "anexo" && styles.tabsTriggerActive
+                        )}
+                      >
+                        Anexo
+                      </button>
+                    </div>
+                    {activeTab === "observacoes" && (
+                      <div className={`${styles.tabsContentComponent} ${styles.tabsContent}`}>
+                        <div className={styles.field}>
+                          <label htmlFor="observacoes" className={`${styles.labelComponent} ${styles.fieldLabel}`}>Observações</label>
+                          <textarea
+                            id="observacoes"
+                            value={formData.observacoes}
+                            onChange={(e) =>
+                              handleInputChange("observacoes", e.target.value)
+                            }
+                            placeholder="Descreva observações relevantes sobre este lançamento financeiro"
+                            className={`${styles.textareaComponent} ${styles.textarea}`}
+                          />
+                        </div>
                       </div>
-                    </TabsContent>
-                    <TabsContent value="anexo" className={styles.tabsContent}>
-                      <div className={styles.fileUploadSection}>
-                        <p className={styles.fileUploadText}>
-                          Arraste arquivos aqui ou clique para selecionar
-                        </p>
+                    )}
+                    {activeTab === "anexo" && (
+                      <div className={`${styles.tabsContentComponent} ${styles.tabsContent}`}>
+                        <div className={styles.fileUploadSection}>
+                          <p className={styles.fileUploadText}>
+                            Arraste arquivos aqui ou clique para selecionar
+                          </p>
+                        </div>
                       </div>
-                    </TabsContent>
-                  </Tabs>
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -905,19 +1037,24 @@ export function EditReceitaDrawer({
 
         {/* Footer */}
         <div className={styles.footer}>
-          <Button variant="outline" onClick={onClose} className={styles.footerButton}>
+          <button 
+            onClick={onClose} 
+            className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.footerButton}`}
+          >
             Voltar
-          </Button>
+          </button>
           <div className={styles.footerActions}>
-            <Button
+            <button
               onClick={handleSave}
-              className={styles.saveButton}
+              className={`${styles.buttonComponent} ${styles.buttonPrimary} ${styles.saveButton}`}
             >
               Salvar
-            </Button>
-            <Button variant="outline" className={styles.moreButton}>
+            </button>
+            <button 
+              className={`${styles.buttonComponent} ${styles.buttonOutline} ${styles.moreButton}`}
+            >
               <ChevronDown className={styles.moreButtonIcon} />
-            </Button>
+            </button>
           </div>
         </div>
       </div>

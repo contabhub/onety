@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styles from "../../styles/financeiro/nova-receita.module.css";
-import { Button } from './botao';
+// Componentes externos removidos - usando HTML nativo
 import {
   X,
   Calendar as CalendarIcon,
@@ -19,14 +19,6 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import ReactSelect from "react-select";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import { Switch } from "./switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import { Calendar } from "./calendar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 import { NovoClienteDrawer } from "./NovoClienteDrawer";
 import ModalRecorrenciaPersonalizada from "./ModalRecorrenciaPersonalizada";
 
@@ -77,6 +69,11 @@ export default function NovaReceitaDrawer({
   const [recorrencias, setRecorrencias] = useState([]);
   const [recorrenciaSelecionada, setRecorrenciaSelecionada] = useState("");
   const [showModalRecorrencia, setShowModalRecorrencia] = useState(false);
+  // Estados para controlar componentes customizados
+  const [isRecurrenceSelectOpen, setIsRecurrenceSelectOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("observacoes");
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   // Estado para dia de cobrança recorrente
   const [diaCobranca, setDiaCobranca] = useState("1");
   // Estado para parcelamento
@@ -89,6 +86,30 @@ export default function NovaReceitaDrawer({
   const [isClosing, setIsClosing] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoadingTransacao, setIsLoadingTransacao] = useState(false);
+
+  // Funções auxiliares para o calendário
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month, year) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const isSameDay = (date1, date2) => {
+    if (!date1 || !date2) return false;
+    return date1.toDateString() === date2.toDateString();
+  };
+
+  const isToday = (date) => {
+    return isSameDay(date, new Date());
+  };
+
+  const handleDateSelect = (day, field) => {
+    const selectedDate = new Date(currentYear, currentMonth, day);
+    handleInputChange(field, selectedDate);
+    setShowCalendar(null);
+  };
 
   // Função para calcular próxima data de vencimento recorrente
   function calcularProximoVencimento(dia, baseDate) {
@@ -184,6 +205,25 @@ export default function NovaReceitaDrawer({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, transacaoId]);
+
+  // Efeito para fechar selects quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.selectComponent')) {
+        setIsRecurrenceSelectOpen(false);
+      }
+      if (!event.target.closest('.novaReceitaCalendarWrapper')) {
+        setShowCalendar(null);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     // Buscar empresaId do userData (padrão correto do sistema)
@@ -1069,7 +1109,7 @@ export default function NovaReceitaDrawer({
               <div className={styles.novaReceitaFlexRow}>
                 {/* Cliente */}
                 <div>
-                  <Label htmlFor="cliente" className={styles.novaReceitaLabel}>Cliente/Fornecedor <span className={styles.novaReceitaLabelRequired}>*</span></Label>
+                  <label htmlFor="cliente" className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Cliente/Fornecedor <span className={styles.novaReceitaLabelRequired}>*</span></label>
                   <div className={styles.novaReceitaClientContainer}>
                     <div className={styles.novaReceitaClientField} style={{ transform: 'translateY(0px)' }}>
                       <ReactSelect
@@ -1119,15 +1159,16 @@ export default function NovaReceitaDrawer({
 
                 {/* Descrição */}
                 <div>
-                  <Label htmlFor="descricao" className={styles.novaReceitaLabel}>Descrição <span className={styles.novaReceitaLabelRequired}>*</span></Label>
+                  <label htmlFor="descricao" className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Descrição <span className={styles.novaReceitaLabelRequired}>*</span></label>
                   <input
                     id="descricao"
+                    type="text"
                     value={formData.descricao}
                     onChange={(e) =>
                       handleInputChange("descricao", e.target.value)
                     }
                     placeholder="Digite a descrição"
-                    className={styles.novaReceitaInput}
+                    className={cn(styles.inputComponent, styles.novaReceitaInput)}
                   />
                 </div>
               </div>
@@ -1138,7 +1179,7 @@ export default function NovaReceitaDrawer({
                 {/* Subcategoria Receita */}
                 <div className={styles.novaReceitaField}>
                   <div className={styles.novaReceitaLabelContainer}>
-                    <Label className={styles.novaReceitaLabel}>Subcategoria Receita <span className={styles.novaReceitaLabelRequired}>*</span></Label>
+                    <label className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Subcategoria Receita <span className={styles.novaReceitaLabelRequired}>*</span></label>
                     <Info className={styles.novaReceitaInfoIcon} />
                   </div>
                   <ReactSelect
@@ -1175,7 +1216,7 @@ export default function NovaReceitaDrawer({
                 {/* Centro de Custo */}
                 <div className={styles.novaReceitaField}>
                   <div className={styles.novaReceitaLabelContainer}>
-                    <Label className={styles.novaReceitaLabel}>Centro de Custo</Label>
+                    <label className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Centro de Custo</label>
                     <Info className={styles.novaReceitaInfoIconInvisible} />
                   </div>
                   <ReactSelect
@@ -1215,7 +1256,7 @@ export default function NovaReceitaDrawer({
                 {/* Valor */}
                 <div className={styles.novaReceitaField}>
                   <div className={styles.novaReceitaLabelContainer}>
-                    <Label htmlFor="valor" className={styles.novaReceitaLabel}>Valor <span className={styles.novaReceitaLabelRequired}>*</span></Label>
+                    <label htmlFor="valor" className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Valor <span className={styles.novaReceitaLabelRequired}>*</span></label>
                     <span className={styles.novaReceitaSpacer} />
                   </div>
                   <div className={styles.novaReceitaInputWithIcon}>
@@ -1224,12 +1265,13 @@ export default function NovaReceitaDrawer({
                     </span>
                     <input
                       id="valor"
+                      type="text"
                       value={formData.valor}
                       onChange={(e) =>
                         handleInputChange("valor", e.target.value)
                       }
                       placeholder="0,00"
-                      className={styles.novaReceitaInput}
+                      className={cn(styles.inputComponent, styles.novaReceitaInput)}
                     />
                   </div>
                 </div>
@@ -1238,56 +1280,90 @@ export default function NovaReceitaDrawer({
               {/* Repetir lançamento - linha separada */}
               <div className={styles.novaReceitaField}>
                 <div className={styles.novaReceitaSwitchContainer}>
-                  <Label htmlFor="repetirLancamento" className={styles.novaReceitaLabel}>Repetir lançamento?</Label>
-                  <Switch
+                  <label htmlFor="repetirLancamento" className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Repetir lançamento?</label>
+                  <button
                     id="repetirLancamento"
-                    checked={repetirLancamento}
-                    onCheckedChange={setRepetirLancamento}
-                  />
+                    type="button"
+                    onClick={() => setRepetirLancamento(!repetirLancamento)}
+                    className={cn(
+                      styles.switchComponent,
+                      repetirLancamento ? styles.switchChecked : styles.switchUnchecked
+                    )}
+                  >
+                    <div className={cn(
+                      styles.switchThumb,
+                      repetirLancamento ? styles.switchThumbChecked : styles.switchThumbUnchecked
+                    )} />
+                  </button>
                   {repetirLancamento && (
                     <div className={styles.novaReceitaRecurrenceSelect}>
-                      <Select
-                        value={recorrenciaSelecionada}
-                        onValueChange={(val) => {
-                          if (val === "personalizar") {
-                            setShowModalRecorrencia(true);
-                          } else {
-                            setRecorrenciaSelecionada(val);
-                          }
-                        }}
-                      >
-                        <SelectTrigger className={styles.novaReceitaSelectTrigger}>
-                          <SelectValue placeholder="Selecione a recorrência" />
-                        </SelectTrigger>
-                        <SelectContent className={styles.novaReceitaSelectContent}>
-                      {recorrencias.length > 0 ? (
-                        recorrencias.map((rec, index) => (
-                          <SelectItem 
-                            key={`${rec.id}-${index}`} 
-                            value={rec.id.toString()} 
-                            className={styles.novaReceitaSelectItem}
-                          >
-                            {`${
-                              rec.frequencia === "mensal"
-                                ? "Mensal"
-                                : rec.frequencia.charAt(0).toUpperCase() +
-                                  rec.frequencia.slice(1)
-                            }: A cada ${rec.intervalo_personalizado || 1} ${
-                              rec.tipo_intervalo || "mês(es)"
-                            }, ${rec.total_parcelas || "∞"} vez(es)${
-                              rec.indeterminada ? " (indeterminada)" : ""
-                            }`}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className={styles.novaReceitaNoRecurrenceMessage}>Nenhuma recorrência personalizada encontrada</div>
-                      )}
-                        <SelectItem value="personalizar" className={styles.novaReceitaSelectItem}>
-                          ➕ Criar nova recorrência personalizada...
-                        </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                      <div className={styles.selectComponent}>
+                        <button
+                          type="button"
+                          onClick={() => setIsRecurrenceSelectOpen(!isRecurrenceSelectOpen)}
+                          className={cn(styles.selectTriggerComponent, styles.novaReceitaSelectTrigger)}
+                        >
+                          <span className={recorrenciaSelecionada ? styles.selectValue : styles.selectPlaceholder}>
+                            {recorrenciaSelecionada
+                              ? (() => {
+                                  const rec = recorrencias.find(r => r.id.toString() === recorrenciaSelecionada);
+                                  return rec ? `${
+                                    rec.frequencia === "mensal"
+                                      ? "Mensal"
+                                      : rec.frequencia.charAt(0).toUpperCase() +
+                                        rec.frequencia.slice(1)
+                                  }: A cada ${rec.intervalo_personalizado || 1} ${
+                                    rec.tipo_intervalo || "mês(es)"
+                                  }, ${rec.total_parcelas || "∞"} vez(es)${
+                                    rec.indeterminada ? " (indeterminada)" : ""
+                                  }` : "Recorrência não encontrada";
+                                })()
+                              : "Selecione a recorrência"}
+                          </span>
+                          <ChevronDown className={cn(styles.selectIcon, isRecurrenceSelectOpen && styles.selectIconOpen)} />
+                        </button>
+                        {isRecurrenceSelectOpen && (
+                          <div className={cn(styles.selectContentComponent, styles.novaReceitaSelectContent)}>
+                            {recorrencias.length > 0 ? (
+                              recorrencias.map((rec, index) => (
+                                <button
+                                  key={`${rec.id}-${index}`}
+                                  type="button"
+                                  onClick={() => {
+                                    setRecorrenciaSelecionada(rec.id.toString());
+                                    setIsRecurrenceSelectOpen(false);
+                                  }}
+                                  className={cn(styles.selectItemComponent, styles.novaReceitaSelectItem)}
+                                >
+                                  {`${
+                                    rec.frequencia === "mensal"
+                                      ? "Mensal"
+                                      : rec.frequencia.charAt(0).toUpperCase() +
+                                        rec.frequencia.slice(1)
+                                  }: A cada ${rec.intervalo_personalizado || 1} ${
+                                    rec.tipo_intervalo || "mês(es)"
+                                  }, ${rec.total_parcelas || "∞"} vez(es)${
+                                    rec.indeterminada ? " (indeterminada)" : ""
+                                  }`}
+                                </button>
+                              ))
+                            ) : (
+                              <div className={styles.novaReceitaNoRecurrenceMessage}>Nenhuma recorrência personalizada encontrada</div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowModalRecorrencia(true);
+                                setIsRecurrenceSelectOpen(false);
+                              }}
+                              className={cn(styles.selectItemComponent, styles.novaReceitaSelectItem)}
+                            >
+                              ➕ Criar nova recorrência personalizada...
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1302,7 +1378,7 @@ export default function NovaReceitaDrawer({
               <div className={styles.novaReceitaGrid4Colunas}>
                 {/* Parcelamento */}
                 <div className={styles.novaReceitaField}>
-                  <Label className={styles.novaReceitaLabel}>Parcelamento</Label>
+                  <label className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Parcelamento</label>
                   <ReactSelect
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -1335,7 +1411,7 @@ export default function NovaReceitaDrawer({
 
                 {/* Data de Vencimento */}
                 <div className={styles.novaReceitaField}>
-                  <Label className={styles.novaReceitaLabel}>Data de vencimento <span className={styles.novaReceitaLabelRequired}>*</span></Label>
+                  <label className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Data de vencimento <span className={styles.novaReceitaLabelRequired}>*</span></label>
                   <div className={styles.novaReceitaCalendarWrapper}>
                     <button
                       type="button"
@@ -1354,17 +1430,72 @@ export default function NovaReceitaDrawer({
                     
                     {showCalendar === "vencimento" && (
                       <div className={styles.novaReceitaCalendarDropdown}>
-                        <Calendar
-                          mode="single"
-                          selected={formData.vencimento}
-                          onSelect={(date) => {
-                            if (date) {
-                              handleInputChange("vencimento", date);
-                            }
-                            setShowCalendar(null);
-                          }}
-                          initialFocus
-                        />
+                        <div className={cn(styles.calendarComponent)}>
+                          <div className={styles.calendarHeader}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (currentMonth === 0) {
+                                  setCurrentMonth(11);
+                                  setCurrentYear(currentYear - 1);
+                                } else {
+                                  setCurrentMonth(currentMonth - 1);
+                                }
+                              }}
+                              className={styles.calendarNavButton}
+                            >
+                              ‹
+                            </button>
+                            <span>
+                              {new Date(currentYear, currentMonth).toLocaleDateString('pt-BR', {
+                                month: 'long',
+                                year: 'numeric',
+                              })}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (currentMonth === 11) {
+                                  setCurrentMonth(0);
+                                  setCurrentYear(currentYear + 1);
+                                } else {
+                                  setCurrentMonth(currentMonth + 1);
+                                }
+                              }}
+                              className={styles.calendarNavButton}
+                            >
+                              ›
+                            </button>
+                          </div>
+                          <div className={styles.calendarGrid}>
+                            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                              <div key={day} className="text-center text-sm font-medium p-2">{day}</div>
+                            ))}
+                            {Array.from({ length: getFirstDayOfMonth(currentMonth, currentYear) }).map((_, i) => (
+                              <div key={`empty-${i}`} />
+                            ))}
+                            {Array.from({ length: getDaysInMonth(currentMonth, currentYear) }).map((_, i) => {
+                              const day = i + 1;
+                              const date = new Date(currentYear, currentMonth, day);
+                              const isSelected = isSameDay(date, formData.vencimento);
+                              const isTodayDate = isToday(date);
+                              return (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => handleDateSelect(day, "vencimento")}
+                                  className={cn(
+                                    styles.calendarDay,
+                                    isSelected && styles.calendarDaySelected,
+                                    isTodayDate && !isSelected && styles.calendarDayToday
+                                  )}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1372,7 +1503,7 @@ export default function NovaReceitaDrawer({
 
                 {/* Forma de pagamento */}
                 <div className={styles.novaReceitaField}>
-                  <Label className={styles.novaReceitaLabel}>Forma de pagamento</Label>
+                  <label className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Forma de pagamento</label>
                   <ReactSelect
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -1404,7 +1535,7 @@ export default function NovaReceitaDrawer({
 
                 {/* Conta de recebimento */}
                 <div className={styles.novaReceitaField}>
-                  <Label className={styles.novaReceitaLabel}>Conta de recebimento <span className={styles.novaReceitaLabelRequired}>*</span></Label>
+                  <label className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Conta de recebimento <span className={styles.novaReceitaLabelRequired}>*</span></label>
                   <ReactSelect
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -1459,76 +1590,105 @@ export default function NovaReceitaDrawer({
 
               {/* Tabs - Observações e Anexo */}
               <div className={styles.novaReceitaSection}>
-                <Tabs defaultValue="observacoes" className={styles.novaReceitaTabs}>
-                  <TabsList className={styles.novaReceitaTabsList}>
-                    <TabsTrigger value="observacoes" className={styles.novaReceitaTabsTrigger}>Observações</TabsTrigger>
-                    <TabsTrigger value="anexo" className={styles.novaReceitaTabsTrigger}>Anexo</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="observacoes" className={styles.novaReceitaTabsContent}>
-                    <div className={styles.novaReceitaField}>
-                      <Label htmlFor="observacoes" className={styles.novaReceitaLabel}>Observações</Label>
-                      <textarea
-                        id="observacoes"
-                        value={formData.observacoes}
-                        onChange={(e) =>
-                          handleInputChange("observacoes", e.target.value)
-                        }
-                        placeholder="Descreva observações relevantes sobre esse lançamento financeiro"
-                        className={styles.novaReceitaTextarea}
-                      />
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="anexo" className={styles.novaReceitaTabsContent}>
-                    <div className={styles.novaReceitaField}>
-                      {/* Upload de PDF */}
-                      <div className={styles.novaReceitaPdfSection}>
-                        <Label htmlFor="fileInput" className="cursor-pointer">
-                          <div className="space-y-2">
-                            <FileText className={styles.novaReceitaPdfIcon} />
-                            <p className={styles.novaReceitaPdfTitle}>
-                              Clique para selecionar arquivo PDF
-                            </p>
-                            <p className={styles.novaReceitaPdfSubtitle}>
-                              Anexe documentos relacionados ao lançamento
-                            </p>
-                          </div>
-                        </Label>
-                        <input
-                          id="fileInput"
-                          type="file"
-                          accept="application/pdf"
-                          className="hidden"
-                          onChange={handleFileChange}
+                <div className={cn(styles.tabsComponentNative, styles.novaReceitaTabs)}>
+                  <div className={cn(styles.tabsListComponentNative, styles.novaReceitaTabsList)}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("observacoes")}
+                      className={cn(
+                        styles.tabsTriggerComponentNative,
+                        styles.novaReceitaTabsTrigger,
+                        activeTab === "observacoes" && styles.tabsTriggerActive
+                      )}
+                    >
+                      Observações
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("anexo")}
+                      className={cn(
+                        styles.tabsTriggerComponentNative,
+                        styles.novaReceitaTabsTrigger,
+                        activeTab === "anexo" && styles.tabsTriggerActive
+                      )}
+                    >
+                      Anexo
+                    </button>
+                  </div>
+                  {activeTab === "observacoes" && (
+                    <div className={cn(styles.tabsContentComponentNative, styles.novaReceitaTabsContent)}>
+                      <div className={styles.novaReceitaField}>
+                        <label htmlFor="observacoes" className={cn(styles.labelComponent, styles.novaReceitaLabel)}>Observações</label>
+                        <textarea
+                          id="observacoes"
+                          value={formData.observacoes}
+                          onChange={(e) =>
+                            handleInputChange("observacoes", e.target.value)
+                          }
+                          placeholder="Descreva observações relevantes sobre esse lançamento financeiro"
+                          className={cn(styles.textareaComponent, styles.novaReceitaTextarea)}
                         />
                       </div>
-
-                      {/* Status do arquivo */}
-                      {formData.anexo_base64 && (
-                        <div className={styles.novaReceitaPdfSuccess}>
-                          <div className={styles.novaReceitaPdfSuccessText}>
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="font-medium">PDF anexado com sucesso!</span>
-                          </div>
-                          <p className={styles.novaReceitaPdfSuccessSubtext}>
-                            O arquivo foi anexado ao lançamento
-                          </p>
-                        </div>
-                      )}
                     </div>
-                  </TabsContent>
-              </Tabs>
-            </div>
+                  )}
+                  {activeTab === "anexo" && (
+                    <div className={cn(styles.tabsContentComponentNative, styles.novaReceitaTabsContent)}>
+                      <div className={styles.novaReceitaField}>
+                        {/* Upload de PDF */}
+                        <div className={styles.novaReceitaPdfSection}>
+                          <label htmlFor="fileInput" className="cursor-pointer">
+                            <div className="space-y-2">
+                              <FileText className={styles.novaReceitaPdfIcon} />
+                              <p className={styles.novaReceitaPdfTitle}>
+                                Clique para selecionar arquivo PDF
+                              </p>
+                              <p className={styles.novaReceitaPdfSubtitle}>
+                                Anexe documentos relacionados ao lançamento
+                              </p>
+                            </div>
+                          </label>
+                          <input
+                            id="fileInput"
+                            type="file"
+                            accept="application/pdf"
+                            className="hidden"
+                            onChange={handleFileChange}
+                          />
+                        </div>
+
+                        {/* Status do arquivo */}
+                        {formData.anexo_base64 && (
+                          <div className={styles.novaReceitaPdfSuccess}>
+                            <div className={styles.novaReceitaPdfSuccessText}>
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span className="font-medium">PDF anexado com sucesso!</span>
+                            </div>
+                            <p className={styles.novaReceitaPdfSuccessSubtext}>
+                              O arquivo foi anexado ao lançamento
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
           </div>
 
           {/* Footer */}
           <div className={styles.novaReceitaFooter}>
-            <button onClick={handleClose} className={styles.novaReceitaButtonSecondary}>
+            <button 
+              type="button"
+              onClick={handleClose} 
+              className={cn(styles.buttonComponent, styles.buttonSecondary, styles.novaReceitaButtonSecondary)}
+            >
               Voltar
             </button>
             <div className={styles.novaReceitaFooterActions}>
               <button
+                type="button"
                 onClick={handleSave}
-                className={styles.novaReceitaButtonPrimary}
+                className={cn(styles.buttonComponent, styles.buttonPrimary, styles.novaReceitaButtonPrimary)}
               >
                 Salvar
               </button>

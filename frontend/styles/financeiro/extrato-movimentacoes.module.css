@@ -1307,3 +1307,233 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Componentes nativos adicionais */
+
+/* Button Component Genérico */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  text-decoration: none;
+  gap: var(--onity-space-xs);
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-on-primary);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--onity-elev-low);
+}
+
+.buttonOutline {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonOutline:hover {
+  background-color: var(--onity-color-surface-hover);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: var(--onity-type-caption-size);
+}
+
+.buttonDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Card Component Genérico */
+.cardComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  overflow: hidden;
+}
+
+.cardContent {
+  padding: var(--onity-space-l);
+}
+
+.cardHeader {
+  padding: var(--onity-space-l) var(--onity-space-l) 0 var(--onity-space-l);
+}
+
+.cardTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+  line-height: var(--onity-type-h3-line-height);
+}
+
+/* Badge Component Genérico */
+.badgeComponent {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-caption-size);
+  font-weight: var(--onity-type-caption-weight);
+  border: 1px solid;
+  gap: var(--onity-space-xs);
+}
+
+/* Select Component Customizado */
+.selectComponent {
+  position: relative;
+  display: inline-block;
+}
+
+.selectTrigger {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  color: var(--onity-color-text);
+  background: var(--onity-color-surface);
+  transition: all 0.2s ease;
+  padding: var(--onity-space-s);
+  width: 100%;
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line-height);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-xs);
+}
+
+.selectTrigger:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.selectContent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-medium);
+  padding: var(--onity-space-xs);
+  margin-top: var(--onity-space-xs);
+  animation: slideDown 0.2s ease;
+}
+
+.selectItem {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+}
+
+.selectItem:hover {
+  background: var(--onity-color-surface-hover);
+  color: var(--onity-color-primary);
+}
+
+.selectPlaceholder {
+  color: var(--onity-color-text-secondary);
+}
+
+.selectValue {
+  color: var(--onity-color-text);
+}
+
+.selectIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+  transition: transform 0.2s ease;
+}
+
+.selectIconOpen {
+  transform: rotate(180deg);
+}
+
+/* DropdownMenu Component Customizado */
+.dropdownComponent {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownTrigger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dropdownContent {
+  position: absolute;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-medium);
+  padding: var(--onity-space-xs);
+  min-width: 200px;
+  z-index: 1000;
+  animation: slideDown 0.2s ease;
+}
+
+.dropdownItem {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.dropdownItem:hover {
+  background: var(--onity-color-surface-hover);
+  color: var(--onity-color-primary);
+}
+
+/* Estados dos dropdowns */
+.dropdownLeft {
+  right: 0;
+}
+
+.dropdownRight {
+  left: 0;
+}
+
+.dropdownCenter {
+  left: 50%;
+  transform: translateX(-50%);
+}
