@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "./botao";
 import styles from "../../styles/financeiro/ExportarFluxoCaixaMensal.module.css";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import { Label } from "./label";
 import { Download, Loader2 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
@@ -333,17 +322,29 @@ export function ExportarFluxoCaixaMensal({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.exportarFluxoCaixaModal}>
-        <DialogHeader>
-          <DialogTitle className={styles.exportarFluxoCaixaTitle}>
-            Exportar Fluxo de Caixa Mensal
-          </DialogTitle>
-          <DialogDescription className={styles.exportarFluxoCaixaDescription}>
-            Exporte o relatório de fluxo de caixa mensal consolidado por subcategorias
-          </DialogDescription>
-        </DialogHeader>
+    <div className={styles.exportarFluxoCaixaModalOverlay} onClick={onClose}>
+      <div className={styles.exportarFluxoCaixaModal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.exportarFluxoCaixaHeader}>
+          <div>
+            <h2 className={styles.exportarFluxoCaixaTitle}>
+              Exportar Fluxo de Caixa Mensal
+            </h2>
+            <p className={styles.exportarFluxoCaixaDescription}>
+              Exporte o relatório de fluxo de caixa mensal consolidado por subcategorias
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.exportarFluxoCaixaCloseBtn}
+            disabled={isExporting}
+          >
+            ×
+          </button>
+        </div>
 
         <div className={styles.exportarFluxoCaixaContent}>
           {/* Informações dos Filtros Aplicados */}
@@ -378,79 +379,111 @@ export function ExportarFluxoCaixaMensal({
 
           {/* Tipo de Relatório */}
           <div className={styles.exportarFluxoCaixaSection}>
-            <Label className={styles.exportarFluxoCaixaLabel}>Tipo de Relatório</Label>
-            <RadioGroup
-              value={tipoExportacao}
-              onValueChange={(value) => setTipoExportacao(value)}
-              className={styles.exportarFluxoCaixaRadioGroup}
-            >
+            <label className={styles.exportarFluxoCaixaLabel}>Tipo de Relatório</label>
+            <div className={styles.exportarFluxoCaixaRadioGroup}>
               <div className={styles.exportarFluxoCaixaRadioItem}>
-                <RadioGroupItem value="subcategorias" id="subcategorias" />
-                <Label htmlFor="subcategorias" className={styles.exportarFluxoCaixaRadioLabel}>
+                <input
+                  type="radio"
+                  name="tipoExportacao"
+                  value="subcategorias"
+                  id="subcategorias"
+                  checked={tipoExportacao === "subcategorias"}
+                  onChange={(e) => setTipoExportacao(e.target.value)}
+                  className={styles.exportarFluxoCaixaRadioInput}
+                />
+                <label htmlFor="subcategorias" className={styles.exportarFluxoCaixaRadioLabel}>
                   <div>
                     <div className={styles.exportarFluxoCaixaRadioTitle}>Por Subcategorias</div>
                     <div className={styles.exportarFluxoCaixaRadioDescription}>
                       Lista todas as subcategorias com valores mensais e totais anuais
                     </div>
                   </div>
-                </Label>
+                </label>
               </div>
               <div className={styles.exportarFluxoCaixaRadioItem}>
-                <RadioGroupItem value="completo" id="completo" />
-                <Label htmlFor="completo" className={styles.exportarFluxoCaixaRadioLabel}>
+                <input
+                  type="radio"
+                  name="tipoExportacao"
+                  value="completo"
+                  id="completo"
+                  checked={tipoExportacao === "completo"}
+                  onChange={(e) => setTipoExportacao(e.target.value)}
+                  className={styles.exportarFluxoCaixaRadioInput}
+                />
+                <label htmlFor="completo" className={styles.exportarFluxoCaixaRadioLabel}>
                   <div>
                     <div className={styles.exportarFluxoCaixaRadioTitle}>Relatório Completo (Hierárquico)</div>
                     <div className={styles.exportarFluxoCaixaRadioDescription}>
                       Inclui tipos, categorias e subcategorias em estrutura hierárquica
                     </div>
                   </div>
-                </Label>
+                </label>
               </div>
-            </RadioGroup>
+            </div>
           </div>
 
           {/* Tipo de Valor */}
           <div className={styles.exportarFluxoCaixaSection}>
-            <Label className={styles.exportarFluxoCaixaLabel}>Valores a Exportar</Label>
-            <RadioGroup
-              value={tipoValor}
-              onValueChange={(value) => setTipoValor(value)}
-              className={styles.exportarFluxoCaixaRadioGroup}
-            >
+            <label className={styles.exportarFluxoCaixaLabel}>Valores a Exportar</label>
+            <div className={styles.exportarFluxoCaixaRadioGroup}>
               <div className={styles.exportarFluxoCaixaRadioItem}>
-                <RadioGroupItem value="ambos" id="ambos" />
-                <Label htmlFor="ambos" className={styles.exportarFluxoCaixaRadioLabel}>
+                <input
+                  type="radio"
+                  name="tipoValor"
+                  value="ambos"
+                  id="ambos"
+                  checked={tipoValor === "ambos"}
+                  onChange={(e) => setTipoValor(e.target.value)}
+                  className={styles.exportarFluxoCaixaRadioInput}
+                />
+                <label htmlFor="ambos" className={styles.exportarFluxoCaixaRadioLabel}>
                   <div>
                     <div className={styles.exportarFluxoCaixaRadioTitle}>Previsto e Realizado</div>
                     <div className={styles.exportarFluxoCaixaRadioDescription}>
                       Exporta ambos os valores (previsto e realizado)
                     </div>
                   </div>
-                </Label>
+                </label>
               </div>
               <div className={styles.exportarFluxoCaixaRadioItem}>
-                <RadioGroupItem value="realizado" id="realizado" />
-                <Label htmlFor="realizado" className={styles.exportarFluxoCaixaRadioLabel}>
+                <input
+                  type="radio"
+                  name="tipoValor"
+                  value="realizado"
+                  id="realizado"
+                  checked={tipoValor === "realizado"}
+                  onChange={(e) => setTipoValor(e.target.value)}
+                  className={styles.exportarFluxoCaixaRadioInput}
+                />
+                <label htmlFor="realizado" className={styles.exportarFluxoCaixaRadioLabel}>
                   <div>
                     <div className={styles.exportarFluxoCaixaRadioTitle}>Apenas Realizado</div>
                     <div className={styles.exportarFluxoCaixaRadioDescription}>
                       Exporta apenas valores realizados (pagos)
                     </div>
                   </div>
-                </Label>
+                </label>
               </div>
               <div className={styles.exportarFluxoCaixaRadioItem}>
-                <RadioGroupItem value="previsto" id="previsto" />
-                <Label htmlFor="previsto" className={styles.exportarFluxoCaixaRadioLabel}>
+                <input
+                  type="radio"
+                  name="tipoValor"
+                  value="previsto"
+                  id="previsto"
+                  checked={tipoValor === "previsto"}
+                  onChange={(e) => setTipoValor(e.target.value)}
+                  className={styles.exportarFluxoCaixaRadioInput}
+                />
+                <label htmlFor="previsto" className={styles.exportarFluxoCaixaRadioLabel}>
                   <div>
                     <div className={styles.exportarFluxoCaixaRadioTitle}>Apenas Previsto</div>
                     <div className={styles.exportarFluxoCaixaRadioDescription}>
                       Exporta apenas valores previstos
                     </div>
                   </div>
-                </Label>
+                </label>
               </div>
-            </RadioGroup>
+            </div>
           </div>
 
           {/* Informação sobre formato */}
@@ -464,16 +497,17 @@ export function ExportarFluxoCaixaMensal({
           </div>
         </div>
 
-        <DialogFooter className={styles.exportarFluxoCaixaFooter}>
-          <Button
-            variant="outline"
+        <div className={styles.exportarFluxoCaixaFooter}>
+          <button
+            type="button"
             onClick={onClose}
             disabled={isExporting}
             className={styles.exportarFluxoCaixaCancelBtn}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleExportar}
             disabled={isExporting || !dadosConsolidados}
             className={styles.exportarFluxoCaixaExportBtn}
@@ -489,10 +523,10 @@ export function ExportarFluxoCaixaMensal({
                 Exportar Relatório
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

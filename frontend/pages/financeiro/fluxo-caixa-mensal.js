@@ -1,9 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/financeiro/card';
-import { Button } from '../../components/financeiro/botao';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '../../components/financeiro/select';
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -527,46 +524,46 @@ export default function FluxoCaixaMensalPage() {
           </p>
         </div>
         <div className={styles.headerActions}>
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={() => setIsExportarOpen(true)}
             className={styles.filtroToggleButton}
           >
             <Download className="h-4 w-4" />
             Exportar Relatório
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* 🔍 Filtros */}
-      <Card className={styles.filtrosCard}>
-        <CardHeader className={styles.filtrosHeader}>
-          <CardTitle className={styles.filtrosTitle}>
+      <div className={styles.filtrosCard}>
+        <div className={styles.filtrosHeader}>
+          <h3 className={styles.filtrosTitle}>
             <Filter className="w-5 h-5" />
             Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent className={styles.filtrosContent}>
+          </h3>
+        </div>
+        <div className={styles.filtrosContent}>
           <div className={styles.filtrosGrid}>
             {/* Filtro de Ano */}
             <div className={styles.filtroGroup}>
               <label className={styles.filtroLabel}>
                 Ano
               </label>
-              <Select value={selectedYear.toString()} onValueChange={v => setSelectedYear(Number(v))}>
-                <SelectTrigger className={styles.filtroSelect}>
-                  <Calendar className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
+              <div className={styles.filtroSelectWrapper}>
+                <Calendar className="w-4 h-4 mr-2" />
+                <select 
+                  value={selectedYear.toString()} 
+                  onChange={e => setSelectedYear(Number(e.target.value))}
+                  className={styles.filtroSelect}
+                >
                   {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
+                    <option key={year} value={year.toString()}>
                       {year}
-                    </SelectItem>
+                    </option>
                   ))}
-                </SelectContent>
-              </Select>
+                </select>
+              </div>
             </div>
 
             {/* Filtro de Tipo */}
@@ -574,16 +571,15 @@ export default function FluxoCaixaMensalPage() {
               <label className={styles.filtroLabel}>
                 Tipo
               </label>
-              <Select value={selectedTipo} onValueChange={setSelectedTipo}>
-                <SelectTrigger className={styles.filtroSelectWide}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="entrada">Entradas</SelectItem>
-                  <SelectItem value="saida">Saídas</SelectItem>
-                </SelectContent>
-              </Select>
+              <select 
+                value={selectedTipo} 
+                onChange={e => setSelectedTipo(e.target.value)}
+                className={styles.filtroSelectWide}
+              >
+                <option value="todos">Todos</option>
+                <option value="entrada">Entradas</option>
+                <option value="saida">Saídas</option>
+              </select>
             </div>
 
             {/* Filtro por Dia */}
@@ -592,63 +588,63 @@ export default function FluxoCaixaMensalPage() {
                 Filtro por Dia
               </label>
               <div className={styles.filtroToggleGroup}>
-                <Button
-                  variant={enableDayFilter ? "default" : "outline"}
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => setEnableDayFilter(!enableDayFilter)}
-                  className={styles.filtroToggleButton}
+                  className={`${styles.filtroToggleButton} ${enableDayFilter ? styles.filtroToggleButtonActive : ''}`}
                 >
                   {enableDayFilter ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   {enableDayFilter ? 'Filtro Ativo' : 'Ativar Filtro'}
-                </Button>
+                </button>
                 {enableDayFilter && (
-                  <Select 
+                  <select 
                     value={selectedDay?.toString() || ''} 
-                    onValueChange={v => setSelectedDay(Number(v))}
+                    onChange={e => setSelectedDay(Number(e.target.value))}
+                    className={styles.filtroSelectNarrow}
                   >
-                    <SelectTrigger className={styles.filtroSelectNarrow}>
-                      <SelectValue placeholder="Dia" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {days.map((day) => (
-                        <SelectItem key={day} value={day.toString()}>
-                          {day}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Dia</option>
+                    {days.map((day) => (
+                      <option key={day} value={day.toString()}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
                 )}
               </div>
             </div>
 
             {/* Toggle Realizado */}
             <div className={styles.filtroGroup}>
-              <Button
-                variant={showRealizadoOnly ? "default" : "outline"}
-                size="sm"
+              <button
+                type="button"
                 onClick={() => setShowRealizadoOnly(!showRealizadoOnly)}
-                className={styles.filtroToggleButton}
+                className={`${styles.filtroToggleButton} ${showRealizadoOnly ? styles.filtroToggleButtonActive : ''}`}
               >
                 {showRealizadoOnly ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 {showRealizadoOnly ? 'Mostrando Realizados' : 'Mostrar Apenas Realizados'}
-              </Button>
+              </button>
             </div>
 
             {/* Botão Atualizar */}
             <div className={styles.filtroGroup}>
-              <Button onClick={fetchRelatorioData} disabled={loading}>
+              <button 
+                type="button"
+                onClick={fetchRelatorioData} 
+                disabled={loading}
+                className={styles.filtroUpdateButton}
+              >
                 {loading ? 'Carregando...' : 'Atualizar'}
-              </Button>
+              </button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* 📊 Resumo Geral Anual */}
       {dadosFiltrados && (
         <div className={styles.resumoGrid}>
-          <Card className={styles.resumoCard}>
-            <CardContent className={styles.resumoContent}>
+          <div className={styles.resumoCard}>
+            <div className={styles.resumoContent}>
               <TrendingUp className={`${styles.resumoIcon} ${styles.resumoIconPrevisto}`} />
               <div>
                 <p className={styles.resumoText}>Total Anual Previsto</p>
@@ -656,11 +652,11 @@ export default function FluxoCaixaMensalPage() {
                   {formatCurrency(dadosFiltrados.totais_gerais.total_ano_previsto)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className={styles.resumoCard}>
-            <CardContent className={styles.resumoContent}>
+          <div className={styles.resumoCard}>
+            <div className={styles.resumoContent}>
               <DollarSign className={`${styles.resumoIcon} ${styles.resumoIconRealizado}`} />
               <div>
                 <p className={styles.resumoText}>Total Anual Realizado</p>
@@ -668,11 +664,11 @@ export default function FluxoCaixaMensalPage() {
                   {formatCurrency(dadosFiltrados.totais_gerais.total_ano_realizado)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className={styles.resumoCard}>
-            <CardContent className={styles.resumoContent}>
+          <div className={styles.resumoCard}>
+            <div className={styles.resumoContent}>
               <TrendingDown className={`${styles.resumoIcon} ${styles.resumoIconPendente}`} />
               <div>
                 <p className={styles.resumoText}>Total Anual Pendente</p>
@@ -680,8 +676,8 @@ export default function FluxoCaixaMensalPage() {
                   {formatCurrency(dadosFiltrados.totais_gerais.total_ano_pendente)}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
@@ -697,11 +693,11 @@ export default function FluxoCaixaMensalPage() {
 
       {/* 📊 Tabela de Fluxo de Caixa Mensal */}
       {!loading && !error && dadosFiltrados && (
-        <Card className={styles.tabelaCard}>
-          <CardHeader className={styles.tabelaHeader}>
-            <CardTitle className={styles.tabelaTitle}>Fluxo de Caixa Mensal - {selectedYear}</CardTitle>
-          </CardHeader>
-          <CardContent className={styles.tabelaContent}>
+        <div className={styles.tabelaCard}>
+          <div className={styles.tabelaHeader}>
+            <h3 className={styles.tabelaTitle}>Fluxo de Caixa Mensal - {selectedYear}</h3>
+          </div>
+          <div className={styles.tabelaContent}>
             {dadosFiltrados.tipos.length === 0 ? (
               <div className={styles.tabelaEmpty}>
                 <Image
@@ -980,14 +976,14 @@ export default function FluxoCaixaMensalPage() {
                 </table>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* 📊 Legenda */}
       {!loading && !error && dadosFiltrados && dadosFiltrados.tipos.length > 0 && (
-        <Card className={styles.legendaCard}>
-          <CardContent className={styles.legendaContent}>
+        <div className={styles.legendaCard}>
+          <div className={styles.legendaContent}>
             <div className={styles.legendaItems}>
               <div className={styles.legendaItem}>
                 <div className={`${styles.legendaDot} ${styles.legendaDotPrevisto}`}></div>
@@ -1012,8 +1008,8 @@ export default function FluxoCaixaMensalPage() {
                 </p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Modal de Exportação */}
