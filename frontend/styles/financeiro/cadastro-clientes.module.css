@@ -125,28 +125,17 @@
 }
 
 /* Estados específicos dos cards */
-.statusCardAtivoSelected {
-  border-color: var(--onity-color-success);
-}
+/* bases (quando não selecionados) */
+.statusCardAtivo { border-color: color-mix(in srgb, var(--onity-color-success) 20%, var(--onity-color-border)); }
+.statusCardInativo { border-color: color-mix(in srgb, var(--onity-color-error) 20%, var(--onity-color-border)); }
+.statusCardTodos { border-color: var(--onity-color-border); }
 
-.statusCardInativoSelected {
-  border-color: var(--onity-color-error);
-}
+/* selecionados */
+.statusCardAtivoSelected { border-color: var(--onity-color-success); background: color-mix(in srgb, var(--onity-color-success) 10%, transparent); }
+.statusCardInativoSelected { border-color: var(--onity-color-error); background: color-mix(in srgb, var(--onity-color-error) 10%, transparent); }
+.statusCardTodosSelected { border-color: var(--onity-color-border); background: color-mix(in srgb, var(--onity-color-border) 20%, transparent); }
 
-.statusCardTodos {
-  border-color: var(--onity-color-border);
-  
-}
-
-.statusCardTodosSelected {
-  border-color: var(--onity-color-info);
-}
-
-.cardCheckIconWrap {
-  position: absolute;
-  top: var(--onity-space-s);
-  right: var(--onity-space-s);
-}
+/* ícone de check removido dos cards de filtro */
 
 .iconAtivo {
   color: var(--onity-color-success);
@@ -161,7 +150,7 @@
 }
 
 .iconTodos {
-  color: var(--onity-color-info);
+  color: var(--onity-icon-secondary);
   width: 20px;
   height: 20px;
 }
@@ -185,7 +174,7 @@
 }
 
 .textTodos {
-  color: var(--onity-color-info);
+  color: var(--onity-color-text);
 }
 
 .animatedNumber {
@@ -713,6 +702,14 @@
   font-size: 14px;
   color: var(--onity-color-text);
   font-weight: 500;
+}
+
+/* Versão embutida no container da tabela (grudada) */
+.paginationInline {
+  border: 0;
+  border-top: 1px solid var(--onity-color-border);
+  border-radius: 0 0 8px 8px;
+  box-shadow: none;
 }
 
 /* ===== MODAL EXCLUIR ===== */
