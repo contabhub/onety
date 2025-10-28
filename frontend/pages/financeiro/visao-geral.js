@@ -16,12 +16,13 @@ import {
   Settings
 } from 'lucide-react';
 import { toast } from "react-toastify";
-import { Button } from '../../components/financeiro/botao';
-import { Textarea } from '../../components/financeiro/textarea';
 import NovaReceitaDrawer from '../../components/financeiro/NovaReceitaDrawer';
 import { NovaDespesaDrawer } from '../../components/financeiro/NovaDespesaDrawer';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 import styles from '../../styles/financeiro/visao-geral.module.css';
+
+// Utility para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 // Componentes simples para substituir os do shadcn/ui
 const Card = ({ className, children, ...props }) => (
@@ -1134,14 +1135,14 @@ export default function VisaoGeral() {
         <Card className={`${styles.card} ${styles.receitaCard}`}>
           <CardHeader className={styles.cardHeader}>
             <CardTitle className={styles.cardTitle}>A receber</CardTitle>
-            <Button 
-              size="sm" 
-              className={styles.actionButtonReceita}
+            <button
+              type="button"
+              className={cn(styles.buttonComponent, styles.buttonComponentSmall, styles.actionButtonReceita)}
               onClick={() => setShowNovaReceitaDrawer(true)}
             >
               <Plus className="h-4 w-4" />
               Nova receita
-            </Button>
+            </button>
           </CardHeader>
           <CardContent className={styles.cardContent}>
             {isLoading ? (
@@ -1197,14 +1198,14 @@ export default function VisaoGeral() {
         <Card className={`${styles.card} ${styles.despesaCard}`}>
           <CardHeader className={styles.cardHeader}>
             <CardTitle className={styles.cardTitle}>A pagar</CardTitle>
-            <Button 
-              size="sm" 
-              className={styles.actionButtonDespesa}
+            <button
+              type="button"
+              className={cn(styles.buttonComponent, styles.buttonComponentSmall, styles.actionButtonDespesa)}
               onClick={() => setShowNovaDespesaDrawer(true)}
             >
               <Plus className="h-4 w-4" />
               Nova despesa
-            </Button>
+            </button>
           </CardHeader>
           <CardContent className={styles.cardContent}>
             {isLoading ? (
@@ -1263,10 +1264,9 @@ export default function VisaoGeral() {
         <Card className={styles.contasCard}>
           <CardHeader className={styles.contasHeader}>
             <CardTitle className={styles.cardTitle}>Contas financeiras</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={styles.refreshButton}
+            <button
+              type="button"
+              className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.buttonComponentSmall, styles.refreshButton)}
               onClick={fetchContasFinanceiras}
               disabled={contasLoading}
             >
@@ -1274,7 +1274,7 @@ export default function VisaoGeral() {
               {calculandoContasApi && !contasLoading && (
                 <span className={styles.calculatingText}>Calculando...</span>
               )}
-            </Button>
+            </button>
           </CardHeader>
           <CardContent className={styles.contasContent}>
             <div className={styles.totalValue}>
@@ -1331,14 +1331,13 @@ export default function VisaoGeral() {
               ) : contasError ? (
                 <div className={styles.errorState}>
                   <p className={styles.errorText}>{contasError}</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <button
+                    type="button"
                     onClick={fetchContasFinanceiras}
-                    className={styles.retryButton}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.retryButton)}
                   >
                     Tentar novamente
-                  </Button>
+                  </button>
                 </div>
               ) : contasFinanceiras.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -1397,9 +1396,12 @@ export default function VisaoGeral() {
                           <div className={styles.contaNote}>
                             <p>{conta.note}</p>
                             {conta.pendingItems && (
-                              <Button variant="link" className={styles.contaPendingButton}>
+                              <button
+                                type="button"
+                                className={cn(styles.buttonComponent, styles.buttonComponentLink, styles.contaPendingButton)}
+                              >
                                 {conta.pendingItems} Conciliações pendentes
-                              </Button>
+                              </button>
                             )}
                           </div>
                         )}
@@ -1410,14 +1412,14 @@ export default function VisaoGeral() {
               )}
             </div>
             
-            <Button 
-              variant="outline" 
-              className={styles.addAccountButton}
+            <button
+              type="button"
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.addAccountButton)}
               onClick={() => router.push('/financeiro/outras-contas')}
             >
               <Plus className="h-4 w-4" />
               Adicionar conta
-            </Button>
+            </button>
           </CardContent>
         </Card>
 
@@ -1462,14 +1464,13 @@ export default function VisaoGeral() {
                 <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                     <p className={styles.errorText}>{fluxoCaixaError}</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <button
+                    type="button"
                     onClick={fetchFluxoCaixaData}
-                      className={styles.retryButton}
+                    className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.retryButton)}
                   >
                     Tentar novamente
-                  </Button>
+                  </button>
                   </div>
                 </div>
               </div>

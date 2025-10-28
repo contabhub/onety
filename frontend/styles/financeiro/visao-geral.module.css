@@ -1,5 +1,110 @@
 /* Visão Geral - Financial Dashboard Styles */
 
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Botões - Substituição para Button */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: none;
+  border-radius: var(--onity-radius-xs);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.buttonComponentOutline {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background: var(--onity-color-primary);
+  color: white;
+  border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+}
+
+.buttonComponentGhost {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: none;
+}
+
+.buttonComponentGhost:hover:not(:disabled) {
+  background: var(--onity-color-primary);
+  color: white;
+}
+
+.buttonComponentLink {
+  background: transparent;
+  color: var(--onity-color-primary);
+  border: none;
+  padding: 0;
+  height: auto;
+  text-decoration: underline;
+}
+
+.buttonComponentLink:hover:not(:disabled) {
+  color: var(--onity-color-primary-light);
+}
+
+.buttonComponentSmall {
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  font-size: 12px;
+}
+
+/* Textarea - Substituição para Textarea (caso seja usado) */
+.textareaComponent {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  resize: vertical;
+}
+
+.textareaComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--onity-color-primary-rgb), 0.1);
+}
+
+.textareaComponent::placeholder {
+  color: var(--onity-color-text);
+  opacity: 0.5;
+}
+
+/* Utility para combinar classes CSS */
+.cn {
+  /* Esta classe existe apenas como referência para a função cn() */
+}
+
 /* Container principal */
 .dashboardContainer {
   padding: var(--onity-space-l);
