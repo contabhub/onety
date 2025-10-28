@@ -70,35 +70,79 @@ function parseLinhaDigitavel47(linhaDigitavelRaw) {
   };
 }
 
+/** Parser 48 dígitos (arrecadação/concessionárias)
+ * Observação: o padrão de montagem do código de barras para 48 dígitos difere e varia por segmento.
+ * Para fins práticos, retornamos os blocos e a linha digitável limpa, permitindo identificação correta do código.
+ */
+function parseLinhaDigitavel48(linhaDigitavelRaw) {
+  const onlyDigits = String(linhaDigitavelRaw || '').replace(/\D/g, '');
+  if (onlyDigits.length !== 48) throw new Error('Linha digitável inválida (48 dígitos).');
+
+  // Blocos de 12 dígitos (formato comum de exibição)
+  const blocos = [
+    onlyDigits.slice(0, 12),
+    onlyDigits.slice(12, 24),
+    onlyDigits.slice(24, 36),
+    onlyDigits.slice(36, 48)
+  ];
+
+  return {
+    tipo: 'arrecadacao',
+    blocos,
+    linha_digitavel: onlyDigits
+  };
+}
+
 /** Extrai linha digitável ou dados PIX de texto extraído do PDF */
 function extractBoletoData(text) {
   // Remove quebras de linha e espaços extras
   const cleanText = text.replace(/\s+/g, '');
+  const rawText = text; // mantém original para buscas alternativas
   
-  // 1. Tentar encontrar linha digitável tradicional (47 dígitos)
-  const patterns = [
-    /(\d{4}\.\d{5}\.\d{10}\.\d{11}\.\d{11}\.\d{11}\.\d{11}\.\d{11})/g,
-    /(\d{47})/g,
-    /(\d{4}\d{5}\d{10}\d{11}\d{11}\d{11}\d{11}\d{11})/g
-  ];
-  
-  for (const pattern of patterns) {
-    const matches = cleanText.match(pattern);
-    if (matches && matches.length > 0) {
-      const linha = matches[0].replace(/[^\d]/g, '');
-      if (linha.length === 47) {
-        return { tipo: 'linha_digitavel', valor: linha };
-      }
+  // 1. Detectar linha digitável FEBRABAN (47) ou arrecadação (48)
+  // Aceita tanto compacta quanto pontuada/espacada
+  const pattern47 = /(\d[\d\.\s-]{45,})/g; // tolerante para pegar formatos com pontos
+  const pattern48 = /(\d[\d\.\s-]{46,})/g;
+
+  const candidates = [];
+  for (const m of cleanText.matchAll(pattern47)) {
+    const digits = String(m[0]).replace(/[^\d]/g, '');
+    if (digits.length === 47) candidates.push({ len: 47, digits });
+  }
+  for (const m of cleanText.matchAll(pattern48)) {
+    const digits = String(m[0]).replace(/[^\d]/g, '');
+    if (digits.length === 48) candidates.push({ len: 48, digits });
+  }
+
+  // Busca adicional no texto bruto por sequências cruas de 47/48 dígitos
+  const raw47 = [...rawText.matchAll(/(\d{47})/g)].map(m => m[1]);
+  const raw48 = [...rawText.matchAll(/(\d{48})/g)].map(m => m[1]);
+  raw47.forEach(d => candidates.push({ len: 47, digits: d }));
+  raw48.forEach(d => candidates.push({ len: 48, digits: d }));
+
+  // Ordena priorizando 47 (bancário) e depois 48 (arrecadação), e por ordem de aparição
+  if (candidates.length > 0) {
+    const selected = candidates.sort((a, b) => a.len - b.len)[0];
+    if (selected.len === 47) {
+      return { tipo: 'linha_digitavel_47', valor: selected.digits };
+    }
+    if (selected.len === 48) {
+      return { tipo: 'linha_digitavel_48', valor: selected.digits };
     }
   }
   
-  // 2. Tentar extrair dados de boletos (PIX e tradicionais)
+  // 2. Tentar extrair dados de boletos (PIX e tradicionais) por palavras-chave
   const boletoPatterns = {
-    valor: /R\$\s*([\d,]+\.?\d*)/i,
-    beneficiario: /(?:Quem vai receber|Beneficiário|Beneficiário Final):\s*([^\n\r]+)/i,
+    // Valor em PT-BR: permite milhares com ponto e decimais com vírgula
+    valor: /R\$\s*([0-9\.,]+)/i,
+    beneficiario: /(?:Quem\s+vai\s+receber|Nome\s+do\s+Benefici[áa]rio|NOME\s+DO\s+BENEFICI[ÁA]RIO|Benefici[áa]rio(?:\s*Final)?|BENEFICI[ÁA]RIO)\s*[:\-–]?\s*([^\r\n]+)/i,
     pagador: /(?:Pagador|Pagador Final):\s*([^\n\r]+)/i,
-    cnpj_cpf_beneficiario: /(?:CNPJ\/CPF|CNPJ|CPF):\s*([\d\.\-]+)/gi,
-    cnpj_cpf_pagador: /(?:CNPJ\/CPF|CNPJ|CPF):\s*([\d\.\-]+)/gi
+    // CNPJ estritamente formatado: xx.xxx.xxx/xxxx-xx
+    cnpj_formatado: /(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/g,
+    // Data de vencimento (dd/mm/yyyy) próxima a palavras-chave
+    // Captura imediata após o rótulo ou em até 50 caracteres seguintes
+    vencimentoLabel: /(data\s*de\s*vencimento|vencimento)/i,
+    dataBR: /(\b[0-3]?\d\/[01]?\d\/\d{4}\b)/
   };
   
   // Verificar se tem dados de pagador/beneficiário (boleto tradicional ou PIX)
@@ -121,7 +165,13 @@ function extractBoletoData(text) {
     // Extrair valor
     const valorMatch = text.match(boletoPatterns.valor);
     if (valorMatch) {
-      boletoData.valor = parseFloat(valorMatch[1].replace(',', '.'));
+      const raw = valorMatch[1];
+      // Normaliza formato brasileiro: remove separador de milhar "." e troca "," por "."
+      const normalized = raw.replace(/\./g, '').replace(',', '.');
+      const parsed = parseFloat(normalized);
+      if (!Number.isNaN(parsed)) {
+        boletoData.valor = parsed;
+      }
       console.log('[DEBUG] Valor extraído:', boletoData.valor);
     }
     
@@ -131,11 +181,36 @@ function extractBoletoData(text) {
       boletoData.beneficiario = beneficiarioMatch[1].trim();
       console.log('[DEBUG] Beneficiário extraído:', boletoData.beneficiario);
     } else {
-      // Tentar padrão alternativo
-      const altBeneficiarioMatch = text.match(/(?:Beneficiário Final|Beneficiario Final)\s*([^\n\r]+)/i);
-      if (altBeneficiarioMatch) {
-        boletoData.beneficiario = altBeneficiarioMatch[1].trim();
-        console.log('[DEBUG] Beneficiário extraído (padrão alternativo):', boletoData.beneficiario);
+      // Alternativa: localizar o rótulo e capturar o texto ao lado/abaixo até a próxima quebra/label comum
+      const labelRegex = /(Nome\s+do\s+Benefici[áa]rio|NOME\s+DO\s+BENEFICI[ÁA]RIO|Benefici[áa]rio(?:\s*Final)?|BENEFICI[ÁA]RIO)/i;
+      const label = text.match(labelRegex);
+      if (label) {
+        const start = text.toLowerCase().indexOf(label[0].toLowerCase());
+        if (start !== -1) {
+          const after = text.slice(start + label[0].length, start + label[0].length + 200)
+            .replace(/^\s*[:\-–]?\s*/, '');
+          console.log('[DEBUG] Texto após rótulo beneficiário:', after.substring(0, 100));
+          
+          // Corta ao encontrar outro rótulo comum
+          const stopper = /(\r?\n|Pagador|CNPJ|CPF|Valor|R\$|Ag[êe]ncia|Conta|Linha\s*Digit[aá]vel|Data\s+de\s+Vencimento)/i;
+          let cut = after.split(stopper)[0];
+          
+          // Se vazio, tenta pegar a primeira linha não vazia logo abaixo do rótulo
+          if (!cut || /^\s*$/.test(cut)) {
+            const lineBelow = after.match(/(?:^|\r?\n)\s*([^\r\n]{3,})/);
+            if (lineBelow) {
+              cut = lineBelow[1];
+            }
+          }
+          
+          const candidate = (cut || '').replace(/[\r\n]+/g, ' ').trim();
+          console.log('[DEBUG] Candidato beneficiário:', candidate);
+          
+          if (candidate && candidate.length > 3) {
+            boletoData.beneficiario = candidate;
+            console.log('[DEBUG] Beneficiário extraído (adjacente ao rótulo):', boletoData.beneficiario);
+          }
+        }
       }
     }
     
@@ -153,22 +228,70 @@ function extractBoletoData(text) {
       }
     }
     
-    // Extrair CNPJ/CPF do beneficiário
-    const cnpjBeneficiarioMatches = [...text.matchAll(boletoPatterns.cnpj_cpf_beneficiario)];
-    if (cnpjBeneficiarioMatches.length > 0) {
-      boletoData.cnpj_cpf_beneficiario = cnpjBeneficiarioMatches[0][1];
-      console.log('[DEBUG] CNPJ/CPF Beneficiário extraído:', boletoData.cnpj_cpf_beneficiario);
+    // Extrair CNPJs estritamente formatados
+    const cnpjs = [...text.matchAll(boletoPatterns.cnpj_formatado)].map(m => m[1]);
+    if (cnpjs.length > 0) {
+      boletoData.cnpj_cpf_beneficiario = cnpjs[0];
+      if (cnpjs[1]) boletoData.cnpj_cpf_pagador = cnpjs[1];
+      console.log('[DEBUG] CNPJs extraídos:', cnpjs);
     }
-    
-    // Extrair CNPJ/CPF do pagador
-    const cnpjPagadorMatches = [...text.matchAll(boletoPatterns.cnpj_cpf_pagador)];
-    if (cnpjPagadorMatches.length > 1) { // Segundo match geralmente é do pagador
-      boletoData.cnpj_cpf_pagador = cnpjPagadorMatches[1][1];
-      console.log('[DEBUG] CNPJ/CPF Pagador extraído:', boletoData.cnpj_cpf_pagador);
+
+    // Extrair data de vencimento próxima a labels
+    // Estratégia 1: regex direta "(Vencimento|Data de Vencimento) : dd/mm/yyyy"
+    const directVectoRegex = /(data\s*de\s*vencimento|vencimento)\s*[:\-–]?\s*([0-3]?\d\/[01]?\d\/\d{4})/i;
+    const directMatch = text.match(directVectoRegex);
+    let dataVencimentoBR = null;
+    if (directMatch) {
+      dataVencimentoBR = directMatch[2];
+    } else {
+      // Estratégia 2: localizar o rótulo e buscar dd/mm/yyyy nos próximos 50 chars
+      const labelMatch = text.match(boletoPatterns.vencimentoLabel);
+      if (labelMatch) {
+        const idx = text.toLowerCase().indexOf(labelMatch[0].toLowerCase());
+        if (idx !== -1) {
+          const slice = text.slice(idx, idx + 120); // janela próxima ao label
+          const dateNearby = slice.match(boletoPatterns.dataBR);
+          if (dateNearby) dataVencimentoBR = dateNearby[1];
+        }
+      }
+    }
+
+    if (dataVencimentoBR) {
+      const [d, m, y] = dataVencimentoBR.split('/').map((v) => v.padStart(2, '0'));
+      // Validação simples de data e conversão para ISO yyyy-mm-dd
+      const iso = `${y}-${m}-${d}`;
+      boletoData.data_vencimento = iso;
+      console.log('[DEBUG] Data de vencimento extraída (ISO):', iso);
     }
     
     console.log('[DEBUG] Dados de boleto extraídos:', boletoData);
     return boletoData;
+  }
+
+  // 3. Fallback: se encontrarmos valor e/ou vencimento, ainda retornamos como boleto_tradicional
+  const valorFallback = text.match(boletoPatterns.valor);
+  const vencLabel = text.match(boletoPatterns.vencimentoLabel);
+  let dataVcto = null;
+  if (vencLabel) {
+    const idx = text.toLowerCase().indexOf(vencLabel[0].toLowerCase());
+    if (idx !== -1) {
+      const slice = text.slice(idx, idx + 120);
+      const dateNearby = slice.match(boletoPatterns.dataBR);
+      if (dateNearby) {
+        const [d, m, y] = dateNearby[1].split('/').map(v => v.padStart(2, '0'));
+        dataVcto = `${y}-${m}-${d}`;
+      }
+    }
+  }
+  if (valorFallback || dataVcto) {
+    const raw = valorFallback ? valorFallback[1] : null;
+    const normalized = raw ? raw.replace(/\./g, '').replace(',', '.') : null;
+    const parsedValor = normalized ? parseFloat(normalized) : null;
+    return {
+      tipo: 'boleto_tradicional',
+      valor: parsedValor ?? null,
+      data_vencimento: dataVcto ?? null
+    };
   }
   
   return null;
@@ -429,6 +552,15 @@ router.post('/importar-pdf', verifyToken, upload.single('pdf'), async (req, res)
     // Extrair texto do PDF
     const pdfData = await pdfParse(req.file.buffer);
     const pdfText = pdfData.text;
+    // LOG: Texto completo extraído do PDF (delimitado)
+    try {
+      console.log('===== [DEBUG] PDF TEXT START =====');
+      console.log(`[DEBUG] PDF TEXT LENGTH: ${pdfText?.length ?? 0}`);
+      console.log(pdfText);
+      console.log('===== [DEBUG] PDF TEXT END =====');
+    } catch (e) {
+      console.log('[DEBUG] Falha ao logar PDF text:', e?.message);
+    }
     
     // Extrair dados do boleto (linha digitável ou PIX)
     const boletoData = extractBoletoData(pdfText);
@@ -440,14 +572,31 @@ router.post('/importar-pdf', verifyToken, upload.single('pdf'), async (req, res)
       });
     }
 
+    // Log estruturado do resultado da extração
+    try {
+      console.log('[DEBUG] Resultado da extração do boleto:', JSON.stringify({
+        tipo: boletoData.tipo,
+        valor: boletoData.valor ?? null,
+        beneficiario: boletoData.beneficiario ?? null,
+        pagador: boletoData.pagador ?? null,
+        cnpj_cpf_beneficiario: boletoData.cnpj_cpf_beneficiario ?? null,
+        cnpj_cpf_pagador: boletoData.cnpj_cpf_pagador ?? null,
+        data_vencimento: boletoData.data_vencimento ?? null,
+        linha_digitavel: boletoData.valor?.length === 47 || boletoData.valor?.length === 48 ? boletoData.valor : undefined
+      }, null, 2));
+    } catch (e) {
+      console.log('[DEBUG] Resultado da extração do boleto (safe):', boletoData);
+    }
+
     const nowISO = new Date().toISOString().slice(0,19).replace('T',' ');
     const pdfBase64 = pdfToBase64(req.file.buffer);
 
     let form, boletoMeta, linhaDigitavel;
 
-    if (boletoData.tipo === 'linha_digitavel') {
+    if (boletoData.tipo === 'linha_digitavel_47') {
       // Processar boleto tradicional
       const parsed = parseLinhaDigitavel47(boletoData.valor);
+      console.log('[DEBUG] Parsed 47 dígitos:', parsed);
       boletoMeta = parsed;
       linhaDigitavel = boletoData.valor;
       
@@ -455,11 +604,12 @@ router.post('/importar-pdf', verifyToken, upload.single('pdf'), async (req, res)
         conta_id: null,
         empresa_id: company_id,
         tipo,
-        valor: parsed.valor,
+        valor: typeof boletoData.valor === 'number' ? boletoData.valor : parsed.valor,
         descricao: `Boleto ${parsed.bank_code} - ${parsed.barcode.slice(0,5)}... (Pagador: ${boletoData.pagador || 'N/A'})`,
         data_transacao: nowISO,
         origem: 'boleto',
-        data_vencimento: parsed.data_vencimento,
+        // A partir daqui, não inferimos mais vencimento pelo fator; só usamos se veio do PDF
+        data_vencimento: boletoData.data_vencimento || null,
         situacao: 'em_aberto',
         observacao: `Importado via PDF (Boleto Tradicional)
 Beneficiário: ${boletoData.beneficiario || 'N/A'}
@@ -478,6 +628,35 @@ Valor: R$ ${boletoData.valor || parsed.valor || 'N/A'}`,
         boleto_id: null,
         nome_arquivo: nome_arquivo || req.file.originalname // Adicionar nome do arquivo
       };
+    } else if (boletoData?.tipo === 'linha_digitavel_48') {
+      // Arrecadação/concessionárias: manter os blocos e a linha para identificação
+      const parsed48 = parseLinhaDigitavel48(boletoData.valor);
+      console.log('[DEBUG] Parsed 48 dígitos (arrecadação):', parsed48);
+      boletoMeta = parsed48;
+      linhaDigitavel = boletoData.valor;
+
+      form = {
+        conta_id: null,
+        empresa_id: company_id,
+        tipo,
+        valor: boletoData.valor || 0,
+        descricao: `Boleto Arrecadação - ${parsed48.blocos[0].slice(0,5)}...`,
+        data_transacao: nowISO,
+        origem: 'boleto_arrecadacao',
+        data_vencimento: null,
+        situacao: 'em_aberto',
+        observacao: `Importado via PDF (Boleto Arrecadação)\nLinha digitável: ${parsed48.linha_digitavel}`,
+        parcelamento: 1,
+        intervalo_parcelas: null,
+        categoria_id: null,
+        subcategoria_id: null,
+        cliente_id: null,
+        anexo: pdfBase64,
+        centro_custo_id: null,
+        pluggy_transacao_id: null,
+        boleto_id: null,
+        nome_arquivo: nome_arquivo || req.file.originalname
+      };
     } else if (boletoData.tipo === 'pix' || boletoData.tipo === 'boleto_tradicional') {
       // Processar boleto PIX ou tradicional com dados extraídos
       boletoMeta = boletoData;
@@ -487,11 +666,11 @@ Valor: R$ ${boletoData.valor || parsed.valor || 'N/A'}`,
         conta_id: null,
         empresa_id: company_id,
         tipo,
-        valor: boletoData.valor || 0,
+        valor: typeof boletoData.valor === 'number' ? boletoData.valor : 0,
         descricao: `${boletoData.tipo === 'pix' ? 'Boleto PIX' : 'Boleto Tradicional'} - ${boletoData.beneficiario || 'Beneficiário não identificado'} (Pagador: ${boletoData.pagador || 'N/A'})`,
         data_transacao: nowISO,
         origem: boletoData.tipo === 'pix' ? 'boleto_pix' : 'boleto',
-        data_vencimento: null, // PIX geralmente não tem vencimento
+        data_vencimento: boletoData.data_vencimento || null, // PIX geralmente não tem vencimento
         situacao: 'em_aberto',
         observacao: `Importado via PDF (${boletoData.tipo === 'pix' ? 'Boleto PIX' : 'Boleto Tradicional'})
 Beneficiário: ${boletoData.beneficiario || 'N/A'}
@@ -512,6 +691,17 @@ Tipo: ${boletoData.tipo}`,
         nome_arquivo: nome_arquivo || req.file.originalname // Adicionar nome do arquivo
       };
     }
+
+    // Log resumido do formulário que será salvo
+    try {
+      console.log('[DEBUG] Form para salvar draft (resumo):', JSON.stringify({
+        descricao: form.descricao,
+        valor: form.valor,
+        data_vencimento: form.data_vencimento,
+        origem: form.origem,
+        empresa_id: form.empresa_id
+      }, null, 2));
+    } catch (e) {}
 
     // Salvar como rascunho na tabela boleto_drafts
     const [result] = await pool.query(
