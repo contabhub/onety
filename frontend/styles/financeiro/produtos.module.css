@@ -43,34 +43,33 @@
 
 /* ===== BOTÕES PRINCIPAIS ===== */
 .btnNew {
-  background: transparent;
-  color: var(--onity-color-primary-contrast);
-  border: 1px solid var(--onity-color-primary-contrast);
-  transition: all 120ms ease;
-  padding: var(--onity-space-s) var(--onity-space-m);
-  border-radius: var(--onity-radius-s);
-  cursor: pointer;
-  font-size: var(--onity-type-body-size);
-  font-weight: var(--onity-font-medium);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--onity-space-xs);
+  justify-content: center;
+  gap: var(--onity-space-s, 8px);
+  padding: 12px 20px;
+  min-height: 40px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .btnNew:hover {
-  background: var(--onity-color-primary-contrast);
-  color: var(--onity-dark-primary-deep);
-  border-color: var(--onity-color-primary-contrast);
-  transform: translateY(-1px);
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
 }
 
 .btnNew:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+  box-shadow: none;
 }
 
-.btnNew:active {
-  transform: translateY(0);
+.btnNew:active { 
+  transform: none; 
 }
 
 .btnSecondary {
@@ -184,7 +183,7 @@
 }
 
 .searchInput {
-  padding: 2px 2px 2px 30px;
+  padding: 10px 40px 10px 36px;
   width: 90%;
   background: transparent;
   border: 1px solid var(--onity-color-border);
@@ -192,6 +191,7 @@
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
   transition: all 120ms ease;
+  min-height: 18px;
 }
 
 .searchInput:focus {
