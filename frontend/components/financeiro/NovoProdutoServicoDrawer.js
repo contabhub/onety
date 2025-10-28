@@ -1,25 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Label } from "../../components/financeiro/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/financeiro/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/financeiro/select";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2} from "lucide-react";
 import { toast } from "react-toastify";
 import styles from "../../styles/financeiro/NovoProdutoServicoDrawer.module.css";
 
@@ -147,36 +129,35 @@ export default function NovoProdutoServicoDrawer({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={styles.dialogContent}>
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className={styles.dialogTitle}>
-              Novo Produto/Serviço
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClose}
-                className={styles.closeButton}
-                disabled={isLoading}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
-          </div>
-          <DialogDescription className={styles.dialogDescription}>
-            Adicione um novo produto ou serviço ao sistema
-          </DialogDescription>
-        </DialogHeader>
+    <div className={styles.dialogOverlay} onClick={handleClose}>
+      <div className={styles.dialogContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.dialogHeader}>
+              <h2 className={styles.dialogTitle}>
+                Novo Produto/Serviço
+              </h2>
+              <p className={styles.dialogDescription}>
+                Adicione um novo produto ou serviço ao sistema
+              </p>
+            <button
+              type="button"
+              onClick={handleClose}
+              className={styles.closeButton}
+              disabled={isLoading}
+            >
+            </button>
+        </div>
 
         <div className={styles.formContent}>
           {/* Campo Nome */}
           <div className={styles.fieldContainer}>
-            <Label className={styles.fieldLabel}>
+            <label className={styles.fieldLabel}>
               Nome <span className={styles.required}>*</span>
-            </Label>
-            <Input
+            </label>
+            <input
+              type="text"
               value={formData.nome}
               onChange={(e) => handleInputChange("nome", e.target.value)}
               placeholder="Digite o nome do produto/serviço"
@@ -190,50 +171,36 @@ export default function NovoProdutoServicoDrawer({
 
           {/* Campo Tipo */}
           <div className={styles.fieldContainer}>
-            <Label className={styles.fieldLabel}>
+            <label className={styles.fieldLabel}>
               Tipo <span className={styles.required}>*</span>
-            </Label>
-            <Select
+            </label>
+            <select
               value={formData.tipo}
-              onValueChange={(value) => handleInputChange("tipo", value)}
+              onChange={(e) => handleInputChange("tipo", e.target.value)}
+              className={`${styles.fieldSelect} ${errors.tipo ? styles.error : ''}`}
               disabled={isLoading}
             >
-              <SelectTrigger 
-                className={`${styles.fieldSelect} ${errors.tipo ? styles.error : ''}`}
-              >
-                <SelectValue placeholder="Selecione o tipo" />
-              </SelectTrigger>
-              <SelectContent className={styles.selectContent}>
-                <SelectItem 
-                  value="produto" 
-                  className={styles.selectItem}
-                >
-                  Produto
-                </SelectItem>
-                <SelectItem 
-                  value="serviço" 
-                  className={styles.selectItem}
-                >
-                  Serviço
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="">Selecione o tipo</option>
+              <option value="produto">Produto</option>
+              <option value="serviço">Serviço</option>
+            </select>
             {errors.tipo && (
               <p className={styles.errorMessage}>{errors.tipo}</p>
             )}
           </div>
         </div>
 
-        <DialogFooter className={styles.dialogFooter}>
-          <Button
-            variant="outline"
+        <div className={styles.dialogFooter}>
+          <button
+            type="button"
             onClick={handleClose}
             disabled={isLoading}
             className={`${styles.button} ${styles.cancelButton}`}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleSubmit}
             disabled={isLoading}
             className={`${styles.button} ${styles.createButton}`}
@@ -248,9 +215,9 @@ export default function NovoProdutoServicoDrawer({
                 Criar
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 

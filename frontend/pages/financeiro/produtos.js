@@ -1,19 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Badge } from "../../components/financeiro/badge";
 import { 
   Plus, 
   Search, 
   MoreVertical,
-  Package,
-  Wrench,
   X
 } from 'lucide-react';
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/financeiro/dropdown-menu';
 import NovoProdutoServicoDrawer from '../../components/financeiro/NovoProdutoServicoDrawer';
 import { useProdutos } from '../../hooks/financeiro/useProdutos';
 import { useServicos } from '../../hooks/financeiro/useServicos';
@@ -187,18 +181,18 @@ export default function ProdutosServicosPage() {
 
   const getStatusBadge = (status) => {
     return status.toLowerCase() === 'ativo' ? (
-      <Badge className={styles.badgeActive}>Ativo</Badge>
+      <span className={styles.badgeActive}>Ativo</span>
     ) : (
-      <Badge className={styles.badgeInactive}>Inativo</Badge>
+      <span className={styles.badgeInactive}>Inativo</span>
     );
   };
 
   const getTipoBadge = (item) => {
     const isProduto = item.itemType === 'produto';
     return (
-      <Badge className={isProduto ? styles.badgeProduto : styles.badgeServico}>
+      <span className={isProduto ? styles.badgeProduto : styles.badgeServico}>
         {isProduto ? 'Produto' : 'Serviço'}
-      </Badge>
+      </span>
     );
   };
 
@@ -463,14 +457,13 @@ export default function ProdutosServicosPage() {
           </h1>
         </div>
         <div className={styles.headerActions}>
-          <Button 
-            size="sm"
+          <button 
+            type="button"
             className={styles.btnNew}
             onClick={() => setIsNovoItemOpen(true)}
           >
-            <Plus className="w-4 h-4 mr-2" />
             Novo item
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -482,7 +475,8 @@ export default function ProdutosServicosPage() {
               <label className={styles.labelSmall}>Buscar produtos e serviços</label>
               <div className={styles.searchWrap}>
                 <Search className={styles.searchIcon} />
-                <Input 
+                <input 
+                  type="text"
                   placeholder="Digite o nome ou código..."
                   className={styles.searchInput}
                   value={searchTerm}
@@ -513,29 +507,41 @@ export default function ProdutosServicosPage() {
             <span className={styles.textMutedSmall}>
               {selectedItems.size} registro(s) selecionado(s)
             </span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className={styles.btnSecondary}>
-                  Ações em lote
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className={styles.dropdownContent}>
-                <DropdownMenuItem className={styles.dropdownItem} onClick={() => handleBatchStatusChange('ativo')}>
-                  Ativar selecionados
-                </DropdownMenuItem>
-                <DropdownMenuItem className={styles.dropdownItem} onClick={() => handleBatchStatusChange('inativo')}>
-                  Desativar selecionados
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              variant="outline"
-              size="sm"
+            <div className={styles.dropdownContainer}>
+              <button 
+                type="button"
+                className={styles.btnSecondary}
+                onClick={(e) => handleDropdownToggle('batch-actions', e)}
+              >
+                Ações em lote
+              </button>
+              {openDropdownId === 'batch-actions' && (
+                <div className={styles.dropdownContent} style={{
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left
+                }}>
+                  <button className={styles.dropdownItem} onClick={() => {
+                    handleBatchStatusChange('ativo');
+                    handleCloseDropdown();
+                  }}>
+                    Ativar selecionados
+                  </button>
+                  <button className={styles.dropdownItem} onClick={() => {
+                    handleBatchStatusChange('inativo');
+                    handleCloseDropdown();
+                  }}>
+                    Desativar selecionados
+                  </button>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
               onClick={clearSelection}
               className={styles.btnDangerOutline}
             >
               Limpar seleção
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -606,9 +612,9 @@ export default function ProdutosServicosPage() {
                       {getTipoBadge(item)}
                     </td>
                     <td className={styles.tableCell}>
-                      <Badge className={styles.badgeCategoria}>
+                      <span className={styles.badgeCategoria}>
                         {item.tipo}
-                      </Badge>
+                      </span>
                     </td>
                     <td className={styles.tableCell}>
                       <button

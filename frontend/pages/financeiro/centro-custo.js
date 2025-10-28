@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/financeiro/card";
 import styles from '../../styles/financeiro/centro-custo.module.css';
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Badge } from "../../components/financeiro/badge";
 
 import {
   Plus,
@@ -17,12 +13,10 @@ import {
   CheckCircle,
   XCircle,
   MoreVertical,
-  FolderX,
 } from "lucide-react";
 import { NovoCentroCustoModal } from "../../components/financeiro/NovoCentroCustoModal";
 import { toast } from "react-toastify";
 import SpaceLoader from "../../components/onety/menu/SpaceLoader";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../components/financeiro/dialog";
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 
 
@@ -44,6 +38,12 @@ export default function CentrosCustoPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const API = process.env.NEXT_PUBLIC_API_URL;
+
+  // Função para lidar com mudança de itens por página
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset para primeira página
+  };
 
   // Função auxiliar para buscar companyId
   const getCompanyId = () => {
@@ -502,9 +502,9 @@ export default function CentrosCustoPage() {
 
   const getStatusBadge = (situacao) => {
     return situacao === "Ativo" ? (
-      <Badge className={styles.centroCustoBadgeAtivo}>Ativo</Badge>
+      <span className={styles.centroCustoBadgeAtivo}>Ativo</span>
     ) : (
-      <Badge className={styles.centroCustoBadgeInativo}>Inativo</Badge>
+      <span className={styles.centroCustoBadgeInativo}>Inativo</span>
     );
   };
 
@@ -521,14 +521,13 @@ export default function CentrosCustoPage() {
       <div className={styles.centroCustoHeader}>
         <h1 className={styles.centroCustoHeaderTitle}>Centros de custo</h1>
         <div className={styles.centroCustoHeaderActions}>
-          <Button
-            size="sm"
+          <button
+            type="button"
             className={styles.btnNew}
             onClick={() => setIsNovoModalOpen(true)}
           >
-            <Plus className={styles.centroCustoNovaCentroIcon} />
             Novo Centro de Custo
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -536,7 +535,7 @@ export default function CentrosCustoPage() {
 
       {/* Stats Cards */}
       <div className={styles.statsGrid}>
-        <Card
+        <div
           className={`${styles.statusCard} ${statusFilter === "Ativo" ? styles.statusCardAtivoSelected : styles.statusCard}`}
           onClick={handleFilterAtivos}
         >
@@ -545,17 +544,17 @@ export default function CentrosCustoPage() {
               <CheckCircle className={styles.iconAtivo} />
             </div>
           )}
-          <CardContent className={styles.cardContentPadded}>
+          <div className={styles.cardContentPadded}>
             <div className={styles.textCenter}>
               <p className={styles.textMutedSmall}>Ativos</p>
               <p className={`${styles.animatedNumber} ${styles.textAtivo}`}>
                 {stats.ativos}
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
+        <div
           className={`${styles.statusCard} ${statusFilter === "Inativo" ? styles.statusCardInativoSelected : styles.statusCard}`}
           onClick={handleFilterInativos}
         >
@@ -564,17 +563,17 @@ export default function CentrosCustoPage() {
               <CheckCircle className={styles.iconInativo} />
             </div>
           )}
-          <CardContent className={styles.cardContentPadded}>
+          <div className={styles.cardContentPadded}>
             <div className={styles.textCenter}>
               <p className={styles.textMutedSmall}>Inativos</p>
               <p className={`${styles.animatedNumber} ${styles.textInativo}`}>
                 {stats.inativos}
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card
+        <div
           className={`${styles.statusCard} ${statusFilter === "Todos" ? styles.statusCardTodosSelected : styles.statusCardTodos}`}
           onClick={handleFilterTodos}
         >
@@ -583,15 +582,15 @@ export default function CentrosCustoPage() {
               <CheckCircle className={styles.iconTodos} />
             </div>
           )}
-          <CardContent className={styles.cardContentPadded}>
+          <div className={styles.cardContentPadded}>
             <div className={styles.textCenter}>
               <p className={styles.textMutedSmall}>Todos</p>
               <p className={`${styles.animatedNumber} ${styles.textTodos}`}>
                 {stats.todos}
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Search */}
@@ -602,7 +601,8 @@ export default function CentrosCustoPage() {
               <label className={styles.centroCustoFilterLabel}>Pesquisar</label>
               <div className={styles.centroCustoSearchContainer}>
                 <Search className={styles.centroCustoSearchIcon} />
-                <Input
+                <input
+                  type="text"
                   placeholder="Pesquisar"
                   className={styles.centroCustoSearchInput}
                   value={searchTerm}
@@ -621,14 +621,13 @@ export default function CentrosCustoPage() {
             <span className={styles.centroCustoFiltrosAtivosText}>
               Filtro: {statusFilter}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={handleFilterTodos}
               className={styles.centroCustoSecondaryBtn}
             >
               Limpar filtro
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -810,35 +809,38 @@ export default function CentrosCustoPage() {
       )}
 
       {/* Modal de Confirmação de Exclusão */}
-      <Dialog open={deleteModal.isOpen} onOpenChange={() => setDeleteModal({ isOpen: false })}>
-        <DialogContent className={styles.centroCustoModalContent}>
-          <DialogHeader>
-            <DialogTitle className={styles.centroCustoModalTitle}>Excluir centro de custo</DialogTitle>
-          </DialogHeader>
+      {deleteModal.isOpen && (
+        <div className={styles.centroCustoModalOverlay} onClick={() => setDeleteModal({ isOpen: false })}>
+          <div className={styles.centroCustoModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.centroCustoModalHeader}>
+              <h2 className={styles.centroCustoModalTitle}>Excluir centro de custo</h2>
+            </div>
 
-          <div className={styles.centroCustoModalBody}>
-            <p className={styles.centroCustoModalDescription}>
-              Deseja excluir o centro de custo <strong className={styles.centroCustoModalHighlight}>{deleteModal.centro?.nome}</strong>?
-            </p>
-          </div>
+            <div className={styles.centroCustoModalBody}>
+              <p className={styles.centroCustoModalDescription}>
+                Deseja excluir o centro de custo <strong className={styles.centroCustoModalHighlight}>{deleteModal.centro?.nome}</strong>?
+              </p>
+            </div>
 
-          <div className={styles.centroCustoModalFooter}>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteModal({ isOpen: false })}
-              className={styles.centroCustoModalBtnCancelar}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleDeleteCentro}
-              className={styles.centroCustoModalBtnConfirmar}
-            >
-              Excluir centro de custo
-            </Button>
+            <div className={styles.centroCustoModalFooter}>
+              <button
+                type="button"
+                onClick={() => setDeleteModal({ isOpen: false })}
+                className={styles.centroCustoModalBtnCancelar}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCentro}
+                className={styles.centroCustoModalBtnConfirmar}
+              >
+                Excluir centro de custo
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       {/* Dropdown Global */}
       {openDropdownId && (

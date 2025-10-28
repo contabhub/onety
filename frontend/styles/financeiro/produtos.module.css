@@ -47,12 +47,30 @@
   color: var(--onity-color-primary-contrast);
   border: 1px solid var(--onity-color-primary-contrast);
   transition: all 120ms ease;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  cursor: pointer;
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-medium);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
 }
 
 .btnNew:hover {
   background: var(--onity-color-primary-contrast);
   color: var(--onity-dark-primary-deep);
   border-color: var(--onity-color-primary-contrast);
+  transform: translateY(-1px);
+}
+
+.btnNew:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.btnNew:active {
+  transform: translateY(0);
 }
 
 .btnSecondary {
@@ -60,11 +78,26 @@
   border: 1px solid var(--onity-color-border);
   color: var(--onity-icon-secondary);
   transition: all 120ms ease;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  cursor: pointer;
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-medium);
 }
 
 .btnSecondary:hover {
   background: var(--onity-color-bg);
   border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+}
+
+.btnSecondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.btnSecondary:active {
+  transform: translateY(0);
 }
 
 .btnDangerOutline {
@@ -72,11 +105,26 @@
   border: 1px solid var(--onity-color-error);
   color: var(--onity-color-error);
   transition: all 120ms ease;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-s);
+  cursor: pointer;
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-medium);
 }
 
 .btnDangerOutline:hover {
   background: var(--onity-color-error);
   color: var(--onity-color-error-contrast);
+  transform: translateY(-1px);
+}
+
+.btnDangerOutline:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.btnDangerOutline:active {
+  transform: translateY(0);
 }
 
 /* ===== CARDS E CONTEÚDO ===== */

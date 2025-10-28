@@ -1,22 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/financeiro/card';
 import styles from '../../styles/financeiro/categorias.module.css';
-import { Button } from '../../components/financeiro/botao';
-import { Input } from '../../components/financeiro/input';
-import { Label } from '../../components/financeiro/label';
 import {
   Plus,
   Edit,
   Trash2,
-  Settings,
-  Eye,
-  EyeOff,
   Search
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/financeiro/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/financeiro/select';
 import { toast } from 'react-toastify';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 
@@ -57,21 +48,24 @@ const CategoryModal = ({ isOpen, onClose, onSave, category, type, isSubcategory 
     ? ['Receitas', 'Outras Receitas Não Operacionais']
     : ['Custo dos Serviços Prestados', 'Despesas Administrativas', 'Não mostrar no DRE Gerencial'];
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.categoriasModal}>
-        <DialogHeader className={styles.categoriasModalHeader}>
-          <DialogTitle className={styles.categoriasModalTitle}>
+    <div className={styles.categoriasModalOverlay} onClick={onClose}>
+      <div className={styles.categoriasModal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.categoriasModalHeader}>
+          <h2 className={styles.categoriasModalTitle}>
             {category ? 'Editar' : 'Nova'} categoria de {type}
-          </DialogTitle>
-        </DialogHeader>
+          </h2>
+        </div>
 
         <div className={styles.categoriasModalBody}>
           <div className={styles.categoriasModalSpace}>
             <div className={styles.categoriasModalField}>
-              <Label htmlFor="description" className={styles.categoriasModalLabel}>Descrição *</Label>
-              <Input
+              <label htmlFor="description" className={styles.categoriasModalLabel}>Descrição *</label>
+              <input
                 id="description"
+                type="text"
                 value={formData.nome}
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 placeholder="Digite a descrição da categoria"
@@ -79,63 +73,19 @@ const CategoryModal = ({ isOpen, onClose, onSave, category, type, isSubcategory 
               />
             </div>
           </div>
-
-          {/* <div className="space-y-2">
-            <div className={styles.categoriasFlex + ' ' + styles.categoriasItemsCenter + ' ' + styles.categoriasGap}>
-              <Label className={styles.categoriasModalLabel}>Aparecer dentro de</Label>
-              <div className={styles.categoriasActionIcon}>
-                ?
-              </div>
-            </div>
-            <Select value={formData.dre} onValueChange={(value) => setFormData({ ...formData, dre: value })}>
-              <SelectTrigger className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white focus:border-[#9C27B0] focus:ring-[#9C27B0]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1B1229] border-[#673AB7]/30">
-                {dreOptions.map((option) => (
-                  <SelectItem key={option} value={option} className="text-white hover:bg-[#673AB7]/20">
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div> */}
-
-          {/* {!isSubcategory && (
-            <div className="space-y-2">
-              <div className={styles.categoriasFlex + ' ' + styles.categoriasItemsCenter + ' ' + styles.categoriasGap}>
-                <Label className={styles.categoriasModalLabel}>Associar com DRE Gerencial padrão</Label>
-                <div className={styles.categoriasActionIcon}>
-                  ?
-                </div>
-              </div>
-              <Select
-                value={formData.showInDre ? "show" : "hide"}
-                onValueChange={(value) => setFormData({ ...formData, showInDre: value === "show" })}
-              >
-                <SelectTrigger className="bg-[#1B1229]/30 border-[#673AB7]/30 text-white focus:border-[#9C27B0] focus:ring-[#9C27B0]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1B1229] border-[#673AB7]/30">
-                  <SelectItem value="show" className="text-white hover:bg-[#673AB7]/20">Mostrar no DRE Gerencial padrão</SelectItem>
-                  <SelectItem value="hide" className="text-white hover:bg-[#673AB7]/20">Não mostrar no DRE Gerencial padrão</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )} */}
         </div>
 
         <div className={styles.categoriasModalFooter}>
-          <Button 
-            variant="outline" 
+          <button 
+            type="button"
             onClick={onClose} 
             disabled={isSaving}
             className={styles.categoriasModalButtonSecondary}
           >
             Cancelar
-          </Button>
-          <Button 
-            variant="outline"
+          </button>
+          <button 
+            type="button"
             onClick={handleSave}
             disabled={isSaving}
             className={styles.categoriasModalButtonPrimary}
@@ -148,20 +98,22 @@ const CategoryModal = ({ isOpen, onClose, onSave, category, type, isSubcategory 
             ) : (
               "Salvar"
             )}
-          </Button>
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
 const DeleteModal = ({ isOpen, onClose, onConfirm, categoryName }) => {
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.categoriasDeleteModal}>
-        <DialogHeader className={styles.categoriasDeleteModalHeader}>
-          <DialogTitle className={styles.categoriasDeleteModalTitle}>Excluir categoria</DialogTitle>
-        </DialogHeader>
+    <div className={styles.categoriasModalOverlay} onClick={onClose}>
+      <div className={styles.categoriasDeleteModal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.categoriasDeleteModalHeader}>
+          <h2 className={styles.categoriasDeleteModalTitle}>Excluir categoria</h2>
+        </div>
 
         <div className={styles.categoriasDeleteModalBody}>
           <p className={styles.categoriasDeleteModalText}>
@@ -170,23 +122,23 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, categoryName }) => {
         </div>
 
         <div className={styles.categoriasDeleteModalFooter}>
-          <Button 
-            variant="outline" 
+          <button 
+            type="button"
             onClick={onClose}
             className={styles.categoriasModalButtonSecondary}
           >
             Cancelar
-          </Button>
-          <Button
-            variant="outline"
+          </button>
+          <button
+            type="button"
             onClick={onConfirm}
             className={styles.categoriasModalButtonPrimary}
           >
             Excluir categoria
-          </Button>
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
@@ -614,9 +566,8 @@ export default function CategoriasFinanceiras() {
             </span>
           </div>
           <div className={styles.categoriasCategoryActions}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setCategoryModal({
                 isOpen: true,
                 category,
@@ -627,10 +578,9 @@ export default function CategoriasFinanceiras() {
               className={styles.categoriasCategoryActionBtn}
             >
               <Edit className={styles.categoriasActionIcon} />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => setDeleteModal({
                 isOpen: true,
                 category,
@@ -640,7 +590,7 @@ export default function CategoriasFinanceiras() {
               className={styles.categoriasCategoryActionBtn}
             >
               <Trash2 className={styles.categoriasActionIcon} />
-            </Button>
+            </button>
           </div>
         </div>
       );
@@ -653,9 +603,8 @@ export default function CategoriasFinanceiras() {
             <span className={styles.categoriasCategoryMainTitle}>
               {category.nome}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setCategoryModal({
                 isOpen: true,
                 type,
@@ -665,12 +614,11 @@ export default function CategoriasFinanceiras() {
               className={styles.categoriasAddSubcategoryBtn}
             >
               <Plus className={styles.categoriasActionIcon} />
-            </Button>
+            </button>
           </div>
           <div className={styles.categoriasCategoryActions}>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setCategoryModal({
                 isOpen: true,
                 category,
@@ -681,10 +629,9 @@ export default function CategoriasFinanceiras() {
               className={styles.categoriasCategoryActionBtn}
             >
               <Edit className={styles.categoriasActionIcon} />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => setDeleteModal({
                 isOpen: true,
                 category,
@@ -694,7 +641,7 @@ export default function CategoriasFinanceiras() {
               className={styles.categoriasCategoryActionBtn}
             >
               <Trash2 className={styles.categoriasActionIcon} />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -719,28 +666,14 @@ export default function CategoriasFinanceiras() {
         <div className={styles.categoriasSearchContainer}>
           <div className={styles.categoriasSearchWrapper}>
             <Search className={styles.categoriasSearchIcon} />
-            <Input
+            <input
+              type="text"
               placeholder="Pesquisar categorias..."
               className={styles.categoriasSearchInput}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </div>
-        <div className={styles.categoriasActionsContainer}>
-          {/* <Button
-            variant="outline"
-            onClick={() => setShowDre(!showDre)}
-          >
-            {showDre ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-            {showDre ? 'Ocultar DRE' : 'Ocultar DRE'}
-          </Button>
-          <Button 
-            variant="outline"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Configurar categorias padrão
-          </Button> */}
         </div>
       </div>
 
@@ -749,13 +682,13 @@ export default function CategoriasFinanceiras() {
       ) : (
         <>
           {/* Categorias de Receita */}
-          <Card className={styles.categoriasCard}>
-            <CardHeader className={styles.categoriasCardHeader}>
-              <CardTitle className={styles.categoriasCardTitle}>
+          <div className={styles.categoriasCard}>
+            <div className={styles.categoriasCardHeader}>
+              <h3 className={styles.categoriasCardTitle}>
                 Categorias de receita
-              </CardTitle>
-              <Button
-                variant="outline"
+              </h3>
+              <button
+                type="button"
                 onClick={() => setCategoryModal({
                   isOpen: true,
                   type: 'receita'
@@ -763,9 +696,9 @@ export default function CategoriasFinanceiras() {
                 className={styles.categoriasButtonSecondary}
               >
                 Nova categoria de receita
-              </Button>
-            </CardHeader>
-            <CardContent className={styles.categoriasCardContent}>
+              </button>
+            </div>
+            <div className={styles.categoriasCardContent}>
               {filteredReceitaCategories.map((category) => (
                 <div key={category.id} className={styles.categoriasSpaceY2}>
                   <CategoryItem category={category} type="receita" />
@@ -786,17 +719,17 @@ export default function CategoriasFinanceiras() {
                   <p className={styles.categoriasEmptyStateText}>Nenhuma categoria de receita encontrada para "{searchTerm}"</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Categorias de Despesa */}
-          <Card className={styles.categoriasCard}>
-            <CardHeader className={styles.categoriasCardHeader}>
-              <CardTitle className={styles.categoriasCardTitle}>
+          <div className={styles.categoriasCard}>
+            <div className={styles.categoriasCardHeader}>
+              <h3 className={styles.categoriasCardTitle}>
                 Categorias de despesa
-              </CardTitle>
-              <Button
-                variant="outline"
+              </h3>
+              <button
+                type="button"
                 onClick={() => setCategoryModal({
                   isOpen: true,
                   type: 'despesa'
@@ -804,10 +737,10 @@ export default function CategoriasFinanceiras() {
                 className={styles.categoriasButtonSecondary}
               >
                 Nova categoria de despesa
-              </Button>
+              </button>
 
-            </CardHeader>
-            <CardContent className={styles.categoriasCardContent}>
+            </div>
+            <div className={styles.categoriasCardContent}>
               {filteredDespesaCategories.map((category) => (
                 <div key={category.id} className={styles.categoriasSpaceY2}>
                   <CategoryItem category={category} type="despesa" />
@@ -828,8 +761,8 @@ export default function CategoriasFinanceiras() {
                   <p className={styles.categoriasEmptyStateText}>Nenhuma categoria de despesa encontrada para "{searchTerm}"</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </>
       )}
 

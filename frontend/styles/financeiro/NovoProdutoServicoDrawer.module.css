@@ -1,11 +1,38 @@
+/* Overlay do modal */
+.dialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+}
+
 /* Container principal do dialog */
 .dialogContent {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: 12px;
   max-width: 500px;
-  margin: 0 auto;
+  width: 90%;
   z-index: 10001;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Header do dialog */
@@ -41,8 +68,17 @@
 }
 
 .closeButton:hover {
-  background: var(--onity-color-primary-hover);
-  color: var(--onity-color-text-secondary);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-primary);
+}
+
+.closeButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.closeButton:active {
+  transform: scale(0.95);
 }
 
 .closeButton:disabled {
@@ -207,6 +243,16 @@
 .cancelButton:hover:not(:disabled) {
   background: var(--onity-color-error);
   color: white;
+  transform: translateY(-1px);
+}
+
+.cancelButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.cancelButton:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 /* Botão criar */
@@ -219,6 +265,16 @@
 .createButton:hover:not(:disabled) {
   background: var(--onity-color-primary-hover);
   border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.createButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.createButton:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 /* Loading spinner */
@@ -258,4 +314,32 @@
   .button {
     width: 100%;
   }
+}
+
+/* Scroll suave para modal */
+.dialogContent {
+  scrollbar-width: thin;
+  scrollbar-color: var(--onity-color-border) transparent;
+}
+
+.dialogContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialogContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dialogContent::-webkit-scrollbar-thumb {
+  background: var(--onity-color-border);
+  border-radius: 3px;
+}
+
+.dialogContent::-webkit-scrollbar-thumb:hover {
+  background: var(--onity-color-primary);
+}
+
+/* Melhorias visuais adicionais */
+.dialogContent * {
+  box-sizing: border-box;
 }

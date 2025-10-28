@@ -1,11 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from './botao';
-import { Input } from './input';
-import { Label } from './label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
-import { X } from 'lucide-react';
 import styles from '../../styles/financeiro/NovoCentroCustoModal.module.css';
 
 export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditing = false }) {
@@ -64,14 +59,16 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
     });
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`${styles.modal} sm:max-w-[600px] max-h-[90vh] overflow-y-auto [&>button]:${styles.closeBtn}`}>
-        <DialogHeader>
+    <div className={styles.modalOverlay} onClick={handleClose}>
+      <div className={`${styles.modal} sm:max-w-[600px] max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
           <div className="flex items-center justify-between">
-            <DialogTitle className={styles.title}>{isEditing ? 'Editar centro de custo' : 'Novo centro de custo'}</DialogTitle>
+            <h2 className={styles.title}>{isEditing ? 'Editar centro de custo' : 'Novo centro de custo'}</h2>
           </div>
-        </DialogHeader>
+        </div>
         
         <div className={styles.container}>
           <div>
@@ -79,8 +76,9 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
             
             <div className={styles.gridTwoColumns}>
               <div className={styles.fieldContainer}>
-                <Label htmlFor="codigo" className={styles.label}>Código</Label>
-                <Input
+                <label htmlFor="codigo" className={styles.label}>Código</label>
+                <input
+                  type="text"
                   id="codigo"
                   value={formData.codigo}
                   onChange={(e) => handleInputChange('codigo', e.target.value)}
@@ -90,8 +88,9 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
               </div>
 
               <div className={styles.fieldContainer}>
-                <Label htmlFor="nome" className={styles.label}>Nome *</Label>
-                <Input
+                <label htmlFor="nome" className={styles.label}>Nome *</label>
+                <input
+                  type="text"
                   id="nome"
                   value={formData.nome}
                   onChange={(e) => handleInputChange('nome', e.target.value)}
@@ -104,7 +103,7 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
 
             <div className={styles.grid}>
               <div className={styles.fieldContainer}>
-                <Label htmlFor="situacao" className={styles.label}>Situação</Label>
+                <label htmlFor="situacao" className={styles.label}>Situação</label>
                 <select 
                   id="situacao"
                   value={formData.situacao} 
@@ -120,21 +119,22 @@ export function NovoCentroCustoModal({ isOpen, onClose, onSave, centro, isEditin
         </div>
 
         <div className={styles.buttonsContainer}>
-          <Button 
-            variant="outline" 
+          <button 
+            type="button"
             onClick={handleClose}
             className={styles.cancelBtn}
           >
             Cancelar
-          </Button>
-          <Button 
+          </button>
+          <button 
+            type="button"
             onClick={handleSave} 
             className={styles.saveBtn}
           >
             {isEditing ? 'Atualizar' : 'Salvar'}
-          </Button>
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
