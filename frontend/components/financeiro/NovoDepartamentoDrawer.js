@@ -1,20 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "./drawer";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { X, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
+import styles from "../../styles/financeiro/novo-departamento-drawer.module.css";
+
+// Utility para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export default function NovoDepartamentoDrawer({
   isOpen,
@@ -27,6 +19,33 @@ export default function NovoDepartamentoDrawer({
     descricao: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  
+  const drawerRef = useRef(null);
+
+  // Handlers para drawer
+  const handleClickOutside = useCallback((event) => {
+    if (drawerRef.current && !drawerRef.current.contains(event.target)) {
+      handleClose();
+    }
+  }, []);
+
+  const handleKeyDown = useCallback((event) => {
+    if (event.key === 'Escape') {
+      handleClose();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handleClickOutside, handleKeyDown]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -94,99 +113,103 @@ export default function NovoDepartamentoDrawer({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Drawer open={isOpen} onOpenChange={handleClose}>
-      <DrawerContent className="max-h-[85vh] flex flex-col bg-darkPurple border-neonPurple">
-        <DrawerHeader className="border-b border-neonPurple bg-darkPurple">
-          <div className="flex items-center justify-between">
+    <div className={styles.drawerOverlay} onClick={handleClickOutside}>
+      <div className={styles.drawerContent} ref={drawerRef}>
+        <div className={styles.drawerHeader}>
+          <div className={styles.drawerHeaderInner}>
             <div>
-              <DrawerTitle className="text-xl font-semibold text-textMain">
+              <h2 className={styles.drawerTitleComponent}>
                 Novo Departamento
-              </DrawerTitle>
-              <DrawerDescription className="text-textSecondary">
+              </h2>
+              <p className={styles.drawerDescriptionComponent}>
                 Adicione um novo departamento para organizar seus produtos/serviços
-              </DrawerDescription>
+              </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={handleClose}
               disabled={isSaving}
-              className="h-8 w-8 p-0 text-textMain hover:text-textSecondary"
+              className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.buttonComponentSmall, styles.buttonClose)}
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
-        </DrawerHeader>
+        </div>
 
-        <div className="flex-1 p-6 space-y-6 overflow-y-auto min-h-0 bg-darkPurple">
-          <div className="space-y-4">
+        <div className={cn(styles.drawerBody, styles.formContainer)}>
+          <div className={styles.fieldContainer}>
             {/* Nome do departamento */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-textMain">
-                Nome do departamento <span className="text-hotPink">*</span>
-              </Label>
-              <Input
+            <div className={styles.fieldGroup}>
+              <label className={styles.labelComponent}>
+                Nome do departamento <span className={styles.requiredMark}>*</span>
+              </label>
+              <input
+                type="text"
                 value={formData.nome}
                 onChange={(e) => handleInputChange('nome', e.target.value)}
                 placeholder="Ex: Vendas, Marketing, TI"
-                className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
+                className={styles.inputComponent}
               />
             </div>
 
             {/* Código do departamento */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-textMain">
+            <div className={styles.fieldGroup}>
+              <label className={styles.labelComponent}>
                 Código do departamento
-              </Label>
-              <Input
+              </label>
+              <input
+                type="text"
                 value={formData.codigo}
                 onChange={(e) => handleInputChange('codigo', e.target.value)}
                 placeholder="Ex: VND, MKT, TI"
-                className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
+                className={styles.inputComponent}
               />
-              <p className="text-xs text-textSecondary">
+              <p className={styles.fieldHint}>
                 Código opcional para identificação rápida do departamento
               </p>
             </div>
 
             {/* Descrição */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-textMain">
+            <div className={styles.fieldGroup}>
+              <label className={styles.labelComponent}>
                 Descrição
-              </Label>
-              <Textarea
+              </label>
+              <textarea
                 value={formData.descricao}
                 onChange={(e) => handleInputChange('descricao', e.target.value)}
                 placeholder="Descreva as responsabilidades e atividades do departamento..."
                 rows={3}
-                className="bg-darkPurple border-neonPurple text-textMain placeholder:text-textSecondary"
+                className={styles.textareaComponent}
               />
             </div>
           </div>
         </div>
 
-        <DrawerFooter className="border-t border-neonPurple bg-darkPurple sticky bottom-0">
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
+        <div className={styles.drawerFooter}>
+          <div className={styles.footerActions}>
+            <button
+              type="button"
               onClick={handleClose}
               disabled={isSaving}
-              className="flex-1 border-neonPurple bg-darkPurple text-textMain hover:bg-neonPurple hover:text-textMain"
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonFlex1)}
             >
               Cancelar
-            </Button>
-            <Button 
-              onClick={handleSave} 
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
               disabled={isSaving || !formData.nome.trim()}
-              className="flex-1 bg-primary hover:bg-primary/80 text-textMain"
+              className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.buttonFlex1)}
             >
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isSaving ? "Salvando..." : "Salvar"}
-            </Button>
+            </button>
           </div>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        </div>
+      </div>
+    </div>
   );
 }

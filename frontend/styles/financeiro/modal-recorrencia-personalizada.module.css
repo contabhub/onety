@@ -1,5 +1,230 @@
 /* Modal de Recorrência Personalizada - Usando variáveis do globals.css */
 
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Modal - Substituição para Dialog */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  width: 100%;
+  max-width: 28rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  animation: slideIn 0.2s ease-out;
+}
+
+.modalHeader {
+  margin-bottom: 1.5rem;
+}
+
+.modalTitleComponent {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+/* Botões - Substituição para Button */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: none;
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-decoration: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+}
+
+.buttonComponentPrimary:hover:not(:disabled) {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+}
+
+.buttonComponentOutline {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background: var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+/* Input - Substituição para Input */
+.inputComponent {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  width: 100%;
+}
+
+.inputComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.1);
+}
+
+.inputComponent::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.inputComponent[aria-invalid="true"] {
+  border-color: var(--onity-color-error);
+}
+
+.inputComponent[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 2px rgba(234, 84, 85, 0.1);
+}
+
+/* Select - Substituição para Select */
+.selectComponent {
+  position: relative;
+  width: 100%;
+}
+
+.selectTriggerComponent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.selectTriggerComponent:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.selectTriggerComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px rgba(68, 84, 100, 0.1);
+}
+
+.selectContentComponent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-med);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.25rem;
+}
+
+.selectItemComponent {
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.selectItemComponent:hover {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.selectIcon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s ease-in-out;
+  color: var(--onity-color-text);
+}
+
+.selectIconOpen {
+  transform: rotate(180deg);
+}
+
+/* Label - Substituição para Label */
+.labelComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  margin-bottom: var(--onity-space-xs);
+  display: block;
+  cursor: pointer;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .modalRecorrenciaPersonalizada {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
