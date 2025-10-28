@@ -1,25 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
-import { Checkbox } from "./checkbox";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./accordion";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Search,
@@ -27,16 +8,57 @@ import {
   Plus,
   Trash2,
   Calendar as CalendarIcon,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+import { toast } from "react-toastify";
+import { formatarDataParaMysql } from "../../utils/financeiro/dateUtils";
+import styles from "../../styles/financeiro/novo-cliente-drawer.module.css";
+
 // Função para combinar classes CSS
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
-import { toast } from "react-toastify";
-import { formatarDataParaMysql } from "../../utils/financeiro/dateUtils";
-import { useEffect } from "react";
-import styles from "../../styles/financeiro/novo-cliente-drawer.module.css";
-// Removido InputMask para evitar warning de findDOMNode
+
+// Componente Accordion customizado
+const CustomAccordion = ({ children, value, onValueChange }) => {
+  return <div className={styles.accordionContainer}>{children}</div>;
+};
+
+const CustomAccordionItem = ({ value, children, openAccordions, toggleAccordion }) => {
+  const isOpen = openAccordions.includes(value);
+  
+  return (
+    <div className={styles.accordionItem}>
+      {React.Children.map(children, child => {
+        if (child.type === CustomAccordionTrigger) {
+          return React.cloneElement(child, { isOpen, onClick: () => toggleAccordion(value) });
+        }
+        if (child.type === CustomAccordionContent) {
+          return isOpen ? child : null;
+        }
+        return child;
+      })}
+    </div>
+  );
+};
+
+const CustomAccordionTrigger = ({ children, isOpen, onClick }) => {
+  return (
+    <button
+      type="button"
+      className={styles.accordionTrigger}
+      onClick={onClick}
+    >
+      {children}
+      {isOpen ? <ChevronUp className={styles.accordionIcon} /> : <ChevronDown className={styles.accordionIcon} />}
+    </button>
+  );
+};
+
+const CustomAccordionContent = ({ children }) => {
+  return <div className={styles.accordionContent}>{children}</div>;
+};
 
 export function NovoClienteDrawer({
   isOpen,
@@ -167,6 +189,15 @@ export function NovoClienteDrawer({
   const [openAccordions, setOpenAccordions] = useState([
     "dados-gerais",
   ]);
+
+  // Função para toggle de accordion
+  const toggleAccordion = (value) => {
+    setOpenAccordions(prev => 
+      prev.includes(value)
+        ? prev.filter(item => item !== value)
+        : [...prev, value]
+    );
+  };
 
   const enviarClienteParaBackend = async (data) => {
     // Buscar empresaId do userData (padrão correto do sistema)
@@ -499,71 +530,56 @@ export function NovoClienteDrawer({
         {/* Header */}
         <div className={styles.drawerHeader}>
           <h2 className={styles.drawerTitle}>Novo cadastro</h2>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={handleClose}
             className={styles.closeButton}
           >
             <X className={styles.closeIcon} />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
         <div className={styles.drawerContent}>
           <div className={styles.drawerContentInner}>
-            <Accordion
-              type="multiple"
+            <CustomAccordion
               value={openAccordions}
               onValueChange={setOpenAccordions}
-              className={styles.accordionContainer}
             >
               {/* Dados Gerais */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="dados-gerais"
-                className={styles.accordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.accordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.fontMedium}>Dados gerais</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.accordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.spaceY4}>
                     {/* Primeira linha */}
                     <div className={cn(styles.grid1Col, styles.mdGrid3Col)}>
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Tipo de pessoa *
-                        </Label>
-                        <Select
+                        </label>
+                        <select
                           value={formData.tipoPessoa}
-                          onValueChange={(value) =>
-                            handleInputChange("tipoPessoa", value)
+                          onChange={(e) =>
+                            handleInputChange("tipoPessoa", e.target.value)
                           }
+                          className={styles.selectField}
                         >
-                          <SelectTrigger className={styles.selectField}>
-                            <SelectValue className={styles.textWhite} />
-                          </SelectTrigger>
-                          <SelectContent className={styles.selectContent}>
-                            <SelectItem
-                              value="Jurídica"
-                              className={styles.selectItem}
-                            >
-                              Jurídica
-                            </SelectItem>
-                            <SelectItem
-                              value="Física"
-                              className={styles.selectItem}
-                            >
-                              Física
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="Jurídica">Jurídica</option>
+                          <option value="Física">Física</option>
+                        </select>
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>{formData.tipoPessoa === "Jurídica" ? "CNPJ" : "CPF"}</Label>
+                        <label className={styles.fieldLabel}>{formData.tipoPessoa === "Jurídica" ? "CNPJ" : "CPF"}</label>
                         <div className={styles.inputWithButton}>
-                          <Input
+                          <input
+                            type="text"
                             value={formData.cnpj}
                             onChange={(e) => {
                               const valor = e.target.value;
@@ -576,15 +592,14 @@ export function NovoClienteDrawer({
                             className={cn(styles.inputField, styles.inputFieldLarge)}
                           />
                           {formData.tipoPessoa === "Jurídica" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <button
+                              type="button"
                               onClick={buscarDadosCNPJ}
                               disabled={buscandoCnpj}
                               className={cn(styles.buttonOutline, styles.buttonSmall, buscandoCnpj && styles.buttonDisabled)}
                             >
                               {buscandoCnpj ? "Buscando..." : "Buscar dados"}
-                            </Button>
+                            </button>
                           )}
                         </div>
                         {erroCnpj && (
@@ -595,11 +610,12 @@ export function NovoClienteDrawer({
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           {formData.tipoPessoa === "Jurídica" ? "Nome fantasia *" : "Nome cliente *"}
-                        </Label>
+                        </label>
                         <div className={styles.flex} style={{ gap: '8px' }}>
-                          <Input
+                          <input
+                            type="text"
                             value={formData.nomeFantasia}
                             onChange={(e) =>
                               handleInputChange("nomeFantasia", e.target.value)
@@ -615,58 +631,64 @@ export function NovoClienteDrawer({
                     <div className={cn(styles.grid1Col, styles.mdGrid2Col)}>
                       <div className={styles.fieldContainer}>
                         <div className={styles.fieldLabelWithIcon}>
-                          <Label className={styles.fieldLabel}>
+                          <label className={styles.fieldLabel}>
                             Tipo de papel *
-                          </Label>
+                          </label>
                         </div>
                         <div className={styles.checkboxContainer}>
                           <div className={styles.checkboxItem}>
-                            <Checkbox
+                            <input
+                              type="checkbox"
                               id="cliente"
                               checked={formData.tiposPapel.cliente}
-                              onCheckedChange={(checked) =>
+                              onChange={(e) =>
                                 handleTipoPapelChange(
                                   "cliente",
-                                  checked
+                                  e.target.checked
                                 )
                               }
+                              className={styles.checkbox}
                             />
-                            <Label htmlFor="cliente" className={styles.checkboxLabel}>
+                            <label htmlFor="cliente" className={styles.checkboxLabel}>
                               Cliente
-                            </Label>
+                            </label>
                           </div>
                           <div className={styles.checkboxItem}>
-                            <Checkbox
+                            <input
+                              type="checkbox"
                               id="fornecedor"
                               checked={formData.tiposPapel.fornecedor}
-                              onCheckedChange={(checked) =>
+                              onChange={(e) =>
                                 handleTipoPapelChange(
                                   "fornecedor",
-                                  checked
+                                  e.target.checked
                                 )
                               }
+                              className={styles.checkbox}
                             />
-                            <Label htmlFor="fornecedor" className={styles.checkboxLabel}>
+                            <label htmlFor="fornecedor" className={styles.checkboxLabel}>
                               Fornecedor
-                            </Label>
+                            </label>
                           </div>
                           <div className={styles.checkboxItem}>
-                            <Checkbox
+                            <input
+                              type="checkbox"
                               id="transportadora"
                               checked={formData.tiposPapel.transportadora}
-                              onCheckedChange={(checked) =>
+                              onChange={(e) =>
                                 handleTipoPapelChange(
                                   "transportadora",
-                                  checked
+                                  e.target.checked
                                 )
                               }
+                              className={styles.checkbox}
                             />
-                            <Label
+                            <label
                               htmlFor="transportadora"
                               className={styles.checkboxLabel}
                             >
                               Transportadora
-                            </Label>
+                            </label>
                           </div>
                         </div>
                         <p className={styles.helpText}>
@@ -676,11 +698,12 @@ export function NovoClienteDrawer({
 
                       <div className={styles.fieldContainer}>
                         <div className={styles.fieldLabelWithIcon}>
-                          <Label className={styles.fieldLabel}>
+                          <label className={styles.fieldLabel}>
                             Código do cadastro
-                          </Label>
+                          </label>
                         </div>
-                        <Input
+                        <input
+                          type="text"
                           value={formData.codigoCadastro}
                           onChange={(e) =>
                             handleInputChange("codigoCadastro", e.target.value)
@@ -691,24 +714,25 @@ export function NovoClienteDrawer({
                       </div>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Informações Adicionais */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="informacoes-adicionais"
-                className={styles.accordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.accordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.fontMedium}>Informações adicionais</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.accordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.fieldLabel}>
+                      <label className={styles.fieldLabel}>
                         E-mail principal
-                      </Label>
-                      <Input
+                      </label>
+                      <input
                         type="email"
                         value={formData.emailPrincipal}
                         onChange={(e) => {
@@ -722,10 +746,11 @@ export function NovoClienteDrawer({
                     </div>
 
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.fieldLabel}>
+                      <label className={styles.fieldLabel}>
                         Telefone comercial
-                      </Label>
-                      <Input
+                      </label>
+                      <input
+                        type="text"
                         value={formData.telefoneComercial}
                         onChange={(e) =>
                           handleInputChange("telefoneComercial", e.target.value)
@@ -736,10 +761,11 @@ export function NovoClienteDrawer({
                     </div>
 
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.fieldLabel}>
+                      <label className={styles.fieldLabel}>
                         Telefone celular
-                      </Label>
-                      <Input
+                      </label>
+                      <input
+                        type="text"
                         value={formData.telefoneCelular}
                         onChange={(e) =>
                           handleInputChange("telefoneCelular", e.target.value)
@@ -750,10 +776,11 @@ export function NovoClienteDrawer({
                     </div>
 
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.fieldLabel}>
+                      <label className={styles.fieldLabel}>
                         Abertura da empresa
-                      </Label>
-                      <Input
+                      </label>
+                      <input
+                        type="text"
                         value={formData.aberturaEmpresa}
                         onChange={(e) => {
                           const valor = e.target.value;
@@ -765,26 +792,28 @@ export function NovoClienteDrawer({
                       />
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Informações Fiscais */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="informacoes-fiscais"
-                className={styles.accordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.accordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.fontMedium}>Informações fiscais</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.accordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.spaceY4}>
                     {/* Primeira linha */}
                     <div className={cn(styles.grid1Col, styles.mdGrid2Col)}>
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Razão social
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.razaoSocial}
                           onChange={(e) =>
                             handleInputChange("razaoSocial", e.target.value)
@@ -796,84 +825,78 @@ export function NovoClienteDrawer({
 
                       <div className={styles.fieldContainer}>
                         <div className={styles.fieldLabelWithIcon}>
-                          <Label className={styles.fieldLabel}>
+                          <label className={styles.fieldLabel}>
                             Optante pelo simples?
-                          </Label>
+                          </label>
                         </div>
-                        <RadioGroup
-                          value={formData.optanteSimples}
-                          onValueChange={(value) =>
-                            handleInputChange("optanteSimples", value)
-                          }
-                          className={styles.radioGroup}
-                        >
+                        <div className={styles.radioGroup}>
                           <div className={styles.radioItem}>
-                            <RadioGroupItem value="Não" id="nao" />
-                            <Label htmlFor="nao" className={styles.radioLabel}>
+                            <input
+                              type="radio"
+                              name="optanteSimples"
+                              value="Não"
+                              id="nao"
+                              checked={formData.optanteSimples === "Não"}
+                              onChange={(e) =>
+                                handleInputChange("optanteSimples", e.target.value)
+                              }
+                              className={styles.radio}
+                            />
+                            <label htmlFor="nao" className={styles.radioLabel}>
                               Não
-                            </Label>
+                            </label>
                           </div>
                           <div className={styles.radioItem}>
-                            <RadioGroupItem value="Sim" id="sim" />
-                            <Label htmlFor="sim" className={styles.radioLabel}>
+                            <input
+                              type="radio"
+                              name="optanteSimples"
+                              value="Sim"
+                              id="sim"
+                              checked={formData.optanteSimples === "Sim"}
+                              onChange={(e) =>
+                                handleInputChange("optanteSimples", e.target.value)
+                              }
+                              className={styles.radio}
+                            />
+                            <label htmlFor="sim" className={styles.radioLabel}>
                               Sim
-                            </Label>
+                            </label>
                           </div>
-                        </RadioGroup>
+                        </div>
                       </div>
                     </div>
 
                     {/* Segunda linha */}
                     <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Indicador de Inscrição estadual
-                        </Label>
-                        <Select
+                        </label>
+                        <select
                           value={formData.indicadorInscricaoEstadual}
-                          onValueChange={(value) =>
+                          onChange={(e) =>
                             handleInputChange(
                               "indicadorInscricaoEstadual",
-                              value
+                              e.target.value
                             )
                           }
+                          className={styles.selectField}
                         >
-                          <SelectTrigger className={styles.selectField}>
-                            <SelectValue
-                              placeholder="Selecione"
-                              className={styles.textWhite}
-                            />
-                          </SelectTrigger>
-                          <SelectContent className={styles.selectContent}>
-                            <SelectItem
-                              value="contribuinte"
-                              className={styles.selectItem}
-                            >
-                              Contribuinte ICMS
-                            </SelectItem>
-                            <SelectItem
-                              value="isento"
-                              className={styles.selectItem}
-                            >
-                              Isento
-                            </SelectItem>
-                            <SelectItem
-                              value="nao-contribuinte"
-                              className={styles.selectItem}
-                            >
-                              Não contribuinte
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione</option>
+                          <option value="contribuinte">Contribuinte ICMS</option>
+                          <option value="isento">Isento</option>
+                          <option value="nao-contribuinte">Não contribuinte</option>
+                        </select>
                       </div>
 
                       <div className={styles.fieldContainer}>
                         <div className={styles.fieldLabelWithIcon}>
-                          <Label className={styles.fieldLabel}>
+                          <label className={styles.fieldLabel}>
                             Inscrição estadual
-                          </Label>
+                          </label>
                         </div>
-                        <Input
+                        <input
+                          type="text"
                           value={formData.inscricaoEstadual}
                           onChange={(e) =>
                             handleInputChange(
@@ -887,10 +910,11 @@ export function NovoClienteDrawer({
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Inscrição municipal
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.inscricaoMunicipal}
                           onChange={(e) =>
                             handleInputChange(
@@ -904,10 +928,11 @@ export function NovoClienteDrawer({
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Inscrição suframa
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.inscricaoSuframa}
                           onChange={(e) =>
                             handleInputChange(
@@ -921,24 +946,26 @@ export function NovoClienteDrawer({
                       </div>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Endereço */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="endereco"
-                className={styles.accordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.accordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.fontMedium}>Endereço</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.accordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.spaceY4}>
                     {/* Primeira linha */}
                     <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>País</Label>
-                        <Input
+                        <label className={styles.fieldLabel}>País</label>
+                        <input
+                          type="text"
                           value={formData.pais}
                           onChange={(e) =>
                             handleInputChange("pais", e.target.value)
@@ -949,9 +976,10 @@ export function NovoClienteDrawer({
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>CEP</Label>
+                        <label className={styles.fieldLabel}>CEP</label>
                         <div className={styles.inputWithButton}>
-                          <Input
+                          <input
+                            type="text"
                             value={formData.cep}
                             onChange={(e) => {
                               const valor = e.target.value;
@@ -961,23 +989,23 @@ export function NovoClienteDrawer({
                             placeholder="00000-000"
                             className={cn(styles.inputField, styles.inputFieldLarge)}
                           />
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <button
+                            type="button"
                             onClick={buscarDadosCEP}
                             disabled={buscandoCep}
                             className={cn(styles.buttonOutline, styles.buttonSmall, buscandoCep && styles.buttonDisabled)}
                           >
                             {buscandoCep ? "Buscando..." : "Buscar dados"}
-                          </Button>
+                          </button>
                         </div>
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Endereço
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.endereco}
                           onChange={(e) =>
                             handleInputChange("endereco", e.target.value)
@@ -988,8 +1016,9 @@ export function NovoClienteDrawer({
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>Número</Label>
-                        <Input
+                        <label className={styles.fieldLabel}>Número</label>
+                        <input
+                          type="text"
                           value={formData.numero}
                           onChange={(e) =>
                             handleInputChange("numero", e.target.value)
@@ -1003,72 +1032,56 @@ export function NovoClienteDrawer({
                     {/* Segunda linha */}
                     <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid4Col)}>
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>Estado</Label>
-                        <Select
+                        <label className={styles.fieldLabel}>Estado</label>
+                        <select
                           value={formData.estado}
-                          onValueChange={(value) =>
-                            handleInputChange("estado", value)
+                          onChange={(e) =>
+                            handleInputChange("estado", e.target.value)
                           }
+                          className={styles.selectField}
                         >
-                          <SelectTrigger className={styles.selectField}>
-                            <SelectValue
-                              placeholder="Selecione"
-                              className={styles.textWhite}
-                            />
-                          </SelectTrigger>
-                          <SelectContent className={styles.selectContent}>
-                            {estados.map((estado) => (
-                              <SelectItem
-                                key={estado.id}
-                                value={estado.sigla}
-                                className={styles.selectItem}
-                              >
-                                {estado.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione</option>
+                          {estados.map((estado) => (
+                            <option
+                              key={estado.id}
+                              value={estado.sigla}
+                            >
+                              {estado.nome}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>Cidade</Label>
-                        <Select
+                        <label className={styles.fieldLabel}>Cidade</label>
+                        <select
                           value={formData.cidade}
-                          onValueChange={(value) =>
-                            handleInputChange("cidade", value)
+                          onChange={(e) =>
+                            handleInputChange("cidade", e.target.value)
                           }
                           disabled={!formData.estado}
+                          className={styles.selectField}
                         >
-                          <SelectTrigger
-                            className={styles.selectField}
-                            disabled={!formData.estado}
-                          >
-                            <SelectValue
-                              placeholder={
-                                formData.estado
-                                  ? "Selecione a cidade"
-                                  : "Selecione um estado primeiro"
-                              }
-                              className={styles.textWhite}
-                            />
-                          </SelectTrigger>
-                          <SelectContent className={styles.selectContent}>
-                            {cidades.map((cidade) => (
-                              <SelectItem
-                                key={cidade.id}
-                                value={cidade.nome}
-                                className={styles.selectItem}
-                              >
-                                {cidade.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <option value="">
+                            {formData.estado
+                              ? "Selecione a cidade"
+                              : "Selecione um estado primeiro"}
+                          </option>
+                          {cidades.map((cidade) => (
+                            <option
+                              key={cidade.id}
+                              value={cidade.nome}
+                            >
+                              {cidade.nome}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>Bairro</Label>
-                        <Input
+                        <label className={styles.fieldLabel}>Bairro</label>
+                        <input
+                          type="text"
                           value={formData.bairro}
                           onChange={(e) =>
                             handleInputChange("bairro", e.target.value)
@@ -1079,10 +1092,11 @@ export function NovoClienteDrawer({
                       </div>
 
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.fieldLabel}>
+                        <label className={styles.fieldLabel}>
                           Complemento
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.complemento}
                           onChange={(e) =>
                             handleInputChange("complemento", e.target.value)
@@ -1093,18 +1107,19 @@ export function NovoClienteDrawer({
                       </div>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Outros Contatos */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="outros-contatos"
-                className={styles.accordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.accordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.fontMedium}>Outros contatos</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.accordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.spaceY4}>
                     {formData.outrosContatos.map((contato, index) => (
                       <div
@@ -1115,22 +1130,22 @@ export function NovoClienteDrawer({
                           <h4 className={styles.contactTitle}>
                             Contato {index + 1}
                           </h4>
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <button
+                            type="button"
                             onClick={() => removerContato(contato.id)}
                             className={styles.removeButton}
                           >
                             <Trash2 className={cn(styles.h4, styles.w4, styles.textRed400)} />
-                          </Button>
+                          </button>
                         </div>
 
                         <div className={cn(styles.grid1Col, styles.mdGrid2Col, styles.lgGrid5Col)}>
                           <div className={styles.fieldContainer}>
-                            <Label className={styles.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                               Pessoa de contato
-                            </Label>
-                            <Input
+                            </label>
+                            <input
+                              type="text"
                               value={contato.pessoaContato}
                               onChange={(e) =>
                                 atualizarContato(
@@ -1145,10 +1160,10 @@ export function NovoClienteDrawer({
                           </div>
 
                           <div className={styles.fieldContainer}>
-                            <Label className={styles.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                               E-mail
-                            </Label>
-                            <Input
+                            </label>
+                            <input
                               type="email"
                               value={contato.email}
                               onChange={(e) => {
@@ -1166,10 +1181,11 @@ export function NovoClienteDrawer({
                           </div>
 
                           <div className={styles.fieldContainer}>
-                            <Label className={styles.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                               Telefone comercial
-                            </Label>
-                            <Input
+                            </label>
+                            <input
+                              type="text"
                               value={contato.telefoneComercial}
                               onChange={(e) =>
                                 atualizarContato(
@@ -1184,10 +1200,11 @@ export function NovoClienteDrawer({
                           </div>
 
                           <div className={styles.fieldContainer}>
-                            <Label className={styles.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                               Telefone celular
-                            </Label>
-                            <Input
+                            </label>
+                            <input
+                              type="text"
                               value={contato.telefoneCelular}
                               onChange={(e) =>
                                 atualizarContato(
@@ -1202,10 +1219,11 @@ export function NovoClienteDrawer({
                           </div>
 
                           <div className={styles.fieldContainer}>
-                            <Label className={styles.fieldLabel}>
+                            <label className={styles.fieldLabel}>
                               Cargo
-                            </Label>
-                            <Input
+                            </label>
+                            <input
+                              type="text"
                               value={contato.cargo}
                               onChange={(e) =>
                                 atualizarContato(
@@ -1222,32 +1240,33 @@ export function NovoClienteDrawer({
                       </div>
                     ))}
 
-                    <Button
-                      variant="outline"
+                    <button
+                      type="button"
                       onClick={adicionarContato}
                       className={styles.addContactButton}
                     >
                       <Plus className={cn(styles.h4, styles.w4, styles.mr2)} />
                       Adicionar contato
-                    </Button>
+                    </button>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Observações Gerais */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="observacoes-gerais"
-                className={styles.accordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.accordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.fontMedium}>Observações gerais</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.accordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.spaceY2}>
-                    <Label className={styles.fieldLabel}>
+                    <label className={styles.fieldLabel}>
                       Observações
-                    </Label>
-                    <Textarea
+                    </label>
+                    <textarea
                       value={formData.observacoes}
                       onChange={(e) =>
                         handleInputChange("observacoes", e.target.value)
@@ -1256,27 +1275,28 @@ export function NovoClienteDrawer({
                       className={cn(styles.textareaField, styles.textareaFieldLarge, styles.minH120px)}
                     />
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
+            </CustomAccordion>
           </div>
         </div>
 
         {/* Footer */}
         <div className={styles.drawerFooter}>
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={handleClose}
             className={styles.cancelButton}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleSave}
             className={styles.saveButton}
           >
             Salvar
-          </Button>
+          </button>
         </div>
       </div>
     </div>

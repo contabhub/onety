@@ -103,40 +103,23 @@ if (typeof document !== 'undefined') {
   toastStyleElement.textContent = toastStyles;
   document.head.appendChild(toastStyleElement);
 }
-import { Card, CardContent } from "../../components/financeiro/card";
-import { Button } from "../../components/financeiro/botao";
-import { Input } from "../../components/financeiro/input";
-import { Badge } from "../../components/financeiro/badge";
 import {
   Plus,
   Search,
   Download,
   Upload,
-  Filter,
   Edit,
   Trash2,
   MoreVertical,
-  ChevronLeft,
-  ChevronRight,
   CheckCircle,
   XCircle,
   X,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/financeiro/select";
-// Removido Dialog em favor de modal customizado
 import { NovoClienteDrawer } from "../../components/financeiro/NovoClienteDrawer";
 import { EditarClienteDrawer } from "../../components/financeiro/EditarCliente";
 import { DetalhesClienteDrawer } from "../../components/financeiro/DetalheClienteDrawer";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../../components/financeiro/dropdown-menu";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import SpaceLoader from '../../components/onety/menu/SpaceLoader';
 import styles from '../../styles/financeiro/cadastro-clientes.module.css';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 import { Loader2 } from "lucide-react";
@@ -161,12 +144,12 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, clienteNome }) => {
           </div>
         </div>
         <div className={styles.deleteModalActions}>
-          <Button variant="outline" onClick={onClose} className={styles.deleteModalBtnCancel}>
+          <button type="button" onClick={onClose} className={styles.deleteModalBtnCancel}>
             Cancelar
-          </Button>
-          <Button onClick={onConfirm} className={styles.deleteModalBtnConfirm}>
+          </button>
+          <button type="button" onClick={onConfirm} className={styles.deleteModalBtnConfirm}>
             Excluir cliente
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -206,12 +189,45 @@ export default function ClientesPage() {
   const [selectedClientes, setSelectedClientes] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const API = process.env.NEXT_PUBLIC_API_URL;
+  
+  // Estados para dropdown nativo
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   // Estado para ordenação
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc"
   });
+
+  // Funções para dropdown nativo
+  const handleDropdownToggle = (id, event) => {
+    if (openDropdownId === id) {
+      setOpenDropdownId(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX
+      });
+      setOpenDropdownId(id);
+    }
+  };
+
+  const handleCloseDropdown = () => {
+    setOpenDropdownId(null);
+  };
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId && !event.target.closest(`.${styles.dropdownContainer}`)) {
+        setOpenDropdownId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdownId]);
 
   // Opções para o react-select de status
   const statusOptions = [
@@ -549,15 +565,15 @@ export default function ClientesPage() {
     // Se não houver status definido, considera como ativo
     const clientStatus = status || "ativo";
     return clientStatus === "ativo" ? (
-      <Badge className={styles.badgeActive}>
+      <span className={styles.badgeActive}>
         <CheckCircle className={styles.badgeIcon} />
         Ativo
-      </Badge>
+      </span>
     ) : (
-      <Badge className={styles.badgeInactive}>
+      <span className={styles.badgeInactive}>
         <XCircle className={styles.badgeIcon} />
         Inativo
-      </Badge>
+      </span>
     );
   };
 
@@ -586,17 +602,17 @@ export default function ClientesPage() {
   const StatsCardSkeleton = () => (
     <div className={styles.statsGrid}>
       {[1, 2, 3].map((index) => (
-        <Card 
+        <div 
           key={index}
           className={styles.skeletonCard}
         >
-          <CardContent className={styles.skeletonCardContent}>
+          <div className={styles.skeletonCardContent}>
             <div className={styles.skeletonInner}>
               <div className={styles.skeletonLineSmall}></div>
               <div className={styles.skeletonLineLarge}></div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -704,33 +720,30 @@ export default function ClientesPage() {
         <div className={styles.toolbarHeader}>
           <h1 className={styles.headerTitleSmall}>Clientes</h1>
           <div className={styles.headerActions}>
-            <Button
+            <button
+              type="button"
               disabled
-              variant="outline"
-              size="sm"
               className={styles.btnExport}
             >
               <Download className={styles.iconSmallWithGap} />
               Exportar
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               disabled
-              variant="outline"
-              size="sm"
               className={styles.btnImport}
             >
               <Upload className={styles.iconSmallWithGap} />
               Importar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               className={styles.btnNew}
               onClick={() => setIsNovoClienteOpen(true)}
             >
               <Plus className={styles.iconSmallWithGap} />
               Novo cliente
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -742,41 +755,56 @@ export default function ClientesPage() {
         <StatsCardSkeleton />
       ) : (
         <div className={styles.statsGrid}>
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "Ativo" ? styles.statusCardAtivoSelected : styles.statusCardAtivo}`}
             onClick={() => setStatusFilter("Ativo")}
           >
-            <CardContent className={styles.cardContentPadded}>
+            {statusFilter === "Ativo" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconAtivo} />
+              </div>
+            )}
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Ativo</p>
                 <AnimatedNumber value={stats.ativo} color={styles.textAtivo} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "Inativo" ? styles.statusCardInativoSelected : styles.statusCardInativo}`}
             onClick={() => setStatusFilter("Inativo")}
           >
-            <CardContent className={styles.cardContentPadded}>
+            {statusFilter === "Inativo" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconInativo} />
+              </div>
+            )}
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Inativo</p>
                 <AnimatedNumber value={stats.inativo} color={styles.textInativo} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card 
+          <div 
             className={`${styles.statusCard} ${statusFilter === "Todos" ? styles.statusCardTodosSelected : styles.statusCardTodos}`}
             onClick={() => setStatusFilter("Todos")}
           >
-            <CardContent className={styles.cardContentPadded}>
+            {statusFilter === "Todos" && (
+              <div className={styles.cardCheckIconWrap}>
+                <CheckCircle className={styles.iconTodos} />
+              </div>
+            )}
+            <div className={styles.cardContentPadded}>
               <div className={styles.textCenter}>
                 <p className={styles.textMutedSmall}>Todos</p>
                 <AnimatedNumber value={stats.todos} color={styles.textTodos} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
@@ -787,7 +815,8 @@ export default function ClientesPage() {
             <div className={styles.filtersRowBox} style={{ flex: 1 }}>
               <div className={styles.searchWrap}>
                 <Search className={styles.searchIcon} />
-                <Input
+                <input
+                  type="text"
                   placeholder="Pesquisar clientes..."
                   className={styles.searchInput}
                   value={searchTerm}
@@ -863,22 +892,20 @@ export default function ClientesPage() {
         <div className={styles.actionsBar}>
           <div className={styles.actionsLeft}>
             <p className={styles.textMutedSmall}>{selectedClientes.length} registro(s) selecionado(s)</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <button 
+              type="button"
               className={styles.btnDangerOutline}
               onClick={handleExcluirSelecionados}
             >
               Excluir
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            </button>
+            <button 
+              type="button"
               className={styles.btnSecondary}
               onClick={handleInativarSelecionados}
             >
               Inativar
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -1003,42 +1030,74 @@ export default function ClientesPage() {
                           </td>
                           <td className={styles.tableCell}>{getStatusBadge(cliente.status)}</td>
                           <td className={styles.tableCell}>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className={styles.dropdownTrigger}>
-                                  <MoreVertical className={styles.iconSmallWithGap} />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className={styles.dropdownContent}>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setClienteSelecionado(cliente);
-                                    setIsEditarClienteOpen(true);
-                                  }}
-                                  className={styles.dropdownItem}
-                                >
-                                  <Edit className={styles.iconSmallWithGap} />
-                                  Editar
-                                </DropdownMenuItem>
+                            <div className={styles.dropdownContainer}>
+                              <button
+                                type="button"
+                                className={styles.dropdownTrigger}
+                                onClick={(e) => handleDropdownToggle(`cliente-${cliente.id}`, e)}
+                              >
+                                <MoreVertical className={styles.iconSmallWithGap} />
+                              </button>
+                              {openDropdownId === `cliente-${cliente.id}` && (
+                                <div className={styles.dropdownContent} style={{
+                                  position: 'fixed',
+                                  top: dropdownPosition.top,
+                                  left: dropdownPosition.left,
+                                  transform: 'translateX(-100%)'
+                                }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setClienteSelecionado(cliente);
+                                      setIsEditarClienteOpen(true);
+                                      handleCloseDropdown();
+                                    }}
+                                    className={styles.dropdownItem}
+                                  >
+                                    <Edit className={styles.iconSmallWithGap} />
+                                    Editar
+                                  </button>
 
-                                {cliente.status === "ativo" ? (
-                                  <DropdownMenuItem onClick={() => handleToggleStatus(cliente.id, "inativo")} className={styles.dropdownItemDanger}>
-                                    <XCircle className={styles.iconSmallWithGap} />
-                                    Inativar
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => handleToggleStatus(cliente.id, "ativo")} className={styles.dropdownItemPrimary}>
-                                    <CheckCircle className={styles.iconSmallWithGap} />
-                                    Ativar
-                                  </DropdownMenuItem>
-                                )}
+                                  {cliente.status === "ativo" ? (
+                                    <button 
+                                      type="button"
+                                      onClick={() => {
+                                        handleToggleStatus(cliente.id, "inativo");
+                                        handleCloseDropdown();
+                                      }} 
+                                      className={styles.dropdownItemDanger}
+                                    >
+                                      <XCircle className={styles.iconSmallWithGap} />
+                                      Inativar
+                                    </button>
+                                  ) : (
+                                    <button 
+                                      type="button"
+                                      onClick={() => {
+                                        handleToggleStatus(cliente.id, "ativo");
+                                        handleCloseDropdown();
+                                      }} 
+                                      className={styles.dropdownItemPrimary}
+                                    >
+                                      <CheckCircle className={styles.iconSmallWithGap} />
+                                      Ativar
+                                    </button>
+                                  )}
 
-                                <DropdownMenuItem onClick={() => setDeleteModal({ isOpen: true, cliente })} className={styles.dropdownItemDanger}>
-                                  <Trash2 className={styles.iconSmallWithGap} />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                  <button 
+                                    type="button"
+                                    onClick={() => {
+                                      setDeleteModal({ isOpen: true, cliente });
+                                      handleCloseDropdown();
+                                    }} 
+                                    className={styles.dropdownItemDanger}
+                                  >
+                                    <Trash2 className={styles.iconSmallWithGap} />
+                                    Excluir
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
