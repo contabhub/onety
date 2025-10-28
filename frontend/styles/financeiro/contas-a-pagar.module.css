@@ -469,6 +469,37 @@
   opacity: 0.7;
 }
 
+.contasPagarSelect {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-type-body-weight);
+  height: 40px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.contasPagarSelect:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  outline: none;
+}
+
+.contasPagarSelect:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px var(--onity-primary-10);
+}
+
+.contasPagarSelect option {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: var(--onity-space-s);
+}
+
 .contasPagarSearchContainer {
   position: relative;
   background: transparent;
@@ -476,8 +507,8 @@
   border: 1px solid var(--onity-color-border);
   transition: all 0.3s ease;
   box-shadow: none;
-  min-height: 15px;
-  max-height: 50px;
+  min-height: 32px;
+  max-height: 40px;
   max-width: 420px;
 }
 
@@ -496,7 +527,7 @@
 
 .contasPagarSearchInput {
   width: 100%;
-  padding: 6px 8px 6px 28px;
+  padding: 4px 8px 4px 28px;
   background: transparent;
   border: none;
   color: var(--onity-color-text);

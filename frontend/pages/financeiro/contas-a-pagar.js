@@ -1736,65 +1736,33 @@ export default function ContasAPagar() {
                 <label className={styles.contasPagarFilterLabel}>
                   Conta
                 </label>
-                <Select
+                <select
                   value={selectedAccount}
-                  onValueChange={setSelectedAccount}
+                  onChange={(e) => setSelectedAccount(e.target.value)}
+                  className={styles.contasPagarSelect}
                   disabled
                 >
-                  <SelectTrigger className="theme-input">
-                    <SelectValue placeholder="Selecionar todas" />
-                  </SelectTrigger>
-                  <SelectContent className="theme-modal theme-border-secondary">
-                    <SelectItem
-                      value="all"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      Selecionar todas
-                    </SelectItem>
-                    <SelectItem
-                      value="bradesco"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      Banco Bradesco
-                    </SelectItem>
-                    <SelectItem
-                      value="conta-azul"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      Conta Azul
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="all">Selecionar todas</option>
+                  <option value="bradesco">Banco Bradesco</option>
+                  <option value="conta-azul">Conta Azul</option>
+                </select>
               </div>
               <div className={styles.contasPagarFilterGroup}>
                 <label className={styles.contasPagarFilterLabel}>
                   Subcategoria
                 </label>
-                <Select
+                <select
                   value={selectedSubcategoria}
-                  onValueChange={setSelectedSubcategoria}
+                  onChange={(e) => setSelectedSubcategoria(e.target.value)}
+                  className={styles.contasPagarSelect}
                 >
-                  <SelectTrigger className="theme-input">
-                    <SelectValue placeholder="Todas as subcategorias" />
-                  </SelectTrigger>
-                  <SelectContent className="theme-modal theme-border-secondary">
-                    <SelectItem
-                      value="all"
-                      className="theme-text-white hover:bg-[#673AB7]/20"
-                    >
-                      Todas as subcategorias
-                    </SelectItem>
-                    {subcategoriasDisponiveis.map((subcategoria) => (
-                      <SelectItem
-                        key={subcategoria}
-                        value={subcategoria}
-                        className="theme-text-white hover:bg-[#673AB7]/20"
-                      >
-                        {subcategoria}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="all">Todas as subcategorias</option>
+                  {subcategoriasDisponiveis.map((subcategoria) => (
+                    <option key={subcategoria} value={subcategoria}>
+                      {subcategoria}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex items-end">
                 
