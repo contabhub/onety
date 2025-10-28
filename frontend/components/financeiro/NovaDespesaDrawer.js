@@ -214,47 +214,69 @@ export function NovaDespesaDrawer({
 
     const fetchCategorias = async () => {
       try {
-        // Buscar categorias principais de despesa
-        const res = await fetch(`${API}/financeiro/categorias/tipo/2`, {
+        // Buscar todas as categorias da empresa e filtrar apenas as de Despesa
+        const res = await fetch(`${API}/financeiro/categorias/empresa/${empresaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         const data = await res.json();
         
-        // Se data já é um array de categorias, usar diretamente
+        const categoriasDespesa = [];
+        const subcatsDespesa = [];
+
         if (Array.isArray(data)) {
-          setCategorias(data);
-        } else {
-          // Tentar encontrar por tipo
-          const categoriasDespesa = data?.categorias || data?.data || [];
-          setCategorias(categoriasDespesa);
+          data.forEach((item) => {
+            if (item?.tipo === 'Despesa' && Array.isArray(item.categorias)) {
+              item.categorias.forEach((categoria) => {
+                const catEnriquecida = {
+                  ...categoria,
+                  tipo_id: item.tipo_id,
+                  tipo_nome: item.tipo,
+                };
+                categoriasDespesa.push(catEnriquecida);
+                if (Array.isArray(categoria.subcategorias)) {
+                  categoria.subcategorias.forEach((sub) => {
+                    subcatsDespesa.push({
+                      ...sub,
+                      categoria_nome: categoria.nome,
+                    });
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        setCategorias(categoriasDespesa);
+        // Se houver subcategorias vindas junto, usar como fonte primária
+        if (subcatsDespesa.length > 0) {
+          setSubCategorias(subcatsDespesa);
         }
       } catch (error) {
-        console.error("Erro ao buscar categorias:", error);
+        console.error('Erro ao buscar categorias:', error);
       }
     };
 
     const fetchSubCategorias = async () => {
       try {
         const url = `${API}/financeiro/sub-categorias/empresa/${empresaId}`;
-        
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        
         if (!res.ok) {
-          console.error("❌ Erro na resposta (subcategorias):", res.status);
+          console.error('❌ Erro na resposta (subcategorias):', res.status);
           return;
         }
-        
         const data = await res.json();
-        setSubCategorias(Array.isArray(data) ? data : []);
+        // Se ainda não populamos pelas categorias, usar esse retorno
+        if (!Array.isArray(subCategorias) || subCategorias.length === 0) {
+          setSubCategorias(Array.isArray(data) ? data : []);
+        }
       } catch (error) {
-        console.error("❌ Erro ao buscar subcategorias:", error);
-        setSubCategorias([]);
+        console.error('❌ Erro ao buscar subcategorias:', error);
       }
     };
 
@@ -526,24 +548,28 @@ export function NovaDespesaDrawer({
   const getSubCategoriasDespesa = () => {
     const items = [];
 
-    // Usar categoria_nome que vem dos dados se disponível
-    subCategorias.forEach((subCategoria) => {
-      items.push({
-        id: subCategoria.id,
-        nome: subCategoria.nome,
-        isSubcategoria: true,
-        categoria_id: subCategoria.categoria_id,
-        categoria_pai_nome: subCategoria.categoria_nome || 'Categoria',
-      });
+    // Construir um conjunto com os IDs (como string) de categorias de Despesa carregadas
+    const categoriaDespesaIds = new Set(
+      (categorias || []).map((cat) => String(cat.id))
+    );
+
+    // Filtrar apenas subcategorias cuja categoria pertença às categorias de Despesa
+    (subCategorias || []).forEach((subCategoria) => {
+      if (categoriaDespesaIds.has(String(subCategoria.categoria_id))) {
+        items.push({
+          id: subCategoria.id,
+          nome: subCategoria.nome,
+          isSubcategoria: true,
+          categoria_id: subCategoria.categoria_id,
+          categoria_pai_nome: subCategoria.categoria_nome || 'Categoria',
+        });
+      }
     });
 
     // Ordenar alfabeticamente por categoria pai e depois por subcategoria
     return items.sort((a, b) => {
-      // Primeiro ordena por categoria pai
       const categoriaCompare = (a.categoria_pai_nome || '').localeCompare(b.categoria_pai_nome || '');
       if (categoriaCompare !== 0) return categoriaCompare;
-      
-      // Se a categoria pai for igual, ordena por nome da subcategoria
       return a.nome.localeCompare(b.nome);
     });
   };
@@ -1533,10 +1559,10 @@ export function NovaDespesaDrawer({
 
           {/* Footer */}
           <div className={styles.novaDespesaFooter}>
-            <button onClick={onClose} className={styles.novaDespesaButtonSecondary}>
-              Voltar
-            </button>
             <div className={styles.novaDespesaFooterActions}>
+              <button onClick={onClose} className={styles.novaDespesaButtonSecondary}>
+                Voltar
+              </button>
               <button
                 onClick={handleSave}
                 className={styles.novaDespesaButtonPrimary}

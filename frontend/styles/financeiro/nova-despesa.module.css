@@ -905,17 +905,18 @@
   
   .novaDespesaFooter {
     padding: var(--onity-space-m);
-    flex-direction: column;
+    flex-direction: row; /* manter lado a lado também em telas pequenas */
     gap: var(--onity-space-s);
+    justify-content: space-between;
   }
   
   .novaDespesaFooterActions {
-    width: 100%;
-    justify-content: stretch;
+    width: auto; /* não forçar largura total, evita empilhar */
+    justify-content: flex-end;
   }
   
   .novaDespesaButton {
-    flex: 1;
+    flex: 0; /* não expandir, mantém tamanho do conteúdo */
   }
   
   .novaDespesaClientContainer {
