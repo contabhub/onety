@@ -1,0 +1,135 @@
+/* PDF Viewer - Usando tokens do projeto */
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Botões - Substituição para Button */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onety-spacing-xs);
+  padding: var(--onety-spacing-xs) var(--onety-spacing-sm);
+  border: none;
+  border-radius: var(--onety-border-radius-sm);
+  font-size: var(--onety-font-sm);
+  font-weight: var(--onety-font-medium);
+  cursor: pointer;
+  transition: var(--onety-transition);
+  text-decoration: none;
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponentOutline {
+  background: transparent;
+  color: var(--onety-purple-primary);
+  border: 1px solid var(--onety-purple-primary);
+}
+
+.buttonComponentOutline:hover:not(:disabled) {
+  background: var(--onety-purple-light);
+}
+
+.buttonComponentSmall {
+  height: 2rem;
+  padding: 0 var(--onety-spacing-sm);
+  font-size: var(--onety-font-xs);
+}
+
+/* Layout */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onety-spacing-sm);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--onety-spacing-sm);
+  font-size: var(--onety-font-sm);
+  color: var(--onety-text-muted);
+}
+
+.controlButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--onety-spacing-sm);
+}
+
+.viewer {
+  border: 1px solid var(--onety-purple-border);
+  border-radius: var(--onety-border-radius);
+  overflow: hidden;
+}
+
+.loadingContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--onety-bg-overlay-light);
+}
+
+.loadingContent {
+  text-align: center;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 2rem;
+  width: 2rem;
+  border: 2px solid transparent;
+  border-bottom-color: var(--onety-blue-primary);
+  margin: 0 auto var(--onety-spacing-sm);
+}
+
+.loadingText {
+  font-size: var(--onety-font-sm);
+  color: var(--onety-text-muted);
+}
+
+.iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Animações */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--onety-spacing-sm);
+  }
+  
+  .controlButtons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .buttonComponent {
+    padding: var(--onety-spacing-sm) var(--onety-spacing-md);
+  }
+}

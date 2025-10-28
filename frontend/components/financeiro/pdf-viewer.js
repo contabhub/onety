@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from './botao';
 import { Download, ExternalLink, FileText } from "lucide-react";
 import { toast } from "react-toastify";
+import styles from "../../styles/financeiro/pdf-viewer.module.css";
+
+// Utility para combinar classes CSS
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 
 export function PDFViewer({ 
@@ -66,50 +69,48 @@ export function PDFViewer({
   };
 
   return (
-    <div className={`space-y-2 ${className || ''}`}>
+    <div className={cn(styles.container, className)}>
       {/* Controles */}
       {showControls && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-[#B0AFC1]">
+        <div className={styles.controls}>
+          <div className={styles.fileInfo}>
             <FileText className="h-4 w-4" />
             <span>{fileName}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className={styles.controlButtons}>
+            <button
+              type="button"
               onClick={handleDownload}
-              className="h-8 px-3 border-[#673AB7] text-[#673AB7] hover:bg-[#673AB7]/10"
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall)}
             >
-              <Download className="h-3 w-3 mr-1" />
+              <Download className="h-3 w-3" />
               Baixar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={handleOpenInNewTab}
-              className="h-8 px-3 border-[#673AB7] text-[#673AB7] hover:bg-[#673AB7]/10"
+              className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall)}
             >
-              <ExternalLink className="h-3 w-3 mr-1" />
+              <ExternalLink className="h-3 w-3" />
               Abrir
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
       {/* Visualizador */}
-      <div className={`border border-[#673AB7]/20 rounded-lg overflow-hidden ${height}`}>
+      <div className={cn(styles.viewer, height)}>
         {isLoading && (
-          <div className="w-full h-full flex items-center justify-center bg-[#1B1229]/30">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1E88E5] mx-auto mb-2"></div>
-              <p className="text-sm text-[#B0AFC1]">Carregando PDF...</p>
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingContent}>
+              <div className={styles.loadingSpinner}></div>
+              <p className={styles.loadingText}>Carregando PDF...</p>
             </div>
           </div>
         )}
         <iframe
           src={`data:application/pdf;base64,${base64Data}#toolbar=0&navpanes=0&scrollbar=0`}
-          className="w-full h-full border-0"
+          className={styles.iframe}
           title="Visualizador de PDF"
           onLoad={() => setIsLoading(false)}
           onError={() => {
