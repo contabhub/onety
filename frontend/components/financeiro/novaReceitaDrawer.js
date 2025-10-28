@@ -225,7 +225,14 @@ export default function NovaReceitaDrawer({
         if (Array.isArray(data)) {
           data.forEach(item => {
             if (item.categorias && Array.isArray(item.categorias)) {
-              todasCategorias.push(...item.categorias);
+              // Adicionar o tipo_id e tipo a cada categoria
+              item.categorias.forEach(categoria => {
+                todasCategorias.push({
+                  ...categoria,
+                  tipo_id: item.tipo_id,
+                  tipo_nome: item.tipo
+                });
+              });
             }
           });
         }
@@ -450,17 +457,21 @@ export default function NovaReceitaDrawer({
 
     // Filtrar apenas subcategorias de receita
     subCategorias.forEach((subCategoria) => {
-      // Verificar se a categoria pai existe
+      // Verificar se a categoria pai existe e é de receita
       const categoriaPai = categorias.find(cat => cat.id === subCategoria.categoria_id);
       
-      // Se encontrou a categoria pai, adiciona à lista
-      if (categoriaPai) {
+      // Se encontrou a categoria pai E ela é de receita, adiciona à lista
+      if (categoriaPai && categoriaPai.tipo_nome === "Receita") {
         items.push({
           id: subCategoria.id,
+          
           nome: subCategoria.nome,
           isSubcategoria: true,
           categoria_id: subCategoria.categoria_id,
-          categoria_pai_nome: categoriaPai.nome, // Adicionar nome da categoria pai para exibição
+          categoria_pai_nome: categoriaPai.nome,
+          tipo_id: categoriaPai.tipo_id
+          
+          
         });
       }
     });
