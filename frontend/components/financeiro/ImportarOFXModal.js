@@ -1,9 +1,5 @@
-import { useState, useRef } from 'react';
-import { Button } from './botao';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import styles from '../../styles/financeiro/importar-ofx.module.css';
-import { Input } from './input';
-import { Label } from './label';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { X, Upload, FileText, CheckCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -89,24 +85,44 @@ export function ImportarOFXModal({ isOpen, onClose, onImportSuccess, tipo }) {
     onClose();
   };
 
+  // Handler para clique fora do modal
+  const handleClickOutside = useCallback((e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  }, []);
+
+  // Handler para tecla ESC
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      handleClose();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, handleKeyDown]);
+
   if (!isOpen) return null;
 
   return (
-    <div className={styles.importarOfxOverlay}>
+    <div className={styles.importarOfxOverlay} onClick={handleClickOutside}>
       <div className={styles.importarOfxModal}>
         {/* Header */}
         <div className={styles.importarOfxHeader}>
           <h1 className={styles.importarOfxTitle}>
             Importar arquivo OFX - Contas a {tipo === 'pagar' ? 'pagar' : 'receber'}
           </h1>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={handleClose}
-            className={styles.importarOfxCancelBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.buttonComponentSmall, styles.importarOfxCancelBtn)}
           >
             <X className={styles.importarOfxIcon} />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
@@ -118,8 +134,8 @@ export function ImportarOFXModal({ isOpen, onClose, onImportSuccess, tipo }) {
               </p>
             </div>
 
-            <Card className={styles.importarOfxCard}>
-              <CardContent>
+            <div className={cn(styles.cardComponent, styles.importarOfxCard)}>
+              <div className={styles.cardContentComponent}>
                 <div className={styles.importarOfxFlexStart}>
                   <div className={styles.importarOfxCardIconBg}>
                     <FileText className={styles.importarOfxIcon} />
@@ -137,14 +153,15 @@ export function ImportarOFXModal({ isOpen, onClose, onImportSuccess, tipo }) {
                       </div>
 
                       <div className={styles.importarOfxGap}>
-                        <Button
-                          className={styles.importarOfxSelectBtn}
+                        <button
+                          type="button"
+                          className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.importarOfxSelectBtn)}
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isLoading}
                         >
                           <Upload className={styles.importarOfxIcon} />
                           {ofxBase64 ? 'Arquivo selecionado ✓' : 'Selecionar arquivo OFX'}
-                        </Button>
+                        </button>
                         <input
                           type="file"
                           accept=".ofx"
@@ -163,8 +180,8 @@ export function ImportarOFXModal({ isOpen, onClose, onImportSuccess, tipo }) {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             <div className={styles.importarOfxTip}>
               <div className={styles.importarOfxFlexStart}>
@@ -185,22 +202,23 @@ export function ImportarOFXModal({ isOpen, onClose, onImportSuccess, tipo }) {
 
         {/* Footer */}
         <div className={styles.importarOfxFooter}>
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={handleClose}
             disabled={isLoading}
-            className={styles.importarOfxCancelBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.importarOfxCancelBtn)}
           >
             Cancelar
-          </Button>
+          </button>
 
-          <Button
+          <button
+            type="button"
             onClick={handleImport}
             disabled={!ofxBase64 || isLoading}
-            className={styles.importarOfxImportBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.importarOfxImportBtn)}
           >
             {isLoading ? 'Importando...' : 'Importar arquivo'}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

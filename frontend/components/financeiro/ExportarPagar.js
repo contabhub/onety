@@ -1,18 +1,7 @@
-import { useState } from "react";
-import { Button } from "./botao";
+import { useState, useEffect, useCallback } from "react";
+// Componentes externos removidos - usando HTML nativo
 import styles from "../../styles/financeiro/exportar-pagar.module.css";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import { Label } from "./label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, ChevronDown } from "lucide-react";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,6 +13,10 @@ export function ExportarPagar({ isOpen, onClose }) {
   const [mesSelecionado, setMesSelecionado] = useState("");
   const [anoSelecionado, setAnoSelecionado] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Estados para controlar selects customizados
+  const [isMesSelectOpen, setIsMesSelectOpen] = useState(false);
+  const [isAnoSelectOpen, setIsAnoSelectOpen] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -150,97 +143,167 @@ export function ExportarPagar({ isOpen, onClose }) {
       setTipoExportacao("todos");
       setMesSelecionado("");
       setAnoSelecionado("");
+      setIsMesSelectOpen(false);
+      setIsAnoSelectOpen(false);
       onClose();
     }
   };
 
+  // Função para fechar modal ao clicar no overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  // Função para lidar com cliques fora dos selects
+  const handleClickOutside = useCallback((e) => {
+    if (!e.target.closest('.select-container')) {
+      setIsMesSelectOpen(false);
+      setIsAnoSelectOpen(false);
+    }
+  }, []);
+
+  // Adicionar listener para fechar selects ao clicar fora
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isOpen, handleClickOutside]);
+
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={cn(styles.exportarPagarModal, "sm:max-w-[425px]")}>
-        <DialogHeader>
-          <DialogTitle className={cn(styles.exportarPagarTitle, "flex items-center gap-2")}>
+    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      <div className={cn(styles.modalContent, styles.exportarPagarModal, "sm:max-w-[425px]")}>
+        <div className={cn(styles.modalHeader)}>
+          <h2 className={cn(styles.modalTitle, styles.exportarPagarTitle, "flex items-center gap-2")}>
             <Download className={cn(styles.exportarPagarIcon, "h-5 w-5")} />
             Exportar Contas a Pagar
-          </DialogTitle>
-          <DialogDescription className={styles.exportarPagarDescription}>
+          </h2>
+          <p className={cn(styles.modalDescription, styles.exportarPagarDescription)}>
             Escolha o período para exportar a planilha de contas a pagar.
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
 
         <div className="space-y-4 py-4">
-          <RadioGroup
-            value={tipoExportacao}
-            onValueChange={(value) => setTipoExportacao(value)}
-            className="space-y-3"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="todos" id="todos" className={styles.exportarPagarRadio} />
-              <Label htmlFor="todos" className={cn(styles.exportarPagarLabel, "text-sm font-medium")}>
+          <div className={cn(styles.radioGroupComponent, "space-y-3")}>
+            <div className={cn(styles.radioItemComponent, "flex items-center space-x-2")}>
+              <input 
+                type="radio"
+                id="todos"
+                name="tipoExportacao"
+                value="todos"
+                checked={tipoExportacao === "todos"}
+                onChange={(e) => setTipoExportacao(e.target.value)}
+                className={cn(styles.radioInputComponent, styles.exportarPagarRadio)}
+              />
+              <label htmlFor="todos" className={cn(styles.labelComponent, styles.exportarPagarLabel, "text-sm font-medium")}>
                 Todo o período
-              </Label>
+              </label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="especifico" id="especifico" className={styles.exportarPagarRadio} />
-              <Label htmlFor="especifico" className={cn(styles.exportarPagarLabel, "text-sm font-medium")}>
+            <div className={cn(styles.radioItemComponent, "flex items-center space-x-2")}>
+              <input 
+                type="radio"
+                id="especifico"
+                name="tipoExportacao"
+                value="especifico"
+                checked={tipoExportacao === "especifico"}
+                onChange={(e) => setTipoExportacao(e.target.value)}
+                className={cn(styles.radioInputComponent, styles.exportarPagarRadio)}
+              />
+              <label htmlFor="especifico" className={cn(styles.labelComponent, styles.exportarPagarLabel, "text-sm font-medium")}>
                 Período específico
-              </Label>
+              </label>
             </div>
-          </RadioGroup>
+          </div>
 
           {tipoExportacao === "especifico" && (
             <div className={cn(styles.exportarPagarSpecificPeriod, "space-y-3 pl-6 border-l-2 border-neonPurple")}>
               <div>
-                <Label htmlFor="mes" className={cn(styles.exportarPagarLabel, "text-sm font-medium")}>
+                <label htmlFor="mes" className={cn(styles.labelComponent, styles.exportarPagarLabel, "text-sm font-medium")}>
                   Mês
-                </Label>
-                <Select value={mesSelecionado} onValueChange={setMesSelecionado}>
-                  <SelectTrigger className={cn(styles.exportarPagarSelectTrigger, "mt-1")}>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent className={styles.exportarPagarSelectContent}>
-                    {meses.map((mes) => (
-                      <SelectItem key={mes.value} value={mes.value} className={styles.exportarPagarSelectItem}>
-                        {mes.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </label>
+                <div className={cn(styles.selectComponent, "select-container")} style={{ marginTop: '4px' }}>
+                  <div
+                    className={cn(styles.selectTriggerComponent, styles.exportarPagarSelectTrigger, "mt-1")}
+                    onClick={() => setIsMesSelectOpen(!isMesSelectOpen)}
+                  >
+                    <span className={mesSelecionado ? styles.selectValue : styles.selectPlaceholder}>
+                      {mesSelecionado ? meses.find(m => m.value === mesSelecionado)?.label : "Selecione o mês"}
+                    </span>
+                    <ChevronDown className={cn(styles.selectIcon, isMesSelectOpen && styles.selectIconOpen)} />
+                  </div>
+                  {isMesSelectOpen && (
+                    <div className={cn(styles.selectContentComponent, styles.exportarPagarSelectContent)}>
+                      {meses.map((mes) => (
+                        <div
+                          key={mes.value}
+                          className={cn(styles.selectItemComponent, styles.exportarPagarSelectItem)}
+                          onClick={() => {
+                            setMesSelecionado(mes.value);
+                            setIsMesSelectOpen(false);
+                          }}
+                        >
+                          {mes.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="ano" className={cn(styles.exportarPagarLabel, "text-sm font-medium")}>
+                <label htmlFor="ano" className={cn(styles.labelComponent, styles.exportarPagarLabel, "text-sm font-medium")}>
                   Ano
-                </Label>
-                <Select value={anoSelecionado} onValueChange={setAnoSelecionado}>
-                  <SelectTrigger className={cn(styles.exportarPagarSelectTrigger, "mt-1")}>
-                    <SelectValue placeholder="Selecione o ano" />
-                  </SelectTrigger>
-                  <SelectContent className={styles.exportarPagarSelectContent}>
-                    {anos.map((ano) => (
-                      <SelectItem key={ano.value} value={ano.value} className={styles.exportarPagarSelectItem}>
-                        {ano.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </label>
+                <div className={cn(styles.selectComponent, "select-container")} style={{ marginTop: '4px' }}>
+                  <div
+                    className={cn(styles.selectTriggerComponent, styles.exportarPagarSelectTrigger, "mt-1")}
+                    onClick={() => setIsAnoSelectOpen(!isAnoSelectOpen)}
+                  >
+                    <span className={anoSelecionado ? styles.selectValue : styles.selectPlaceholder}>
+                      {anoSelecionado ? anos.find(a => a.value === anoSelecionado)?.label : "Selecione o ano"}
+                    </span>
+                    <ChevronDown className={cn(styles.selectIcon, isAnoSelectOpen && styles.selectIconOpen)} />
+                  </div>
+                  {isAnoSelectOpen && (
+                    <div className={cn(styles.selectContentComponent, styles.exportarPagarSelectContent)}>
+                      {anos.map((ano) => (
+                        <div
+                          key={ano.value}
+                          className={cn(styles.selectItemComponent, styles.exportarPagarSelectItem)}
+                          onClick={() => {
+                            setAnoSelecionado(ano.value);
+                            setIsAnoSelectOpen(false);
+                          }}
+                        >
+                          {ano.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
+        <div className={cn(styles.modalFooter)}>
+          <button
+            type="button"
             onClick={handleClose}
             disabled={isExporting}
-            className={styles.exportarPagarCancelBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.exportarPagarCancelBtn)}
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleExportar}
             disabled={isExporting || (tipoExportacao === "especifico" && (!mesSelecionado || !anoSelecionado))}
-            className={styles.exportarPagarExportBtn}
+            className={cn(styles.buttonComponent, styles.buttonComponentPrimary, styles.exportarPagarExportBtn)}
           >
             {isExporting ? (
               <>
@@ -253,9 +316,9 @@ export function ExportarPagar({ isOpen, onClose }) {
                 Exportar
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 } 
