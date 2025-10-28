@@ -129,12 +129,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/financeiro/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/financeiro/dialog";
+// Removido Dialog em favor de modal customizado
 import { NovoClienteDrawer } from "../../components/financeiro/NovoClienteDrawer";
 import { EditarClienteDrawer } from "../../components/financeiro/EditarCliente";
 import { DetalhesClienteDrawer } from "../../components/financeiro/DetalheClienteDrawer";
@@ -149,33 +144,32 @@ import ReactSelect from "react-select";
 
 
 const DeleteModal = ({ isOpen, onClose, onConfirm, clienteNome }) => {
+  if (!isOpen) return null;
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.modalContentSmall}>
-        <DialogHeader>
-          <DialogTitle className={styles.dialogTitle}>Excluir cliente</DialogTitle>
-        </DialogHeader>
-
-        <div className={styles.modalBody}>
-          <p className={styles.textMutedSmall}>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.deleteModalContent} onClick={(e) => e.stopPropagation()}>
+        <h3 className={styles.deleteModalTitle}>Excluir cliente</h3>
+        <div className={styles.deleteModalBody}>
+          <p className={styles.deleteModalDescription}>
             Tem certeza que deseja excluir o cliente &quot;
-            <strong className={styles.textWhite}>{clienteNome}</strong>&quot;?
+            <strong className={styles.deleteModalHighlight}>{clienteNome}</strong>&quot;?
           </p>
-          <p className={styles.textDangerSmall}>
-            Esta ação não pode ser desfeita.
-          </p>
+          <div className={styles.deleteModalWarning}>
+            <p className={styles.deleteModalWarningText}>
+              Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.
+            </p>
+          </div>
         </div>
-
-        <div className={styles.modalActions}>
-          <Button variant="outline" onClick={onClose} className={styles.btnSecondary}>
+        <div className={styles.deleteModalActions}>
+          <Button variant="outline" onClick={onClose} className={styles.deleteModalBtnCancel}>
             Cancelar
           </Button>
-          <Button onClick={onConfirm} className={styles.btnDanger}>
+          <Button onClick={onConfirm} className={styles.deleteModalBtnConfirm}>
             Excluir cliente
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
@@ -705,39 +699,45 @@ export default function ClientesPage() {
         toastClassName="custom-toast"
         closeButton={false}
       />
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerActions}>
-          <Button
-            disabled
-            variant="outline"
-            size="sm"
-            className={styles.btnExport}
-          >
-            <Download className={styles.iconSmallWithGap} />
-            Exportar
-          </Button>
-          <Button
-            disabled
-            variant="outline"
-            size="sm"
-            className={styles.btnImport}
-          >
-            <Upload className={styles.iconSmallWithGap} />
-            Importar
-          </Button>
-          <Button
-            size="sm"
-            className={styles.btnNew}
-            onClick={() => setIsNovoClienteOpen(true)}
-          >
-            <Plus className={styles.iconSmallWithGap} />
-            Novo cliente
-          </Button>
+      {/* Topbar (título + ações + filtros) */}
+      <div className={styles.toolbarBox}>
+        <div className={styles.toolbarHeader}>
+          <h1 className={styles.headerTitleSmall}>Clientes</h1>
+          <div className={styles.headerActions}>
+            <Button
+              disabled
+              variant="outline"
+              size="sm"
+              className={styles.btnExport}
+            >
+              <Download className={styles.iconSmallWithGap} />
+              Exportar
+            </Button>
+            <Button
+              disabled
+              variant="outline"
+              size="sm"
+              className={styles.btnImport}
+            >
+              <Upload className={styles.iconSmallWithGap} />
+              Importar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className={styles.btnNew}
+              onClick={() => setIsNovoClienteOpen(true)}
+            >
+              <Plus className={styles.iconSmallWithGap} />
+              Novo cliente
+            </Button>
+          </div>
         </div>
+
+        {/* Nada aqui - filtros ficam na seção abaixo (mantendo o search no lugar original) */}
       </div>
 
-      {/* Stats Cards */}
+      {/* Contadores em cards transparentes (separados dos filtros) */}
       {loading ? (
         <StatsCardSkeleton />
       ) : (
@@ -795,61 +795,37 @@ export default function ClientesPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className={styles.toolbarBox}>
-        <div className={styles.filtersRow}>
-          <div className={styles.filtersRowBox}>
-            <div className={styles.searchWrap}>
-              <Search className={styles.searchIcon} />
-              <Input
-                placeholder="Pesquisar clientes..."
-                className={styles.searchInput}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+      {/* Card separado para filtros */}
+      <div className={styles.tableContainer}>
+        <div className={styles.cardContentPadded}>
+          <div className={styles.filtersRow}>
+            <div className={styles.filtersRowBox} style={{ flex: 1 }}>
+              <div className={styles.searchWrap}>
+                <Search className={styles.searchIcon} />
+                <Input
+                  placeholder="Pesquisar clientes..."
+                  className={styles.searchInput}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className={styles.filtersRowBox}>
+              <select
+                className={styles.filterSelect}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="Todos">Todos os status</option>
+                <option value="Ativo">Ativo</option>
+                <option value="Inativo">Inativo</option>
+              </select>
             </div>
           </div>
-          
-          <div className={styles.filtersRowBox}>
-            <select
-              className={styles.filterSelect}
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="Todos">Todos os status</option>
-              <option value="Ativo">Ativo</option>
-              <option value="Inativo">Inativo</option>
-            </select>
-          </div>
         </div>
-        
-        {/* Filtros Ativos */}
-        {(statusFilter !== "Todos" || searchTerm) && (
-          <div className={styles.activeFiltersRow}>
-            <span className={styles.textMutedSmall}>Filtros ativos:</span>
-            
-            {statusFilter !== "Todos" && (
-              <Badge 
-                className={styles.badgeFilterStatus}
-                onClick={() => setStatusFilter("Todos")}
-              >
-                Status: {statusFilter}
-                <X className={styles.badgeCloseIcon} />
-              </Badge>
-            )}
-            
-            {searchTerm && (
-              <Badge 
-                className={styles.badgeFilter}
-                onClick={() => setSearchTerm("")}
-              >
-                Busca: &quot;{searchTerm}&quot;
-                <X className={styles.badgeCloseIcon} />
-              </Badge>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Filtros Ativos removidos a pedido */}
 
       {/* Indicador de ordenação */}
       {sortConfig.key && (
@@ -897,30 +873,30 @@ export default function ClientesPage() {
         </div>
       )}
 
-      {/* Actions */}
-      <div className={styles.actionsBar}>
-        <div className={styles.actionsLeft}>
-          <p className={styles.textMutedSmall}>{selectedClientes.length} registro(s) selecionado(s)</p>
-          <Button 
-            disabled={selectedClientes.length === 0} 
-            variant="outline" 
-            size="sm" 
-            className={styles.btnDangerOutline}
-            onClick={handleExcluirSelecionados}
-          >
-            Excluir
-          </Button>
-          <Button 
-            disabled={selectedClientes.length === 0} 
-            variant="outline" 
-            size="sm" 
-            className={styles.btnSecondary}
-            onClick={handleInativarSelecionados}
-          >
-            Inativar
-          </Button>
+      {/* Actions - aparecem apenas quando houver seleção */}
+      {selectedClientes.length > 0 && (
+        <div className={styles.actionsBar}>
+          <div className={styles.actionsLeft}>
+            <p className={styles.textMutedSmall}>{selectedClientes.length} registro(s) selecionado(s)</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={styles.btnDangerOutline}
+              onClick={handleExcluirSelecionados}
+            >
+              Excluir
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={styles.btnSecondary}
+              onClick={handleInativarSelecionados}
+            >
+              Inativar
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Table */}
       {loading ? (
@@ -959,7 +935,7 @@ export default function ClientesPage() {
                         style={{ cursor: "pointer" }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                          CPF / CNPJ / ID Estrangeiro
+                          CPF / CNPJ
                           {sortConfig.key === "cpf_cnpj" && (
                             <span style={{ fontSize: "12px", color: "var(--onity-primary)" }}>
                               {sortConfig.direction === "asc" ? "▲" : "▼"}
@@ -1032,10 +1008,10 @@ export default function ClientesPage() {
                           </td>
 
                           <td className={styles.tableCell}>
-                            {cliente.cnpj}
+                            {cliente.cpf_cnpj}
                           </td>
                           <td className={styles.tableCell}>
-                            {cliente.e_mail_principal}
+                            {cliente.email_principal}
                           </td>
                           <td className={styles.tableCell}>
                             {cliente.telefone_comercial}

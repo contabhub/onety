@@ -2,7 +2,7 @@
 
 /* ===== LAYOUT BASE ===== */
 .page {
-  padding: var(--onity-space-l);
+  padding: 0px var(--onity-space-l) var(--onity-space-l);
   display: flex;
   flex-direction: column;
   gap: var(--onity-space-l);
@@ -20,6 +20,14 @@
 .headerTitle {
   font-size: var(--onity-type-heading-size);
   font-weight: var(--onity-type-heading-weight);
+  color: var(--onity-color-text);
+  margin: 0;
+}
+
+.headerTitleSmall {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
   color: var(--onity-color-text);
   margin: 0;
 }
@@ -62,20 +70,30 @@
 }
 
 .btnNew {
-  background: var(--onity-color-primary);
-  color: var(--onity-color-primary-contrast);
-  border: 1px solid var(--onity-color-primary);
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
   transition: all 120ms ease;
+  padding: 12px 20px;
+  min-height: 44px;
+  font-weight: 600;
 }
 
 .btnNew:hover {
   background: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
   border-color: var(--onity-color-primary-hover);
 }
 
 /* ===== CARDS E CONTEÚDO ===== */
 .cardContentPadded {
-  padding: var(--onity-space-l);
+  padding: calc(var(--onity-space-l) + 20px);
+}
+
+/* Área combinando busca e contadores mais espaçosa */
+.topSearchStats {
+  min-height: 220px;
 }
 
 /* ===== GRID DE ESTATÍSTICAS ===== */
@@ -102,8 +120,8 @@
 }
 
 .statusCard:hover {
-  border-color: var(--onity-color-primary);
-  box-shadow: var(--onity-elev-medium);
+  border-color: var(--onity-color-border);
+  box-shadow: none;
 }
 
 /* Estados específicos dos cards */
@@ -259,6 +277,7 @@
 .searchWrap {
   position: relative;
   width: 100%;
+  margin-left: -20px; /* aproxima a barra de pesquisa 7px à esquerda */
 }
 
 .searchIcon {
@@ -272,8 +291,8 @@
 }
 
 .searchInput {
-  padding: 0px 2px 2px 30px;
-  width: 97%;
+  padding: 0px 2px 2px 35px;
+  width: 100%;
   max-height: 35px;
   background: transparent;
   border: 2px solid var(--onity-color-border);
@@ -284,7 +303,7 @@
 }
 
 .searchInput:focus {
-  border-color: var(--onity-color-info);
+  border-color: var(--onity-color-border);
 }
 
 .filtersRight {
@@ -697,37 +716,110 @@
 }
 
 /* ===== MODAL EXCLUIR ===== */
-.modalContentSmall {
-  max-width: 400px;
+.deleteModalContent {
+  max-width: 480px;
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  z-index: 20000 !important;
+  padding: var(--onity-space-l);
+}
+
+.deleteModalTitle {
+  color: var(--onity-color-text);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: var(--onity-space-s);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.deleteModalBody {
+  padding: var(--onity-space-l) 0;
+}
+
+.deleteModalDescription {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  line-height: 1.5;
+  margin: 0 0 var(--onity-space-m) 0;
+}
+
+.deleteModalHighlight {
+  color: var(--onity-color-text);
+  font-weight: 600;
+}
+
+.deleteModalWarning {
+  background: color-mix(in srgb, var(--onity-color-error) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--onity-color-error) 20%, transparent);
   border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+  margin-top: var(--onity-space-m);
 }
 
-.dialogTitle {
-  color: var(--onity-color-text);
-  font-size: var(--onity-type-heading-size);
-  font-weight: var(--onity-type-heading-weight);
-}
-
-.modalBody {
-  padding: var(--onity-space-m) 0;
-}
-
-.textWhite {
-  color: var(--onity-color-text);
-}
-
-.textDangerSmall {
-  font-size: var(--onity-type-caption-size);
+.deleteModalWarningText {
   color: var(--onity-color-error);
-  margin-top: var(--onity-space-xs);
+  font-size: var(--onity-type-caption-size);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
 }
 
-.modalActions {
+.deleteModalActions {
   display: flex;
   justify-content: flex-end;
   gap: var(--onity-space-s);
+  padding-top: var(--onity-space-s);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+/* Overlay de fundo do modal (cobre toda a tela) */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 19000 !important;
+}
+
+.deleteModalBtnCancel {
+  background: transparent;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-color-text);
+  padding: 10px 20px;
+  border-radius: var(--onity-radius-m);
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 40px;
+  transition: all 120ms ease;
+}
+
+.deleteModalBtnCancel:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.deleteModalBtnConfirm {
+  background: var(--onity-color-error);
+  color: var(--onity-color-error-contrast);
+  border: 1px solid var(--onity-color-error);
+  padding: 10px 20px;
+  border-radius: var(--onity-radius-m);
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 40px;
+  transition: all 120ms ease;
+}
+
+.deleteModalBtnConfirm:hover {
+  background: var(--onity-color-error-hover);
+  border-color: var(--onity-color-error-hover);
 }
 
 /* ===== LOADING ===== */
@@ -782,12 +874,11 @@
 .toolbarBox {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   background: var(--onity-color-surface);
-  border: 2px solid var(--onity-color-border);
+  border: 1px solid var(--onity-color-border);
   border-radius: 10px;
-  padding: 40px 26px;
-  box-shadow: none;
+  padding: 16px;
+  box-shadow: var(--onity-elev-med);
   margin-bottom: 20px;
 }
 
@@ -830,7 +921,7 @@
 }
 
 .filterSelect {
-  padding: 9px 12px;
+  padding: 9px 16px;
   border: 2px solid var(--onity-color-border);
   border-radius: 10px;
   font-size: 0.95rem;
@@ -838,12 +929,14 @@
   color: var(--onity-color-text);
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 200px;
+  margin-left: 20px; /* desloca o select 10px para a direita */
 }
 
 .filterSelect:focus {
   outline: none;
   box-shadow: none;
-  border-color: var(--onity-color-primary);
+  border-color: var(--onity-color-border);
 }
 
 .filterSelect option {

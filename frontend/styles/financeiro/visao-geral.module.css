@@ -94,24 +94,24 @@
   box-shadow: var(--onity-elev-high);
 }
 
-/* Receita Card */
+/* Receita Card - verde (a receber) */
 .receitaCard {
-  background: linear-gradient(135deg, rgba(30, 136, 229, 0.1) 0%, rgba(30, 136, 229, 0.05) 100%);
-  border-color: rgba(30, 136, 229, 0.2);
+  background: color-mix(in srgb, var(--onity-color-success) 6%, transparent);
+  border-color: color-mix(in srgb, var(--onity-color-success) 24%, transparent);
 }
 
 .receitaCard:hover {
-  border-color: rgba(30, 136, 229, 0.4);
+  border-color: color-mix(in srgb, var(--onity-color-success) 40%, transparent);
 }
 
-/* Despesa Card */
+/* Despesa Card - vermelho (a pagar) */
 .despesaCard {
-  background: linear-gradient(135deg, rgba(245, 0, 87, 0.1) 0%, rgba(245, 0, 87, 0.05) 100%);
-  border-color: rgba(245, 0, 87, 0.2);
+  background: color-mix(in srgb, var(--onity-color-error) 10%, transparent);
+  border-color: color-mix(in srgb, var(--onity-color-error) 30%, transparent);
 }
 
 .despesaCard:hover {
-  border-color: rgba(245, 0, 87, 0.4);
+  border-color: color-mix(in srgb, var(--onity-color-error) 50%, transparent);
 }
 
 /* Card Header */
@@ -147,23 +147,25 @@
   text-decoration: none;
 }
 
-.actionButtonReceita {
-  background: linear-gradient(135deg, var(--onity-color-bg) 0%, #1E88E5 100%);
-  color: white;
+.actionButtonReceita,
+.actionButtonDespesa {
+  background: transparent;
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
 }
 
 .actionButtonReceita:hover {
-  background: linear-gradient(135deg, #1E88E5 0%, #1976D2 100%);
+  background: var(--onity-color-success);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-success);
   transform: translateY(-1px);
 }
 
-.actionButtonDespesa {
-  background: linear-gradient(135deg, var(--onity-color-bg) 0%, #F50057 100%);
-  color: white;
-}
-
 .actionButtonDespesa:hover {
-  background: linear-gradient(135deg, #F50057 0%, #C2185B 100%);
+  background: var(--onity-color-error);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-error);
   transform: translateY(-1px);
 }
 
@@ -190,21 +192,21 @@
 }
 
 .statItemReceita {
-  background: rgba(30, 136, 229, 0.1);
-  border-color: rgba(30, 136, 229, 0.2);
+  background: color-mix(in srgb, var(--onity-color-success) 8%, transparent);
+  border-color: color-mix(in srgb, var(--onity-color-success) 20%, transparent);
 }
 
 .statItemReceita:hover {
-  border-color: rgba(30, 136, 229, 0.4);
+  border-color: color-mix(in srgb, var(--onity-color-success) 35%, transparent);
 }
 
 .statItemDespesa {
-  background: rgba(245, 0, 87, 0.1);
-  border-color: rgba(245, 0, 87, 0.2);
+  background: color-mix(in srgb, var(--onity-color-error) 12%, transparent);
+  border-color: color-mix(in srgb, var(--onity-color-error) 30%, transparent);
 }
 
 .statItemDespesa:hover {
-  border-color: rgba(245, 0, 87, 0.4);
+  border-color: color-mix(in srgb, var(--onity-color-error) 50%, transparent);
 }
 
 .statContent {
@@ -232,11 +234,11 @@
 }
 
 .statValueReceita {
-  color: #1E88E5;
+  color: var(--onity-color-success);
 }
 
 .statValueDespesa {
-  color: #F50057;
+  color: var(--onity-color-error);
 }
 
 .statSubtitle {
@@ -253,11 +255,11 @@
 }
 
 .statIconReceita {
-  color: #1E88E5;
+  color: var(--onity-color-success);
 }
 
 .statIconDespesa {
-  color: #F50057;
+  color: var(--onity-color-error);
 }
 
 /* Bottom Grid */
@@ -480,7 +482,7 @@
 
 .contaApiNote {
   font-size: 12px;
-  color: #1E88E5;
+  color: var(--onity-color-primary);
   margin: 0;
 }
 
@@ -573,24 +575,24 @@
 }
 
 .chartBarRecebimento {
-  background: #1E88E5;
+  background: var(--onity-color-success);
   border-radius: 4px 4px 0 0;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .chartBarRecebimento:hover {
-  background: rgba(30, 136, 229, 0.8);
+  background: color-mix(in srgb, var(--onity-color-success) 80%, transparent);
 }
 
 .chartBarPagamento {
-  background: #F50057;
+  background: var(--onity-color-error);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .chartBarPagamento:hover {
-  background: rgba(245, 0, 87, 0.8);
+  background: color-mix(in srgb, var(--onity-color-error) 80%, transparent);
 }
 
 .chartBarSaldo {
@@ -682,7 +684,7 @@
 }
 
 .tooltipValueRecebimento {
-  color: #1E88E5;
+  color: var(--onity-color-success);
 }
 
 .tooltipValuePagamento {
@@ -728,7 +730,7 @@
 }
 
 .legendDotRecebimento {
-  background: #1E88E5;
+  background: var(--onity-color-success);
 }
 
 .legendDotPagamento {
@@ -1005,12 +1007,12 @@
 }
 
 .chartBarRecebimentos {
-  background: var(--onity-color-primary);
+  background: var(--onity-color-success);
   border-radius: 2px 2px 0 0;
 }
 
 .chartBarRecebimentos:hover {
-  background: var(--onity-color-primary-light);
+  background: color-mix(in srgb, var(--onity-color-success) 85%, transparent);
 }
 
 .chartBarPagamentos {
@@ -1110,7 +1112,7 @@
 }
 
 .chartTooltipValueRecebimentos {
-  color: var(--onity-color-primary);
+  color: var(--onity-color-success);
   font-weight: 500;
 }
 
@@ -1136,7 +1138,7 @@
 }
 
 .legendDotRecebimentos {
-  background: var(--onity-color-primary);
+  background: var(--onity-color-success);
 }
 
 .legendDotPagamentos {

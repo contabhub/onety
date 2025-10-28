@@ -248,18 +248,18 @@
 
 /* ===== FILTROS ===== */
 .filtersCard {
-  background: transparent;
-  border: 2px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: 10px;
   transition: all 120ms ease;
-  padding: 40px 26px;
-  box-shadow: none;
+  padding: 24px;
+  box-shadow: var(--onity-elev-med);
   margin-bottom: 20px;
 }
 
 .filtersCard:hover {
-  border-color: var(--onity-color-border);
-  box-shadow: var(--onity-elev-medium);
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-high);
 }
 
 .filtersRow {
@@ -493,9 +493,9 @@
 
 /* ===== TABELA ===== */
 .tableCard {
-  background: transparent;
+  background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
-  border-radius: 8px;
+  border-radius: 11px;
   transition: all 120ms ease;
   box-shadow: var(--onity-elev-med);
   overflow: hidden;
@@ -519,13 +519,13 @@
 .tableHeadRow {
   background-color: var(--onity-color-bg);
   border-bottom: 1px solid var(--onity-color-border);
-  border-radius: 8px 8px 0 0;
+  border-radius: 0;
 }
 
 .tableHeadCell {
   background-color: var(--onity-color-bg);
   text-align: left;
-  padding: 16px 24px;
+  padding: 16px 15px;
   font-size: var(--onity-type-body-size);
   font-weight: 600;
   color: var(--onity-color-text);
@@ -536,7 +536,7 @@
 .tableHeadCellCheckbox {
   background-color: var(--onity-color-bg);
   text-align: left;
-  padding: 16px 24px;
+  padding: 0;
   width: 48px;
   border-bottom: 2px solid var(--onity-color-primary);
   position: relative;
