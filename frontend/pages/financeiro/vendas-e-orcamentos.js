@@ -706,6 +706,12 @@ export default function VendasOrcamentosPage() {
             Recusado
           </span>
         );
+      case "orcamento":
+        return (
+          <span className="vendas-orcamentos-badge-orcamento">
+            Orçamento
+          </span>
+        );
       case "ativo":
         return (
           <span className={`${styles.badgeComponent} ${styles.badgeSuccess}`}>
@@ -838,21 +844,21 @@ export default function VendasOrcamentosPage() {
       <div className={styles.vendasOrcamentosFiltersCard}>
         <div className={styles.vendasOrcamentosFiltersContent}>
           <div className={styles.vendasOrcamentosFiltersRow}>
-            <div className={styles.vendasOrcamentosFilterGroup}>
+            <div className={styles.vendasOrcamentosFilterGroupPeriod}>
               <label className={styles.vendasOrcamentosFilterLabel}>
                 Período
               </label>
               <div className={styles.vendasOrcamentosPeriodControls}>
                 <button
                   onClick={() => navigateMonth("prev")}
-                  className="contas-pagar-nav-btn"
+                  className={styles.vendasOrcamentosPeriodNavBtn}
                 >
                   <ChevronLeft className={styles.vendasOrcamentosNavIcon} color="var(--onity-color-text)" />
                 </button>
                 
                 <div className={styles.selectComponent}>
                   <button
-                    className={`contas-pagar-nav-btn ${styles.vendasOrcamentosPeriodButton}`}
+                    className={styles.vendasOrcamentosPeriodButton}
                     onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
                   >
                     <span>{formatCurrentPeriod()}</span>
@@ -902,7 +908,7 @@ export default function VendasOrcamentosPage() {
                 
                 <button
                   onClick={() => navigateMonth("next")}
-                  className="contas-pagar-nav-btn"
+                  className={styles.vendasOrcamentosPeriodNavBtn}
                 >
                   <ChevronRight className={styles.vendasOrcamentosNavIcon} color="var(--onity-color-text)" />
                 </button>
@@ -1007,25 +1013,25 @@ export default function VendasOrcamentosPage() {
                     />
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>
-                    Data <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
+                    Data
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>
-                    Tipo <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
+                    Tipo
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>
-                    Número <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
+                    Número
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>
-                    Cliente <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
+                    Cliente
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>
-                    Valor (R$) <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
+                    Valor (R$)
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>
-                    Situação <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
+                    Situação
                   </th>
                   <th className={styles.vendasOrcamentosTableHeaderText}>Nota Fiscal</th>
-                  <th className={styles.vendasOrcamentosTableHeaderText}>Ações</th>
+                  <th className={styles.vendasOrcamentosTableHeaderTextCenter}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -1064,9 +1070,9 @@ export default function VendasOrcamentosPage() {
                         {formatDate(item.data_venda)}
                       </td>
                       <td>
-                        <span className={`${styles.badgeComponent} ${item.__tipo === "contrato" 
-                          ? "vendas-orcamentos-badge-contrato" 
-                          : "vendas-orcamentos-badge-venda"
+                        <span className={`${styles[item.__tipo === "contrato" 
+                          ? "vendasOrcamentosBadgeContrato" 
+                          : "vendasOrcamentosBadgeVenda"]
                         }`}>
                           {item.__tipo === "contrato" ? "Contrato" : "Venda"}
                         </span>
@@ -1094,7 +1100,7 @@ export default function VendasOrcamentosPage() {
                       <td>
                         <div className={styles.vendasOrcamentosNfsContainer}>
                           <button
-                            className="vendas-orcamentos-nfs-btn"
+                            className={styles.vendasOrcamentosNfsBtn}
                             disabled
                           >
                             Emitir NFS-e
@@ -1106,7 +1112,7 @@ export default function VendasOrcamentosPage() {
                           )}
                         </div>
                       </td>
-                      <td>
+                      <td className={styles.vendasOrcamentosTableCellActions}>
                         <div className={styles.vendasOrcamentosDropdownContainer}>
                           <button
                             className={styles.vendasOrcamentosActionButton}

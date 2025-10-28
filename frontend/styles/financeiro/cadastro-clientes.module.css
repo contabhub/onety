@@ -169,23 +169,36 @@
   overflow: hidden;
 }
 
-.statusCard:hover {
-  border-color: var(--onity-color-border);
-  box-shadow: none;
-}
 
 /* Estados específicos dos cards */
 /* bases (quando não selecionados) */
 .statusCardAtivo { border-color: color-mix(in srgb, var(--onity-color-success) 20%, var(--onity-color-border)); }
 .statusCardInativo { border-color: color-mix(in srgb, var(--onity-color-error) 20%, var(--onity-color-border)); }
-.statusCardTodos { border-color: var(--onity-color-border); }
+.statusCardTodos { 
+   border-color: color-mix(in srgb, var(--onity-color-info) 20%, var(--onity-color-border)); 
+}
 
 /* selecionados */
 .statusCardAtivoSelected { border-color: var(--onity-color-success); background: color-mix(in srgb, var(--onity-color-success) 10%, transparent); }
 .statusCardInativoSelected { border-color: var(--onity-color-error); background: color-mix(in srgb, var(--onity-color-error) 10%, transparent); }
-.statusCardTodosSelected { border-color: var(--onity-color-border); background: color-mix(in srgb, var(--onity-color-border) 20%, transparent); }
+.statusCardTodosSelected { 
+  border-color: var(--onity-color-info); 
+  background: color-mix(in srgb, var(--onity-color-info) 20%, var(--onity-color-surface));
+}
 
 /* ícone de check removido dos cards de filtro */
+
+.cardCheckIconWrap {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
 
 .iconAtivo {
   color: var(--onity-color-success);
@@ -200,7 +213,7 @@
 }
 
 .iconTodos {
-  color: var(--onity-icon-secondary);
+  color: var(--onity-color-info);
   width: 20px;
   height: 20px;
 }
@@ -224,7 +237,7 @@
 }
 
 .textTodos {
-  color: var(--onity-color-text);
+  color: var(--onity-color-info);
 }
 
 .animatedNumber {
@@ -321,7 +334,7 @@
 
 .searchIcon {
   position: absolute;
-  left: var(--onity-space-s);
+  left: 2px;
   top: 50%;
   transform: translateY(-50%);
   width: 16px;
@@ -330,7 +343,7 @@
 }
 
 .searchInput {
-  padding: 0px 2px 2px 35px;
+  padding: 8px 20px;
   width: 100%;
   max-height: 35px;
   background: transparent;
@@ -671,12 +684,14 @@
   border: 1px solid var(--onity-color-border);
   color: var(--onity-icon-secondary);
   border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-xs) var(--onity-space-s);
+  padding: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: var(--onity-space-xs);
+  justify-content: center;
   transition: all 120ms ease;
+  width: 32px;
+  height: 32px;
 }
 
 .dropdownTrigger:hover {
@@ -776,7 +791,6 @@
 .iconSmallWithGap {
   width: 16px;
   height: 16px;
-  margin-right: var(--onity-space-xs);
 }
 
 /* ===== PAGINAÇÃO ===== */
@@ -1164,7 +1178,6 @@
 .iconSmallWithGap {
   width: 16px;
   height: 16px;
-  margin-right: 8px;
 }
 
 /* Estilos para skeleton */
