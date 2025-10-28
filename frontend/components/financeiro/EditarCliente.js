@@ -2,34 +2,55 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import { X, Plus, Trash2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { X, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "react-toastify";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
-import { Checkbox } from "./checkbox";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./accordion";
 import { formatarDataParaMysql } from "../../utils/financeiro/dateUtils";
 import styles from "../../styles/financeiro/EditarCliente.module.css";
 
 // Função para combinar classes CSS
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
+};
+
+// Componente Accordion customizado
+const CustomAccordion = ({ children, value, onValueChange }) => {
+  return <div className={styles.editarClienteAccordionContainer}>{children}</div>;
+};
+
+const CustomAccordionItem = ({ value, children, openAccordions, toggleAccordion }) => {
+  const isOpen = openAccordions.includes(value);
+  
+  return (
+    <div className={styles.editarClienteAccordionItem}>
+      {React.Children.map(children, child => {
+        if (child.type === CustomAccordionTrigger) {
+          return React.cloneElement(child, { isOpen, onClick: () => toggleAccordion(value) });
+        }
+        if (child.type === CustomAccordionContent) {
+          return isOpen ? child : null;
+        }
+        return child;
+      })}
+    </div>
+  );
+};
+
+const CustomAccordionTrigger = ({ children, isOpen, onClick }) => {
+  return (
+    <button
+      type="button"
+      className={styles.editarClienteAccordionTrigger}
+      onClick={onClick}
+    >
+      {children}
+      {isOpen ? <ChevronUp className={styles.accordionIcon} /> : <ChevronDown className={styles.accordionIcon} />}
+    </button>
+  );
+};
+
+const CustomAccordionContent = ({ children }) => {
+  return <div className={styles.editarClienteAccordionContent}>{children}</div>;
 };
 
 export function EditarClienteDrawer({
@@ -42,6 +63,15 @@ export function EditarClienteDrawer({
   const [openAccordions, setOpenAccordions] = useState([
     "dados-gerais",
   ]);
+
+  // Função para toggle de accordion
+  const toggleAccordion = (value) => {
+    setOpenAccordions(prev => 
+      prev.includes(value)
+        ? prev.filter(item => item !== value)
+        : [...prev, value]
+    );
+  };
 
   useEffect(() => {
     setFormData(cliente || {});
@@ -108,27 +138,27 @@ export function EditarClienteDrawer({
 
         <div className={styles.editarClienteContent}>
           <div className={styles.editarClienteForm}>
-            <Accordion
-              type="multiple"
+            <CustomAccordion
               value={openAccordions}
               onValueChange={setOpenAccordions}
-              className={styles.editarClienteAccordionContainer}
             >
               {/* Dados Gerais */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="dados-gerais"
-                className={styles.editarClienteAccordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.editarClienteAccordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.editarClienteFontMedium}>Dados gerais</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.editarClienteAccordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.editarClienteSpaceY4}>
                     {/* Primeira linha */}
                     <div className={cn(styles.editarClienteGrid1Col, styles.editarClienteMdGrid3Col)}>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Nome fantasia</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Nome fantasia</label>
+                        <input
+                          type="text"
                           value={formData.nome_fantasia || ""}
                           onChange={(e) =>
                             handleInputChange("nome_fantasia", e.target.value)
@@ -137,8 +167,9 @@ export function EditarClienteDrawer({
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Razão social</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Razão social</label>
+                        <input
+                          type="text"
                           value={formData.razao_social || ""}
                           onChange={(e) =>
                             handleInputChange("razao_social", e.target.value)
@@ -147,8 +178,9 @@ export function EditarClienteDrawer({
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>CPF / CNPJ</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>CPF / CNPJ</label>
+                        <input
+                          type="text"
                           value={formData.cpf_cnpj || ""}
                           onChange={(e) => handleInputChange("cpf_cnpj", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
@@ -159,26 +191,23 @@ export function EditarClienteDrawer({
                     {/* Segunda linha */}
                     <div className={cn(styles.editarClienteGrid1Col, styles.editarClienteMdGrid2Col)}>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Tipo de pessoa</Label>
-                        <Select
+                        <label className={styles.editarClienteLabel}>Tipo de pessoa</label>
+                        <select
                           value={formData.tipo_pessoa || ""}
-                          onValueChange={(value) =>
-                            handleInputChange("tipo_pessoa", value)
+                          onChange={(e) =>
+                            handleInputChange("tipo_pessoa", e.target.value)
                           }
+                          className={styles.editarClienteSelectTrigger}
                         >
-                          <SelectTrigger className={styles.editarClienteSelectTrigger}>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent className={styles.editarClienteSelectContent}>
-                            <SelectItem value="física" className={styles.editarClienteSelectItem}>Física</SelectItem>
-                            <SelectItem value="jurídica" className={styles.editarClienteSelectItem}>Jurídica</SelectItem>
-                            <SelectItem value="estrangeira" className={styles.editarClienteSelectItem}>Estrangeira</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione</option>
+                          <option value="física">Física</option>
+                          <option value="jurídica">Jurídica</option>
+                          <option value="estrangeira">Estrangeira</option>
+                        </select>
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Abertura da empresa</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Abertura da empresa</label>
+                        <input
                           type="date"
                           value={formData.abertura_empresa?.split("T")[0] || ""}
                           onChange={(e) => handleInputChange("abertura_empresa", e.target.value)}
@@ -187,22 +216,24 @@ export function EditarClienteDrawer({
                       </div>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Informações de Contato */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="contato"
-                className={styles.editarClienteAccordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.editarClienteAccordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.editarClienteFontMedium}>Informações de contato</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.editarClienteAccordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={cn(styles.editarClienteGrid1Col, styles.editarClienteMdGrid2Col, styles.editarClienteLgGrid4Col)}>
                     <div className={styles.editarClienteField}>
-                      <Label className={styles.editarClienteLabel}>Email principal</Label>
-                      <Input
+                      <label className={styles.editarClienteLabel}>Email principal</label>
+                      <input
+                        type="email"
                         value={formData.email_principal || ""}
                         onChange={(e) =>
                           handleInputChange("email_principal", e.target.value)
@@ -211,8 +242,9 @@ export function EditarClienteDrawer({
                       />
                     </div>
                     <div className={styles.editarClienteField}>
-                      <Label className={styles.editarClienteLabel}>Telefone comercial</Label>
-                      <Input
+                      <label className={styles.editarClienteLabel}>Telefone comercial</label>
+                      <input
+                        type="text"
                         value={formData.telefone_comercial || ""}
                         onChange={(e) =>
                           handleInputChange("telefone_comercial", e.target.value)
@@ -221,8 +253,9 @@ export function EditarClienteDrawer({
                       />
                     </div>
                     <div className={styles.editarClienteField}>
-                      <Label className={styles.editarClienteLabel}>Telefone celular</Label>
-                      <Input
+                      <label className={styles.editarClienteLabel}>Telefone celular</label>
+                      <input
+                        type="text"
                         value={formData.telefone_celular || ""}
                         onChange={(e) =>
                           handleInputChange("telefone_celular", e.target.value)
@@ -231,68 +264,70 @@ export function EditarClienteDrawer({
                       />
                     </div>
                     <div className={styles.editarClienteField}>
-                      <Label className={styles.editarClienteLabel}>Simples Nacional</Label>
-                      <Select
-                        value={formData.optante_simples ? "Sim" : "Não"}
-                        onValueChange={(value) =>
-                          handleInputChange(
-                            "optante_simples",
-                            value === "Sim" ? 1 : 0
-                          )
-                        }
-                      >
-                        <SelectTrigger className={styles.editarClienteSelectTrigger}>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent className={styles.editarClienteSelectContent}>
-                          <SelectItem value="Sim" className={styles.editarClienteSelectItem}>Sim</SelectItem>
-                          <SelectItem value="Não" className={styles.editarClienteSelectItem}>Não</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <label className={styles.editarClienteLabel}>Simples Nacional</label>
+                        <select
+                          value={formData.optante_simples ? "Sim" : "Não"}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "optante_simples",
+                              e.target.value === "Sim" ? 1 : 0
+                            )
+                          }
+                          className={styles.editarClienteSelectTrigger}
+                        >
+                          <option value="">Selecione</option>
+                          <option value="Sim">Sim</option>
+                          <option value="Não">Não</option>
+                        </select>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Endereço */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="endereco"
-                className={styles.editarClienteAccordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.editarClienteAccordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.editarClienteFontMedium}>Endereço</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.editarClienteAccordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.editarClienteSpaceY4}>
                     {/* Primeira linha */}
                     <div className={cn(styles.editarClienteGrid1Col, styles.editarClienteMdGrid2Col, styles.editarClienteLgGrid4Col)}>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>País</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>País</label>
+                        <input
+                          type="text"
                           value={formData.pais || ""}
                           onChange={(e) => handleInputChange("pais", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>CEP</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>CEP</label>
+                        <input
+                          type="text"
                           value={formData.cep || ""}
                           onChange={(e) => handleInputChange("cep", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Endereço</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Endereço</label>
+                        <input
+                          type="text"
                           value={formData.endereco || ""}
                           onChange={(e) => handleInputChange("endereco", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Número</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Número</label>
+                        <input
+                          type="text"
                           value={formData.numero || ""}
                           onChange={(e) => handleInputChange("numero", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
@@ -303,32 +338,36 @@ export function EditarClienteDrawer({
                     {/* Segunda linha */}
                     <div className={cn(styles.editarClienteGrid1Col, styles.editarClienteMdGrid2Col, styles.editarClienteLgGrid4Col)}>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Estado</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Estado</label>
+                        <input
+                          type="text"
                           value={formData.estado || ""}
                           onChange={(e) => handleInputChange("estado", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Cidade</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Cidade</label>
+                        <input
+                          type="text"
                           value={formData.cidade || ""}
                           onChange={(e) => handleInputChange("cidade", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Bairro</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Bairro</label>
+                        <input
+                          type="text"
                           value={formData.bairro || ""}
                           onChange={(e) => handleInputChange("bairro", e.target.value)}
                           className={cn(styles.editarClienteInput, styles.editarClienteInputLarge)}
                         />
                       </div>
                       <div className={styles.editarClienteField}>
-                        <Label className={styles.editarClienteLabel}>Complemento</Label>
-                        <Input
+                        <label className={styles.editarClienteLabel}>Complemento</label>
+                        <input
+                          type="text"
                           value={formData.complemento || ""}
                           onChange={(e) =>
                             handleInputChange("complemento", e.target.value)
@@ -338,23 +377,24 @@ export function EditarClienteDrawer({
                       </div>
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
 
               {/* Observações */}
-              <AccordionItem
+              <CustomAccordionItem
                 value="observacoes"
-                className={styles.editarClienteAccordionItem}
+                openAccordions={openAccordions}
+                toggleAccordion={toggleAccordion}
               >
-                <AccordionTrigger className={styles.editarClienteAccordionTrigger}>
+                <CustomAccordionTrigger>
                   <span className={styles.editarClienteFontMedium}>Observações</span>
-                </AccordionTrigger>
-                <AccordionContent className={styles.editarClienteAccordionContent}>
+                </CustomAccordionTrigger>
+                <CustomAccordionContent>
                   <div className={styles.editarClienteSpaceY2}>
-                    <Label className={styles.editarClienteLabel}>
+                    <label className={styles.editarClienteLabel}>
                       Observações
-                    </Label>
-                    <Textarea
+                    </label>
+                    <textarea
                       value={formData.observacoes || ""}
                       onChange={(e) =>
                         handleInputChange("observacoes", e.target.value)
@@ -362,9 +402,9 @@ export function EditarClienteDrawer({
                       className={cn(styles.editarClienteTextarea, styles.editarClienteTextareaLarge, styles.editarClienteMinH120px)}
                     />
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                </CustomAccordionContent>
+              </CustomAccordionItem>
+            </CustomAccordion>
           </div>
         </div>
 

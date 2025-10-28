@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Label } from "../../components/financeiro/label";
 import { X, Edit, CheckCircle, XCircle } from "lucide-react";
 import styles from "../../styles/financeiro/DetalheClienteDrawer.module.css";
 
@@ -17,7 +16,7 @@ export function DetalhesClienteDrawer({
 
   const renderCampo = (label, valor) => (
     <div className={styles.detalheClienteField}>
-      <Label className={styles.detalheClienteFieldLabel}>{label}</Label>
+      <label className={styles.detalheClienteFieldLabel}>{label}</label>
       <div className={styles.detalheClienteFieldValue}>{valor || "-"}</div>
     </div>
   );
@@ -82,23 +81,23 @@ export function DetalhesClienteDrawer({
                   <div className={styles.detalheClienteGrid}>
                     <div className={`${styles.detalheClienteGrid} ${styles.detalheClienteGrid3}`}>
                       <div className={styles.detalheClienteField}>
-                        <Label className={styles.detalheClienteFieldLabel}>
+                        <label className={styles.detalheClienteFieldLabel}>
                           Nome / Razão Social
-                        </Label>
+                        </label>
                         <div className={styles.detalheClienteFieldValue}>
                           {cliente.nome_fantasia || cliente.razao_social || "-"}
                         </div>
                       </div>
 
                       <div className={styles.detalheClienteField}>
-                        <Label className={styles.detalheClienteFieldLabel}>Status</Label>
+                        <label className={styles.detalheClienteFieldLabel}>Status</label>
                         <div className={styles.detalheClienteFieldValue}>
                           {getStatusBadge(cliente.status)}
                         </div>
                       </div>
 
                       <div className={styles.detalheClienteField}>
-                        <Label className={styles.detalheClienteFieldLabel}>Tipo de Pessoa</Label>
+                        <label className={styles.detalheClienteFieldLabel}>Tipo de Pessoa</label>
                         <div className={styles.detalheClienteFieldValue}>
                           {cliente.tipo_de_pessoa || "-"}
                         </div>
@@ -107,21 +106,21 @@ export function DetalhesClienteDrawer({
 
                     <div className={`${styles.detalheClienteGrid} ${styles.detalheClienteGrid3}`}>
                       <div className={styles.detalheClienteField}>
-                        <Label className={styles.detalheClienteFieldLabel}>CPF / CNPJ</Label>
+                        <label className={styles.detalheClienteFieldLabel}>CPF / CNPJ</label>
                         <div className={styles.detalheClienteFieldValue}>
                           {cliente.cnpj || "-"}
                         </div>
                       </div>
 
                       <div className={styles.detalheClienteField}>
-                        <Label className={styles.detalheClienteFieldLabel}>Código do Cadastro</Label>
+                        <label className={styles.detalheClienteFieldLabel}>Código do Cadastro</label>
                         <div className={styles.detalheClienteFieldValue}>
                           {cliente.codigo_do_cadastro || "-"}
                         </div>
                       </div>
 
                       <div className={styles.detalheClienteField}>
-                        <Label className={styles.detalheClienteFieldLabel}>Tipos de Papel</Label>
+                        <label className={styles.detalheClienteFieldLabel}>Tipos de Papel</label>
                         <div className={styles.detalheClienteFieldValue}>
                           {papeis.length > 0 ? papeis.join(", ") : "-"}
                         </div>
@@ -138,30 +137,30 @@ export function DetalhesClienteDrawer({
                 <div className={styles.detalheClienteAccordionContent}>
                   <div className={`${styles.detalheClienteGrid} ${styles.detalheClienteGrid4}`}>
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>E-mail principal</Label>
+                      <label className={styles.detalheClienteFieldLabel}>E-mail principal</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.e_mail_principal || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>
+                      <label className={styles.detalheClienteFieldLabel}>
                         Telefone comercial
-                      </Label>
+                      </label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.telefone_comercial || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Telefone celular</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Telefone celular</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.telefone_celular || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Data de cadastro</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Data de cadastro</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.abertura_da_empresa || "-"}
                       </div>
@@ -177,16 +176,16 @@ export function DetalhesClienteDrawer({
                 <div className={styles.detalheClienteAccordionContent}>
                   <div className={`${styles.detalheClienteGrid} ${styles.detalheClienteGrid2}`}>
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Razão social</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Razão social</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.razao_social || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>
+                      <label className={styles.detalheClienteFieldLabel}>
                         Optante pelo simples?
-                      </Label>
+                      </label>
                       <div className={styles.detalheClienteRadioGroup}>
                         <div className={styles.detalheClienteRadioItem}>
                           <input
@@ -197,9 +196,9 @@ export function DetalhesClienteDrawer({
                             disabled
                             className={styles.detalheClienteRadioInput}
                           />
-                          <Label htmlFor="nao-view" className={styles.detalheClienteRadioLabel}>
+                          <label htmlFor="nao-view" className={styles.detalheClienteRadioLabel}>
                             Não
-                          </Label>
+                          </label>
                         </div>
                         <div className={styles.detalheClienteRadioItem}>
                           <input
@@ -210,9 +209,9 @@ export function DetalhesClienteDrawer({
                             disabled
                             className={styles.detalheClienteRadioInput}
                           />
-                          <Label htmlFor="sim-view" className={styles.detalheClienteRadioLabel}>
+                          <label htmlFor="sim-view" className={styles.detalheClienteRadioLabel}>
                             Sim
-                          </Label>
+                          </label>
                         </div>
                       </div>
                     </div>
@@ -227,28 +226,28 @@ export function DetalhesClienteDrawer({
                 <div className={styles.detalheClienteAccordionContent}>
                   <div className={`${styles.detalheClienteGrid} ${styles.detalheClienteGrid4}`}>
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>País</Label>
+                      <label className={styles.detalheClienteFieldLabel}>País</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.pais || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>CEP</Label>
+                      <label className={styles.detalheClienteFieldLabel}>CEP</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.cep || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Endereço</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Endereço</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.endereco || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Número</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Número</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.numero || "-"}
                       </div>
@@ -257,28 +256,28 @@ export function DetalhesClienteDrawer({
 
                   <div className={`${styles.detalheClienteGrid} ${styles.detalheClienteGrid4}`}>
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Estado</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Estado</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.estado || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Cidade</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Cidade</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.cidade || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Bairro</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Bairro</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.bairro || "-"}
                       </div>
                     </div>
 
                     <div className={styles.detalheClienteField}>
-                      <Label className={styles.detalheClienteFieldLabel}>Complemento</Label>
+                      <label className={styles.detalheClienteFieldLabel}>Complemento</label>
                       <div className={styles.detalheClienteFieldValue}>
                         {cliente.complemento || "-"}
                       </div>
@@ -304,7 +303,7 @@ export function DetalhesClienteDrawer({
                 </button>
                 <div className={styles.detalheClienteAccordionContent}>
                   <div className={styles.detalheClienteField}>
-                    <Label className={styles.detalheClienteFieldLabel}>Observações</Label>
+                    <label className={styles.detalheClienteFieldLabel}>Observações</label>
                     <div className={styles.detalheClienteFieldValueTextarea}>
                       {cliente.observacoes || "-"}
                     </div>

@@ -93,9 +93,9 @@
 .modalHeaderIcon {
   width: 20px;
   height: 20px;
-  color: #FF9800;
-}
-
+    color: #FF9800;
+  }
+  
 .modalTitle {
   font-size: var(--onity-type-h3-size);
   font-weight: var(--onity-type-h3-weight);
@@ -126,7 +126,7 @@
   gap: var(--onity-space-m);
   padding: var(--onity-space-m);
   background: rgba(255, 152, 0, 0.05);
-  border: 1px solid rgba(255, 152, 0, 0.2);
+    border: 1px solid rgba(255, 152, 0, 0.2);
   border-radius: var(--onity-radius-m);
 }
 
@@ -196,7 +196,7 @@
 .alertTitle {
   font-size: var(--onity-type-caption-size);
   font-weight: 600;
-  color: #FF9800;
+    color: #FF9800;
   margin: 0;
 }
 
@@ -305,4 +305,5 @@
   .confirmBtn {
     width: 100%;
   }
-}
+  }
+  

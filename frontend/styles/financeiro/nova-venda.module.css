@@ -844,3 +844,375 @@
 }
 
 /* Classe removida - ícone do diamante não é mais usado */
+
+/* ===== COMPONENTES NATIVOS ADICIONAIS ===== */
+
+/* Label Component */
+.labelComponent {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--onity-color-text);
+  margin-bottom: 8px;
+}
+
+/* Textarea Component */
+.textareaComponent {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 16px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 8px;
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.textareaComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.15);
+}
+
+.textareaComponent::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+/* Input Component */
+.inputComponent {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: 6px;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.inputComponent:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.15);
+}
+
+.inputComponent::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.inputReadOnly {
+  background-color: var(--onity-color-bg);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Popover Component */
+.popoverOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+}
+
+.popoverContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.popoverTrigger {
+  cursor: pointer;
+}
+
+.popoverContent {
+  position: absolute;
+  z-index: 10001;
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  box-shadow: var(--onity-elev-high);
+  padding: 16px;
+  margin-top: 8px;
+  animation: popoverFadeIn 0.2s ease-out;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Calendar Component (simplificado) */
+.calendarComponent {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-s);
+  padding: 16px;
+  color: var(--onity-color-text);
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendarNavButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  color: var(--onity-color-text);
+  transition: background-color 0.2s;
+}
+
+.calendarNavButton:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendarDay {
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.calendarDay:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.calendarDaySelected {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.calendarDayToday {
+  font-weight: 600;
+  color: var(--onity-color-primary);
+}
+
+/* Accordion Component */
+.accordionComponent {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-bg);
+  overflow: hidden;
+}
+
+.accordionItem {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.accordionItem:last-child {
+  border-bottom: none;
+}
+
+.accordionTrigger {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  color: var(--onity-color-text);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.accordionTrigger:hover {
+  background: var(--onity-color-surface);
+}
+
+.accordionIcon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.accordionIconOpen {
+  transform: rotate(180deg);
+}
+
+.accordionContent {
+  padding: 0 16px 16px 16px;
+  display: none;
+}
+
+.accordionContentOpen {
+  display: block;
+  animation: accordionSlideDown 0.2s ease-out;
+}
+
+@keyframes accordionSlideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 300px;
+  }
+}
+
+/* ToggleGroup Component */
+.toggleGroupComponent {
+  display: flex;
+  background: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  overflow: hidden;
+}
+
+.toggleGroupItem {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.toggleGroupItem:hover {
+  background: var(--onity-color-surface);
+}
+
+.toggleGroupItemActive {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+/* Button Component Variations */
+.buttonComponent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.buttonComponent:hover {
+  background: var(--onity-color-surface);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonComponent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonComponent:disabled:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-border);
+}
+
+.buttonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonPrimary:hover {
+  background: var(--onity-primary-70);
+  border-color: var(--onity-primary-70);
+}
+
+.buttonSecondary {
+  background: transparent;
+  color: var(--onity-color-text);
+  border-color: var(--onity-color-border);
+}
+
+.buttonSecondary:hover {
+  background: var(--onity-color-bg);
+  border-color: var(--onity-color-primary);
+}
+
+.buttonSmall {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Read Only Field */
+.readOnlyField {
+  padding: 12px 16px;
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Estados de loading para botões */
+.buttonLoading {
+  position: relative;
+  pointer-events: none;
+}
+
+.buttonLoadingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Data/Hora input customizado */
+.dateTimeInput {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-s);
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+
+.dateTimeInput:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.dateTimeInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.15);
+}

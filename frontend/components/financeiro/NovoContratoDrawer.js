@@ -3,39 +3,11 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
 import { toast } from "react-toastify";
 import styles from "../../styles/financeiro/NovoContratoDrawer.module.css";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./popover";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "./toggle-group";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./accordion";
-import { Calendar } from "./calendar";
-import {
   X,
   Plus,
-  CalendarIcon,
   Loader2,
   RefreshCw,
 } from "lucide-react";
@@ -204,6 +176,9 @@ export default function NovoContratoDrawer({
   const [isNovoDepartamentoOpen, setIsNovoDepartamentoOpen] = useState(false);
   const [isGeneratingNumber, setIsGeneratingNumber] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  
+  // Estados para componentes customizados
+  const [accordionOpen, setAccordionOpen] = useState([]);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
   
@@ -539,6 +514,30 @@ export default function NovoContratoDrawer({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Funções para componentes customizados
+  const toggleAccordion = (value) => {
+    setAccordionOpen(prev => 
+      prev.includes(value) 
+        ? prev.filter(item => item !== value)
+        : [...prev, value]
+    );
+  };
+
+  const handleDateSelect = (field, dateString) => {
+    const date = dateString ? new Date(dateString + 'T00:00:00') : null;
+    handleInputChange(field, date);
+  };
+
+  // Função para converter Date para string no formato YYYY-MM-DD
+  const formatDateForInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Função para gerar número de contrato automaticamente
   const gerarNumeroContratoAutomatico = async () => {
     try {
@@ -835,14 +834,13 @@ export default function NovoContratoDrawer({
                 Preencha as informações do contrato recorrente
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={handleClose}
               className={styles.closeButton}
             >
               <X className={styles.iconMedium} />
-            </Button>
+            </button>
           </div>
 
           {/* Content */}
@@ -865,19 +863,19 @@ export default function NovoContratoDrawer({
                   <div className={`${styles.grid} ${styles.gridTwoCols}`}>
                     {/* Número do contrato */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Número do contrato <span className={styles.required}>*</span>
-                      </Label>
+                      </label>
                       <div className={styles.relative}>
-                        <Input
+                        <input
+                          type="text"
                           value={formData.numeroContrato}
                           onChange={(e) => handleInputChange('numeroContrato', e.target.value)}
                           className={`${styles.input} ${styles.inputWithReloadIcon}`}
                           placeholder="Digite ou gere automaticamente"
                         />
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <button
+                          type="button"
                           onClick={gerarNumeroContratoAutomatico}
                           disabled={isGeneratingNumber}
                           className={styles.reloadButton}
@@ -888,7 +886,7 @@ export default function NovoContratoDrawer({
                           ) : (
                             <RefreshCw className={styles.reloadIcon} />
                           )}
-                        </Button>
+                        </button>
                       </div>
                       <p className={styles.textSecondary}>
                         Clique no ícone para gerar o próximo número automaticamente
@@ -897,9 +895,9 @@ export default function NovoContratoDrawer({
 
                     {/* Cliente */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Cliente <span className={styles.required}>*</span>
-                      </Label>
+                      </label>
                       <div className={styles.flexGap2}>
                         <div className={styles.flex1}>
                           <ReactSelect
@@ -925,62 +923,28 @@ export default function NovoContratoDrawer({
 
                     {/* Data de início */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Data de início <span className={styles.required}>*</span>
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={`${styles.calendarButton} ${!formData.dataInicio ? styles.placeholder : ''}`}
-                          >
-                            <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
-                            {formData.dataInicio ? (
-                              format(formData.dataInicio, "dd/MM/yyyy", { locale: ptBR })
-                            ) : (
-                              <span>Selecione uma data</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className={styles.popoverContent}>
-                          <Calendar
-                            mode="single"
-                            selected={formData.dataInicio || undefined}
-                            onSelect={(date) => handleInputChange('dataInicio', date)}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      </label>
+                      <input
+                        type="date"
+                        value={formatDateForInput(formData.dataInicio)}
+                        onChange={(e) => handleDateSelect('dataInicio', e.target.value)}
+                        className={styles.input}
+                      />
                     </div>
 
                     {/* Data da primeira venda */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Data da primeira venda <span className={styles.required}>*</span> 
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={`${styles.calendarButton} ${!formData.dataPrimeiraVenda ? styles.placeholder : ''}`}
-                          >
-                            <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
-                            {formData.dataPrimeiraVenda ? (
-                              format(formData.dataPrimeiraVenda, "dd/MM/yyyy", { locale: ptBR })
-                            ) : (
-                              <span>Selecione uma data</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className={styles.popoverContent}>
-                          <Calendar
-                            mode="single"
-                            selected={formData.dataPrimeiraVenda || undefined}
-                            onSelect={(date) => handleInputChange('dataPrimeiraVenda', date)}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      </label>
+                      <input
+                        type="date"
+                        value={formatDateForInput(formData.dataPrimeiraVenda)}
+                        onChange={(e) => handleDateSelect('dataPrimeiraVenda', e.target.value)}
+                        className={styles.input}
+                      />
                     </div>
                   </div>
                 </div>
@@ -992,31 +956,28 @@ export default function NovoContratoDrawer({
                   <div className={`${styles.grid} ${styles.gridTwoCols}`}>
                     {/* Tipo de intervalo */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Tipo de intervalo <span className={styles.required}>*</span>
-                      </Label>
-                      <Select
+                      </label>
+                      <select
                         value={formData.tipoIntervalo}
-                        onValueChange={(value) => handleInputChange('tipoIntervalo', value)}
+                        onChange={(e) => handleInputChange('tipoIntervalo', e.target.value)}
+                        className={styles.selectTrigger}
                       >
-                        <SelectTrigger className={styles.selectTrigger}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className={styles.selectContent}>
-                          <SelectItem value="dias" className={styles.selectItem}>Dias</SelectItem>
-                          <SelectItem value="semanas" className={styles.selectItem}>Semanas</SelectItem>
-                          <SelectItem value="meses" className={styles.selectItem}>Meses</SelectItem>
-                          <SelectItem value="anos" className={styles.selectItem}>Anos</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="dias">Dias</option>
+                        <option value="semanas">Semanas</option>
+                        <option value="meses">Meses</option>
+                        <option value="anos">Anos</option>
+                      </select>
                     </div>
 
                     {/* Intervalo */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Intervalo <span className={styles.required}>*</span>
-                      </Label>
-                      <Input
+                      </label>
+                      <input
+                        type="text"
                         value={formData.intervalo}
                         onChange={(e) => handleInputChange('intervalo', e.target.value)}
                         placeholder="1"
@@ -1026,12 +987,13 @@ export default function NovoContratoDrawer({
 
                     {/* Término da recorrência */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Término da recorrência <span className={styles.required}>*</span>
-                      </Label>
-                      <Select
+                      </label>
+                      <select
                         value={formData.terminoRecorrencia}
-                        onValueChange={(value) => {
+                        onChange={(e) => {
+                          const value = e.target.value;
                           handleInputChange('terminoRecorrencia', value);
                           if (value === 'indeterminado') {
                             handleInputChange('indeterminado', true);
@@ -1039,24 +1001,21 @@ export default function NovoContratoDrawer({
                             handleInputChange('indeterminado', false);
                           }
                         }}
+                        className={styles.selectTrigger}
                       >
-                        <SelectTrigger className={styles.selectTrigger}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className={styles.selectContent}>
-                          <SelectItem value="indeterminado" className={styles.selectItem}>Indeterminado</SelectItem>
-                          <SelectItem value="personalizado" className={styles.selectItem}>Personalizado</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="indeterminado">Indeterminado</option>
+                        <option value="personalizado">Personalizado</option>
+                      </select>
                     </div>
 
                     {/* Total de ciclos (apenas se não for indeterminado) */}
                     {!formData.indeterminado && (
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Total de ciclos <span className={styles.required}>*</span>
-                        </Label>
-                        <Input
+                        </label>
+                        <input
+                          type="text"
                           value={formData.totalCiclos}
                           onChange={(e) => handleInputChange('totalCiclos', e.target.value)}
                           placeholder="12"
@@ -1068,38 +1027,21 @@ export default function NovoContratoDrawer({
                     {/* Data de término (apenas se for personalizado) */}
                     {formData.terminoRecorrencia === 'personalizado' && (
                       <div className={styles.fieldContainer}>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Data de término
-                        </Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={`${styles.calendarButton} ${!formData.dataTermino ? styles.placeholder : ''}`}
-                            >
-                              <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
-                              {formData.dataTermino ? (
-                                format(formData.dataTermino, "dd/MM/yyyy", { locale: ptBR })
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className={styles.popoverContent}>
-                            <Calendar
-                              mode="single"
-                              selected={formData.dataTermino || undefined}
-                              onSelect={(date) => handleInputChange('dataTermino', date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        </label>
+                        <input
+                          type="date"
+                          value={formatDateForInput(formData.dataTermino)}
+                          onChange={(e) => handleDateSelect('dataTermino', e.target.value)}
+                          className={styles.input}
+                        />
                       </div>
                     )}
 
                     {/* Vigência total */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>Vigência total</Label>
+                      <label className={styles.label}>Vigência total</label>
                       <div className={styles.infoBadge}>
                         {formData.indeterminado ? "Indeterminado" : `${formData.totalCiclos || 0} ciclos`}
                       </div>
@@ -1114,9 +1056,9 @@ export default function NovoContratoDrawer({
                   <div className={`${styles.grid} ${styles.gridTwoCols}`}>
                     {/* Subcategoria de Receita */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Subcategoria de Receita <span className={styles.required}>*</span> 
-                      </Label>
+                      </label>
                       <ReactSelect
                         options={getSubCategoriasReceita().map((item) => ({
                           value: item.id.toString(),
@@ -1141,9 +1083,9 @@ export default function NovoContratoDrawer({
 
                     {/* Centro de custo */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Centro de custo 
-                      </Label>
+                      </label>
                       <ReactSelect
                         options={(formDataFromAPI.centrosCusto || []).map((centro) => ({
                           value: centro.id.toString(),
@@ -1165,7 +1107,7 @@ export default function NovoContratoDrawer({
 
                     {/* Vendedor responsável */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>Vendedor responsável</Label>
+                      <label className={styles.label}>Vendedor responsável</label>
                       <ReactSelect
                         options={(formDataFromAPI.users || []).map((user) => ({
                           value: user.id.toString(),
@@ -1254,16 +1196,14 @@ export default function NovoContratoDrawer({
                                   noOptionsMessage={() => "Nenhum produto encontrado"}
                                 />
                               </div>
-                              <Button
+                              <button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
                                 onClick={() => setIsNovoProdutoServicoOpen(true)}
                                 className={`${styles.itemFieldIcon} ${styles.itemFieldIconSmall}`}
                                 title="Adicionar novo produto/serviço"
                               >
                                 <Plus className={styles.iconSmall} />
-                              </Button>
+                              </button>
                             </div>
                           </div>
 
@@ -1298,22 +1238,21 @@ export default function NovoContratoDrawer({
                                   noOptionsMessage={() => "Nenhum departamento encontrado"}
                                 />
                               </div>
-                              <Button
+                              <button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
                                 onClick={() => setIsNovoDepartamentoOpen(true)}
                                 className={`${styles.itemFieldIcon} ${styles.itemFieldIconSmall}`}
                                 title="Adicionar novo departamento"
                               >
                                 <Plus className={styles.iconSmall} />
-                              </Button>
+                              </button>
                             </div>
                           </div>
 
                           {/* Detalhes */}
                           <div className={styles.itemFieldContainer}>
-                            <Input
+                            <input
+                              type="text"
                               value={item.detalhes}
                               onChange={(e) => handleItemChange(item.id, 'detalhes', e.target.value)}
                               placeholder="Detalhes"
@@ -1323,7 +1262,8 @@ export default function NovoContratoDrawer({
 
                           {/* Quantidade */}
                           <div className={styles.itemFieldContainer}>
-                            <Input
+                            <input
+                              type="text"
                               value={item.quantidade}
                               onChange={(e) => handleItemChange(item.id, 'quantidade', e.target.value)}
                               placeholder="1,00"
@@ -1334,7 +1274,8 @@ export default function NovoContratoDrawer({
                           {/* Valor unitário */}
                           <div className={styles.itemFieldContainer}>
                           <div className={styles.relative}>
-                            <Input
+                            <input
+                              type="text"
                               value={item.valorUnitario}
                               onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
                               placeholder="R$ 0,00"
@@ -1347,7 +1288,8 @@ export default function NovoContratoDrawer({
                           <div className={styles.itemFieldContainer}>
                             <div className={styles.relativeFlexItemsCenterGap1}>
                               <div className={styles.flex1Relative}>
-                                <Input
+                                <input
+                                  type="text"
                                   value={item.total}
                                   placeholder="R$ 0,00"
                                   className={`${styles.input} ${styles.inputSmall} ${styles.inputWithIcon} ${styles.inputReadOnly}`}
@@ -1355,30 +1297,28 @@ export default function NovoContratoDrawer({
                                 />
                               </div>
                               {itens.length > 1 && (
-                                <Button
+                                <button
                                   type="button"
-                                  variant="ghost"
-                                  size="sm"
                                   onClick={() => removeItem(item.id)}
                                   className={`${styles.itemFieldIcon} ${styles.itemFieldIconSmall}`}
                                   title="Remover item"
                                 >
                                   <X className={styles.iconSmall} />
-                                </Button>
+                                </button>
                               )}
                             </div>
                           </div>
                         </div>
                       ))}
 
-                      <Button
-                        variant="outline"
+                      <button
+                        type="button"
                         onClick={addItem}
                         className={`${styles.buttonOutline} ${styles.borderDashed} w-full`}
                       >
                         <Plus className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
                         Adicionar nova linha
-                      </Button>
+                      </button>
                     </div>
 
                     
@@ -1392,23 +1332,35 @@ export default function NovoContratoDrawer({
                   <div className={styles.valueContainer}>
                     {/* Desconto */}
                     <div className={styles.valueField}>
-                      <Label className={styles.label}>Desconto</Label>
+                      <label className={styles.label}>Desconto</label>
                       <div className={styles.flexItemsCenterGap2}>
-                        <ToggleGroup
-                          type="single"
-                          value={formData.descontoTipo}
-                          onValueChange={(value) => value && handleInputChange('descontoTipo', value)}
-                          className={styles.toggleGroup}
-                        >
-                          <ToggleGroupItem value="reais" className={styles.toggleGroupItem}>
+                        <div className={styles.toggleGroup}>
+                          <label className={styles.toggleGroupItem}>
+                            <input
+                              type="radio"
+                              name="descontoTipo"
+                              value="reais"
+                              checked={formData.descontoTipo === 'reais'}
+                              onChange={(e) => handleInputChange('descontoTipo', e.target.value)}
+                              className={styles.toggleRadio}
+                            />
                             R$
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="percentual" className={styles.toggleGroupItem}>
+                          </label>
+                          <label className={styles.toggleGroupItem}>
+                            <input
+                              type="radio"  
+                              name="descontoTipo"
+                              value="percentual"
+                              checked={formData.descontoTipo === 'percentual'}
+                              onChange={(e) => handleInputChange('descontoTipo', e.target.value)}
+                              className={styles.toggleRadio}
+                            />
                             %
-                          </ToggleGroupItem>
-                        </ToggleGroup>
+                          </label>
+                        </div>
                         <div className={styles.relative}>
-                          <Input
+                          <input
+                            type="text"
                             value={formData.descontoValor}
                             onChange={(e) => handleInputChange('descontoValor', e.target.value)}
                             className={`${styles.input} w-32 ${formData.descontoTipo === 'reais' ? styles.inputWithPrefix : styles.inputWithSuffix}`}
@@ -1457,120 +1409,85 @@ export default function NovoContratoDrawer({
                   <div className={`${styles.grid} ${styles.gridTwoCols}`}>
                     {/* Forma de pagamento */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>Forma de pagamento</Label>
-                      <Select
+                      <label className={styles.label}>Forma de pagamento</label>
+                      <select
                         value={formData.formaPagamento}
-                        onValueChange={(value) => handleInputChange('formaPagamento', value)}
+                        onChange={(e) => handleInputChange('formaPagamento', e.target.value)}
+                        className={styles.selectTrigger}
                       >
-                        <SelectTrigger className={styles.selectTrigger}>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent className={styles.selectContent}>
-                          <SelectItem value="dinheiro" className={styles.selectItem}>Dinheiro</SelectItem>
-                          <SelectItem value="pix" className={styles.selectItem}>PIX</SelectItem>
-                          <SelectItem value="cartao" className={styles.selectItem}>Cartão</SelectItem>
-                          <SelectItem value="boleto" className={styles.selectItem}>Boleto</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <option value="">Selecione</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="pix">PIX</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="boleto">Boleto</option>
+                      </select>
                     </div>
 
                     {/* Conta de recebimento */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Conta de recebimento <span className={styles.required}>*</span> 
-                      </Label>
+                      </label>
                       <div className={styles.paymentField}>
-                        <Select
+                        <select
                           value={formData.contaRecebimento}
-                          onValueChange={(value) => handleInputChange('contaRecebimento', value)}
+                          onChange={(e) => handleInputChange('contaRecebimento', e.target.value)}
+                          className={styles.selectTrigger}
                         >
-                          <SelectTrigger className={styles.selectTrigger}>
-                            <SelectValue placeholder="Selecione a conta" />
-                          </SelectTrigger>
-                          <SelectContent className={styles.selectContent}>
-                            {/* Debug: Log das contas disponíveis */}
-                            {console.log('🔍 Debug contas ERP:', formDataFromAPI.contas)}
-                            {console.log('🔍 Debug contas API:', formDataFromAPI.contasApi)}
-                            
-                            {/* Contas ERP */}
-                            {formDataFromAPI.contas
-                              .filter((conta) => {
-                                console.log('🔍 Verificando conta ERP:', conta);
-                                // Ser mais flexível na filtragem - aceitar qualquer conta que tenha dados
-                                const temBanco = conta.banco && String(conta.banco).trim();
-                                const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
-                                const temApiId = conta.api_id && String(conta.api_id).trim();
-                                const resultado = temBanco || temDescricao || temApiId;
-                                console.log('🔍 Conta ERP aprovada:', resultado, { temBanco, temDescricao, temApiId });
-                                return resultado;
-                              })
-                              .map((conta) => {
-                                console.log('🔍 Renderizando conta ERP:', conta);
-                                const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.id}`;
-                                const bancoConta = conta.banco || 'Banco';
-                                return (
-                                  <SelectItem
-                                    key={`erp-${conta.id}`}
-                                    value={`erp:${conta.id}`}
-                                    className={styles.selectItem}
-                                  >
-                                    <span>{bancoConta} — {nomeConta}</span>
-                                  </SelectItem>
-                                );
-                              })}
+                          <option value="">Selecione a conta</option>
+                          
+                          {/* Contas ERP */}
+                          {formDataFromAPI.contas
+                            .filter((conta) => {
+                              const temBanco = conta.banco && String(conta.banco).trim();
+                              const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
+                              const temApiId = conta.api_id && String(conta.api_id).trim();
+                              return temBanco || temDescricao || temApiId;
+                            })
+                            .map((conta) => {
+                              const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.id}`;
+                              const bancoConta = conta.banco || 'Banco';
+                              return (
+                                <option
+                                  key={`erp-${conta.id}`}
+                                  value={`erp:${conta.id}`}
+                                >
+                                  {bancoConta} — {nomeConta}
+                                </option>
+                              );
+                            })}
 
-                            {/* Contas API (OpenFinance) */}
-                            {formDataFromAPI.contasApi
-                              .filter((conta) => {
-                                console.log('🔍 Verificando conta API:', conta);
-                                // Ser mais flexível na filtragem - aceitar qualquer conta que tenha dados
-                                const temBanco = conta.banco && String(conta.banco).trim();
-                                const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
-                                const temAccount = conta.account && String(conta.account).trim();
-                                const resultado = temBanco || temDescricao || temAccount;
-                                console.log('🔍 Conta API aprovada:', resultado, { temBanco, temDescricao, temAccount });
-                                return resultado;
-                              })
-                              .map((conta) => {
-                                console.log('🔍 Renderizando conta API:', conta);
-                                const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.account}`;
-                                return (
-                                  <SelectItem
-                                    key={`api-${conta.id}`}
-                                    value={`api:${conta.id}`}
-                                    className={styles.selectItem}
-                                  >
-                                    <span>{nomeConta}</span>
-                                    <span className={styles.openFinanceBadge}>OpenFinance</span>
-                                  </SelectItem>
-                                );
-                              })}
+                          {/* Contas API (OpenFinance) */}
+                          {formDataFromAPI.contasApi
+                            .filter((conta) => {
+                              const temBanco = conta.banco && String(conta.banco).trim();
+                              const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
+                              const temAccount = conta.account && String(conta.account).trim();
+                              return temBanco || temDescricao || temAccount;
+                            })
+                            .map((conta) => {
+                              const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.account}`;
+                              return (
+                                <option
+                                  key={`api-${conta.id}`}
+                                  value={`api:${conta.id}`}
+                                >
+                                  {nomeConta} (OpenFinance)
+                                </option>
+                              );
+                            })}
 
-                            {/* Fallback: Mostrar TODAS as contas se nenhuma passou no filtro */}
-                            {formDataFromAPI.contas.length > 0 && formDataFromAPI.contas.filter(c => c.banco || c.descricao_banco || c.api_id).length === 0 && (
-                              <>
-                                <div className={`${styles.textSecondary} px-2 py-1`}>
-                                  Contas encontradas (sem filtro):
-                                </div>
-                                {formDataFromAPI.contas.map((conta) => (
-                                  <SelectItem
-                                    key={`erp-fallback-${conta.id}`}
-                                    value={`erp:${conta.id}`}
-                                    className={styles.selectItem}
-                                  >
-                                    <span>Conta {conta.id} - {conta.api_id || 'Sem nome'}</span>
-                                  </SelectItem>
-                                ))}
-                              </>
-                            )}
-
-                            {formDataFromAPI.contas.length === 0 && formDataFromAPI.contasApi.length === 0 && (
-                              <div className={`${styles.textSecondary} px-2 py-1`}>
-                                Nenhuma conta encontrada
-                              </div>
-                            )}
-                          </SelectContent>
-                        </Select>
+                          {/* Fallback: Mostrar TODAS as contas se nenhuma passou no filtro */}
+                          {formDataFromAPI.contas.length > 0 && formDataFromAPI.contas.filter(c => c.banco || c.descricao_banco || c.api_id).length === 0 && 
+                            formDataFromAPI.contas.map((conta) => (
+                              <option
+                                key={`erp-fallback-${conta.id}`}
+                                value={`erp:${conta.id}`}
+                              >
+                                Conta {conta.id} - {conta.api_id || 'Sem nome'}
+                              </option>
+                            ))}
+                        </select>
                         <div className={styles.paymentIndicators}>
                           <div className={`${styles.paymentIndicator} ${styles.paymentIndicatorPrimary}`}></div>
                           <div className={`${styles.paymentIndicator} ${styles.paymentIndicatorWarning}`}></div>
@@ -1580,32 +1497,15 @@ export default function NovoContratoDrawer({
 
                     {/* Vencimento */}
                     <div className={styles.fieldContainer}>
-                      <Label className={styles.label}>
+                      <label className={styles.label}>
                         Vencimento <span className={styles.required}>*</span> 
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={`${styles.calendarButton} ${!formData.vencimento ? styles.placeholder : ''}`}
-                          >
-                            <CalendarIcon className={`${styles.iconMedium} ${styles.iconWithMargin}`} />
-                            {formData.vencimento ? (
-                              format(formData.vencimento, "dd/MM/yyyy", { locale: ptBR })
-                            ) : (
-                              <span>Selecione</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className={styles.popoverContent}>
-                          <Calendar
-                            mode="single"
-                            selected={formData.vencimento || undefined}
-                            onSelect={(date) => handleInputChange('vencimento', date)}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      </label>
+                      <input
+                        type="date"
+                        value={formatDateForInput(formData.vencimento)}
+                        onChange={(e) => handleDateSelect('vencimento', e.target.value)}
+                        className={styles.input}
+                      />
                     </div>
                   </div>
 
@@ -1613,29 +1513,35 @@ export default function NovoContratoDrawer({
                 </div>
 
                 {/* Seções colapsáveis */}
-                <Accordion type="multiple">
+                <div className={styles.accordionContainer}>
                   {/* Observações de pagamento */}
-                  <AccordionItem value="observacoes-pagamento" className={styles.accordionItem}>
-                    <AccordionTrigger className={styles.accordionTrigger}>
+                  <div className={styles.accordionItem}>
+                    <button
+                      type="button"
+                      onClick={() => toggleAccordion('observacoes-pagamento')}
+                      className={styles.accordionTrigger}
+                    >
                       <span className={styles.accordionTriggerTitle}>Observações de pagamento</span>
-                    </AccordionTrigger>
-                    <AccordionContent className={styles.accordionContent}>
-                      <div className={styles.fieldContainer}>
-                        <Label className={styles.label}>Observações</Label>
-                        <Textarea
-                          value={formData.observacoesPagamento}
-                          onChange={(e) => handleInputChange('observacoesPagamento', e.target.value)}
-                          placeholder="Inclua informações sobre o pagamento..."
-                          rows={3}
-                          className={styles.accordionTextarea}
-                        />
-                        <p className={styles.accordionHelp}>
-                          Inclua informações sobre o pagamento que podem ser relevantes para você e seu cliente.
-                        </p>
+                    </button>
+                    {accordionOpen.includes('observacoes-pagamento') && (
+                      <div className={styles.accordionContent}>
+                        <div className={styles.fieldContainer}>
+                          <label className={styles.label}>Observações</label>
+                          <textarea
+                            value={formData.observacoesPagamento}
+                            onChange={(e) => handleInputChange('observacoesPagamento', e.target.value)}
+                            placeholder="Inclua informações sobre o pagamento..."
+                            rows={3}
+                            className={styles.accordionTextarea}
+                          />
+                          <p className={styles.accordionHelp}>
+                            Inclua informações sobre o pagamento que podem ser relevantes para você e seu cliente.
+                          </p>
+                        </div>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                    )}
+                  </div>
+                </div>
                 
               </>
             )}
@@ -1644,18 +1550,19 @@ export default function NovoContratoDrawer({
 
           {/* Footer */}
           <div className={styles.footer}>
-            <Button variant="outline" onClick={handleClose} className={styles.buttonOutline}>
+            <button type="button" onClick={handleClose} className={styles.buttonOutline}>
               Cancelar
-            </Button>
+            </button>
             <div className={styles.footerButtons}>
-              <Button 
+              <button 
+                type="button"
                 onClick={handleSave} 
                 disabled={isSaving || isLoadingFormData}
                 className={`${styles.buttonPrimary} ${styles.footerButton}`}
               >
                 {isSaving && <Loader2 className={`${styles.iconMedium} ${styles.iconWithMargin} ${styles.iconSpin}`} />}
                 {isSaving ? "Salvando..." : "Salvar"}
-              </Button>
+              </button>
             </div>
           </div>
 

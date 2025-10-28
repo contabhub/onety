@@ -2,20 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import styles from '../../styles/financeiro/vendas-e-orcamento.module.css';
-import { Button } from '../../components/financeiro/botao';
-import { Input } from '../../components/financeiro/input';
-import { Card, CardContent } from '../../components/financeiro/card';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/financeiro/table';
-import { Badge } from '../../components/financeiro/badge';
-import { Checkbox } from '../../components/financeiro/checkbox';
 import {
   ChevronLeft,
   ChevronRight,
@@ -36,32 +23,11 @@ import {
   Download,
   AlertTriangle,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../../components/financeiro/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../components/financeiro/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../components/financeiro/dialog";
+// Componentes externos removidos - usando HTML nativo
 import { NovaVendaDrawer } from '../../components/financeiro/NovaVendaDrawer';
 import { DetalhesVendaDrawer } from "../../components/financeiro/DetalhesVendaDrawer";
-import { DetalhesContratoDrawer } from "../../components/financeiro/DetalhesContratoDrawer";
 import { useVendas } from "../../hooks/financeiro/useVenda";
 import { useContratos } from "../../hooks/financeiro/useContratos";
-// import Lottie from "lottie-react";
 import { toast } from "react-toastify";
 
 // Função para combinar classes CSS
@@ -120,10 +86,6 @@ export default function VendasOrcamentosPage() {
   // Estados para detalhes da venda
   const [isDetalhesVendaOpen, setIsDetalhesVendaOpen] = useState(false);
   const [vendaSelecionada, setVendaSelecionada] = useState(null);
-
-  // Estados para detalhes do contrato
-  const [isDetalhesContratoOpen, setIsDetalhesContratoOpen] = useState(false);
-  const [contratoSelecionado, setContratoSelecionado] = useState(null);
 
   // Estados para editar venda (usando o mesmo drawer)
   const [isEditarVendaOpen, setIsEditarVendaOpen] = useState(false);
@@ -643,17 +605,10 @@ export default function VendasOrcamentosPage() {
     setIsDetalhesVendaOpen(true);
   };
 
-  // Função para abrir detalhes do contrato
-  const handleAbrirDetalhesContrato = (contratoId) => {
-    setContratoSelecionado(contratoId);
-    setIsDetalhesContratoOpen(true);
-  };
-
   // Função unificada para abrir detalhes
   const handleAbrirDetalhes = (item) => {
-    if (item.__tipo === "contrato") {
-      handleAbrirDetalhesContrato(item.__contrato_id);
-    } else {
+    // Apenas vendas podem abrir detalhes, contratos não
+    if (item.__tipo !== "contrato") {
       handleAbrirDetalhesVenda(item.id);
     }
   };
@@ -727,41 +682,41 @@ export default function VendasOrcamentosPage() {
   const getSituacaoBadge = (situacao) => {
     if (!situacao)
       return (
-        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+        <span className={`${styles.badgeComponent} ${styles.badgeGray}`}>
           Não definido
-        </Badge>
+        </span>
       );
 
     switch (situacao) {
       case "aprovado":
         return (
-          <Badge className="vendas-orcamentos-badge-recebido">
+          <span className="vendas-orcamentos-badge-recebido">
             Venda liberada
-          </Badge>
+          </span>
         );
       case "em_andamento":
         return (
-          <Badge className="vendas-orcamentos-badge-em-andamento">
+          <span className="vendas-orcamentos-badge-em-andamento">
             Em Andamento
-          </Badge>
+          </span>
         );
       case "recusado":
         return (
-          <Badge className="vendas-orcamentos-badge-recusado">
+          <span className="vendas-orcamentos-badge-recusado">
             Recusado
-          </Badge>
+          </span>
         );
       case "ativo":
         return (
-          <Badge className="bg-[#4CAF50]/20 text-[#4CAF50] border-[#4CAF50]/30">
+          <span className={`${styles.badgeComponent} ${styles.badgeSuccess}`}>
             Ativo
-          </Badge>
+          </span>
         );
       default:
         return (
-          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+          <span className={`${styles.badgeComponent} ${styles.badgeGray}`}>
             {situacao}
-          </Badge>
+          </span>
         );
     }
   };
@@ -833,13 +788,13 @@ export default function VendasOrcamentosPage() {
         <div className={styles.vendasOrcamentosHeaderActions}>
          
 
-          <Button
+          <button
             className={styles.vendasOrcamentosNovaVendaBtn}
             onClick={() => setIsNovaVendaOpen(true)}
           >
             <Plus className={styles.vendasOrcamentosNovaVendaIcon} />
             Nova venda
-          </Button>
+          </button>
       
 
         </div>
@@ -848,7 +803,7 @@ export default function VendasOrcamentosPage() {
       {/* Stats Cards */}
       <div className={styles.vendasOrcamentosStatsGrid}>
         {stats.map((stat, index) => (
-          <Card
+          <div
             key={index}
             className={`${styles.vendasOrcamentosStatCard} ${
               stat.isActive 
@@ -857,7 +812,7 @@ export default function VendasOrcamentosPage() {
             } ${stat.status ? "cursor-pointer" : ""}`}
             onClick={() => handleStatusCardClick(stat.status)}
           >
-            <CardContent className={styles.vendasOrcamentosStatCardContent}>
+            <div className={styles.vendasOrcamentosStatCardContent}>
               <div className={styles.vendasOrcamentosStatCardInner}>
                 <div className={styles.vendasOrcamentosStatCardInfo}>
                   <p className={styles.vendasOrcamentosStatCardTitle}>
@@ -872,93 +827,85 @@ export default function VendasOrcamentosPage() {
                 </div>
                 <DollarSign className={`${styles.vendasOrcamentosStatCardIcon} vendas-orcamentos-stat-${stat.status || 'total'} ${stat.isActive ? styles.vendasOrcamentosStatIconActive : ""}`} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
 
 
       {/* Filtros e pesquisa */}
-      <Card className={styles.vendasOrcamentosFiltersCard}>
-        <CardContent className={styles.vendasOrcamentosFiltersContent}>
+      <div className={styles.vendasOrcamentosFiltersCard}>
+        <div className={styles.vendasOrcamentosFiltersContent}>
           <div className={styles.vendasOrcamentosFiltersRow}>
             <div className={styles.vendasOrcamentosFilterGroup}>
               <label className={styles.vendasOrcamentosFilterLabel}>
                 Período
               </label>
               <div className={styles.vendasOrcamentosPeriodControls}>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => navigateMonth("prev")}
                   className="contas-pagar-nav-btn"
                 >
                   <ChevronLeft className={styles.vendasOrcamentosNavIcon} color="var(--onity-color-text)" />
-                </Button>
+                </button>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`contas-pagar-nav-btn ${styles.vendasOrcamentosPeriodButton}`}
-                    >
-                      <span>{formatCurrentPeriod()}</span>
-                      <ChevronDown className={styles.vendasOrcamentosNavIcon} color="var(--onity-color-text)" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="center"
-                    className="contas-pagar-dropdown"
+                <div className={styles.selectComponent}>
+                  <button
+                    className={`contas-pagar-nav-btn ${styles.vendasOrcamentosPeriodButton}`}
+                    onClick={() => setIsPeriodDropdownOpen(!isPeriodDropdownOpen)}
                   >
-                    <DropdownMenuItem 
-                      className="contas-pagar-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("week");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Esta semana
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="contas-pagar-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("month");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Este mês
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="contas-pagar-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("year");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Este ano
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="contas-pagar-dropdown-item"
-                      onClick={() => {
-                        setPeriodFilter("all");
-                        setIsPeriodDropdownOpen(false);
-                      }}
-                    >
-                      Todo o período
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <span>{formatCurrentPeriod()}</span>
+                    <ChevronDown className={styles.vendasOrcamentosNavIcon} color="var(--onity-color-text)" />
+                  </button>
+                  {isPeriodDropdownOpen && (
+                    <div className="contas-pagar-dropdown">
+                      <button 
+                        className="contas-pagar-dropdown-item"
+                        onClick={() => {
+                          setPeriodFilter("week");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Esta semana
+                      </button>
+                      <button 
+                        className="contas-pagar-dropdown-item"
+                        onClick={() => {
+                          setPeriodFilter("month");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Este mês
+                      </button>
+                      <button 
+                        className="contas-pagar-dropdown-item"
+                        onClick={() => {
+                          setPeriodFilter("year");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Este ano
+                      </button>
+                      <button 
+                        className="contas-pagar-dropdown-item"
+                        onClick={() => {
+                          setPeriodFilter("all");
+                          setIsPeriodDropdownOpen(false);
+                        }}
+                      >
+                        Todo o período
+                      </button>
+                    </div>
+                  )}
+                </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => navigateMonth("next")}
                   className="contas-pagar-nav-btn"
                 >
                   <ChevronRight className={styles.vendasOrcamentosNavIcon} color="var(--onity-color-text)" />
-                </Button>
+                </button>
               </div>
             </div>
 
@@ -968,7 +915,8 @@ export default function VendasOrcamentosPage() {
               </label>
               <div className={styles.vendasOrcamentosSearchContainer}>
                 <Search className={styles.vendasOrcamentosSearchIcon} />
-                <Input
+                <input
+                  type="text"
                   placeholder="Pesquisar por cliente, número, produto, valor ou data..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -984,14 +932,12 @@ export default function VendasOrcamentosPage() {
 
             <div className={styles.vendasOrcamentosFilterActions}>
               {activeStatusFilter && (
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => setActiveStatusFilter(null)}
                   className="vendas-orcamentos-secondary-btn"
                 >
                   Limpar filtro
-                </Button>
+                </button>
               )}
             </div>
           </div>
@@ -1015,118 +961,120 @@ export default function VendasOrcamentosPage() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Ações para itens selecionados */}
       {selectedItems.length > 0 && (
-        <Card className={styles.vendasOrcamentosSelectedActions}>
-          <CardContent className={styles.vendasOrcamentosSelectedActionsContent}>
+        <div className={styles.vendasOrcamentosSelectedActions}>
+          <div className={styles.vendasOrcamentosSelectedActionsContent}>
             <div className={styles.vendasOrcamentosSelectedActionsInfo}>
               <span className={styles.vendasOrcamentosSelectedCount}>
                 {selectedItems.length} registro(s) selecionado(s)
               </span>
-              <Button size="sm" className="vendas-orcamentos-primary-btn">
+              <button className="vendas-orcamentos-primary-btn">
                 <FileText className={styles.vendasOrcamentosActionIcon} />
                 Gerar notas fiscais de serviço
-              </Button>
+              </button>
              
-              <Button
-                size="sm"
-                variant="outline"
+              <button
                 className="vendas-orcamentos-modal-btn-confirmar"
               >
                 <Trash2 className={styles.vendasOrcamentosActionIcon} />
                 Excluir
-              </Button>
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Tabela */}
-      <Card className={styles.vendasOrcamentosTableCard}>
-        <CardContent className={styles.vendasOrcamentosTableContent}>
+      <div className={styles.vendasOrcamentosTableCard}>
+        <div className={styles.vendasOrcamentosTableContent}>
           <div className={styles.vendasOrcamentosTableContainer}>
-            <Table>
-              <TableHeader className={styles.vendasOrcamentosTableHeader}>
-                <TableRow>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderCell}>
-                    <Checkbox
+            <table className={styles.tableComponent}>
+              <thead className={styles.vendasOrcamentosTableHeader}>
+                <tr>
+                  <th className={styles.vendasOrcamentosTableHeaderCell}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
                       checked={
                         selectedItems.length === currentItems.length &&
                         currentItems.length > 0
                       }
-                      onCheckedChange={handleSelectAll}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
                     />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>
                     Data <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>
                     Tipo <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>
                     Número <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>
                     Cliente <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>
                     Valor (R$) <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>
                     Situação <ChevronUp className={styles.vendasOrcamentosTableSortIcon} />
-                  </TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>Nota Fiscal</TableHead>
-                  <TableHead className={styles.vendasOrcamentosTableHeaderText}>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                  </th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>Nota Fiscal</th>
+                  <th className={styles.vendasOrcamentosTableHeaderText}>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
                 {currentItems.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className={styles.vendasOrcamentosTableRowEmpty}>
+                  <tr>
+                    <td colSpan={9} className={styles.vendasOrcamentosTableRowEmpty}>
                       <div className={styles.vendasOrcamentosTableRowEmptyText}>
                         {searchTerm || activeStatusFilter
                           ? "Nenhuma venda encontrada para os filtros aplicados."
                           : "Nenhuma venda cadastrada."}
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ) : (
                   currentItems.map((item) => (
-                    <TableRow
+                    <tr
                       key={item.id}
                       className={`${styles.vendasOrcamentosTableRow} vendas-orcamentos-table-row`}
                       onClick={() => handleAbrirDetalhes(item)}
                     >
-                      <TableCell>
-                        <Checkbox
+                      <td>
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
                           checked={selectedItems.includes(item.id.toString())}
-                          onCheckedChange={(checked) =>
+                          onChange={(e) =>
                             handleSelectItem(
                               item.id.toString(),
-                              checked
+                              e.target.checked
                             )
                           }
                           onClick={(e) => e.stopPropagation()}
                         />
-                      </TableCell>
-                      <TableCell className={styles.vendasOrcamentosTableCellSecondary}>
+                      </td>
+                      <td className={styles.vendasOrcamentosTableCellSecondary}>
                         {formatDate(item.data_venda)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={item.__tipo === "contrato" 
+                      </td>
+                      <td>
+                        <span className={`${styles.badgeComponent} ${item.__tipo === "contrato" 
                           ? "vendas-orcamentos-badge-contrato" 
                           : "vendas-orcamentos-badge-venda"
-                        }>
+                        }`}>
                           {item.__tipo === "contrato" ? "Contrato" : "Venda"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className={styles.vendasOrcamentosTableCellSecondary}>
+                        </span>
+                      </td>
+                      <td className={styles.vendasOrcamentosTableCellSecondary}>
                         {item.numero_venda || "-"}
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td>
                         <div className={styles.vendasOrcamentosClienteContainer}>
                           <div className={styles.vendasOrcamentosClienteName}>
                             {item.cliente_nome || "Cliente não informado"}
@@ -1136,34 +1084,31 @@ export default function VendasOrcamentosPage() {
                               "Produto/Serviço não informado"}
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell className={`${styles.vendasOrcamentosTableCellValue} ${styles.vendasOrcamentosTableCellSecondary}`}>
+                      </td>
+                      <td className={`${styles.vendasOrcamentosTableCellValue} ${styles.vendasOrcamentosTableCellSecondary}`}>
                         {formatCurrency(parseFloat(item.valor_venda || "0"))}
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td>
                         {getSituacaoBadge(item.situacao || "")}
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td>
                         <div className={styles.vendasOrcamentosNfsContainer}>
-                          <Button
-                            size="sm"
+                          <button
                             className="vendas-orcamentos-nfs-btn"
                             disabled
                           >
                             Emitir NFS-e
-                          </Button>
+                          </button>
                           {(item.situacao || "") === "em_andamento" ? (
                             <Mail className={styles.vendasOrcamentosNfsIcon} />
                           ) : (
                             <Send className={styles.vendasOrcamentosNfsIcon} />
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td>
                         <div className={styles.vendasOrcamentosDropdownContainer}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <button
                             className={styles.vendasOrcamentosActionButton}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1176,7 +1121,7 @@ export default function VendasOrcamentosPage() {
                             }}
                           >
                             <MoreHorizontal className={styles.vendasOrcamentosActionIcon} />
-                          </Button>
+                          </button>
                           {openDropdownId === item.id && (
                             <div 
                               className={styles.vendasOrcamentosDropdownContent}
@@ -1185,16 +1130,18 @@ export default function VendasOrcamentosPage() {
                                 left: `${dropdownPosition.left}px`
                               }}
                             >
-                              <button 
-                                className={styles.vendasOrcamentosDropdownItem}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAbrirDetalhes(item);
-                                  setOpenDropdownId(null);
-                                }}
-                              >
-                                Ver detalhes
-                              </button>
+                              {item.__tipo !== "contrato" && (
+                                <button 
+                                  className={styles.vendasOrcamentosDropdownItem}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAbrirDetalhes(item);
+                                    setOpenDropdownId(null);
+                                  }}
+                                >
+                                  Ver detalhes
+                                </button>
+                              )}
                               {item.__tipo !== "contrato" && (
                                 <button 
                                   className={styles.vendasOrcamentosDropdownItem}
@@ -1256,15 +1203,15 @@ export default function VendasOrcamentosPage() {
                             </div>
                           )}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))
                 )}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Paginação e resumo */}
       <div className={styles.vendasOrcamentosPagination}>
@@ -1361,22 +1308,15 @@ export default function VendasOrcamentosPage() {
         onRefresh={refetchVendas}
       />
 
-      {/* Detalhes Contrato Drawer */}
-      <DetalhesContratoDrawer
-        isOpen={isDetalhesContratoOpen}
-        onClose={() => setIsDetalhesContratoOpen(false)}
-        contratoId={contratoSelecionado}
-        mostrarApenasBoletosP={true}
-      />
-
       {/* Modal de Mudança de Situação */}
-      <Dialog open={isSituacaoModalOpen} onOpenChange={setIsSituacaoModalOpen}>
-        <DialogContent className={styles.vendasOrcamentosModalContent}>
-          <DialogHeader className={styles.vendasOrcamentosModalHeader}>
-            <DialogTitle className={styles.vendasOrcamentosModalTitle}>
-              Mudar Situação da Venda
-            </DialogTitle>
-          </DialogHeader>
+      {isSituacaoModalOpen && (
+        <div className={styles.dialogOverlay} onClick={() => setIsSituacaoModalOpen(false)}>
+          <div className={styles.vendasOrcamentosModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.vendasOrcamentosModalHeader}>
+              <h2 className={styles.vendasOrcamentosModalTitle}>
+                Mudar Situação da Venda
+              </h2>
+            </div>
           
           <div className={styles.vendasOrcamentosModalBody}>
             <div className="text-center">
@@ -1385,7 +1325,7 @@ export default function VendasOrcamentosPage() {
               </p>
               
               <div className={styles.vendasOrcamentosModalButtons}>
-                <Button
+                <button
                   onClick={() => handleUpdateSituacao("ativo")}
                   disabled={isUpdatingSituacao || selectedVendaSituacao === "ativo"}
                   className={`${styles.vendasOrcamentosModalButton} ${
@@ -1396,9 +1336,9 @@ export default function VendasOrcamentosPage() {
                 >
                   <div className={`${styles.vendasOrcamentosModalButtonIndicator} ${styles.vendasOrcamentosModalButtonIndicatorActive}`}></div>
                   Ativo
-                </Button>
+                </button>
                 
-                <Button
+                <button
                   onClick={() => handleUpdateSituacao("em_andamento")}
                   disabled={isUpdatingSituacao || selectedVendaSituacao === "em_andamento"}
                   className={`${styles.vendasOrcamentosModalButton} ${
@@ -1409,9 +1349,9 @@ export default function VendasOrcamentosPage() {
                 >
                   <div className={`${styles.vendasOrcamentosModalButtonIndicator} ${styles.vendasOrcamentosModalButtonIndicatorEmAndamento}`}></div>
                   Em Andamento
-                </Button>
+                </button>
                 
-                <Button
+                <button
                   onClick={() => handleUpdateSituacao("aprovado")}
                   disabled={isUpdatingSituacao || selectedVendaSituacao === "aprovado"}
                   className={`${styles.vendasOrcamentosModalButton} ${
@@ -1422,9 +1362,9 @@ export default function VendasOrcamentosPage() {
                 >
                   <div className={`${styles.vendasOrcamentosModalButtonIndicator} ${styles.vendasOrcamentosModalButtonIndicatorAprovado}`}></div>
                   Venda liberada
-                </Button>
+                </button>
                 
-                <Button
+                <button
                   onClick={() => handleUpdateSituacao("recusado")}
                   disabled={isUpdatingSituacao || selectedVendaSituacao === "recusado"}
                   className={`${styles.vendasOrcamentosModalButton} ${
@@ -1435,7 +1375,7 @@ export default function VendasOrcamentosPage() {
                 >
                   <div className={`${styles.vendasOrcamentosModalButtonIndicator} ${styles.vendasOrcamentosModalButtonIndicatorRecusado}`}></div>
                   Recusado
-                </Button>
+                </button>
               </div>
             </div>
             
@@ -1446,22 +1386,24 @@ export default function VendasOrcamentosPage() {
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
       
       {/* Modal de Confirmação de Exclusão */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className={styles.vendasOrcamentosModalContent}>
-                  <DialogHeader>
-          <div className={styles.vendasOrcamentosModalHeaderWithIcon}>
-            <div className={styles.vendasOrcamentosModalIcon}>
-              <AlertTriangle className={styles.vendasOrcamentosModalIconAlert} />
+      {isDeleteModalOpen && (
+        <div className={styles.dialogOverlay} onClick={() => setIsDeleteModalOpen(false)}>
+          <div className={styles.vendasOrcamentosModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.vendasOrcamentosModalHeader}>
+              <div className={styles.vendasOrcamentosModalHeaderWithIcon}>
+                <div className={styles.vendasOrcamentosModalIcon}>
+                  <AlertTriangle className={styles.vendasOrcamentosModalIconAlert} />
+                </div>
+                <h2 className={styles.vendasOrcamentosModalTitleWithIcon}>
+                  Excluir venda
+                </h2>
+              </div>
             </div>
-            <DialogTitle className={styles.vendasOrcamentosModalTitleWithIcon}>
-              Excluir venda
-            </DialogTitle>
-          </div>
-        </DialogHeader>
           
           <div className={styles.vendasOrcamentosModalBody}>
             <div className="text-center">
@@ -1497,15 +1439,14 @@ export default function VendasOrcamentosPage() {
           </div>
 
           <div className={styles.vendasOrcamentosModalFooter}>
-            <Button
-              variant="outline"
+            <button
               onClick={() => setIsDeleteModalOpen(false)}
               disabled={isDeletingVenda}
               className="vendas-orcamentos-modal-btn-cancelar"
             >
               Cancelar
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleDeleteVenda}
               disabled={isDeletingVenda}
               className="vendas-orcamentos-modal-btn-confirmar"
@@ -1518,10 +1459,11 @@ export default function VendasOrcamentosPage() {
               ) : (
                 "Excluir Venda"
               )}
-            </Button>
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
       </div>
     </>

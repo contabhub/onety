@@ -1,8 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Button } from './botao';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
-import { Separator } from './separator';
 import { X, Calendar, User, Building, Package, DollarSign, FileText, Settings, Mail, Clock, TrendingUp, ChevronDown, CreditCard, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { generateReciboContrato } from '../../utils/financeiro/pdfGenerator';
@@ -424,35 +420,35 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
   const getSituacaoBadge = (situacao) => {
     if (!situacao)
       return (
-        <Badge className={styles.badgeGray}>
+        <span className={`${styles.badge} ${styles.badgeGray}`}>
           Não definido
-        </Badge>
+        </span>
       );
 
     switch (situacao) {
       case "ativo":
         return (
-          <Badge className={styles.badgeSuccess}>
+          <span className={`${styles.badge} ${styles.badgeSuccess}`}>
             Ativo
-          </Badge>
+          </span>
         );
       case "inativo":
         return (
-          <Badge className={styles.badgeWarning}>
+          <span className={`${styles.badge} ${styles.badgeWarning}`}>
             Inativo
-          </Badge>
+          </span>
         );
       case "cancelado":
         return (
-          <Badge className={styles.badgeHotPink}>
+          <span className={`${styles.badge} ${styles.badgeHotPink}`}>
             Cancelado
-          </Badge>
+          </span>
         );
       default:
         return (
-          <Badge className={styles.badgeGray}>
+          <span className={`${styles.badge} ${styles.badgeGray}`}>
             {situacao}
-          </Badge>
+          </span>
         );
     }
   };
@@ -868,14 +864,12 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onClose}
-            className={styles.closeButton}
+            className={`${styles.button} ${styles.buttonGhost} ${styles.buttonSmall}`}
           >
             <X className="w-5 h-5" />
-          </Button>
+          </button>
         </div>
 
         {/* Content */}
@@ -888,9 +882,9 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
           ) : error ? (
             <div className={styles.errorContainer}>
               <p className={styles.errorMessage}>{error}</p>
-              <Button onClick={fetchContratoDetalhes} className={styles.buttonPrimary}>
+              <button onClick={fetchContratoDetalhes} className={`${styles.button} ${styles.buttonPrimary}`}>
                 Tentar novamente
-              </Button>
+              </button>
             </div>
           ) : contrato ? (
             <>
@@ -1120,34 +1114,34 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
 
 
               {/* Configuração de envio automático */}
-              <Card className="bg-darkPurple border-neonPurple">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
+              <div className={styles.configCard}>
+                <div className={styles.configCardHeader}>
+                  <h3 className={styles.configCardTitle}>
                     <Mail className="w-5 h-5 text-primary" />
                     Configuração de envio automático
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-textMain">Enviar a fatura</span>
-                      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Ativo</Badge>
+                  </h3>
+                </div>
+                <div className={styles.configCardContent}>
+                  <div className={styles.configSection}>
+                    <div className={styles.configRow}>
+                      <span className={styles.configLabel}>Enviar a fatura</span>
+                      <span className={`${styles.badge} ${styles.badgeActive}`}>Ativo</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-textMain">Disponibilizar cobrança</span>
-                      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Ativo</Badge>
+                    <div className={styles.configRow}>
+                      <span className={styles.configLabel}>Disponibilizar cobrança</span>
+                      <span className={`${styles.badge} ${styles.badgeActive}`}>Ativo</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-textMain">Enviar lembretes de vencimento</span>
-                      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Ativo</Badge>
+                    <div className={styles.configRow}>
+                      <span className={styles.configLabel}>Enviar lembretes de vencimento</span>
+                      <span className={`${styles.badge} ${styles.badgeActive}`}>Ativo</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-textMain">Emitir e enviar nota fiscal</span>
-                      <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Desativado</Badge>
+                    <div className={styles.configRow}>
+                      <span className={styles.configLabel}>Emitir e enviar nota fiscal</span>
+                      <span className={`${styles.badge} ${styles.badgeDisabled}`}>Desativado</span>
                     </div>
-                    <div className="pt-3 border-t border-neonPurple">
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-textSecondary">E-mail que receberá as faturas</label>
+                    <div className={styles.configDivider}>
+                      <div className={styles.configEmailRow}>
+                        <label className={styles.configEmailLabel}>E-mail que receberá as faturas</label>
                         {/* Comentado temporariamente - Funcionalidade de editar e-mail
                         {!editandoEmail && (
                           <Button
@@ -1201,52 +1195,50 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                       ) : (
                       */}
                                             {/* Apenas exibição do e-mail (sem edição) */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-textMain">
+                      <div className={styles.configRow}>
+                        <span className={styles.emailText}>
                           {contrato.cliente_email && contrato.cliente_email.trim() !== '' ? (
                             contrato.cliente_email
                           ) : (
-                            <span className="text-textSecondary italic">E-mail do cliente não cadastrado</span>
+                            <span className={styles.emailTextSecondary}>E-mail do cliente não cadastrado</span>
                           )}
                         </span>
                       </div>
                       
                       {(!contrato.cliente_email || contrato.cliente_email.trim() === '') && (
-                        <p className="text-xs text-textSecondary mt-1">
+                        <p className={styles.emailTextSmall}>
                           Para receber faturas, cadastre o e-mail do cliente
                         </p>
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Exibir detalhes da empresa */}
               {empresa && (
-                <Card className="bg-darkPurple border-neonPurple">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg text-textMain">
+                <div className={styles.configCard}>
+                  <div className={styles.configCardHeader}>
+                    <h3 className={styles.configCardTitle}>
                       <Building className="w-5 h-5 text-primary" />
                       Detalhes da Empresa
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-textSecondary">Nome</label>
-                        <p className="text-primary font-medium">{empresa.nome}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-textSecondary">Endereço</label>
-                        <p className="text-textMain">{empresa.endereco}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-textSecondary">CNPJ</label>
-                        <p className="text-textMain">{empresa.cnpj}</p>
-                      </div>
+                    </h3>
+                  </div>
+                  <div className={`${styles.configCardContent} ${styles.gridTwoCols}`}>
+                    <div>
+                      <label className={styles.label}>Nome</label>
+                      <p className={styles.textPrimary}>{empresa.nome}</p>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div>
+                      <label className={styles.label}>Endereço</label>
+                      <p className={styles.textMain}>{empresa.endereco}</p>
+                    </div>
+                    <div>
+                      <label className={styles.label}>CNPJ</label>
+                      <p className={styles.textMain}>{empresa.cnpj}</p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Vendas geradas automaticamente pelo contrato - Só mostra se houver vendas */}
@@ -1254,47 +1246,47 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                 console.log(`🔍 Renderização: vendasContrato.length = ${vendasContrato.length} para contrato ${contratoId}`);
                 return vendasContrato.length > 0;
               })() && (
-                <Card className="bg-darkPurple border-neonPurple">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg text-textMain">
+                <div className={styles.configCard}>
+                  <div className={styles.configCardHeader}>
+                    <h3 className={styles.configCardTitle}>
                       <Clock className="w-5 h-5 text-purple-500" />
                       Vendas geradas automaticamente
-                    </CardTitle>
-                    <p className="text-sm text-textSecondary mt-2">
+                    </h3>
+                    <p className={styles.cardSubtitle}>
                       Vendas criadas automaticamente a partir deste contrato
                     </p>
-                  </CardHeader>
-                  <CardContent>
+                  </div>
+                  <div className={styles.configCardContent}>
                     {loadingVendas ? (
-                      <div className="flex items-center justify-center p-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <span className="ml-2 text-textSecondary">Carregando vendas...</span>
+                      <div className={styles.vendasLoading}>
+                        <div className={styles.vendasLoadingSpinner}></div>
+                        <span className={styles.vendasLoadingText}>Carregando vendas...</span>
                       </div>
                     ) : (
-                    <div className="space-y-4">
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="border-b border-neonPurple">
-                              <th className="text-left p-2 text-textMain font-medium">Período</th>
-                              <th className="text-left p-2 text-textMain font-medium">Vencimento</th>
-                              <th className="text-left p-2 text-textMain font-medium">Valor</th>
-                              <th className="text-left p-2 text-textMain font-medium">Situação</th>
-                              <th className="text-left p-2 text-textMain font-medium">Ações</th>
+                    <div className={styles.vendasSection}>
+                      <div className={styles.tableContainer}>
+                        <table className={styles.vendasTable}>
+                          <thead className={styles.vendasTableHeader}>
+                            <tr>
+                              <th className={styles.vendasTableHeaderCell}>Período</th>
+                              <th className={styles.vendasTableHeaderCell}>Vencimento</th>
+                              <th className={styles.vendasTableHeaderCell}>Valor</th>
+                              <th className={styles.vendasTableHeaderCell}>Situação</th>
+                              <th className={styles.vendasTableHeaderCell}>Ações</th>
                             </tr>
                           </thead>
                           <tbody>
                             {vendasContrato.map((venda) => (
-                              <tr key={venda.id} className="border-b border-neonPurple/30 hover:bg-neonPurple/5">
-                                <td className="p-2 text-textMain">
+                              <tr key={venda.id} className={styles.vendasTableRow}>
+                                <td className={styles.vendasTableCell}>
                                   {venda.mes_referencia}º mês de {venda.ano_referencia}
                                 </td>
-                                <td className="p-2 text-textMain">
+                                <td className={styles.vendasTableCell}>
                                   {editandoVenda === venda.id ? (
                                     <input
                                       type="date"
                                       defaultValue={toInputDateValue(venda.vencimento)}
-                                      className="bg-darkPurple border border-neonPurple rounded px-2 py-1 text-sm text-textMain"
+                                      className={styles.vendasInput}
                                       onBlur={(e) => {
                                         if (e.target.value && e.target.value !== toInputDateValue(venda.vencimento)) {
                                           handleEditarVenda(venda.id, e.target.value);
@@ -1318,99 +1310,85 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                     />
                                   ) : (
                                     <span 
-                                      className="cursor-pointer hover:text-primary"
+                                      className={styles.vendasClickableDate}
                                       onClick={() => setEditandoVenda(venda.id)}
                                     >
                                       {formatDate(venda.vencimento)}
                                     </span>
                                   )}
                                 </td>
-                                <td className="p-2 text-textMain">
+                                <td className={styles.vendasTableCell}>
                                   R$ {parseFloat(venda.valor_venda.toString()).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                 </td>
-                                <td className="p-2">
-                                  <Badge 
-                                    variant={
-                                      venda.situacao === 'aprovado' ? 'default' :
-                                      venda.situacao === 'pendente' ? 'secondary' :
-                                      venda.situacao === 'processado' ? 'outline' : 'destructive'
-                                    }
-                                    className={
-                                      venda.situacao === 'aprovado' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                                      venda.situacao === 'pendente' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
-                                      venda.situacao === 'processado' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                                      'bg-red-500/20 text-red-400 border-red-500/30'
-                                    }
-                                  >
+                                <td className={styles.vendasTableCell}>
+                                  <span className={`${styles.badge} ${
+                                      venda.situacao === 'aprovado' ? styles.badgeAprovado :
+                                      venda.situacao === 'pendente' ? styles.badgePendente :
+                                      venda.situacao === 'processado' ? styles.badgeProcessado : styles.badgeDestructive
+                                    }`}>
                                     {venda.situacao.charAt(0).toUpperCase() + venda.situacao.slice(1)}
-                                  </Badge>
+                                  </span>
                                 </td>
-                                <td className="p-2">
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-7 px-2 text-xs border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white"
+                                <td className={styles.vendasTableCell}>
+                                  <div className={styles.vendasActions}>
+                                    <button
+                                      className={`${styles.vendasButton} ${styles.vendasButtonBlue} ${editandoVenda === venda.id ? styles.vendasButtonDisabled : ''}`}
                                       onClick={() => setEditandoVenda(venda.id)}
                                       disabled={editandoVenda === venda.id}
                                     >
-                                      <Calendar className="w-3 h-3 mr-1" />
+                                      <Calendar className={styles.vendasButtonIcon} />
                                       Editar
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className={`h-7 px-2 text-xs ${
+                                    </button>
+                                    <button
+                                      className={`${styles.vendasButton} ${
                                         boletosGeradosComSucesso.has(venda.id)
-                                          ? "border-green-500 text-green-500 bg-green-500/10 cursor-not-allowed"
+                                          ? styles.vendasButtonSuccess
                                           : todosBoletosDesabilitados
-                                          ? "border-gray-500 text-gray-400 bg-gray-500/10 cursor-not-allowed"
-                                          : "border-green-500 text-green-400 hover:bg-green-500 hover:text-white"
-                                      }`}
+                                          ? styles.vendasButtonLoading
+                                          : styles.vendasButtonGreen
+                                      } ${(gerandoBoletoVenda === venda.id || boletosGeradosComSucesso.has(venda.id) || todosBoletosDesabilitados) ? styles.vendasButtonDisabled : ''}`}
                                       onClick={() => handleGerarBoletoVenda(venda)}
                                       disabled={gerandoBoletoVenda === venda.id || boletosGeradosComSucesso.has(venda.id) || todosBoletosDesabilitados}
                                     >
                                       {gerandoBoletoVenda === venda.id ? (
                                         <>
-                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>
+                                          <div className={styles.vendasButtonSpinner}></div>
                                           Gerando...
                                         </>
                                       ) : boletosGeradosComSucesso.has(venda.id) ? (
                                         <>
-                                          <CreditCard className="w-3 h-3 mr-1" />
+                                          <CreditCard className={styles.vendasButtonIcon} />
                                           Gerado!
                                         </>
                                       ) : todosBoletosDesabilitados ? (
                                         <>
-                                          <CreditCard className="w-3 h-3 mr-1" />
+                                          <CreditCard className={styles.vendasButtonIcon} />
                                           Aguarde...
                                         </>
                                       ) : (
                                         <>
-                                          <CreditCard className="w-3 h-3 mr-1" />
+                                          <CreditCard className={styles.vendasButtonIcon} />
                                           Boleto
                                         </>
                                       )}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-7 px-2 text-xs border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white"
+                                    </button>
+                                    <button
+                                      className={`${styles.vendasButton} ${styles.vendasButtonPurple} ${baixandoBoleto === venda.id ? styles.vendasButtonDisabled : ''}`}
                                       onClick={() => handleBaixarBoletoIndividual(venda)}
                                       disabled={baixandoBoleto === venda.id}
                                     >
                                       {baixandoBoleto === venda.id ? (
                                         <>
-                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>
+                                          <div className={styles.vendasButtonSpinner}></div>
                                           Baixando...
                                         </>
                                       ) : (
                                         <>
-                                          <Download className="w-3 h-3 mr-1" />
+                                          <Download className={styles.vendasButtonIcon} />
                                           Baixar
                                         </>
                                       )}
-                                    </Button>
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
@@ -1419,77 +1397,77 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                         </table>
                       </div>
                       
-                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                          <p className="text-xs text-blue-400">
+                      <div className={styles.vendasInfoBox}>
+                          <p className={styles.vendasInfoText}>
                             <strong>💡 Dica:</strong> Clique na data de vencimento para editá-la rapidamente. 
-                           Use o botão &quot;Boleto&quot; para gerar boletos e o botão &quot;Baixar&quot; para baixar boletos já gerados.
+                           Use o botão "Boleto" para gerar boletos e o botão "Baixar" para baixar boletos já gerados.
                           </p>
                       </div>
                     </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )}
 
               {/* Histórico do contrato (boletos) */}
-              <Card className="bg-darkPurple border-neonPurple">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-textMain">
+              <div className={styles.configCard}>
+                <div className={styles.configCardHeader}>
+                  <h3 className={styles.configCardTitle}>
                     <Clock className="w-5 h-5 text-purple-500" />
                     Histórico de boletos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <p className="text-sm text-textSecondary">
+                  </h3>
+                </div>
+                <div className={styles.configCardContent}>
+                  <div className={styles.historicoSection}>
+                    <p className={styles.textSecondary}>
                       Histórico de boletos gerados para este contrato
                     </p>
-                    <div className="space-y-2">
+                    <div className={styles.historicoYearSelector}>
                       <div 
-                        className={`flex items-center justify-between p-3 border border-neonPurple rounded-lg cursor-pointer hover:bg-neonPurple/10 ${
-                          anoSelecionado === '2024' ? 'bg-neonPurple/10' : ''
+                        className={`${styles.historicoYearItem} ${
+                          anoSelecionado === '2024' ? styles.historicoYearItemActive : ''
                         }`}
                         onClick={() => setAnoSelecionado('2024')}
                       >
-                        <span className="font-medium text-textMain">2024</span>
-                        <ChevronDown className="w-5 h-5 text-textSecondary" />
+                        <span className={styles.historicoYearText}>2024</span>
+                        <ChevronDown className={styles.historicoYearIcon} />
                       </div>
                       <div 
-                        className={`flex items-center justify-between p-3 border border-neonPurple rounded-lg cursor-pointer hover:bg-neonPurple/10 ${
-                          anoSelecionado === '2025' ? 'bg-neonPurple/10' : ''
+                        className={`${styles.historicoYearItem} ${
+                          anoSelecionado === '2025' ? styles.historicoYearItemActive : ''
                         }`}
                         onClick={() => setAnoSelecionado('2025')}
                       >
-                        <span className="font-medium text-textMain">2025</span>
-                        <ChevronDown className="w-5 h-5 text-textSecondary" />
+                        <span className={styles.historicoYearText}>2025</span>
+                        <ChevronDown className={styles.historicoYearIcon} />
                       </div>
                     </div>
 
                     {/* Conteúdo do ano selecionado */}
                     {anoSelecionado === '2025' && (
-                      <div className="mt-4 space-y-4">
+                      <div className={styles.historicoContent}>
                         {/* Resumo dos produtos/serviços */}
                         {contrato.produtos && contrato.produtos.length > 0 && (
-                          <div className="bg-neonPurple/5 border border-neonPurple/30 rounded-lg p-4">
-                            <h5 className="text-sm font-medium text-textMain mb-2 flex items-center gap-2">
+                          <div className={styles.historicoResumo}>
+                            <h5 className={styles.historicoResumoTitle}>
                               <Package className="w-4 h-4 text-primary" />
                               Resumo dos Itens ({contrato.produtos.length} item{contrato.produtos.length > 1 ? 's' : ''})
                             </h5>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                            <div className={styles.historicoResumoGrid}>
                               {contrato.produtos.map((produto) => (
-                                <div key={produto.id} className="flex flex-col bg-darkPurple/50 rounded px-2 py-1">
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-textMain">{produto.produto_nome}</span>
-                                    <span className="text-textSecondary">{produto.quantidade}x {formatCurrency(produto.valor_unitario)}</span>
+                                <div key={produto.id} className={styles.historicoResumoItem}>
+                                  <div className={styles.historicoResumoItemRow}>
+                                    <span className={styles.historicoResumoItemName}>{produto.produto_nome}</span>
+                                    <span className={styles.historicoResumoItemPrice}>{produto.quantidade}x {formatCurrency(produto.valor_unitario)}</span>
                                   </div>
                                   {produto.departamento_nome && (
-                                    <div className="flex items-center gap-1 mt-1">
+                                    <div className={styles.historicoResumoItemDept}>
                                       {produto.departamento_codigo && (
-                                        <span className="text-xs bg-neonPurple/20 text-primary px-1 py-0.5 rounded">
+                                        <span className={styles.historicoResumoItemDeptCode}>
                                           {produto.departamento_codigo}
                                         </span>
                                       )}
-                                      <span className="text-xs text-textSecondary">{produto.departamento_nome}</span>
+                                      <span className={styles.historicoResumoItemDeptName}>{produto.departamento_nome}</span>
                                     </div>
                                   )}
                                 </div>
@@ -1499,75 +1477,75 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                         )}
                         {/* Produtos/Serviços do contrato */}
                         <div>
-                          <h4 className="text-sm font-medium text-textMain mb-3 flex items-center gap-2">
+                          <h4 className={styles.historicoProdutosTitle}>
                             <Package className="w-4 h-4 text-purple-500" />
                             Produtos/Serviços do contrato
                           </h4>
-                          <div className="space-y-2">
+                          <div className={styles.historicoProdutosList}>
                             {contrato.produtos && contrato.produtos.length > 0 ? (
                               contrato.produtos.map((produto, index) => (
-                                <div key={produto.id} className="p-3 border border-neonPurple/30 rounded-lg bg-neonPurple/5">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-textMain">{produto.produto_nome}</span>
-                                    <Badge className="bg-green-500/20 text-green-500 border-green-500/30 text-xs">
+                                <div key={produto.id} className={styles.historicoProdutoItem}>
+                                  <div className={styles.historicoProdutoHeader}>
+                                    <span className={styles.historicoProdutoName}>{produto.produto_nome}</span>
+                                    <span className={`${styles.historicoProdutoBadge} ${styles.historicoProdutoBadgeGreen}`}>
                                       {produto.produto_tipo === 'produto' ? 'PRODUTO' : 'SERVIÇO'}
-                                    </Badge>
+                                    </span>
                                   </div>
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                                    <div>
-                                      <span className="text-textSecondary">Departamento:</span>
-                                      <p className="text-textMain font-medium">
+                                  <div className={styles.historicoProdutoGrid}>
+                                    <div className={styles.historicoProdutoField}>
+                                      <span className={styles.historicoProdutoFieldLabel}>Departamento:</span>
+                                      <p className={styles.historicoProdutoFieldValue}>
                                         {produto.departamento_nome ? (
                                           <span className="flex items-center gap-1">
                                             {produto.departamento_codigo && (
-                                              <span className="text-xs bg-neonPurple/20 text-primary px-1 py-0.5 rounded">
+                                              <span className={styles.historicoResumoItemDeptCode}>
                                                 {produto.departamento_codigo}
                                               </span>
                                             )}
                                             {produto.departamento_nome}
                                           </span>
                                         ) : (
-                                          <span className="text-textSecondary italic">Não definido</span>
+                                          <span className={styles.textSecondary}>Não definido</span>
                                         )}
                                       </p>
                                     </div>
-                                    <div>
-                                      <span className="text-textSecondary">Quantidade:</span>
-                                      <p className="text-textMain font-medium">{produto.quantidade}</p>
+                                    <div className={styles.historicoProdutoField}>
+                                      <span className={styles.historicoProdutoFieldLabel}>Quantidade:</span>
+                                      <p className={styles.historicoProdutoFieldValue}>{produto.quantidade}</p>
                                     </div>
-                                    <div>
-                                      <span className="text-textSecondary">Valor Unitário:</span>
-                                      <p className="text-textMain font-medium">{formatCurrency(produto.valor_unitario)}</p>
+                                    <div className={styles.historicoProdutoField}>
+                                      <span className={styles.historicoProdutoFieldLabel}>Valor Unitário:</span>
+                                      <p className={styles.historicoProdutoFieldValue}>{formatCurrency(produto.valor_unitario)}</p>
                                     </div>
-                                    <div>
-                                      <span className="text-textSecondary">Subtotal:</span>
-                                      <p className="text-textMain font-medium">{formatCurrency((produto.quantidade * produto.valor_unitario) - produto.desconto)}</p>
+                                    <div className={styles.historicoProdutoField}>
+                                      <span className={styles.historicoProdutoFieldLabel}>Subtotal:</span>
+                                      <p className={styles.historicoProdutoFieldValue}>{formatCurrency((produto.quantidade * produto.valor_unitario) - produto.desconto)}</p>
                                     </div>
                                   </div>
                                   {produto.observacoes && (
-                                    <div className="mt-2">
-                                      <span className="text-textSecondary text-xs">Observações:</span>
-                                      <p className="text-textMain text-xs">{produto.observacoes}</p>
+                                    <div className={styles.historicoProdutoObservacoes}>
+                                      <span className={styles.historicoProdutoObservacoesLabel}>Observações:</span>
+                                      <p className={styles.historicoProdutoObservacoesValue}>{produto.observacoes}</p>
                                     </div>
                                   )}
                                 </div>
                               ))
                             ) : (
-                              <div className="p-3 border border-neonPurple/30 rounded-lg bg-neonPurple/5">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-sm font-medium text-textMain">{contrato.produto_servico_nome}</span>
-                                  <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30 text-xs">
+                              <div className={styles.historicoProdutoItem}>
+                                <div className={styles.historicoProdutoHeader}>
+                                  <span className={styles.historicoProdutoName}>{contrato.produto_servico_nome}</span>
+                                  <span className={`${styles.historicoProdutoBadge} ${styles.historicoProdutoBadgeBlue}`}>
                                     SERVIÇO
-                                  </Badge>
+                                  </span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 text-xs">
-                                  <div>
-                                    <span className="text-textSecondary">Valor:</span>
-                                    <p className="text-textMain font-medium">{formatCurrency(contrato.valor)}</p>
+                                <div className={styles.gridTwoCols}>
+                                  <div className={styles.historicoProdutoField}>
+                                    <span className={styles.historicoProdutoFieldLabel}>Valor:</span>
+                                    <p className={styles.historicoProdutoFieldValue}>{formatCurrency(contrato.valor)}</p>
                                   </div>
-                                  <div>
-                                    <span className="text-textSecondary">Quantidade:</span>
-                                    <p className="text-textMain font-medium">1</p>
+                                  <div className={styles.historicoProdutoField}>
+                                    <span className={styles.historicoProdutoFieldLabel}>Quantidade:</span>
+                                    <p className={styles.historicoProdutoFieldValue}>1</p>
                                   </div>
                                 </div>
                               </div>
@@ -1577,26 +1555,26 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
 
                         {/* Boletos pagos */}
                         <div>
-                          <h4 className="text-sm font-medium text-textMain mb-3 flex items-center gap-2">
+                          <h4 className={styles.historicoBoletosTitle}>
                             <CreditCard className="w-4 h-4 text-green-500" />
                             Boletos pagos
                           </h4>
                           {loadingBoletos ? (
-                            <div className="flex items-center justify-center py-4">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                              <span className="ml-2 text-textSecondary text-sm">Carregando...</span>
+                            <div className={styles.historicoBoletosLoading}>
+                              <div className={styles.historicoBoletosLoadingSpinner}></div>
+                              <span className={styles.historicoBoletosLoadingText}>Carregando...</span>
                             </div>
                           ) : (
-                            <div className="overflow-x-auto">
-                              <table className="w-full">
-                                <thead>
-                                  <tr className="border-b border-neonPurple bg-neonPurple/10">
-                                    <th className="text-left py-2 px-3 text-sm font-medium text-textSecondary">Data da venda</th>
-                                    <th className="text-left py-2 px-3 text-sm font-medium text-textSecondary">Número da venda</th>
-                                    <th className="text-left py-2 px-3 text-sm font-medium text-textSecondary">Valor (R$)</th>
-                                    <th className="text-left py-2 px-3 text-sm font-medium text-textSecondary">Recebido (R$)</th>
-                                    <th className="text-left py-2 px-3 text-sm font-medium text-textSecondary">Situação</th>
-                                    <th className="text-left py-2 px-3 text-sm font-medium text-textSecondary">Ações</th>
+                            <div className={styles.tableContainer}>
+                              <table className={styles.historicoBoletosTable}>
+                                <thead className={styles.historicoBoletosTableHeader}>
+                                  <tr>
+                                    <th className={styles.historicoBoletosTableHeaderCell}>Data da venda</th>
+                                    <th className={styles.historicoBoletosTableHeaderCell}>Número da venda</th>
+                                    <th className={styles.historicoBoletosTableHeaderCell}>Valor (R$)</th>
+                                    <th className={styles.historicoBoletosTableHeaderCell}>Recebido (R$)</th>
+                                    <th className={styles.historicoBoletosTableHeaderCell}>Situação</th>
+                                    <th className={styles.historicoBoletosTableHeaderCell}>Ações</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1613,7 +1591,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       if (boletosPagos.length === 0) {
                                         return (
                                           <tr>
-                                            <td colSpan={6} className="py-4 text-center text-textSecondary text-sm">
+                                            <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
                                               Nenhum boleto pago encontrado
                                             </td>
                                           </tr>
@@ -1625,30 +1603,30 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                         const valorBase = contrato?.valor || 0;
 
                                         return (
-                                          <tr key={index} className="border-b border-neonPurple/30 hover:bg-neonPurple/5">
-                                            <td className="py-3 px-3 text-textMain text-sm">
+                                          <tr key={index} className={styles.historicoBoletosTableRow}>
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {formatDate(boleto.data_pagamento)}
                                             </td>
-                                            <td className="py-3 px-3 text-textMain text-sm">
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {contrato?.numero_contrato || contrato?.id}
                                             </td>
-                                            <td className="py-3 px-3 text-textMain text-sm">
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {formatCurrency(valorBase)}
                                             </td>
-                                            <td className="py-3 px-3 text-sm">
-                                              <span className="text-green-500 font-medium">
+                                            <td className={styles.historicoBoletosTableCell}>
+                                              <span className={styles.historicoBoletosTableCellGreen}>
                                                 {boleto.valor_recebido > 0 ? formatCurrency(boleto.valor_recebido) : formatCurrency(valorBase)}
                                               </span>
                                             </td>
-                                            <td className="py-3 px-3">
-                                              <Badge className="bg-green-500/20 text-green-500 border-green-500/30 text-xs">
+                                            <td className={styles.historicoBoletosTableCell}>
+                                              <span className={`${styles.badge} ${styles.badgeSuccess}`}>
                                                 PAGO
-                                              </Badge>
+                                              </span>
                                             </td>
-                                            <td className="py-3 px-3">
-                                              <div className="flex items-center gap-2">
+                                            <td className={styles.historicoBoletosTableCell}>
+                                              <div className={styles.historicoBoletosActions}>
                                                 <button 
-                                                  className="px-3 py-1 text-xs border border-blue-500 text-blue-500 rounded hover:bg-blue-500/10"
+                                                  className={styles.historicoBoletosButton}
                                                   onClick={() => handleEditarVencimento(boleto.data_pagamento || '')}
                                                 >
                                                   Editar
@@ -1666,7 +1644,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       if (!contrato?.data_inicio) {
                                         return (
                                           <tr>
-                                            <td colSpan={6} className="py-4 text-center text-textSecondary text-sm">
+                                            <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
                                               Contrato sem data de início definida
                                             </td>
                                           </tr>
@@ -1677,7 +1655,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       if (!dataInicio) {
                                         return (
                                           <tr>
-                                            <td colSpan={6} className="py-4 text-center text-textSecondary text-sm">
+                                            <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
                                               Data de início do contrato inválida
                                             </td>
                                           </tr>
@@ -1690,7 +1668,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       if (anoAtual < anoContrato) {
                                         return (
                                           <tr>
-                                            <td colSpan={6} className="py-4 text-center text-textSecondary text-sm">
+                                            <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
                                               Contrato ainda não iniciado para {anoAtual}
                                             </td>
                                           </tr>
@@ -1701,7 +1679,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       if (anoAtual > anoContrato) {
                                         return (
                                           <tr>
-                                            <td colSpan={6} className="py-4 text-center text-textSecondary text-sm">
+                                            <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
                                               Cronograma de {anoAtual} - Contrato iniciado em {anoContrato}
                                             </td>
                                           </tr>
@@ -1734,7 +1712,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       if (mesesParaMostrar.length === 0) {
                                         return (
                                           <tr>
-                                            <td colSpan={6} className="py-4 text-center text-textSecondary text-sm">
+                                            <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
                                               Nenhum mês para exibir
                                             </td>
                                           </tr>
@@ -1761,36 +1739,36 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                         const valorBase = contrato?.valor || 0;
 
                                         return (
-                                          <tr key={mes} className="border-b border-neonPurple/30 hover:bg-neonPurple/5">
-                                            <td className="py-3 px-3 text-textMain text-sm">
+                                          <tr key={mes} className={styles.historicoBoletosTableRow}>
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {formatDate(`${anoAtual}-${mes.toString().padStart(2, '0')}-06`)}
                                             </td>
-                                            <td className="py-3 px-3 text-textMain text-sm">
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {contrato?.numero_contrato || contrato?.id}
                                             </td>
-                                            <td className="py-3 px-3 text-textMain text-sm">
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {formatCurrency(valorBase)}
                                             </td>
-                                            <td className="py-3 px-3 text-sm">
+                                            <td className={styles.historicoBoletosTableCell}>
                                               {boletoMes && isPago ? (
-                                                <span className="text-green-500 font-medium">
+                                                <span className={styles.historicoBoletosTableCellGreen}>
                                                   {boletoMes.valor_recebido > 0 ? formatCurrency(boletoMes.valor_recebido) : formatCurrency(valorBase)}
                                                 </span>
                                               ) : boletoMes && !isPago ? (
-                                                <span className="text-orange-500 font-medium">
+                                                <span className={styles.historicoBoletosTableCellOrange}>
                                                   {formatCurrency(0)}
                                                 </span>
                                               ) : (
-                                                <span className="text-textSecondary">-</span>
+                                                <span className={styles.historicoBoletosTableCellSecondary}>-</span>
                                               )}
                                             </td>
-                                            <td className="py-3 px-3">
-                                              <Badge className={`text-xs ${
+                                            <td className={styles.historicoBoletosTableCell}>
+                                              <span className={`${styles.badge} ${
                                                 boletoMes && isPago 
-                                                  ? "bg-green-500/20 text-green-500 border-green-500/30" 
+                                                  ? styles.badgeSuccess 
                                                   : boletoMes && !isPago 
-                                                  ? "bg-red-500/20 text-red-500 border-red-500/30" 
-                                                  : "bg-yellow-500/20 text-yellow-500 border-yellow-500/30"
+                                                  ? styles.badgeError 
+                                                  : styles.badgeWarning
                                               }`}>
                                                 {boletoMes && isPago 
                                                   ? "PAGO" 
@@ -1798,12 +1776,12 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                                   ? "ATRASADO" 
                                                   : "PENDENTE"
                                                 }
-                                              </Badge>
+                                              </span>
                                             </td>
-                                            <td className="py-3 px-3">
-                                              <div className="flex items-center gap-2">
+                                            <td className={styles.historicoBoletosTableCell}>
+                                              <div className={styles.historicoBoletosActions}>
                                                 <button 
-                                                  className="px-3 py-1 text-xs border border-blue-500 text-blue-500 rounded hover:bg-blue-500/10"
+                                                  className={styles.historicoBoletosButton}
                                                   onClick={() => handleEditarVencimento(`${anoAtual}-${mes.toString().padStart(2, '0')}-06`)}
                                                 >
                                                   Editar
@@ -1824,38 +1802,35 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                     )}
 
                     {anoSelecionado === '2024' && (
-                      <div className="mt-4">
-                        <p className="text-textSecondary text-sm">Nenhuma venda registrada para 2024</p>
+                      <div className={styles.historicoContent}>
+                        <p className={styles.historicoEmpty}>Nenhuma venda registrada para 2024</p>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </>
           ) : null}
         </div>
 
         {/* Footer */}
         <div className={styles.drawerFooter}>
-          <Button
-            variant="outline"
+          <button
             onClick={onClose}
-            className={styles.buttonOutline}
+            className={`${styles.button} ${styles.buttonOutline}`}
           >
             Voltar
-          </Button>
+          </button>
           <div className={styles.footerActions}>
-            <Button 
-              variant="outline" 
-              className={styles.buttonOutline}
+            <button 
+              className={`${styles.button} ${styles.buttonOutline}`}
               onClick={handleGerarRecibo}
               disabled={!contrato || !empresa}
             >
               Gerar Recibo
-            </Button>
-            <Button 
-              variant="outline" 
-              className={styles.buttonGreen}
+            </button>
+            <button 
+              className={`${styles.button} ${styles.buttonGreen} ${(!contrato || !contrato.proximo_vencimento || gerandoBoleto) ? styles.buttonDisabled : ''}`}
               onClick={handleGerarBoleto}
               disabled={!contrato || !contrato.proximo_vencimento || gerandoBoleto}
             >
@@ -1870,13 +1845,13 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                   Gerar Boleto
                 </>
               )}
-            </Button>
-            <Button variant="outline" className={styles.buttonOutline}>
+            </button>
+            <button className={`${styles.button} ${styles.buttonOutline}`}>
               Outras ações
-            </Button>
-            <Button className={styles.buttonPrimary}>
+            </button>
+            <button className={`${styles.button} ${styles.buttonPrimary}`}>
               Editar contrato
-            </Button>
+            </button>
           </div>
         </div>
       </div>

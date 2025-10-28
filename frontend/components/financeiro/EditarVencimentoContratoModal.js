@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
-import { Button } from './botao';
-import { Calendar } from './calendar';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { toast } from 'react-toastify';
 import styles from '../../styles/financeiro/DetalhesContratoDrawer.module.css';
 
@@ -16,48 +10,73 @@ export function EditarVencimentoContratoModal({
   dataAtual,
   onConfirm
 }) {
-  const [novaData, setNovaData] = useState();
+  const [novaData, setNovaData] = useState('');
   const [opcaoSelecionada, setOpcaoSelecionada] = useState('apenas');
+
+  // Função para converter data para formato YYYY-MM-DD
+  const formatDateForInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Função para converter data para formato DD/MM/YYYY
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+  };
 
   useEffect(() => {
     if (isOpen && dataAtual) {
-      setNovaData(new Date(dataAtual));
+      setNovaData(formatDateForInput(dataAtual));
       setOpcaoSelecionada('apenas');
     }
   }, [isOpen, dataAtual]);
 
   const handleConfirmar = () => {
     if (!novaData) {
-      toast({
-        title: "Erro",
-        description: "Selecione uma data.",
-        variant: "destructive",
-      });
+      toast.error("Selecione uma data.");
       return;
     }
 
     console.log("🔍 Modal - Opção selecionada:", opcaoSelecionada);
     console.log("🔍 Modal - Nova data:", novaData);
 
+    // Converter data string para objeto Date
+    const dataObj = new Date(novaData + 'T00:00:00');
+    
     // Chamar callback para abrir o drawer de edição
-    onConfirm?.(contratoId, opcaoSelecionada, novaData);
+    onConfirm?.(contratoId, opcaoSelecionada, dataObj);
     onClose();
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={styles.drawerContent}>
-        <DialogHeader className={styles.drawerHeader}>
-          <DialogTitle className={styles.headerTitle}>Editar contrato</DialogTitle>
-        </DialogHeader>
+  // Fechar modal ao clicar no overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
-        <div className={styles.drawerContentArea}>
+  if (!isOpen) return null;
+
+  return (
+    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      <div className={styles.modalContent}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Editar contrato</h2>
+        </div>
+
+        <div className={styles.modalBody}>
           <p className={styles.textSecondary}>
             Escolha em quais vendas as edições a serem feitas devem ser aplicadas:
           </p>
 
-          <div className={styles.configSection}>
-            <label className={`${styles.configRow} cursor-pointer`}>
+          <div className={styles.radioGroup}>
+            <label className={styles.radioItem}>
               <input
                 type="radio"
                 name="opcao"
@@ -67,15 +86,14 @@ export function EditarVencimentoContratoModal({
                   console.log("🔍 Radio 'apenas' selecionado:", e.target.value);
                   setOpcaoSelecionada(e.target.value);
                 }}
-                className={styles.input}
-                style={{ width: '16px', height: '16px', marginRight: '12px' }}
+                className={styles.radioInput}
               />
-              <span className={styles.textMain}>
-                Editar apenas a venda prevista para {dataAtual ? format(new Date(dataAtual), 'dd/MM/yyyy', { locale: ptBR }) : ''}
+              <span className={styles.radioLabel}>
+                Editar apenas a venda prevista para {dataAtual ? formatDateForDisplay(formatDateForInput(dataAtual)) : ''}
               </span>
             </label>
 
-            <label className={`${styles.configRow} cursor-pointer`}>
+            <label className={styles.radioItem}>
               <input
                 type="radio"
                 name="opcao"
@@ -85,54 +103,40 @@ export function EditarVencimentoContratoModal({
                   console.log("🔍 Radio 'todas' selecionado:", e.target.value);
                   setOpcaoSelecionada(e.target.value);
                 }}
-                className={styles.input}
-                style={{ width: '16px', height: '16px', marginRight: '12px' }}
+                className={styles.radioInput}
               />
-              <span className={styles.textMain}>
+              <span className={styles.radioLabel}>
                 Editar todas as próximas vendas do contrato
               </span>
             </label>
           </div>
 
-          <div className={styles.configSection}>
+          <div className={styles.dateInputGroup}>
             <label className={styles.label}>Nova data de vencimento:</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`${styles.buttonOutline} w-full justify-start text-left font-normal ${
-                    !novaData ? styles.textSecondary : styles.textMain
-                  }`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {novaData ? format(novaData, 'dd/MM/yyyy', { locale: ptBR }) : "Selecione uma data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className={`${styles.card} w-auto p-0`} align="start">
-                <Calendar
-                  mode="single"
-                  selected={novaData}
-                  onSelect={setNovaData}
-                  locale={ptBR}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <input
+              type="date"
+              value={novaData}
+              onChange={(e) => setNovaData(e.target.value)}
+              className={styles.dateInput}
+            />
           </div>
         </div>
 
-        <div className={styles.drawerFooter}>
-          <Button variant="outline" onClick={onClose} className={styles.buttonOutline}>
+        <div className={styles.modalFooter}>
+          <button 
+            onClick={onClose} 
+            className={`${styles.button} ${styles.buttonOutline}`}
+          >
             Cancelar
-          </Button>
-          <Button 
+          </button>
+          <button 
             onClick={handleConfirmar}
-            className={styles.buttonGreen}
+            className={`${styles.button} ${styles.buttonGreen}`}
           >
             Confirmar
-          </Button>
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
