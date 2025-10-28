@@ -209,6 +209,10 @@
   flex: 1;
 }
 
+.categoriasFlex1 {
+  flex: 1;
+}
+
 /* Botões */
 .categoriasButtonSecondary {
   background: var(--onity-color-surface);
@@ -230,6 +234,17 @@
   background: var(--onity-color-surface-hover);
   border-color: var(--onity-color-primary);
   box-shadow: var(--onity-elev-low);
+  transform: translateY(-1px);
+}
+
+.categoriasButtonSecondary:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.categoriasButtonSecondary:active {
+  transform: translateY(0);
 }
 
 .categoriasButtonPrimary {
@@ -252,6 +267,16 @@
 .categoriasButtonPrimary:hover {
   background: var(--onity-color-primary-hover);
   box-shadow: var(--onity-elev-medium);
+  transform: translateY(-1px);
+}
+
+.categoriasButtonPrimary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle), var(--onity-elev-medium);
+}
+
+.categoriasButtonPrimary:active {
+  transform: translateY(0);
 }
 
 .categoriasAddSubcategoryBtn {
@@ -274,6 +299,16 @@
 .categoriasAddSubcategoryBtn:hover {
   background: var(--onity-color-primary);
   color: var(--onity-color-on-primary);
+  transform: scale(1.05);
+}
+
+.categoriasAddSubcategoryBtn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.categoriasAddSubcategoryBtn:active {
+  transform: scale(1);
 }
 
 .categoriasCategoryActionBtn {
@@ -297,6 +332,17 @@
   background: var(--onity-color-surface-hover);
   border-color: var(--onity-color-primary);
   color: var(--onity-color-primary);
+  transform: scale(1.05);
+}
+
+.categoriasCategoryActionBtn:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.categoriasCategoryActionBtn:active {
+  transform: scale(1);
 }
 
 .categoriasActionIcon {
@@ -345,6 +391,20 @@
 
 
 /* Modal */
+.categoriasModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
 .categoriasModal {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
@@ -353,7 +413,20 @@
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1001;
+  width: 90%;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .categoriasModalHeader {
@@ -440,9 +513,20 @@
   min-height: 40px;
 }
 
-.categoriasModalButtonSecondary:hover {
+.categoriasModalButtonSecondary:hover:not(:disabled) {
   background: var(--onity-color-surface-hover);
   border-color: var(--onity-color-primary);
+  transform: translateY(-1px);
+}
+
+.categoriasModalButtonSecondary:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.categoriasModalButtonSecondary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .categoriasModalButtonSecondary:disabled {
@@ -467,8 +551,18 @@
   box-shadow: var(--onity-elev-low);
 }
 
-.categoriasModalButtonPrimary:hover {
+.categoriasModalButtonPrimary:hover:not(:disabled) {
   background: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.categoriasModalButtonPrimary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle), var(--onity-elev-low);
+}
+
+.categoriasModalButtonPrimary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .categoriasModalButtonPrimary:disabled {
@@ -498,7 +592,9 @@
   border-radius: var(--onity-radius-l);
   box-shadow: var(--onity-elev-high);
   max-width: 400px;
-  z-index: 1000;
+  width: 90%;
+  z-index: 1001;
+  animation: modalFadeIn 0.2s ease-out;
 }
 
 .categoriasDeleteModalHeader {
@@ -658,4 +754,47 @@
 
 .categoriasMinH {
   min-height: 200px;
+}
+
+/* Animações */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Melhorias visuais adicionais */
+.categoriasPage * {
+  box-sizing: border-box;
+}
+
+/* Scroll suave para modais */
+.categoriasModal,
+.categoriasDeleteModal {
+  scrollbar-width: thin;
+  scrollbar-color: var(--onity-color-border) transparent;
+}
+
+.categoriasModal::-webkit-scrollbar,
+.categoriasDeleteModal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categoriasModal::-webkit-scrollbar-track,
+.categoriasDeleteModal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.categoriasModal::-webkit-scrollbar-thumb,
+.categoriasDeleteModal::-webkit-scrollbar-thumb {
+  background: var(--onity-color-border);
+  border-radius: 3px;
+}
+
+.categoriasModal::-webkit-scrollbar-thumb:hover,
+.categoriasDeleteModal::-webkit-scrollbar-thumb:hover {
+  background: var(--onity-color-primary);
 }

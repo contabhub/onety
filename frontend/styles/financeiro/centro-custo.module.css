@@ -836,8 +836,17 @@
 .centroCustoSecondaryBtn:hover {
   background-color: var(--onity-primary-20);
   border-color: var(--onity-primary-50);
-  color: var(var(--onity-color-filter-secondary));
+  color: var(--onity-color-primary);
   transform: translateY(-1px);
+}
+
+.centroCustoSecondaryBtn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.centroCustoSecondaryBtn:active {
+  transform: translateY(0);
 }
 
 .btnNew {
@@ -851,6 +860,16 @@
 .btnNew:hover {
   background: var(--onity-color-primary-hover);
   border-color: var(--onity-color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btnNew:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.btnNew:active {
+  transform: translateY(0);
 }
 
 
@@ -967,12 +986,42 @@
 }
 
 /* Modais */
+/* Modal Overlay */
+.centroCustoModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
 .centroCustoModalContent {
   background-color: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-m);
   box-shadow: var(--onity-elev-high);
   color: var(--onity-color-text);
+  max-width: 400px;
+  width: 90%;
+  z-index: 1001;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .centroCustoModalHeader {
@@ -1017,6 +1066,15 @@
 
 .centroCustoModalBtnCancelar:hover {
   background-color: var(--onity-primary-20);
+  transform: translateY(-1px);}
+
+.centroCustoModalBtnCancelar:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--onity-color-primary-subtle);
+}
+
+.centroCustoModalBtnCancelar:active {
+  transform: translateY(0);
   border-color: var(--onity-primary-50);
   color: var(--onity-color-primary);
   transform: translateY(-1px);
@@ -1040,6 +1098,15 @@
   color: var(--onity-color-error);
   transform: translateY(-1px);
   box-shadow: var(--onity-elev-low);
+}
+
+.centroCustoModalBtnConfirmar:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.centroCustoModalBtnConfirmar:active {
+  transform: translateY(0);
 }
 
 .centroCustoModalHighlight {
