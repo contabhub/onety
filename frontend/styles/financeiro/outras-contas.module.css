@@ -111,7 +111,9 @@
     background-color: var(--onity-color-bg);
     color: var(--onity-color-text);
     border: 1px solid var(--onity-color-border);
-    border-radius: var(--onity-radius-xs);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: var(--onity-type-caption-size);
     transition: all 0.2s ease;
   }
 
@@ -134,7 +136,7 @@
     padding: var(--onity-space-s) var(--onity-space-m);
     background-color: var(--onity-color-surface);
     border: 1px solid var(--onity-color-border);
-    border-radius: var(--onity-radius-xs);
+    border-radius: 8px;
   }
 
 .outrasContasSyncText {
@@ -157,9 +159,9 @@
     background-color: var(--onity-color-surface);
     color: var(--onity-color-text);
     border: 1px solid var(--onity-color-border);
-    border-radius: var(--onity-radius-xs);
-    padding: var(--onity-space-s) var(--onity-space-m);
-    font-size: var(--onity-type-body-size);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: var(--onity-type-caption-size);
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -188,35 +190,34 @@
   }
 
 .outrasContasPrimaryBtn {
-    background-color: var(--onity-color-primary);
-    color: var(--onity-color-primary-contrast);
-    border: 1px solid var(--onity-color-primary);
-    border-radius: var(--onity-radius-xs);
-    padding: var(--onity-space-s) var(--onity-space-m);
-    font-size: var(--onity-type-body-size);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: var(--onity-space-xs);
-  }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s, 8px);
+  padding: 8px 16px;
+  min-height: 32px;
+  background-color: transparent;
+  color: var(--onity-color-text);
+  font-size: 0.875rem;
+  border: 1px solid var(--onity-color-text);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
 
-  .outrasContasPrimaryBtn:hover {
-    background-color: var(--onity-color-primary-hover);
-    border-color: var(--onity-color-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--onity-elev-low);
-  }
+.outrasContasPrimaryBtn:hover {
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-contrast);
+}
 
-  .outrasContasPrimaryBtn:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--onity-color-primary-light);
-  }
+.outrasContasPrimaryBtn:focus {
+  outline: none;
+  box-shadow: none;
+}
 
-  .outrasContasPrimaryBtn:active {
-    transform: translateY(0);
-  }
+.outrasContasPrimaryBtn:active { 
+  transform: none; 
+}
 
 .outrasContasSearchCard {
     background-color: var(--onity-color-surface);
@@ -241,7 +242,7 @@
     color: var(--onity-color-text);
     padding: var(--onity-space-s);
     padding-left: 40px;
-    border-radius: 11px;
+    border-radius: 8px;
     font-size: var(--onity-type-body-size);
     width: 100%;
     transition: all 0.15s ease;
@@ -293,11 +294,11 @@
   }
 
 .outrasContasAccountIcon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     background-color: var(--onity-color-primary);
     color: var(--onity-color-primary-contrast);
-    border-radius: var(--onity-radius-xs);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -320,8 +321,8 @@
     background-color: var(--onity-color-surface);
     color: var(--onity-color-text);
     border: 1px solid var(--onity-color-border);
-    border-radius: var(--onity-radius-xs);
-    padding: var(--onity-space-xs) var(--onity-space-s);
+    border-radius: 8px;
+    padding: 6px 10px;
     font-size: var(--onity-type-caption-size);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -350,8 +351,8 @@
     background-color: var(--onity-color-surface);
     color: var(--onity-color-error);
     border: 1px solid var(--onity-color-border);
-    border-radius: var(--onity-radius-xs);
-    padding: var(--onity-space-xs) var(--onity-space-s);
+    border-radius: 8px;
+    padding: 6px 10px;
     font-size: var(--onity-type-caption-size);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -938,7 +939,7 @@
     border: none;
     padding: var(--onity-space-xs);
     cursor: pointer;
-    border-radius: var(--onity-radius-xs);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -962,7 +963,7 @@
     margin-top: var(--onity-space-xs);
     background-color: var(--onity-color-surface);
     border: 1px solid var(--onity-color-border);
-    border-radius: var(--onity-radius-xs);
+    border-radius: 8px;
     box-shadow: var(--onity-elev-high);
     z-index: 1000;
     min-width: 160px;

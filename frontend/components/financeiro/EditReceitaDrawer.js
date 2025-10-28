@@ -126,7 +126,7 @@ export function EditReceitaDrawer({
       const token = localStorage.getItem("token");
       const empresaId = localStorage.getItem("empresaId");
 
-      const res = await fetch(`${API}/companies/${empresaId}/categorias`, {
+      const res = await fetch(`${API}/financeiro/categorias/empresa/${empresaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
