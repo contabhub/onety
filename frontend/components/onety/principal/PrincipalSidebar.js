@@ -90,12 +90,6 @@ const MODULE_REGISTRY = {
         icon: <LayoutDashboard size={18} />,
         route: '/comercial/dashboard'
       },
-      // {
-       //  id: 'clients',
-        //label: 'Pré-Clientes',
-        //icon: <Users size={18} />,
-        //route: '/comercial/clients'
-      //},
       {
         id: 'crm',
         label: 'CRM',
@@ -162,6 +156,12 @@ const MODULE_REGISTRY = {
         route: '/contratual/contratos'
       },
       {
+        id: 'documentos',
+        label: 'Documentos',
+        icon: <FileText size={18} />,
+        route: '/contratual/documentos'
+      },
+      {
         id: 'templates',
         label: 'Templates',
         icon: <FileText size={18} />,
@@ -184,12 +184,6 @@ const MODULE_REGISTRY = {
         label: 'Contratada',
         icon: <Building2 size={18} />,
         route: '/contratual/contratada'
-      },
-      {
-        id: 'documentos',
-        label: 'Documentos',
-        icon: <FileText size={18} />,
-        route: '/contratual/documentos'
       }
     ]
   },
@@ -205,7 +199,7 @@ const MODULE_REGISTRY = {
       {
         id: 'contas-pagar',
         label: 'Visão Geral',
-        icon: <DollarSign size={18} />,
+        icon: <LayoutDashboard size={18} />,
         route: '/financeiro/visao-geral'
       },
       {

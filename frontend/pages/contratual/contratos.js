@@ -81,10 +81,7 @@ export default function Contratos() {
 
     async function fetchContratos() {
       try {
-        console.log("🔍 [DEBUG] Frontend - equipeId na função:", equipeId);
-        console.log("🔍 [DEBUG] Frontend - URL:", `${process.env.NEXT_PUBLIC_API_URL}/financeiro/contratos?empresa_id=${equipeId}`);
-        
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contratos?empresa_id=${equipeId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/contratos/empresa/${equipeId}`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
