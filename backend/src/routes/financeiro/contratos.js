@@ -278,10 +278,12 @@ router.get("/", verifyToken, async (req, res) => {
       SELECT 
         c.*, 
         co.nome AS empresa_nome,
-        cc.nome AS centro_custo_nome
+        cc.nome AS centro_custo_nome,
+        cl.nome_fantasia AS cliente_nome
       FROM contratos c
       LEFT JOIN empresas co ON c.empresa_id = co.id
       LEFT JOIN centro_custo cc ON c.centro_custo_id = cc.id
+      LEFT JOIN clientes cl ON c.cliente_id = cl.id
     `;
 
     let params = [];
@@ -333,10 +335,12 @@ router.get("/:id", verifyToken, async (req, res) => {
       SELECT 
         c.*, 
         co.nome AS empresa_nome,
-        cc.nome AS centro_custo_nome
+        cc.nome AS centro_custo_nome,
+        cl.nome_fantasia AS cliente_nome
       FROM contratos c
       LEFT JOIN empresas co ON c.empresa_id = co.id
       LEFT JOIN centro_custo cc ON c.centro_custo_id = cc.id
+      LEFT JOIN clientes cl ON c.cliente_id = cl.id
       WHERE c.id = ?
     `;
 

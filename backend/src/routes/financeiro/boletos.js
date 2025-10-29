@@ -705,7 +705,7 @@ router.get('/boletos/venda/:vendaId', async (req, res) => {
     return res.status(500).json({ error: "Erro interno ao buscar boleto." });
   }
 });
-router.get('/boletos/por-contrato/:contratoId', async (req, res) => {
+router.get('/por-contrato/:contratoId', async (req, res) => {
   const { contratoId } = req.params;
   try {
     const [rows] = await pool.query(
