@@ -966,24 +966,10 @@ export default function PrincipalSidebar() {
   const financeiroItems = [
     {
       id: 'outras-contas',
-      title: 'Outras Contas',
+      title: 'Contas',
       description: 'Gerencie suas contas financeiras',
       icon: Settings,
       route: '/financeiro/outras-contas'
-    },
-    {
-      id: 'contas-a-pagar',
-      title: 'Contas a Pagar',
-      description: 'Gerencie suas contas a pagar',
-      icon: TrendingDown,
-      route: '/financeiro/contas-a-pagar'
-    },
-    {
-      id: 'contas-a-receber',
-      title: 'Contas a Receber',
-      description: 'Gerencie suas contas a receber',
-      icon: TrendingUp,
-      route: '/financeiro/contas-a-receber'
     },
     {
       id: 'extrato-movimentacoes',

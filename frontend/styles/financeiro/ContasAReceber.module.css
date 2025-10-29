@@ -260,8 +260,21 @@
   color: var(--onity-color-text);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
-  padding: var(--onity-space-s);
+  height: 36px; /* compacto para combinar com o seletor */
+  width: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   transition: all 120ms ease;
+}
+
+/* Ícone de navegação (usado nos botões de período) */
+.contasReceberNavIcon {
+  width: 16px;
+  height: 16px;
+  display: block; /* remove espaço extra de inline-svg */
 }
 
 .contasReceberNavBtn:hover {
@@ -652,9 +665,8 @@
 }
 
 .pl8 {
-  padding: 0px;
+  /* Mantém o padding vertical padrão do input e ajusta apenas o padding-left */
   padding-left: 10px;
-
 }
 
 .block {
@@ -1035,6 +1047,7 @@
   border-color: var(--onity-color-primary);
   box-shadow: 0 0 0 2px rgba(103, 58, 183, 0.2);
 }
+
 
 /* Botões de seta da paginação */
 .contasReceberPaginationArrow {
@@ -1439,6 +1452,7 @@
   font-size: var(--onity-type-body-size);
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 36px;
 }
 
 .selectTriggerComponent:hover {
@@ -1467,10 +1481,9 @@
 }
 
 .selectItemComponent {
-  padding: var(--onity-space-s);
+  padding: 10px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  font-size: var(--onity-type-body-size);
   color: var(--onity-color-text);
 }
 
@@ -1499,6 +1512,67 @@
   justify-content: center;
   padding: var(--onity-space-m);
   animation: fadeIn 0.2s ease-out;
+}
+
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-m);
+  animation: fadeIn 0.2s ease;
+}
+
+.dialogContentComponent {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+}
+
+.dialogHeaderComponent {
+  margin-bottom: var(--onity-space-m);
+}
+
+.dialogTitleComponent {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+  line-height: var(--onity-type-h3-line);
+  margin: 0;
+}
+
+.dialogDescriptionComponent {
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size);
+  line-height: var(--onity-type-body-line);
+  margin: var(--onity-space-s) 0 0 0;
+}
+
+.dialogFooterComponent {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+  margin-top: var(--onity-space-l);
+  padding-top: var(--onity-space-m);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.contasReceberTableCellText {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  margin: 0 0 var(--onity-space-xs) 0;
 }
 
 .modalContent {
@@ -1584,4 +1658,182 @@
     max-height: 100vh;
     border-radius: 0;
   }
+}
+
+/* ===== ESTILOS DE PERÍODO (COPIADOS DE VENDAS-E-ORCAMENTOS) ===== */
+
+.vendasOrcamentosPeriodControls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.vendasOrcamentosPeriodControls:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.vendasOrcamentosNavIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.vendasOrcamentosPeriodButton {
+  min-width: 180px;
+  justify-content: space-between;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosPeriodButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosPeriodButton:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosPeriodButton:hover {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosPeriodButton:hover svg {
+  color: var(--onity-color-primary-contrast) !important;
+}
+
+.vendasOrcamentosPeriodNavBtn {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendasOrcamentosPeriodNavBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.vendasOrcamentosPeriodNavBtn:hover::before {
+  left: 100%;
+}
+
+.vendasOrcamentosPeriodNavBtn:hover {
+  background: var(--onity-color-primary);
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(103, 58, 183, 0.3);
+}
+
+.vendasOrcamentosPeriodNavBtn:hover svg {
+  color: var(--onity-color-primary-contrast) !important;
+}
+
+.vendasOrcamentosPeriodNavBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(103, 58, 183, 0.2);
+}
+
+/* ===== DROPDOWN DE PERÍODO (LOCAL AO MÓDULO) ===== */
+
+.periodDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: linear-gradient(135deg, var(--onity-color-surface) 0%, rgba(68, 84, 100, 0.02) 100%);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-width: 200px;
+  padding: 8px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 9999;
+}
+
+.periodDropdownItem {
+  color: var(--onity-color-text);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+}
+
+.periodDropdownItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(103, 58, 183, 0.1), transparent);
+  transition: left 0.3s ease;
+}
+
+.periodDropdownItem:hover::before {
+  left: 100%;
+}
+
+.periodDropdownItem:hover {
+  background: linear-gradient(135deg, var(--onity-primary-10) 0%, var(--onity-primary-20) 100%);
+  color: var(--onity-color-primary);
+  transform: translateX(4px);
 }

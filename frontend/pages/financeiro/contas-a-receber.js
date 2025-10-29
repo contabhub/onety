@@ -189,6 +189,8 @@ export default function ContasAReceber() {
   const [isImportarReceberOpen, setIsImportarReceberOpen] = useState(false);
   const [isImportarOFXOpen, setIsImportarOFXOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDescricaoOpen, setIsDescricaoOpen] = useState(false);
+  const [entradaSelecionada, setEntradaSelecionada] = useState(null);
   const [dadosConciliacao, setDadosConciliacao] = useState(new Map());
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [isBatchMenuOpen, setIsBatchMenuOpen] = useState(false);
@@ -1858,28 +1860,17 @@ export default function ContasAReceber() {
                         <td className={styles.nativeTd}>
                         <div>
                           <div>
-                            <p className={styles.contasReceberTableCellPrimary}>{entrada.descricao}</p>
-                            {entrada.origem === "pluggy" && (
-                              <span className={cn(styles.badgeComponent, styles.badgePluggy)}>
-                                Pluggy
-                              </span>
-                            )}
-                            {entrada.origem === "Importação OFX" && (
-                              <span className={cn(styles.badgeComponent, styles.badgeOfx)}>
-                                OFX
-                              </span>
-                            )}
-                            {/* Badge para transações conciliadas */}
-                            {entrada.situacao === "conciliado" && (
-                              <span className={cn(styles.badgeComponent, styles.badgeConciliado)}>
-                                Conciliada
-                              </span>
-                            )}
+                            <p className={styles.contasReceberTableCellPrimary}>
+                              <button
+                                type="button"
+                                className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.buttonComponentSmall)}
+                                onClick={() => { setEntradaSelecionada(entrada); setIsDescricaoOpen(true); }}
+                              >
+                                Ver descrição
+                              </button>
+                            </p>
                           </div>
-                          <p className={styles.contasReceberTableCellSecondary}>{entrada.categoria}</p>
-                          {entrada.cliente && (
-                            <p className={styles.contasReceberTableCellSecondary}>{entrada.cliente}</p>
-                          )}
+                          {/* Categoria e Cliente movidos para o modal */}
                         </div>
                         </td>
                         <td className={`${styles.contasReceberTableCellValue} ${styles.nativeTd}`}>
@@ -2163,6 +2154,42 @@ export default function ContasAReceber() {
         onImportSuccess={recarregarEntradas}
         tipo="receber"
       />
+
+      {/* Modal de Descrição */}
+      {isDescricaoOpen && (
+        <div className={styles.dialogOverlay} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsDescricaoOpen(false);
+        }}>
+          <div className={cn(styles.dialogContentComponent)}>
+            <div className={styles.dialogHeaderComponent}>
+              <h2 className={styles.dialogTitleComponent}>Descrição da transação</h2>
+              <p className={styles.dialogDescriptionComponent}>Veja o detalhamento informado para este lançamento.</p>
+            </div>
+            <div>
+              <p className={styles.contasReceberTableCellText}>
+                <strong>Descrição:</strong> {entradaSelecionada?.descricao || "Sem descrição"}
+              </p>
+              <p className={styles.contasReceberTableCellText}>
+                <strong>Serviço/Produto:</strong> {entradaSelecionada?.categoria || "-"}
+              </p>
+              {entradaSelecionada?.cliente && (
+                <p className={styles.contasReceberTableCellText}>
+                  <strong>Cliente:</strong> {entradaSelecionada.cliente}
+                </p>
+              )}
+            </div>
+            <div className={styles.dialogFooterComponent}>
+              <button
+                type="button"
+                onClick={() => setIsDescricaoOpen(false)}
+                className={cn(styles.buttonComponent, styles.buttonComponentOutline)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Confirmação de Exclusão */}
       {isDeleteModalOpen && (

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRef } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams, useRouter } from "next/navigation";
 // Componentes externos removidos - usando HTML nativo
 import 'react-toastify/dist/ReactToastify.css';
@@ -189,6 +191,8 @@ export default function ContasAPagar() {
   const [isExportarOpen, setIsExportarOpen] = useState(false);
   const [isImportarOpen, setIsImportarOpen] = useState(false);
   const [isImportarOFXOpen, setIsImportarOFXOpen] = useState(false);
+  const [isDescricaoOpen, setIsDescricaoOpen] = useState(false);
+  const [saidaSelecionada, setSaidaSelecionada] = useState(null);
   const [downloadPlanilhasModal, setDownloadPlanilhasModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const API = process.env.NEXT_PUBLIC_API_URL;
@@ -1063,6 +1067,13 @@ export default function ContasAPagar() {
   const [isPeriodSelectOpen, setIsPeriodSelectOpen] = useState(false);
   const [selectedPeriodValue, setSelectedPeriodValue] = useState(selectedPeriod);
 
+  // Dropdown flutuante para ações (fora da tabela)
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [actionMenuPosition, setActionMenuPosition] = useState({ top: 0, left: 0 });
+  const [actionMenuSaida, setActionMenuSaida] = useState(null);
+  const actionMenuRef = useRef(null);
+  const [actionAnchorRect, setActionAnchorRect] = useState(null);
+
   const clearSelection = () => {
     setSelectedItems(new Set());
     setSelectAll(false);
@@ -1083,6 +1094,11 @@ export default function ContasAPagar() {
     if (!e.target.closest('.dropdown-container') && !e.target.closest('.select-container')) {
       handleCloseDropdown();
     }
+    // Fechar menu flutuante se clicar fora
+    if (isActionMenuOpen && !e.target.closest('#contas-pagar-action-menu')) {
+      setIsActionMenuOpen(false);
+      setActionMenuSaida(null);
+    }
   }, []);
 
   // Adicionar listener para fechar dropdowns ao clicar fora
@@ -1090,6 +1106,59 @@ export default function ContasAPagar() {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [handleClickOutside]);
+
+  // Fechar com ESC
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsActionMenuOpen(false);
+        setActionMenuSaida(null);
+        handleCloseDropdown();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Reposiciona o menu para não cortar nas bordas da viewport
+  useEffect(() => {
+    if (!isActionMenuOpen || !actionMenuRef.current || !actionAnchorRect) return;
+    const padding = 12;
+    const menuEl = actionMenuRef.current;
+    const menuWidth = menuEl.offsetWidth;
+    const menuHeight = menuEl.offsetHeight;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+
+    let newLeft = actionMenuPosition.left;
+    let newTop = actionMenuPosition.top;
+
+    // Ajuste horizontal: se estourar à direita, alinhar pela direita do botão
+    if (newLeft + menuWidth > scrollX + viewportWidth - padding) {
+      newLeft = Math.max(padding + scrollX, actionAnchorRect.right + scrollX - menuWidth);
+    }
+    // Garantir padding mínimo à esquerda
+    if (newLeft < padding + scrollX) {
+      newLeft = padding + scrollX;
+    }
+
+    // Ajuste vertical: se estourar embaixo, tentar abrir acima do botão
+    if (newTop + menuHeight > scrollY + viewportHeight - padding) {
+      const aboveTop = actionAnchorRect.bottom + scrollY - menuHeight; // usando bottom do botão como referência
+      newTop = Math.max(padding + scrollY, aboveTop);
+    }
+    // Garantir padding mínimo no topo
+    if (newTop < padding + scrollY) {
+      newTop = padding + scrollY;
+    }
+
+    if (newLeft !== actionMenuPosition.left || newTop !== actionMenuPosition.top) {
+      setActionMenuPosition({ top: newTop, left: newLeft });
+    }
+  }, [isActionMenuOpen, actionMenuSaida, actionMenuPosition, actionAnchorRect]);
 
   // Atualizar selectedPeriodValue quando selectedPeriod mudar
   useEffect(() => {
@@ -1946,28 +2015,20 @@ export default function ContasAPagar() {
                         <td className={cn(styles.tableCellComponent)}>
                         <div>
                           <div>
-                            <p className={styles.contasPagarTableCellPrimary}>{saida.descricao}</p>
-                            {saida.origem === "pluggy" && (
-                              <span className={cn(styles.badgeComponent, styles.badgeInfo, styles.badgePluggy)}>
-                                Pluggy
-                              </span>
-                            )}
-                            {saida.origem === "Importação OFX" && (
-                              <span className={cn(styles.badgeComponent, styles.badgeInfo, styles.badgeOfx)}>
-                                OFX
-                              </span>
-                            )}
-                            {/* Badge para transações conciliadas */}
-                            {saida.situacao === "conciliado" && (
-                              <span className={cn(styles.badgeComponent, styles.badgeSuccess, styles.badgeConciliado)}>
-                                Conciliada
-                              </span>
-                            )}
+                            <p className={styles.contasPagarTableCellPrimary}>
+                              <button
+                                type="button"
+                                className={cn(styles.buttonComponent, styles.buttonComponentGhost, styles.buttonComponentSmall)}
+                                onClick={() => {
+                                  setSaidaSelecionada(saida);
+                                  setIsDescricaoOpen(true);
+                                }}
+                              >
+                                Ver descrição
+                              </button>
+                            </p>
                           </div>
-                          <p className={styles.contasPagarTableCellSecondary}>{saida.categoria}</p>
-                          {saida.cliente && (
-                            <p className={styles.contasPagarTableCellSecondary}>{saida.cliente}</p>
-                          )}
+                          {/* Categoria e Cliente movidos para o modal */}
                         </div>
                         </td>
                         <td className={cn(styles.tableCellComponent, styles.contasPagarTableCellValue)}>
@@ -1997,125 +2058,22 @@ export default function ContasAPagar() {
                           <div className={cn(styles.dropdownComponent, "dropdown-container")}>
                           <button
                             type="button"
-                            onClick={() => handleToggleDropdown(`action-${saida.id}`)}
+                            onClick={(e) => {
+                              // Calcula posição do botão para posicionar o menu fora da tabela
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setActionMenuPosition({
+                                top: rect.bottom + window.scrollY + 6,
+                                left: rect.left + window.scrollX,
+                              });
+                              setActionMenuSaida(saida);
+                              setIsActionMenuOpen(true);
+                              setActionAnchorRect({ left: rect.left, right: rect.right, bottom: rect.top });
+                            }}
                             className={cn(styles.buttonComponent, styles.buttonComponentOutline, styles.buttonComponentSmall, styles.contasPagarActionBtn)}
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
-                          {openDropdownId === `action-${saida.id}` && (
-                          <div className={cn(styles.dropdownContentComponent, styles.contasPagarDropdown, styles.dropdownLeft)}>
-                            {saida.situacao === "em aberto" && (
-                              <>
-                                <div
-                                  onClick={() => {
-                                    handleUpdateSituacao(saida.id, "recebido");
-                                    handleCloseDropdown();
-                                  }}
-                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                                >
-                                  Marcar como Pago
-                                </div>
-                                <div
-                                  onClick={() => {
-                                    handleUpdateSituacao(saida.id, "vencidos");
-                                    handleCloseDropdown();
-                                  }}
-                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                                >
-                                  Marcar como Vencido
-                                </div>
-                              </>
-                            )}
-
-                            {saida.situacao === "recebido" && (
-                              <div
-                                onClick={() => {
-                                  handleUpdateSituacao(saida.id, "em aberto");
-                                  handleCloseDropdown();
-                                }}
-                                className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                              >
-                                Voltar para Em Aberto
-                              </div>
-                            )}
-
-                            {saida.situacao === "vencidos" && (
-                              <>
-                                <div
-                                  onClick={() => {
-                                    handleUpdateSituacao(saida.id, "em aberto");
-                                    handleCloseDropdown();
-                                  }}
-                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                                >
-                                  Voltar para Em Aberto
-                                </div>
-                                <div
-                                  onClick={() => {
-                                    handleUpdateSituacao(saida.id, "recebido");
-                                    handleCloseDropdown();
-                                  }}
-                                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                                >
-                                  Marcar como Pago
-                                </div>
-                              </>
-                            )}
-
-                            <div
-                              onClick={() => {
-                                if (saida.origem !== "pluggy") {
-                                  setDespesaSelecionada(saida);
-                                  setIsEditDespesaOpen(true);
-                                  handleCloseDropdown();
-                                }
-                              }}
-                              className={cn(
-                                styles.dropdownItemComponent, 
-                                styles.contasPagarDropdownItem,
-                                saida.origem === "pluggy" && styles.buttonComponentDisabled
-                              )}
-                              style={{ opacity: saida.origem === "pluggy" ? 0.5 : 1, cursor: saida.origem === "pluggy" ? 'not-allowed' : 'pointer' }}
-                            >
-                              Editar
-                              {saida.origem === "pluggy" &&
-                                " (não disponível)"}
-                            </div>
-
-                            <div
-                              onClick={() => {
-                                handleDuplicarDespesa(saida);
-                                handleCloseDropdown();
-                              }}
-                              className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                            >
-                              Duplicar Lançamento
-                            </div>
-
-                            {/* Item para revogar conciliação - mostrar para transações conciliadas */}
-                            {saida.situacao === "conciliado" && (
-                              <div
-                                onClick={() => {
-                                  handleRevogarConciliacao(saida);
-                                  handleCloseDropdown();
-                                }}
-                                className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                              >
-                                Revogar Conciliação
-                              </div>
-                            )}
-
-                            <div
-                              onClick={() => {
-                                handleConfirmarExclusao(saida);
-                                handleCloseDropdown();
-                              }}
-                              className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
-                            >
-                              Excluir Lançamento
-                            </div>
-                          </div>
-                          )}
+                          {/* Dropdown inline removido em favor do menu flutuante */}
                         </div>
                         </td>
                       </tr>
@@ -2230,6 +2188,42 @@ export default function ContasAPagar() {
         isOpen={downloadPlanilhasModal}
         onClose={() => setDownloadPlanilhasModal(false)}
       />
+
+      {/* Modal de Descrição */}
+      {isDescricaoOpen && (
+        <div className={styles.dialogOverlay} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsDescricaoOpen(false);
+        }}>
+          <div className={cn(styles.dialogContentComponent)}>
+            <div className={styles.dialogHeaderComponent}>
+              <h2 className={styles.dialogTitleComponent}>Descrição da transação</h2>
+              <p className={styles.dialogDescriptionComponent}>Veja o detalhamento informado para este lançamento.</p>
+            </div>
+            <div>
+              <p className={styles.contasPagarTableCellText}>
+                <strong>Descrição:</strong> {saidaSelecionada?.descricao || "Sem descrição"}
+              </p>
+              <p className={styles.contasPagarTableCellText}>
+                <strong>Serviço/Produto:</strong> {saidaSelecionada?.categoria || "-"}
+              </p>
+              {saidaSelecionada?.cliente && (
+                <p className={styles.contasPagarTableCellText}>
+                  <strong>Cliente:</strong> {saidaSelecionada.cliente}
+                </p>
+              )}
+            </div>
+            <div className={styles.dialogFooterComponent}>
+              <button
+                type="button"
+                onClick={() => setIsDescricaoOpen(false)}
+                className={cn(styles.buttonComponent, styles.buttonComponentOutline)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Importar OFX Modal */}
       <ImportarOFXModal
@@ -2348,6 +2342,107 @@ export default function ContasAPagar() {
           </div>
         </div>
         </div>
+      )}
+
+      {/* Menu de ações flutuante (fora da tabela) */}
+      {isActionMenuOpen && actionMenuSaida && createPortal(
+        <>
+          {/* Overlay para capturar cliques fora */}
+          <div className={styles.dropdownOverlay} onClick={() => { setIsActionMenuOpen(false); setActionMenuSaida(null); }} />
+          <div
+            id="contas-pagar-action-menu"
+            style={{ top: actionMenuPosition.top, left: actionMenuPosition.left }}
+            className={cn(styles.actionMenuFloating, styles.dropdownContentComponent, styles.contasPagarDropdown)}
+            ref={actionMenuRef}
+          >
+            {actionMenuSaida.situacao === 'em aberto' && (
+              <>
+                <div
+                  onClick={() => { handleUpdateSituacao(actionMenuSaida.id, 'recebido'); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                >
+                  Marcar como Pago
+                </div>
+                <div
+                  onClick={() => { handleUpdateSituacao(actionMenuSaida.id, 'vencidos'); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                >
+                  Marcar como Vencido
+                </div>
+              </>
+            )}
+
+            {actionMenuSaida.situacao === 'recebido' && (
+              <div
+                onClick={() => { handleUpdateSituacao(actionMenuSaida.id, 'em aberto'); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+                className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+              >
+                Voltar para Em Aberto
+              </div>
+            )}
+
+            {actionMenuSaida.situacao === 'vencidos' && (
+              <>
+                <div
+                  onClick={() => { handleUpdateSituacao(actionMenuSaida.id, 'em aberto'); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                >
+                  Voltar para Em Aberto
+                </div>
+                <div
+                  onClick={() => { handleUpdateSituacao(actionMenuSaida.id, 'recebido'); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+                  className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+                >
+                  Marcar como Pago
+                </div>
+              </>
+            )}
+
+            <div
+              onClick={() => {
+                if (actionMenuSaida.origem !== 'pluggy') {
+                  setDespesaSelecionada(actionMenuSaida);
+                  setIsEditDespesaOpen(true);
+                }
+                setIsActionMenuOpen(false);
+                setActionMenuSaida(null);
+              }}
+              className={cn(
+                styles.dropdownItemComponent,
+                styles.contasPagarDropdownItem,
+                actionMenuSaida.origem === 'pluggy' && styles.buttonComponentDisabled
+              )}
+              style={{ opacity: actionMenuSaida.origem === 'pluggy' ? 0.5 : 1, cursor: actionMenuSaida.origem === 'pluggy' ? 'not-allowed' : 'pointer' }}
+            >
+              Editar
+              {actionMenuSaida.origem === 'pluggy' && ' (não disponível)'}
+            </div>
+
+            <div
+              onClick={() => { handleDuplicarDespesa(actionMenuSaida); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+              className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+            >
+              Duplicar Lançamento
+            </div>
+
+            {actionMenuSaida.situacao === 'conciliado' && (
+              <div
+                onClick={() => { handleRevogarConciliacao(actionMenuSaida); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+                className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+              >
+                Revogar Conciliação
+              </div>
+            )}
+
+            <div
+              onClick={() => { handleConfirmarExclusao(actionMenuSaida); setIsActionMenuOpen(false); setActionMenuSaida(null); }}
+              className={cn(styles.dropdownItemComponent, styles.contasPagarDropdownItem)}
+            >
+              Excluir Lançamento
+            </div>
+          </div>
+        </>,
+        document.body
       )}
 
       {/* Modal de Confirmação de Exclusão */}
