@@ -1171,6 +1171,76 @@
   gap: 1.5rem;
 }
 
+/* Outras informações - seção Straton */
+.outrasSectionWrapper {
+  margin-top: 1rem;
+}
+
+.sectionBlock {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: var(--onity-elev-low);
+}
+
+.sectionBlock h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--onity-color-text);
+}
+
+.gridTwoCols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.loadingBox {
+  text-align: center;
+  padding: 20px;
+  color: var(--onity-icon-secondary);
+}
+
+/* Campo Data de início - ajustes específicos */
+.dataInicioWrapper {
+  margin-top: -13px;
+}
+
+.dataInicioWrapper .input {
+  width: calc(96.5%);
+}
+
+/* Campo Data da primeira venda - ajustes específicos */
+.dataPrimeiraVendaWrapper .input {
+  width: calc(96%);
+}
+
+/* Input de data editável na tabela de parcelas (para produtos personalizados) */
+.dataTableInput {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  font-size: 14px;
+  width: 90%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dataTableInput:hover {
+  border-color: var(--onity-color-primary);
+}
+
+.dataTableInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
 /* Responsividade para dispositivos móveis */
 @media (max-width: 1024px) {
   .documentCardsContainer {

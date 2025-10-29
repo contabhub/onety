@@ -16,6 +16,97 @@ import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ToggleSimNao from "../../components/contratual/ToggleSimNao";
 import TiptapEditor from "../../components/contratual/TiptapEditor";
+import ReactSelect from "react-select";
+import { format } from "date-fns";
+
+// Estilos customizados para o ReactSelect
+const customSelectStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-surface)',
+    border: '2px solid var(--onity-color-border)',
+    borderRadius: '5px',
+    minHeight: '40px',
+    height: '40px',
+    boxShadow: 'none',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    '&:hover': {
+      borderColor: 'var(--onity-color-primary)',
+      transform: 'translateY(-1px)',
+      boxShadow: '0 0 0 3px rgba(68, 84, 100, 0.1)',
+    },
+  }),
+  'control--is-focused': (provided) => ({
+    ...provided,
+    borderColor: 'var(--onity-color-primary)',
+    boxShadow: '0 0 0 3px rgba(68, 84, 100, 0.15)',
+  }),
+  valueContainer: (provided) => ({
+    ...provided,
+    padding: '0 12px',
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+    opacity: '0.6',
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+    fontWeight: '500',
+  }),
+  inputContainer: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-surface)',
+    border: '1px solid var(--onity-color-border)',
+    borderRadius: '5px',
+    boxShadow: 'var(--onity-elev-high)',
+    zIndex: 10020,
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 10020,
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused ? 'var(--onity-color-bg)' : 'var(--onity-color-surface)',
+    color: 'var(--onity-color-text)',
+    padding: '12px 16px',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: 'var(--onity-color-bg)',
+      color: 'var(--onity-color-text)',
+    },
+  }),
+  'option--is-selected': (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-primary)',
+    color: 'var(--onity-color-primary-contrast)',
+  }),
+  'option--is-focused': (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-bg)',
+    color: 'var(--onity-color-text)',
+  }),
+  indicatorSeparator: (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--onity-color-border)',
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+  }),
+  clearIndicator: (provided) => ({
+    ...provided,
+    color: 'var(--onity-color-text)',
+  }),
+};
 
 // Adicione a função utilitária para converter arquivo em base64
 function fileToBase64(file) {
@@ -82,6 +173,9 @@ export default function CriarContratoAutentique() {
   const [salvarNaLista, setSalvarNaLista] = useState(false);
   const [diaVencimento, setDiaVencimento] = useState(1); // Dia do vencimento padrão
   const [dataPrimeiroVencimento, setDataPrimeiroVencimento] = useState(new Date().toISOString().slice(0, 10)); // Data do 1º vencimento padrão
+  const [datasPersonalizadas, setDatasPersonalizadas] = useState({}); // Datas editadas manualmente para parcelas personalizadas (índice parcela -> data)
+  const [showAdjustDatesModal, setShowAdjustDatesModal] = useState(false);
+  const [pendingAdjustContext, setPendingAdjustContext] = useState(null); // { index, newDate, deltaDays }
   const [nomeDocumento, setNomeDocumento] = useState(""); // Nome do documento no Autentique
   const [uploadedFile, setUploadedFile] = useState(null); // Arquivo upado
   const [uploadFileName, setUploadFileName] = useState(""); // Nome do arquivo upado
@@ -93,6 +187,37 @@ export default function CriarContratoAutentique() {
   const [salvandoRascunho, setSalvandoRascunho] = useState(false); // Estado de salvamento do rascunho
   const [showExitModal, setShowExitModal] = useState(false); // Modal de confirmação para sair
   const [rascunhoCarregado, setRascunhoCarregado] = useState(false); // Evita carregar rascunho múltiplas vezes
+  
+  // Estados para configuração financeira (Straton)
+  const [financeiroData, setFinanceiroData] = useState({
+    categorias: [],
+    subCategorias: [],
+    centrosCusto: [],
+    users: [],
+    contas: [],
+    contasApi: [],
+  });
+  const [loadingFinanceiro, setLoadingFinanceiro] = useState(false);
+  const [financeiroForm, setFinanceiroForm] = useState({
+    dataInicio: null,
+    dataPrimeiraVenda: null,
+    categoria: "",
+    centroCusto: "",
+    vendedorResponsavel: "",
+    tipoIntervalo: "meses",
+    intervalo: "1",
+    terminoRecorrencia: "indeterminado",
+    indeterminado: true,
+    totalCiclos: "",
+    dataTermino: null,
+    formaPagamento: "",
+    contaRecebimento: "",
+    vencimento: null,
+    observacoesPagamento: "",
+    observacoesFiscais: "",
+    descontoTipo: "reais",
+    descontoValor: "0",
+  });
 
 
   const handleLeadSelecionado = (payload) => {
@@ -480,6 +605,183 @@ export default function CriarContratoAutentique() {
     }
   };
 
+  // Função para buscar dados financeiros (quando straton = 1)
+  const fetchFinanceiroData = async () => {
+    const token = localStorage.getItem("token");
+    const userRaw = localStorage.getItem("userData");
+    if (!token || !userRaw) return;
+
+    const user = JSON.parse(userRaw);
+    const empresaId = user?.EmpresaId;
+    if (!empresaId) return;
+
+    setLoadingFinanceiro(true);
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL;
+
+      // Buscar todas as informações em paralelo
+      // IMPORTANTE: Buscar TODAS as categorias da empresa (via tipos) para fazer match com subcategorias
+      // Depois vamos filtrar apenas as subcategorias de receita no getSubCategoriasReceita
+      const [categoriasRes, subCategoriasRes, centrosCustoRes, usersRes, contasRes, tiposRes] = await Promise.all([
+        fetch(`${API}/financeiro/categorias/empresa/${empresaId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API}/financeiro/sub-categorias/empresa/${empresaId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API}/financeiro/centro-de-custo/empresa/${empresaId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API}/usuarios`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API}/financeiro/contas/company/${empresaId}/contas`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API}/financeiro/tipos/empresa/${empresaId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const categoriasData = categoriasRes.ok ? await categoriasRes.json() : [];
+      const subCategoriasRaw = subCategoriasRes.ok ? await subCategoriasRes.json() : [];
+      const centrosCusto = centrosCustoRes.ok ? await centrosCustoRes.json() : [];
+      const usersData = usersRes.ok ? await usersRes.json() : {};
+      const contasData = contasRes.ok ? await contasRes.json() : {};
+      const tiposData = tiposRes.ok ? await tiposRes.json() : [];
+
+      console.log('🔍 [fetchFinanceiroData] Categorias recebidas (estrutura):', categoriasData);
+      console.log('🔍 [fetchFinanceiroData] SubCategorias recebidas (raw):', subCategoriasRaw);
+      console.log('🔍 [fetchFinanceiroData] CategoriasRes.ok:', categoriasRes.ok, 'Status:', categoriasRes.status);
+      console.log('🔍 [fetchFinanceiroData] SubCategoriasRes.ok:', subCategoriasRes.ok, 'Status:', subCategoriasRes.status);
+      console.log('🔍 [fetchFinanceiroData] Tipos recebidos:', tiposData);
+
+      // Descobrir o ID do tipo "Receita" para ESTA empresa
+      const receitaTipo = Array.isArray(tiposData)
+        ? tiposData.find(t => String(t.nome).toLowerCase() === 'receita' && Number(t.company_id ?? t.empresa_id) === Number(empresaId))
+        : null;
+      const receitaTipoId = receitaTipo?.id ?? null;
+      console.log('🔍 [fetchFinanceiroData] ReceitaTipo encontrado:', receitaTipo);
+      if (!receitaTipoId) {
+        console.warn('⚠️ [fetchFinanceiroData] Tipo "Receita" não encontrado para a empresa. As listas ficarão vazias.');
+      }
+
+      // Processar categorias: a rota /empresa retorna array de { tipo, tipo_id, categorias: [...] }
+      // Precisamos extrair todas as categorias e manter o tipo_id delas
+      let todasCategorias = [];
+      if (Array.isArray(categoriasData)) {
+        categoriasData.forEach(grupo => {
+          if (Array.isArray(grupo.categorias)) {
+            grupo.categorias.forEach(cat => {
+              todasCategorias.push({
+                ...cat,
+                tipo_id: grupo.tipo_id // Adicionar tipo_id à categoria
+              });
+            });
+          }
+        });
+      }
+      console.log('🔍 [fetchFinanceiroData] Todas categorias extraídas:', todasCategorias);
+      console.log('🔍 [fetchFinanceiroData] Categorias de receita pelo tipo_id da empresa:', todasCategorias.filter(c => c.tipo_id === receitaTipoId));
+
+      // Filtrar subcategorias apenas de receita (usando o tipo_id da empresa)
+      const subCategoriasReceita = Array.isArray(subCategoriasRaw) 
+        ? subCategoriasRaw.filter(sub => {
+            const temTipoId = sub.tipo_id !== undefined && sub.tipo_id !== null;
+            const isReceita = receitaTipoId ? sub.tipo_id === receitaTipoId : false;
+            console.log(`🔍 [fetchFinanceiroData] Subcategoria ${sub.id} - tipo_id: ${sub.tipo_id}, é receita? ${isReceita}`);
+            return isReceita;
+          })
+        : [];
+      
+      console.log('🔍 [fetchFinanceiroData] SubCategorias de receita filtradas:', subCategoriasReceita);
+      console.log('🔍 [fetchFinanceiroData] Total subcategorias receita:', subCategoriasReceita.length);
+
+      const users = Array.isArray(usersData) ? usersData : (usersData.data || []);
+      const contas = (contasData.contas || []).filter(c => !c.account);
+      const contasApi = (contasData.contas || []).filter(c => c.account && String(c.account).trim() !== "");
+
+      const financeiroDataToSet = {
+        categorias: receitaTipoId ? todasCategorias.filter(c => c.tipo_id === receitaTipoId) : [],
+        subCategorias: subCategoriasReceita,
+        centrosCusto: Array.isArray(centrosCusto) ? centrosCusto : [],
+        users,
+        contas,
+        contasApi,
+      };
+
+      console.log('🔍 [fetchFinanceiroData] Dados finais a serem setados:', financeiroDataToSet);
+      console.log('🔍 [fetchFinanceiroData] Quantidade de categorias (receita):', financeiroDataToSet.categorias.length);
+      console.log('🔍 [fetchFinanceiroData] Quantidade de subCategorias (receita):', financeiroDataToSet.subCategorias.length);
+
+      setFinanceiroData(financeiroDataToSet);
+    } catch (error) {
+      console.error("Erro ao carregar dados financeiros:", error);
+      toast.error("Erro ao carregar dados financeiros");
+    } finally {
+      setLoadingFinanceiro(false);
+    }
+  };
+
+  // Função para obter subcategorias de receita (similar ao NovoContratoDrawer)
+  // Agora já recebemos apenas subcategorias de receita filtradas, só precisamos fazer o match com categorias
+  const getSubCategoriasReceita = () => {
+    console.log('🔍 [getSubCategoriasReceita] Chamada. financeiroData:', financeiroData);
+    const items = [];
+    
+    if (!financeiroData.subCategorias || !financeiroData.categorias) {
+      console.log('🔍 [getSubCategoriasReceita] Retornando vazio - dados não disponíveis');
+      console.log('🔍 [getSubCategoriasReceita] subCategorias existe?', !!financeiroData.subCategorias);
+      console.log('🔍 [getSubCategoriasReceita] categorias existe?', !!financeiroData.categorias);
+      return items;
+    }
+    
+    console.log('🔍 [getSubCategoriasReceita] Processando subCategorias:', financeiroData.subCategorias.length);
+    console.log('🔍 [getSubCategoriasReceita] Categorias disponíveis (já filtradas para receita):', financeiroData.categorias.length);
+    
+    financeiroData.subCategorias.forEach((subCategoria, index) => {
+      console.log(`🔍 [getSubCategoriasReceita] Processando subCategoria ${index + 1}:`, subCategoria);
+      
+      // Tentar encontrar categoria pai pelo ID
+      const categoriaPai = financeiroData.categorias.find(cat => cat.id === subCategoria.categoria_id);
+      
+      // Se não encontrou pela lista de categorias, usar o nome da categoria que já vem na subcategoria
+      if (!categoriaPai && subCategoria.categoria_nome) {
+        console.log(`🔍 [getSubCategoriasReceita] Categoria pai não encontrada por ID, mas tem categoria_nome: ${subCategoria.categoria_nome}`);
+        items.push({
+          id: subCategoria.id,
+          nome: subCategoria.nome,
+          isSubcategoria: true,
+          categoria_id: subCategoria.categoria_id,
+          categoria_pai_nome: subCategoria.categoria_nome, // Usar o nome que já vem da query
+        });
+        console.log(`🔍 [getSubCategoriasReceita] Item adicionado (usando categoria_nome):`, items[items.length - 1]);
+      } else if (categoriaPai) {
+        items.push({
+          id: subCategoria.id,
+          nome: subCategoria.nome,
+          isSubcategoria: true,
+          categoria_id: subCategoria.categoria_id,
+          categoria_pai_nome: categoriaPai.nome,
+        });
+        console.log(`🔍 [getSubCategoriasReceita] Item adicionado (usando categoria pai encontrada):`, items[items.length - 1]);
+      } else {
+        console.log(`🔍 [getSubCategoriasReceita] Categoria pai NÃO encontrada para subCategoria com categoria_id: ${subCategoria.categoria_id}, categoria_nome: ${subCategoria.categoria_nome}`);
+      }
+    });
+
+    const sorted = items.sort((a, b) => {
+      const categoriaCompare = (a.categoria_pai_nome || '').localeCompare(b.categoria_pai_nome || '');
+      if (categoriaCompare !== 0) return categoriaCompare;
+      return a.nome.localeCompare(b.nome);
+    });
+
+    console.log('🔍 [getSubCategoriasReceita] Items finais ordenados:', sorted);
+    console.log('🔍 [getSubCategoriasReceita] Quantidade de items retornados:', sorted.length);
+    
+    return sorted;
+  };
+
 
   useEffect(() => {
     const fetchUsuario = async () => {
@@ -518,6 +820,41 @@ export default function CriarContratoAutentique() {
     const isoDate = hoje.toISOString().slice(0, 16);
     setValidade(isoDate);
   }, []);
+
+  // Limpar datas personalizadas quando produtos personalizados forem removidos
+  useEffect(() => {
+    const temPersonalizado = produtosSelecionados.some(p => p.tipo === 'personalizado');
+    if (!temPersonalizado) {
+      setDatasPersonalizadas({});
+    }
+  }, [produtosSelecionados]);
+
+  // Detectar quando um template com straton = 1 é selecionado
+  useEffect(() => {
+    const selectedTemplateObj = templates.find(
+      (t) => t.id.toString() === selectedTemplate
+    );
+    
+    if (selectedTemplateObj && selectedTemplateObj.straton === 1) {
+      // Se o template tem straton = 1, buscar dados financeiros
+      fetchFinanceiroData();
+      // Preencher data de início com vigenciaInicio se não estiver preenchida
+      if (!financeiroForm.dataInicio && vigenciaInicio) {
+        setFinanceiroForm(prev => ({
+          ...prev,
+          dataInicio: new Date(vigenciaInicio + 'T00:00:00'),
+          dataPrimeiraVenda: new Date(vigenciaInicio + 'T00:00:00'),
+        }));
+      }
+      // Preencher vencimento com vigenciaInicio se não estiver preenchido
+      if (!financeiroForm.vencimento && vigenciaInicio) {
+        setFinanceiroForm(prev => ({
+          ...prev,
+          vencimento: new Date(vigenciaInicio + 'T00:00:00'),
+        }));
+      }
+    }
+  }, [selectedTemplate, templates]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sincroniza os dados do cliente quando clienteSelecionado mudar
   useEffect(() => {
@@ -577,14 +914,14 @@ export default function CriarContratoAutentique() {
     const user = JSON.parse(userRaw);
 
     try {
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato`, {
+      // Buscar apenas modelos da empresa atual + globais (rota light)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratual/modelos-contrato/light`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "x-equipe-id": user?.EmpresaId,
-
+          // Backend espera este header para filtrar por empresa OU globais
+          "x-empresa-id": String(user?.EmpresaId || ''),
         },
       });
 
@@ -592,7 +929,8 @@ export default function CriarContratoAutentique() {
 
       const data = await res.json();
       // Filtrar templates que NÃO são de funcionário (funcionario = 0 ou null)
-      const templatesContrato = data.filter(template => template.funcionario !== 1);
+      const templatesContrato = (Array.isArray(data) ? data : [])
+        .filter(template => template.funcionario !== 1);
       setTemplates(templatesContrato);
     } catch (err) {
       console.error("Erro ao carregar templates:", err);
@@ -894,6 +1232,25 @@ export default function CriarContratoAutentique() {
           return;
         }
       }
+      
+      // VALIDAÇÃO: Se é Straton (straton = 1), validar campos financeiros
+      if (selectedTemplateObj?.straton === 1) {
+        if (!financeiroForm.categoria) {
+          toast.warning("Por favor, selecione uma subcategoria de receita.");
+          setLoading(false);
+          return;
+        }
+        if (!financeiroForm.vencimento) {
+          toast.warning("Por favor, selecione a data de vencimento.");
+          setLoading(false);
+          return;
+        }
+        if (!financeiroForm.contaRecebimento) {
+          toast.warning("Por favor, selecione a conta de recebimento.");
+          setLoading(false);
+          return;
+        }
+      }
     }
 
     // Usar o estado do cliente que já foi sincronizado
@@ -1008,6 +1365,32 @@ export default function CriarContratoAutentique() {
         }
         // Converter PDF para base64
         const base64 = await fileToBase64(uploadedFile);
+        
+        // Verificar se é Straton para upload também
+        const selectedTemplateObj = templates.find(t => t.id.toString() === selectedTemplate);
+        const isStraton = selectedTemplateObj?.straton === 1;
+        
+        // Processar conta de recebimento (apenas API)
+        const isApi = financeiroForm.contaRecebimento?.startsWith('api:');
+        const contaApiIdParsed = isApi ? parseInt(financeiroForm.contaRecebimento.split(':')[1]) : null;
+        
+        // Encontrar item selecionado (categoria ou subcategoria)
+        let categoriaIdFinal = null;
+        let subCategoriaIdFinal = null;
+        if (isStraton && financeiroForm.categoria) {
+          const itemSelecionado = getSubCategoriasReceita().find(
+            (item) => item.id.toString() === financeiroForm.categoria
+          );
+          if (itemSelecionado) {
+            categoriaIdFinal = itemSelecionado.isSubcategoria
+              ? itemSelecionado.categoria_id
+              : itemSelecionado.id;
+            subCategoriaIdFinal = itemSelecionado.isSubcategoria
+              ? itemSelecionado.id
+              : null;
+          }
+        }
+        
         const payload = {
           name: nomeFinal,
           content: base64, // PDF em base64
@@ -1024,7 +1407,14 @@ export default function CriarContratoAutentique() {
           client_id: clienteSelecionado,
           expires_at: validade,
           start_at: vigenciaInicio,
-          end_at: vigenciaFim
+          end_at: vigenciaFim,
+          // Dados financeiros (Straton) - mesmo para upload
+          ...(isStraton ? {
+            categoria_id: categoriaIdFinal,
+            sub_categoria_id: subCategoriaIdFinal,
+            centro_de_custo_id: financeiroForm.centroCusto ? parseInt(financeiroForm.centroCusto) : null,
+            conta_api_id: contaApiIdParsed
+          } : {})
         };
         
      
@@ -1236,6 +1626,183 @@ export default function CriarContratoAutentique() {
           variables.push({ variable_name: key, value });
         });
 
+        // Verificar se é Straton para incluir dados financeiros
+        const selectedTemplateObj = templates.find(t => t.id.toString() === selectedTemplate);
+        const isStraton = selectedTemplateObj?.straton === 1;
+        
+        // Processar conta de recebimento (apenas API)
+        const isApi = financeiroForm.contaRecebimento?.startsWith('api:');
+        const contaApiIdParsed = isApi ? parseInt(financeiroForm.contaRecebimento.split(':')[1]) : null;
+        
+        // Encontrar item selecionado (categoria ou subcategoria)
+        let categoriaIdFinal = null;
+        let subCategoriaIdFinal = null;
+        if (isStraton && financeiroForm.categoria) {
+          const itemSelecionado = getSubCategoriasReceita().find(
+            (item) => item.id.toString() === financeiroForm.categoria
+          );
+          if (itemSelecionado) {
+            categoriaIdFinal = itemSelecionado.isSubcategoria
+              ? itemSelecionado.categoria_id
+              : itemSelecionado.id;
+            subCategoriaIdFinal = itemSelecionado.isSubcategoria
+              ? itemSelecionado.id
+              : null;
+          }
+        }
+        
+        // Sem desconto: usar valor total calculado diretamente
+        const valorFinal = valorTotalContrato;
+        
+        // Função para calcular parcelas de um produto
+        // produtoIndex: índice do produto na lista produtosSelecionados
+        const calcularParcelasProduto = (produto, produtoIndex) => {
+          const parcelas = [];
+          const quantidadeParcelas = parseInt(produto.parcelas) || 1;
+          const quantidade = parseFloat(produto.quantidade) || 0;
+          const valorUnitario = parseFloat(produto.valor_de_venda) || 0;
+          const valorTotalProduto = quantidade * valorUnitario;
+          const valorPorParcela = valorTotalProduto / quantidadeParcelas;
+          const isPersonalizado = produto.tipo === 'personalizado';
+          
+          // Calcular índice global base: quantas parcelas há antes deste produto?
+          // Considerar que a tabela mostra todas as parcelas agrupadas por tipo
+          // Na prática, para mapear datasPersonalizadas, vou usar a ordem sequencial global
+          // que corresponde à ordem das linhas na tabela (parcela 1, 2, 3...)
+          
+          // Data base inicial
+          const dataBaseInicial = dataPrimeiroVencimento 
+            ? new Date(dataPrimeiroVencimento + 'T00:00:00') 
+            : new Date();
+          
+          // Função auxiliar para calcular índice global da parcela
+          const calcularIndiceGlobalParcela = (parcelaLocalIndex) => {
+            if (!isPersonalizado) return null;
+            let indiceGlobal = 0;
+            const produtosPersonalizados = produtosSelecionados.filter(p => p.tipo === 'personalizado');
+            const produtosAntes = produtosPersonalizados.slice(0, produtosPersonalizados.indexOf(produto));
+            produtosAntes.forEach(p => {
+              indiceGlobal += parseInt(p.parcelas) || 1;
+            });
+            return indiceGlobal + parcelaLocalIndex;
+          };
+
+          // Função auxiliar para obter data da parcela
+          // parcelaLocalIndex: índice da parcela dentro deste produto (0, 1, 2...)
+          const obterDataParcela = (parcelaLocalIndex) => {
+            // Calcular índice global primeiro
+            const indiceGlobal = calcularIndiceGlobalParcela(parcelaLocalIndex);
+            
+            // Se for personalizado e tem data personalizada, usar ela
+            if (isPersonalizado && indiceGlobal !== null && datasPersonalizadas[indiceGlobal]) {
+              return datasPersonalizadas[indiceGlobal];
+            }
+            
+            // Caso contrário, calcular baseado no tipo ou na parcela anterior
+            let dataCalculada;
+            
+            if (parcelaLocalIndex === 0) {
+              // Primeira parcela sempre usa a data base inicial
+              dataCalculada = new Date(dataBaseInicial);
+            } else {
+              // Para parcelas subsequentes, tentar usar a parcela anterior como base
+              // (que pode ter sido personalizada)
+              const indiceGlobalAnterior = calcularIndiceGlobalParcela(parcelaLocalIndex - 1);
+              let dataBase = null;
+              
+              // Se é personalizado e a parcela anterior tem data personalizada, usar ela como base
+              if (isPersonalizado && indiceGlobalAnterior !== null && datasPersonalizadas[indiceGlobalAnterior]) {
+                dataBase = new Date(datasPersonalizadas[indiceGlobalAnterior] + 'T00:00:00');
+              } else if (parcelaLocalIndex > 0) {
+                // Senão, calcular a parcela anterior recursivamente e usar como base
+                const dataAnterior = obterDataParcela(parcelaLocalIndex - 1);
+                dataBase = new Date(dataAnterior + 'T00:00:00');
+              }
+              
+              // Se não conseguiu base, usar dataBaseInicial
+              if (!dataBase) {
+                dataBase = new Date(dataBaseInicial);
+              }
+              
+              dataCalculada = new Date(dataBase);
+              
+              // Ajustar mês baseado no tipo
+              if (produto.tipo === 'mensal') {
+                dataCalculada.setMonth(dataCalculada.getMonth() + 1);
+              } else if (produto.tipo === 'bimestral') {
+                dataCalculada.setMonth(dataCalculada.getMonth() + 2);
+              } else if (produto.tipo === 'trimestral') {
+                dataCalculada.setMonth(dataCalculada.getMonth() + 3);
+              } else if (produto.tipo === 'semestral') {
+                dataCalculada.setMonth(dataCalculada.getMonth() + 6);
+              } else if (produto.tipo === 'anual') {
+                dataCalculada.setFullYear(dataCalculada.getFullYear() + 1);
+              } else if (produto.tipo === 'personalizado') {
+                // Para personalizado sem data personalizada, adicionar 1 mês da parcela anterior
+                dataCalculada.setMonth(dataCalculada.getMonth() + 1);
+              }
+              
+              // Ajustar para o dia de vencimento
+              dataCalculada.setDate(diaVencimento);
+            }
+            
+            return formatDateForInput(dataCalculada);
+          };
+          
+          // Calcular índice global para verificar se é personalizado
+          const calcularIndiceGlobal = (parcelaLocalIndex) => {
+            const produtosPersonalizados = produtosSelecionados.filter(p => p.tipo === 'personalizado');
+            const produtosAntes = produtosPersonalizados.slice(0, produtosPersonalizados.indexOf(produto));
+            let indiceGlobal = 0;
+            produtosAntes.forEach(p => {
+              indiceGlobal += parseInt(p.parcelas) || 1;
+            });
+            return indiceGlobal + parcelaLocalIndex;
+          };
+          
+          for (let i = 0; i < quantidadeParcelas; i++) {
+            const dataVencimento = obterDataParcela(i);
+            const indiceGlobal = isPersonalizado ? calcularIndiceGlobal(i) : null;
+            const temDataPersonalizada = isPersonalizado && indiceGlobal !== null && !!datasPersonalizadas[indiceGlobal];
+            
+            parcelas.push({
+              numero: i + 1,
+              data_vencimento: dataVencimento,
+              valor: Number(valorPorParcela.toFixed(2)),
+              personalizado: isPersonalizado && temDataPersonalizada
+            });
+          }
+          
+          return parcelas;
+        };
+        
+        // Preparar produtos com parcelas
+        const produtosComParcelas = produtosSelecionados.map((produto, produtoIndex) => {
+          const quantidade = parseFloat(produto.quantidade) || 0;
+          const valorUnitario = parseFloat(produto.valor_de_venda) || 0;
+          const valorTotal = quantidade * valorUnitario;
+          const parcelas = calcularParcelasProduto(produto, produtoIndex);
+          
+          return {
+            id: produto.id,
+            nome: produto.nome || produto.name || 'Produto sem nome',
+            codigo: produto.codigo || null,
+            descricao: produto.descricao || null,
+            tipo: produto.tipo,
+            quantidade: produto.quantidade || 1,
+            valor_de_venda: produto.valor_de_venda || produto.valor || 0,
+            valor_total: Number(valorTotal.toFixed(2)),
+            parcelas: produto.parcelas || 1,
+            parcelas_detalhadas: parcelas,
+            total_parcelas: parcelas.length,
+            tipo_produto: produto.tipo
+          };
+        });
+        
+        console.log('🔍 [Frontend] produtosComParcelas preparados:', produtosComParcelas);
+        console.log('🔍 [Frontend] produtosComParcelas length:', produtosComParcelas.length);
+        console.log('🔍 [Frontend] produtosComParcelas JSON:', JSON.stringify(produtosComParcelas));
+
         // Envio do HTML usando a nova rota /html
         const payload = {
           template_id: selectedTemplate,
@@ -1243,7 +1810,7 @@ export default function CriarContratoAutentique() {
           signatories: signatariosToSend,
           variables: variables,
           empresa_id: equipeId,
-          valor: valorTotalContrato,
+          valor: valorFinal,
           valor_recorrente: (() => {
             const produtosMensais = produtosSelecionados.filter(p => p.tipo === 'mensal');
             if (produtosMensais.length === 0) return 0;
@@ -1257,7 +1824,15 @@ export default function CriarContratoAutentique() {
           })(),
           expires_at: validade,
           start_at: vigenciaInicio,
-          end_at: vigenciaFim
+          end_at: vigenciaFim,
+          produtos_dados: produtosComParcelas,
+          // Dados financeiros (Straton)
+          ...(isStraton ? {
+            categoria_id: categoriaIdFinal,
+            sub_categoria_id: subCategoriaIdFinal,
+            centro_de_custo_id: financeiroForm.centroCusto ? parseInt(financeiroForm.centroCusto) : null,
+            conta_api_id: contaApiIdParsed
+          } : {})
         };
         
   
@@ -1796,6 +2371,47 @@ export default function CriarContratoAutentique() {
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
     return "";
   }
+
+  // Utilitário simples para adicionar dias
+  function addDays(date, days) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  // Função para formatar Date para input
+  const formatDateForInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d)) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Função para converter valor brasileiro para número (para desconto)
+  const parseValorBrasileiro = (valor) => {
+    if (!valor) return 0;
+    let valorLimpo = valor.replace(/[^\d.,]/g, '');
+    if (valorLimpo.includes(',') && valorLimpo.includes('.')) {
+      const ultimaVirgula = valorLimpo.lastIndexOf(',');
+      const ultimoPonto = valorLimpo.lastIndexOf('.');
+      if (ultimaVirgula > ultimoPonto) {
+        valorLimpo = valorLimpo.replace(/\./g, '').replace(',', '.');
+      } else {
+        valorLimpo = valorLimpo.replace(/,/g, '');
+      }
+    } else if (valorLimpo.includes(',')) {
+      const partes = valorLimpo.split(',');
+      if (partes.length === 2 && partes[1].length <= 2) {
+        valorLimpo = valorLimpo.replace(',', '.');
+      } else {
+        valorLimpo = valorLimpo.replace(/,/g, '');
+      }
+    }
+    return parseFloat(valorLimpo) || 0;
+  };
 
   const renderLabel = (text, obrigatorio = false) => (
     <label>
@@ -2450,18 +3066,104 @@ export default function CriarContratoAutentique() {
                             ...tipos.map(tipo => produtosPorTipo[tipo].reduce((max, p) => Math.max(max, parseInt(p.parcelas) || 1), 0)),
                             1
                           );
+                          // Verificar se há produtos personalizados
+                          const temPersonalizado = produtosPorTipo['personalizado'] && produtosPorTipo['personalizado'].length > 0;
+                          
                           // 3. Gerar as linhas da tabela
                           const linhas = [];
-                          let dataBase = dataPrimeiroVencimento ? new Date(dataPrimeiroVencimento) : new Date();
-                          for (let i = 0; i < maxParcelas; i++) {
-                            // Calcular data de pagamento
-                            let dataPagamento = new Date(dataBase);
-                            if (i > 0) {
-                              dataPagamento.setMonth(dataPagamento.getMonth() + i);
-                              dataPagamento.setDate(diaVencimento);
-                            } else {
-                              dataPagamento.setDate(diaVencimento);
+                          // Usar dataPrimeiroVencimento como base, ou hoje se não houver
+                          const dataBaseInicial = dataPrimeiroVencimento 
+                            ? new Date(dataPrimeiroVencimento + 'T00:00:00') 
+                            : new Date();
+                          
+                          // Função para obter a data da parcela (editada ou calculada)
+                          const obterDataParcela = (indiceParcela) => {
+                            // Se tem data personalizada para esta parcela, usar ela
+                            if (datasPersonalizadas[indiceParcela]) {
+                              return datasPersonalizadas[indiceParcela];
                             }
+                            // Caso contrário, calcular normalmente
+                            let dataCalculada;
+                            if (indiceParcela === 0) {
+                              dataCalculada = new Date(dataBaseInicial);
+                            } else {
+                              dataCalculada = new Date(dataBaseInicial);
+                              dataCalculada.setMonth(dataCalculada.getMonth() + indiceParcela);
+                              dataCalculada.setDate(diaVencimento);
+                            }
+                            return formatDateForInput(dataCalculada);
+                          };
+                          
+                          // Função para atualizar data personalizada com validação e sugestão de ajuste subsequente
+                          const atualizarDataPersonalizada = (indiceParcela, novaData) => {
+                            // Se não há data selecionada, permitir (input pode estar sendo limpo)
+                            if (!novaData) {
+                              setDatasPersonalizadas(prev => {
+                                const novo = { ...prev };
+                                delete novo[indiceParcela];
+                                return novo;
+                              });
+                              return;
+                            }
+
+                            const novaDataObj = new Date(novaData + 'T00:00:00');
+                            
+                            // Validar com parcela anterior (se existir)
+                            if (indiceParcela > 0) {
+                              const dataParcelaAnterior = obterDataParcela(indiceParcela - 1);
+                              const dataAnteriorObj = new Date(dataParcelaAnterior + 'T00:00:00');
+                              
+                              if (novaDataObj <= dataAnteriorObj) {
+                                toast.warning(`A data da parcela ${indiceParcela + 1} deve ser posterior à parcela ${indiceParcela}. Data mínima: ${dataAnteriorObj.toLocaleDateString('pt-BR')}`);
+                                return; // Não atualiza se for inválida
+                              }
+
+                              // Sugestão de ajuste: se o salto for muito grande (> 45 dias), perguntar se deseja ajustar as subsequentes
+                              const diffMs = Math.abs(novaDataObj - dataAnteriorObj);
+                              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                              if (diffDays > 45) {
+                                setPendingAdjustContext({ index: indiceParcela, newDate: novaData, deltaDays: diffDays });
+                                setShowAdjustDatesModal(true);
+                                // Ainda assim aplica a mudança na parcela atual para refletir no UI imediatamente
+                                setDatasPersonalizadas(prev => ({
+                                  ...prev,
+                                  [indiceParcela]: novaData
+                                }));
+                                return;
+                              }
+                            }
+                            
+                            // Validar com parcelas subsequentes (se existirem)
+                            for (let j = indiceParcela + 1; j < maxParcelas; j++) {
+                              const dataSubsequente = obterDataParcela(j);
+                              const dataSubsequenteObj = new Date(dataSubsequente + 'T00:00:00');
+                              
+                              if (novaDataObj >= dataSubsequenteObj) {
+                                toast.warning(`A data da parcela ${indiceParcela + 1} deve ser anterior à parcela ${j + 1}. Data máxima: ${dataSubsequenteObj.toLocaleDateString('pt-BR')}`);
+                                return; // Não atualiza se for inválida
+                              }
+                            }
+                            
+                            // Se passou todas as validações, atualiza
+                            setDatasPersonalizadas(prev => ({
+                              ...prev,
+                              [indiceParcela]: novaData
+                            }));
+                          };
+                          
+                          for (let i = 0; i < maxParcelas; i++) {
+                            const dataParcela = obterDataParcela(i);
+                            const dataDate = new Date(dataParcela + 'T00:00:00');
+                            
+                            // Calcular data mínima para esta parcela (data da parcela anterior + 1 dia)
+                            let dataMinima = null;
+                            if (i > 0) {
+                              const dataParcelaAnterior = obterDataParcela(i - 1);
+                              const dataAnteriorObj = new Date(dataParcelaAnterior + 'T00:00:00');
+                              dataAnteriorObj.setDate(dataAnteriorObj.getDate() + 1); // Próximo dia após a parcela anterior
+                              dataMinima = formatDateForInput(dataAnteriorObj);
+                            }
+                            
                             // 4. Calcular valores por tipo
                             const valoresPorTipo = tipos.map(tipo => {
                               return produtosPorTipo[tipo].reduce((soma, p) => {
@@ -2478,7 +3180,23 @@ export default function CriarContratoAutentique() {
                             linhas.push(
                               <tr key={i}>
                                 <td>{i + 1}</td>
-                                <td>{dataPagamento.toLocaleDateString('pt-BR')}</td>
+                                <td>
+                                  {temPersonalizado ? (
+                                    <input
+                                      type="date"
+                                      value={dataParcela}
+                                      onChange={(e) => atualizarDataPersonalizada(i, e.target.value)}
+                                      min={dataMinima || undefined}
+                                      onKeyDown={(e) => e.preventDefault()}
+                                      onPaste={(e) => e.preventDefault()}
+                                      onWheel={(e) => e.preventDefault()}
+                                      className={styles.dataTableInput}
+                                      title={dataMinima ? `Data mínima: ${new Date(dataMinima + 'T00:00:00').toLocaleDateString('pt-BR')}` : ''}
+                                    />
+                                  ) : (
+                                    dataDate.toLocaleDateString('pt-BR')
+                                  )}
+                                </td>
                                 {valoresPorTipo.map((v, idx) => (
                                   <td key={idx}>{v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                 ))}
@@ -2735,6 +3453,7 @@ export default function CriarContratoAutentique() {
             );
             
             const templateContent = selectedTemplateObj?.content || selectedTemplateObj?.conteudo || "";
+            const isStraton = selectedTemplateObj?.straton === 1;
             
             // Função para filtrar variáveis presentes no conteúdo do template
             function getCustomVariablesInTemplate(content, customVariables) {
@@ -2758,7 +3477,7 @@ export default function CriarContratoAutentique() {
               !customValues[v.variable] || customValues[v.variable].trim() === ''
             );
 
-            // Caso não tenha selecionado template ou não tenha variável no template
+            // Caso não tenha selecionado template
             if (!selectedTemplateObj)
               return (
                 <>
@@ -2770,6 +3489,238 @@ export default function CriarContratoAutentique() {
                   </div>
                 </>
               );
+
+            // Se for Straton (straton = 1), mostrar campos financeiros
+            if (isStraton) {
+              return (
+                <div>
+                  <div className={styles.infoContainer}>
+                    <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
+                    <span className={styles.infoText}>
+                      <strong>Configuração Financeira:</strong> Este modelo está vinculado ao módulo financeiro. Configure as informações abaixo para gerar parcelas automaticamente.
+                    </span>
+                  </div>
+
+                  {loadingFinanceiro && (
+                    <div className={styles.loadingBox}>
+                      <span>Carregando dados financeiros...</span>
+                    </div>
+                  )}
+
+                  {!loadingFinanceiro && (
+                    <div className={styles.outrasSectionWrapper}>
+                      {/* Seção Informações */}
+                      <div className={styles.sectionBlock}>
+                        <h3>Informações</h3>
+                        <div className={styles.gridTwoCols}>
+                          {/* Subcategoria de Receita */}
+                          <div>
+                            {renderLabel('Subcategoria de Receita', true)}
+                            {(() => {
+                              const subCategorias = getSubCategoriasReceita();
+                              console.log('🔍 [Render] Subcategorias obtidas:', subCategorias);
+                              const options = subCategorias.map((item) => ({
+                                value: item.id.toString(),
+                                label: `${item.categoria_pai_nome} → ${item.nome}`,
+                              }));
+                              console.log('🔍 [Render] Options para ReactSelect:', options);
+                              return (
+                                <ReactSelect
+                                  options={options}
+                                  value={subCategorias.find((item) => item.id.toString() === financeiroForm.categoria) 
+                                    ? { 
+                                        value: financeiroForm.categoria, 
+                                        label: subCategorias.find((item) => item.id.toString() === financeiroForm.categoria)?.categoria_pai_nome + ' → ' + subCategorias.find((item) => item.id.toString() === financeiroForm.categoria)?.nome 
+                                      }
+                                    : null}
+                                  onChange={(option) => {
+                                    console.log('🔍 [ReactSelect] onChange chamado com:', option);
+                                    setFinanceiroForm(prev => ({ ...prev, categoria: option ? option.value : '' }));
+                                  }}
+                                  placeholder="Pesquisar subcategoria..."
+                                  styles={customSelectStyles}
+                                  isClearable
+                                  isSearchable
+                                  menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                  menuPosition="fixed"
+                                />
+                              );
+                            })()}
+                          </div>
+
+                          {/* Centro de custo */}
+                          <div>
+                            {renderLabel('Centro de custo', false)}
+                            <ReactSelect
+                              options={(financeiroData.centrosCusto || []).map((centro) => ({
+                                value: centro.id.toString(),
+                                label: centro.nome,
+                              }))}
+                              value={financeiroData.centrosCusto.find((centro) => centro.id.toString() === financeiroForm.centroCusto) 
+                                ? { value: financeiroForm.centroCusto, label: financeiroData.centrosCusto.find((centro) => centro.id.toString() === financeiroForm.centroCusto)?.nome }
+                                : null}
+                              onChange={(option) => setFinanceiroForm(prev => ({ ...prev, centroCusto: option ? option.value : '' }))}
+                              placeholder="Pesquisar centro de custo..."
+                              styles={customSelectStyles}
+                              isClearable
+                              isSearchable
+                              menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                              menuPosition="fixed"
+                            />
+                          </div>
+
+                          {/* Vendedor responsável */}
+                          <div>
+                            {renderLabel('Vendedor responsável', false)}
+                            <ReactSelect
+                              options={(financeiroData.users || []).map((user) => ({
+                                value: user.id.toString(),
+                                label: user.nome,
+                              }))}
+                              value={financeiroData.users.find((user) => user.id.toString() === financeiroForm.vendedorResponsavel) 
+                                ? { value: financeiroForm.vendedorResponsavel, label: financeiroData.users.find((user) => user.id.toString() === financeiroForm.vendedorResponsavel)?.nome }
+                                : null}
+                              onChange={(option) => setFinanceiroForm(prev => ({ ...prev, vendedorResponsavel: option ? option.value : '' }))}
+                              placeholder="Pesquisar vendedor..."
+                              styles={customSelectStyles}
+                              isClearable
+                              isSearchable
+                              menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                              menuPosition="fixed"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Seção Informações de pagamento */}
+                      <div className={styles.sectionBlock}>
+                        <h3>Informações de pagamento</h3>
+                        <div className={styles.gridTwoCols}>
+                          {/* Forma de pagamento */}
+                          <div>
+                            {renderLabel('Forma de pagamento', false)}
+                            <select
+                              value={financeiroForm.formaPagamento}
+                              onChange={(e) => setFinanceiroForm(prev => ({ ...prev, formaPagamento: e.target.value }))}
+                              className={styles.input}
+                            >
+                              <option value="">Selecione</option>
+                              <option value="dinheiro">Dinheiro</option>
+                              <option value="pix">PIX</option>
+                              <option value="cartao">Cartão</option>
+                              <option value="boleto">Boleto</option>
+                            </select>
+                          </div>
+
+                          {/* Conta de recebimento */}
+                          <div>
+                            {renderLabel('Conta de recebimento', true)}
+                            <select
+                              value={financeiroForm.contaRecebimento}
+                              onChange={(e) => setFinanceiroForm(prev => ({ ...prev, contaRecebimento: e.target.value }))}
+                              className={styles.input}
+                            >
+                              <option value="">Selecione a conta</option>
+                              {/* Contas ERP */}
+                              {financeiroData.contas
+                                .filter((conta) => {
+                                  const temBanco = conta.banco && String(conta.banco).trim();
+                                  const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
+                                  const temApiId = conta.api_id && String(conta.api_id).trim();
+                                  return temBanco || temDescricao || temApiId;
+                                })
+                                .map((conta) => {
+                                  const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.id}`;
+                                  const bancoConta = conta.banco || 'Banco';
+                                  return (
+                                    <option key={`erp-${conta.id}`} value={`erp:${conta.id}`}>
+                                      {bancoConta} — {nomeConta}
+                                    </option>
+                                  );
+                                })}
+                              {/* Contas API (OpenFinance) */}
+                              {financeiroData.contasApi
+                                .filter((conta) => {
+                                  const temBanco = conta.banco && String(conta.banco).trim();
+                                  const temDescricao = conta.descricao_banco && String(conta.descricao_banco).trim();
+                                  const temAccount = conta.account && String(conta.account).trim();
+                                  return temBanco || temDescricao || temAccount;
+                                })
+                                .map((conta) => {
+                                  const nomeConta = conta.descricao_banco || conta.banco || `Conta ${conta.account}`;
+                                  return (
+                                    <option key={`api-${conta.id}`} value={`api:${conta.id}`}>
+                                      {nomeConta} (OpenFinance)
+                                    </option>
+                                  );
+                                })}
+                            </select>
+                          </div>
+
+                          {/* Vencimento */}
+                          <div>
+                            {renderLabel('Vencimento', true)}
+                            <input
+                              type="date"
+                              value={formatDateForInput(financeiroForm.vencimento)}
+                              onChange={(e) => setFinanceiroForm(prev => ({ ...prev, vencimento: e.target.value ? new Date(e.target.value + 'T00:00:00') : null }))}
+                              className={styles.input}
+                            />
+                          </div>
+
+                          
+                        </div>
+                      </div>
+
+                      {/* Variáveis personalizadas (se houver) */}
+                      {customVarsToShow.length > 0 && (
+                        <div style={{ marginTop: '32px' }}>
+                          <div className={styles.infoContainer}>
+                            <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
+                            <span className={styles.infoText}>
+                              <strong>Variáveis Personalizadas:</strong> {unfilledVars.length > 0 
+                                ? `${unfilledVars.length} variável(is) não preenchida(s).` 
+                                : 'Todas as variáveis estão preenchidas! ✅'
+                              }
+                            </span>
+                          </div>
+                          <div className={styles.grid} style={{ marginTop: '16px' }}>
+                            {customVarsToShow.map((v) => {
+                              const isFilled = customValues[v.variable] && customValues[v.variable].trim() !== '';
+                              return (
+                                <div key={v.variable} style={{ marginBottom: "1rem" }}>
+                                  <label className={styles.label}>
+                                    {v.label} <span style={{color: 'red'}}>*</span>
+                                  </label>
+                                  <input
+                                    className={styles.input}
+                                    type="text"
+                                    placeholder={`Preencha: ${v.label}`}
+                                    value={customValues[v.variable] || ""}
+                                    onChange={(e) =>
+                                      setCustomValues((prev) => ({
+                                        ...prev,
+                                        [v.variable]: e.target.value,
+                                      }))
+                                    }
+                                    style={{
+                                      borderColor: isFilled ? '#28a745' : '#dc3545',
+                                      borderWidth: '2px'
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Se não for Straton, mostrar apenas variáveis personalizadas
             if (customVarsToShow.length === 0)
               return (
                 <>
@@ -2785,7 +3736,6 @@ export default function CriarContratoAutentique() {
             // Renderiza apenas as variáveis personalizadas realmente utilizadas no template
             return (
               <div>
-                {/* Aviso sobre variáveis obrigatórias com contador */}
                 <div className={styles.infoContainer}>
                   <FontAwesomeIcon icon={faInfoCircle} className={styles.infoIcon} />
                   <span className={styles.infoText}>
@@ -2796,16 +3746,13 @@ export default function CriarContratoAutentique() {
                   </span>
                 </div>
 
-                {/* Campos das variáveis */}
                 <div className={styles.grid}>
                   {customVarsToShow.map((v) => {
                     const isFilled = customValues[v.variable] && customValues[v.variable].trim() !== '';
-                    const isRequired = true; // Todas as variáveis personalizadas são obrigatórias
-                    
                     return (
                       <div key={v.variable} style={{ marginBottom: "1rem" }}>
                         <label className={styles.label}>
-                          {v.label} {isRequired && <span style={{color: 'red'}}>*</span>}
+                          {v.label} <span style={{color: 'red'}}>*</span>
                         </label>
                         <input
                           className={styles.input}
@@ -2823,16 +3770,6 @@ export default function CriarContratoAutentique() {
                             borderWidth: '2px'
                           }}
                         />
-                        {!isFilled && (
-                          <small style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                            Este campo é obrigatório
-                          </small>
-                        )}
-                        {isFilled && (
-                          <small style={{ color: '#28a745', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                            ✓ Preenchido
-                          </small>
-                        )}
                       </div>
                     );
                   })}
@@ -2855,6 +3792,107 @@ export default function CriarContratoAutentique() {
           </div>
 
         </>
+      )}
+
+      {/* Modal: ajustar datas subsequentes */}
+      {showAdjustDatesModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowAdjustDatesModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>
+                <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: '8px', color: '#f59e0b' }} />
+                Ajustar parcelas subsequentes?
+              </h3>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalText}>
+                Você alterou a data da parcela {pendingAdjustContext?.index + 1} para
+                {' '}
+                {pendingAdjustContext ? new Date(pendingAdjustContext.newDate + 'T00:00:00').toLocaleDateString('pt-BR') : ''}.
+              </p>
+              <p className={styles.modalText}>
+                Deseja ajustar automaticamente as datas das parcelas seguintes mantendo o mesmo intervalo?
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.modalButton}
+                onClick={() => {
+                  setShowAdjustDatesModal(false);
+                  setPendingAdjustContext(null);
+                }}
+                style={{ background: '#6b7280', color: 'white' }}
+              >
+                Não ajustar
+              </button>
+              <button
+                className={styles.modalButton}
+                onClick={() => {
+                  // Aplicar ajuste nas subsequentes
+                  if (!pendingAdjustContext) return;
+                  const { index, newDate } = pendingAdjustContext;
+                  
+                  // Calcular número máximo de parcelas
+                  const tipos = ['pontual', 'mensal', 'bimestral', 'trimestral', 'semestral', 'anual', 'personalizado'];
+                  const maxParcelas = Math.max(
+                    ...tipos.map(tipo => {
+                      const produtosTipo = produtosSelecionados.filter(p => p.tipo === tipo);
+                      return produtosTipo.reduce((max, p) => Math.max(max, parseInt(p.parcelas) || 1), 0);
+                    }),
+                    1
+                  );
+                  
+                  // Função auxiliar para obter data de uma parcela (sem dados personalizados)
+                  const obterDataCalculada = (indice) => {
+                    if (datasPersonalizadas[indice]) {
+                      return datasPersonalizadas[indice];
+                    }
+                    const dataBaseInicial = dataPrimeiroVencimento 
+                      ? new Date(dataPrimeiroVencimento + 'T00:00:00') 
+                      : new Date();
+                    let dataCalculada;
+                    if (indice === 0) {
+                      dataCalculada = new Date(dataBaseInicial);
+                    } else {
+                      dataCalculada = new Date(dataBaseInicial);
+                      dataCalculada.setMonth(dataCalculada.getMonth() + indice);
+                      dataCalculada.setDate(diaVencimento);
+                    }
+                    return formatDateForInput(dataCalculada);
+                  };
+                  
+                  setDatasPersonalizadas(prev => {
+                    const novo = { ...prev, [index]: newDate };
+                    
+                    // Ajustar todas as parcelas subsequentes até maxParcelas
+                    // Sempre adiciona 1 mês por vez, respeitando o dia de vencimento
+                    for (let j = index + 1; j < maxParcelas; j++) {
+                      // Obter a parcela anterior (já ajustada ou calculada)
+                      const prevStr = novo[j - 1] || obterDataCalculada(j - 1);
+                      const prevDate = new Date(prevStr + 'T00:00:00');
+                      
+                      // Adicionar 1 mês
+                      let novaDataParcela = new Date(prevDate);
+                      novaDataParcela.setMonth(novaDataParcela.getMonth() + 1);
+                      
+                      // Ajustar para o dia de vencimento
+                      novaDataParcela.setDate(diaVencimento);
+                      
+                      novo[j] = formatDateForInput(novaDataParcela);
+                    }
+                    return novo;
+                  });
+
+                  setShowAdjustDatesModal(false);
+                  setPendingAdjustContext(null);
+                }}
+                style={{ background: '#10b981', color: 'white' }}
+              >
+                Ajustar subsequentes
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
 

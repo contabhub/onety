@@ -48,6 +48,8 @@ router.get("/", verifyToken, async (req, res) => {
 router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
 
+  console.log(`🔍 [Backend] Buscando subcategorias para empresa ${empresaId}`);
+
   try {
     const [rows] = await pool.query(
       `
@@ -58,7 +60,8 @@ router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
         sc.ordem,
         sc.padrao,
         sc.criado_em,
-        c.nome as categoria_nome
+        c.nome as categoria_nome,
+        c.tipo_id
       FROM straton_subcategorias sc
       INNER JOIN straton_categorias c ON sc.categoria_id = c.id AND sc.empresa_id = c.empresa_id
       WHERE sc.empresa_id = ?
@@ -67,14 +70,22 @@ router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
       [empresaId]
     );
 
-    console.log("📊 Total de subcategorias encontradas:", rows.length);
+    console.log(`📊 [Backend] Total de subcategorias encontradas: ${rows.length}`);
     if (rows.length > 0) {
-      console.log("📋 Primeira subcategoria:", rows[0]);
+      console.log(`📋 [Backend] Primeira subcategoria:`, rows[0]);
+      console.log(`📋 [Backend] Última subcategoria:`, rows[rows.length - 1]);
+      // Contar subcategorias por tipo_id
+      const porTipo = {};
+      rows.forEach(row => {
+        const tipoId = row.tipo_id || 'null';
+        porTipo[tipoId] = (porTipo[tipoId] || 0) + 1;
+      });
+      console.log(`📊 [Backend] Subcategorias por tipo_id:`, porTipo);
     }
 
     res.json(rows);
   } catch (err) {
-    console.error("Erro ao buscar subcategorias por empresa:", err);
+    console.error("❌ [Backend] Erro ao buscar subcategorias por empresa:", err);
     res.status(500).json({ error: "Erro ao buscar subcategorias por empresa." });
   }
 });
