@@ -652,9 +652,7 @@ export default function OutrasContasPage() {
         <div className={styles.outrasContasHeaderLeft}>
           <div>
             <h1 className={styles.outrasContasHeaderTitle}>Contas financeiras</h1>
-            <p className={styles.outrasContasHeaderSubtitle}>
-              Gerencie suas contas bancárias e meios de pagamento
-            </p>
+
           </div>
         </div>
         <div className={styles.outrasContasHeaderRight}>
@@ -678,11 +676,24 @@ export default function OutrasContasPage() {
           )}
           <button
             type="button"
+            onClick={() => router.push('/financeiro/contas-a-pagar')}
+            className={styles.outrasContasSyncBtn}
+          >
+            Contas a pagar
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/financeiro/contas-a-receber')}
+            className={styles.outrasContasSyncBtn}
+          >
+            Contas a receber
+          </button>
+          <button
+            type="button"
             onClick={() => syncTransacoesPluggy()}
             disabled={syncing}
             className={styles.outrasContasSyncBtn}
           >
-            <Settings className={styles.outrasContasIcon} />
             {syncing ? "Sincronizando..." : "Sincronizar transações"}
           </button>
           <button
@@ -690,7 +701,6 @@ export default function OutrasContasPage() {
             className={styles.outrasContasPrimaryBtn}
             onClick={() => setIsNovaContaOpen(true)}
           >
-            <Plus className={styles.outrasContasIcon} />
             Nova conta financeira
           </button>
         </div>

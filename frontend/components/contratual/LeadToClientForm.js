@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import styles from "../../styles/contratual/NovoClienteForm.module.css";
 
 export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
@@ -25,6 +26,8 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
     funcao: "",
     lead_id: null,
   });
+
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   useEffect(() => {
     // Buscar empresa_id do localStorage
@@ -74,7 +77,35 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Você precisa estar logado para salvar.");
+      toast.error("Você precisa estar logado para salvar.");
+      return;
+    }
+
+    // Validação de obrigatórios
+    const isPessoaFisica = formData.tipo === "pessoa_fisica";
+    const requiredFields = isPessoaFisica
+      ? [
+          { key: "nome", label: "Nome" },
+          { key: "email", label: "Email" },
+          { key: "cpf_cnpj", label: "CPF" },
+          { key: "telefone", label: "Telefone" },
+        ]
+      : [
+          { key: "representante", label: "Representante" },
+          { key: "email", label: "Email" },
+          { key: "nome", label: "Razão Social" },
+          { key: "cpf_cnpj", label: "CNPJ" },
+          { key: "telefone", label: "Telefone" },
+        ];
+
+    const missing = requiredFields.filter(({ key }) => {
+      const value = (formData[key] ?? "").toString().trim();
+      return value.length === 0;
+    });
+
+    if (missing.length > 0) {
+      const lista = missing.map((f) => f.label).join(", ");
+      toast.warning(`Preencha os campos obrigatórios: ${lista}.`);
       return;
     }
 
@@ -116,7 +147,7 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
       onCreate(data.clientId);
       onClose();
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -163,6 +194,17 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
 
   return (
     <div className={styles.formContainer}>
+      <div className={styles.processHeader}>
+        <h2 className={styles.processTitle}>Processo de transformar em cliente</h2>
+        <button
+          type="button"
+          onClick={() => setShowInfoModal(true)}
+          title="Como funciona?"
+          className={styles.infoButton}
+        >
+          ?
+        </button>
+      </div>
       <h3 className={styles.subtitle}>Tipo de Cliente</h3>
       <div className={styles.radioGroup}>
         <label>
@@ -191,15 +233,15 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
         <>
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Dados do Cliente</h3>
-            <div><label>Nome</label><input className={styles.input} value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} /></div>
-            <div><label>Email</label><input className={styles.input} value={formData.email} onChange={(e) => handleChange("email", e.target.value)} /></div>
-            <div><label>CPF</label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => handleChange("cpf_cnpj", e.target.value)} /></div>
+            <div><label>Nome <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} /></div>
+            <div><label>Email <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.email} onChange={(e) => handleChange("email", e.target.value)} /></div>
+            <div><label>CPF <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => handleChange("cpf_cnpj", e.target.value)} /></div>
             <div><label>RG</label><input className={styles.input} value={formData.rg} onChange={(e) => handleChange("rg", e.target.value)} /></div>
             <div><label>Estado Civil</label><select className={styles.input} value={formData.estado_civil} onChange={(e) => handleChange("estado_civil", e.target.value)}><option value="">Selecione</option><option value="solteiro">Solteiro</option><option value="casado">Casado</option><option value="divorciado">Divorciado</option><option value="viuvo">Viúvo</option></select></div>
             <div><label>Profissão</label><input className={styles.input} value={formData.profissao} onChange={(e) => handleChange("profissao", e.target.value)} /></div>
             <div><label>Sexo</label><select className={styles.input} value={formData.sexo} onChange={(e) => handleChange("sexo", e.target.value)}><option value="">Selecione</option><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select></div>
             <div><label>Nacionalidade</label><input className={styles.input} value={formData.nacionalidade} onChange={(e) => handleChange("nacionalidade", e.target.value)} /></div>
-            <div><label>Telefone</label><input className={styles.input} value={formData.telefone} onChange={(e) => handleChange("telefone", e.target.value)} /></div>
+            <div><label>Telefone <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.telefone} onChange={(e) => handleChange("telefone", e.target.value)} /></div>
           </div>
 
           <div className={styles.grid}>
@@ -219,16 +261,16 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
         <>
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Representante Legal</h3>
-            <div><label>Representante</label><input className={styles.input} value={formData.representante} onChange={(e) => handleChange("representante", e.target.value)} /></div>
-            <div><label>Email</label><input className={styles.input} value={formData.email} onChange={(e) => handleChange("email", e.target.value)} /></div>
+            <div><label>Representante <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.representante} onChange={(e) => handleChange("representante", e.target.value)} /></div>
+            <div><label>Email <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.email} onChange={(e) => handleChange("email", e.target.value)} /></div>
             <div><label>Função</label><input className={styles.input} value={formData.funcao} onChange={(e) => handleChange("funcao", e.target.value)} /></div>
           </div>
 
           <div className={styles.grid}>
             <h3 className={styles.subtitle}>Dados da Empresa</h3>
-            <div><label>Razão Social</label><input className={styles.input} value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} /></div>
-            <div><label>CNPJ</label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => { handleChange("cpf_cnpj", e.target.value); handleBuscarCNPJ(e.target.value); }} /></div>
-            <div><label>Telefone</label><input className={styles.input} value={formData.telefone} onChange={(e) => handleChange("telefone", e.target.value)} /></div>
+            <div><label>Razão Social <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.nome} onChange={(e) => handleChange("nome", e.target.value)} /></div>
+            <div><label>CNPJ <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.cpf_cnpj} onChange={(e) => { handleChange("cpf_cnpj", e.target.value); handleBuscarCNPJ(e.target.value); }} /></div>
+            <div><label>Telefone <span style={{ color: '#f44' }}>*</span></label><input className={styles.input} value={formData.telefone} onChange={(e) => handleChange("telefone", e.target.value)} /></div>
           </div>
 
           <div className={styles.grid}>
@@ -246,9 +288,55 @@ export default function LeadToClientForm({ lead = null, onClose, onCreate }) {
 
       <div className={styles.formActions}>
         <button className={styles.button} onClick={handleSubmit}>
-          Criar Cliente
+          Transformar em Cliente
         </button>
       </div>
+
+      {showInfoModal && (
+        <div
+          onClick={() => setShowInfoModal(false)}
+          className={styles.helpModalOverlay}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={styles.helpModalContent}
+          >
+            <div className={styles.helpModalHeader}>
+              <strong className={styles.helpModalTitle}>Como funciona este processo?</strong>
+              <button
+                type="button"
+                onClick={() => setShowInfoModal(false)}
+                className={styles.helpModalClose}
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.helpModalBody}>
+              <p>
+                Este fluxo converte o lead em um cliente no cadastro. A partir disso, você poderá
+                seguir com a geração e envio do contrato para assinatura.
+              </p>
+              <ul className={styles.helpModalList}>
+                <li>Quando o cliente assinar o documento, o lead será movido para a coluna <span className={styles.badgeGanhou}>Ganhou</span> no CRM.</li>
+                <li>Se o cliente rejeitar a assinatura, o lead será movido para a coluna <span className={styles.badgePerdeu}>Perdeu</span> no CRM.</li>
+              </ul>
+              <p>
+                Preencha os campos obrigatórios e clique em <strong>Transformar em Cliente</strong> para continuar.
+              </p>
+            </div>
+            <div className={styles.helpModalFooter}>
+              <button
+                type="button"
+                onClick={() => setShowInfoModal(false)}
+                className={styles.helpModalPrimary}
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
