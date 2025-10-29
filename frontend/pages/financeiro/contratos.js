@@ -104,7 +104,7 @@ export default function ContratosPage() {
 
     // Filtro por período
     const { start, end } = getDateRange();
-    const contratoDate = new Date(contrato.data_inicio);
+    const contratoDate = new Date(contrato.comeca_em);
     const matchesPeriod = periodFilter === "all" || (contratoDate >= start && contratoDate <= end);
 
     // Filtro por termo de pesquisa
@@ -296,35 +296,36 @@ export default function ContratosPage() {
   };
 
   const getSituacaoBadge = (situacao) => {
-    if (!situacao)
+    if (!situacao) {
       return (
-        <span className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+        <span className={`${styles.statusBadge} ${styles.statusInativo}`}>
           Não definido
         </span>
       );
+    }
 
     switch (situacao) {
       case "ativo":
         return (
-          <span className="bg-[#1E88E5]/20 text-[#26a6eb] border-[#1E88E5]/30">
+          <span className={`${styles.statusBadge} ${styles.statusAtivo}`}>
             Ativo
           </span>
         );
       case "inativo":
         return (
-          <span className="bg-[#FF9800]/20 text-[#FF9800] border-[#FF9800]/30">
+          <span className={`${styles.statusBadge} ${styles.statusInativo}`}>
             Inativo
           </span>
         );
       case "cancelado":
         return (
-          <span className="bg-[#F50057]/20 text-[#ff1769] border-[#F50057]/30">
+          <span className={`${styles.statusBadge} ${styles.statusCancelado}`}>
             Cancelado
           </span>
         );
       default:
         return (
-          <span className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+          <span className={`${styles.statusBadge} ${styles.statusInativo}`}>
             {situacao}
           </span>
         );
@@ -802,26 +803,10 @@ export default function ContratosPage() {
                           onChange={(e) => handleSelectAll(e.target.checked)}
                         />
                       </th>
-                      <th 
-                        className={`${styles.tableHeadCell} ${styles.sortableHeader}`}
-                        onClick={() => handleSort("data_inicio")}
-                      >
-                        Data de início
-                        {sortField === "data_inicio" ? (
-                          sortDirection === "asc" ? (
-                            <ChevronLeft className="w-3 h-3 inline ml-1" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3 inline ml-1" />
-                          )
-                        ) : (
-                          <ChevronLeft className="w-3 h-3 inline ml-1 text-[#B0AFC1]" />
-                        )}
-                      </th>
-                      <th className={styles.tableHeadCell}>Número</th>
+                      <th className={styles.tableHeadCell}>ID</th>
+
                       <th className={styles.tableHeadCell}>Cliente</th>
-                      <th className={styles.tableHeadCell}>
-                        Próximo vencimento
-                      </th>
+
                       <th className={styles.tableHeadCell}>
                         Produto/Serviço
                       </th>
@@ -829,7 +814,19 @@ export default function ContratosPage() {
                       <th className={styles.tableHeadCell}>
                         Desconto (R$)
                       </th>
-                      <th className={styles.tableHeadCell}>Status</th>
+                      <th className={`${styles.tableHeadCell} ${styles.tableHeadCellCenter}`}>Status</th>
+
+                      <th 
+                        className={`${styles.tableHeadCell} ${styles.sortableHeader}`}
+                        onClick={() => handleSort("data_inicio")}
+                      >
+                        Data de início
+                      </th>
+
+                      <th className={styles.tableHeadCell}>
+                        Próximo vencimento
+                      </th>
+
                       <th className={styles.tableHeadCell}>Ações</th>
                     </tr>
                   </thead>
@@ -866,20 +863,16 @@ export default function ContratosPage() {
                               }}
                             />
                           </td>
-                          <td className={styles.tableCell}>
-                            {formatDate(contrato.data_inicio)}
-                          </td>
+
                           <td className={styles.tableCell}>
                             {contrato.numero_contrato || contrato.id}
                           </td>
+
+
                           <td className={styles.clienteName}>
                             {contrato.cliente_nome}
                           </td>
-                          <td className={styles.tableCell}>
-                            {contrato.proximo_vencimento
-                              ? formatDate(contrato.proximo_vencimento)
-                              : "Indeterminado"}
-                          </td>
+
                           <td className={styles.tableCell}>
                             {contrato.produto_servico_nome || "N/A"}
                           </td>
@@ -889,9 +882,20 @@ export default function ContratosPage() {
                           <td className={styles.tableCell}>
                             {formatCurrency(Number(contrato.desconto) || 0)}
                           </td>
-                          <td className={styles.tableCell}>
+                          <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                             {getSituacaoBadge(contrato.status)}
                           </td>
+
+                          <td className={styles.tableCell}>
+                            {formatDate(contrato.comeca_em)}
+                          </td>
+
+                          <td className={styles.tableCell}>
+                            {contrato.proximo_vencimento
+                              ? formatDate(contrato.proximo_vencimento)
+                              : "Indeterminado"}
+                          </td>
+
                           <td className={styles.tableCell}>
                             <div className={styles.dropdownContainer}>
                               <button
