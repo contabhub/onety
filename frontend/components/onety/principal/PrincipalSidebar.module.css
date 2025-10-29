@@ -8,7 +8,8 @@
   background-size: 200% 200%;
   animation: sidebarGradientMove 8s ease-in-out infinite;
   transition: width 0.15s ease-out;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
@@ -16,10 +17,10 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  padding-bottom: 24px;
   scrollbar-width: thin;
   scrollbar-color: var(--onity-color-border, #1F2340) var(--onity-color-surface, #0E1038);
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 
@@ -86,6 +87,19 @@
   background: var(--onity-color-primary-hover, #3B6EFF);
 }
 
+/* Scrollbar para o conteúdo scrollável */
+.sidebarContent::-webkit-scrollbar {
+  width: 8px;
+  background: var(--onity-color-surface, #0E1038);
+}
+.sidebarContent::-webkit-scrollbar-thumb {
+  background: var(--onity-color-border, #1F2340);
+  border-radius: 8px;
+}
+.sidebarContent::-webkit-scrollbar-thumb:hover {
+  background: var(--onity-color-primary-hover, #3B6EFF);
+}
+
 .collapsed { width: 72px !important; min-width: 0 !important; padding: 0 !important; border: none; }
 .expanded { width: 242px; }
 
@@ -100,6 +114,7 @@
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  min-height: 64px;
   padding: 0 2px 0 4px;
   border-bottom: 2px solid var(--onity-color-surface, #0E1038);
   background: rgba(255,255,255,0.03);
@@ -193,8 +208,12 @@
   flex: 1;
   padding: 0.5rem 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0; /* Permite que o flex funcione corretamente com overflow */
   position: relative;
   z-index: 5;
+  scrollbar-width: thin;
+  scrollbar-color: var(--onity-color-border, #1F2340) var(--onity-color-surface, #0E1038);
 }
 
 .nav {
@@ -421,6 +440,8 @@
   padding: 1rem;
   flex-shrink: 0;
   min-height: auto;
+  position: relative;
+  z-index: 3000;
 }
 
 .dotsContainer {
@@ -564,11 +585,13 @@
 
 /* Seção do usuário */
 .userSection {
-  margin-top: auto;
+  margin-top: 0;
   padding: 16px 8px;
   border-top: 2px solid var(--onity-color-border);
   position: relative; /* cria contexto para dropdown */
   z-index: 3000;      /* garante acima do restante da sidebar */
+  flex-shrink: 0;     /* Não encolhe, sempre visível */
+  background: linear-gradient(180deg, transparent 0%, var(--onity-color-bg, #0A0A2B) 100%);
 }
 
 .userProfile {

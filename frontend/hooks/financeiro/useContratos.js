@@ -22,7 +22,7 @@ export const useContratos = () => {
 
     try {
       // Buscar contratos da empresa
-      const response = await fetch(`${API}/financeiro/contratos?company_id=${empresaId}`, {
+      const response = await fetch(`${API}/financeiro/contratos?empresa_id=${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,8 +85,8 @@ export const useContratos = () => {
       setIsLoading(true);
       setError(null);
 
-      // Usar a rota específica de contratos
-      const response = await fetch(`${API}/financeiro/contratos?company_id=${empresaId}`, {
+      // Usar a rota específica de contratos com empresa_id (conforme esperado pelo backend)
+      const response = await fetch(`${API}/financeiro/contratos?empresa_id=${empresaId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -96,8 +96,45 @@ export const useContratos = () => {
         throw new Error("Erro ao buscar contratos");
       }
 
-      const data = await response.json();
+      let data = await response.json();
       console.log("Contratos encontrados:", data);
+
+      // Buscar modelos de contrato para filtrar por straton
+      try {
+        const modelosResponse = await fetch(`${API}/contratual/modelos-contrato/light`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-empresa-id': empresaId.toString(),
+          },
+        });
+
+        if (modelosResponse.ok) {
+          const modelos = await modelosResponse.json();
+          // Criar mapa de modelos_contrato_id -> straton
+          const modelosMap = new Map();
+          modelos.forEach(modelo => {
+            modelosMap.set(modelo.id, modelo.straton);
+          });
+
+          // Filtrar contratos: apenas os que têm modelos_contrato_id = null OU straton = 1
+          data = data.filter(contrato => {
+            const modelosContratoId = contrato.modelos_contrato_id;
+            
+            // Se modelos_contrato_id é null, incluir
+            if (!modelosContratoId || modelosContratoId === null) {
+              return true;
+            }
+            
+            // Se tem modelos_contrato_id, verificar se straton = 1
+            const straton = modelosMap.get(modelosContratoId);
+            return straton === 1;
+          });
+        }
+      } catch (modelosError) {
+        console.warn("Erro ao buscar modelos de contrato para filtro:", modelosError);
+        // Se houver erro ao buscar modelos, não aplicar filtro e retornar todos os contratos
+      }
+
       setContratos(data);
     } catch (error) {
       console.error("Erro ao buscar contratos:", error);
