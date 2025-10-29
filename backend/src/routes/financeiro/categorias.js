@@ -33,11 +33,16 @@ router.get("/", verifyToken, async (req, res) => {
 // 🔹 Listar categorias por tipo
 router.get("/tipo/:tipoId", verifyToken, async (req, res) => {
   const { tipoId } = req.params;
+  console.log(`🔍 [Backend] Buscando categorias com tipo_id = ${tipoId}`);
   try {
     const [rows] = await pool.query(`SELECT * FROM straton_categorias WHERE tipo_id = ?`, [tipoId]);
+    console.log(`📊 [Backend] Total de categorias encontradas (tipo ${tipoId}): ${rows.length}`);
+    if (rows.length > 0) {
+      console.log(`📋 [Backend] Primeiras categorias:`, rows.slice(0, 5).map(c => ({ id: c.id, nome: c.nome, tipo_id: c.tipo_id })));
+    }
     res.json(rows);
   } catch (err) {
-    console.error("Erro ao buscar categorias por tipo:", err);
+    console.error("❌ [Backend] Erro ao buscar categorias por tipo:", err);
     res.status(500).json({ error: "Erro ao buscar categorias." });
   }
 });

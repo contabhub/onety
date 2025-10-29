@@ -27,15 +27,223 @@ function generateRandomPassword(length = 12) {
   return password;
 }
 
+// Função para converter pre_cliente em cliente
+async function converterPreClienteParaCliente(preClienteId, connection) {
+  try {
+    console.log("🔍 Convertendo pre_cliente para cliente, pre_cliente_id:", preClienteId);
+
+    // 1. Buscar dados do pre_cliente
+    const [[preCliente]] = await connection.query(
+      `SELECT * FROM pre_clientes WHERE id = ?`,
+      [preClienteId]
+    );
+
+    if (!preCliente) {
+      console.log("⚠️ Pre_cliente não encontrado:", preClienteId);
+      return null;
+    }
+
+    // 2. Verificar se já existe cliente com mesmo CPF/CNPJ
+    if (preCliente.cpf_cnpj) {
+      const [[clienteExistente]] = await connection.query(
+        `SELECT id FROM clientes WHERE cpf_cnpj = ? AND empresa_id = ?`,
+        [preCliente.cpf_cnpj.replace(/\D/g, ''), preCliente.empresa_id]
+      );
+
+      if (clienteExistente) {
+        console.log("✅ Cliente já existe, retornando cliente_id:", clienteExistente.id);
+        return clienteExistente.id;
+      }
+    }
+
+    // 3. Mapear campos de pre_clientes para clientes
+    const tipoPessoa = preCliente.tipo === 'pessoa_fisica' ? 'FISICA' : 'JURIDICA';
+    const nomeFantasia = preCliente.nome || preCliente.nome_fantasia || '';
+    const razaoSocial = preCliente.razao_social || nomeFantasia;
+    
+    // 4. Criar cliente na tabela clientes
+    const [result] = await connection.query(
+      `INSERT INTO clientes (
+        tipo_pessoa, cpf_cnpj, nome_fantasia, razao_social, apelido,
+        email_principal, telefone_comercial, telefone_celular,
+        pais, cep, endereco, numero, estado, cidade, bairro, complemento,
+        observacoes, empresa_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        tipoPessoa,
+        preCliente.cpf_cnpj ? preCliente.cpf_cnpj.replace(/\D/g, '') : null,
+        nomeFantasia,
+        razaoSocial,
+        preCliente.nome || null,
+        preCliente.email || null,
+        preCliente.telefone || null,
+        preCliente.telefone || null,
+        preCliente.pais || 'Brasil',
+        preCliente.cep ? preCliente.cep.replace(/\D/g, '') : null,
+        preCliente.endereco || null,
+        preCliente.numero || null,
+        preCliente.estado || null,
+        preCliente.cidade || null,
+        preCliente.bairro || null,
+        preCliente.complemento || null,
+        null, // observacoes
+        preCliente.empresa_id
+      ]
+    );
+
+    const clienteId = result.insertId;
+    console.log("✅ Cliente criado com ID:", clienteId);
+    return clienteId;
+
+  } catch (error) {
+    console.error("❌ Erro ao converter pre_cliente para cliente:", error);
+    // Não falha o processo de assinatura por erro na conversão
+    return null;
+  }
+}
+
+// Função para criar vendas baseadas em produtos_dados quando straton = 1
+async function criarVendasDeProdutosDados(contratoId, connection) {
+  try {
+    console.log("🔍 Verificando se deve criar vendas para contrato:", contratoId);
+
+    // 1. Buscar dados do contrato e verificar se o modelo tem straton = 1
+    const [[contrato]] = await connection.query(`
+      SELECT 
+        c.*,
+        mc.straton
+      FROM contratos c
+      LEFT JOIN modelos_contrato mc ON c.modelos_contrato_id = mc.id
+      WHERE c.id = ?
+    `, [contratoId]);
+
+    if (!contrato) {
+      console.log("⚠️ Contrato não encontrado:", contratoId);
+      return;
+    }
+
+    // 2. Verificar se straton = 1
+    if (contrato.straton !== 1) {
+      console.log("ℹ️ Modelo não tem straton = 1, pulando criação de vendas");
+      return;
+    }
+
+    // 3. Verificar se tem produtos_dados
+    if (!contrato.produtos_dados) {
+      console.log("⚠️ Contrato não tem produtos_dados, pulando criação de vendas");
+      return;
+    }
+
+    let produtosDados;
+    try {
+      produtosDados = typeof contrato.produtos_dados === 'string' 
+        ? JSON.parse(contrato.produtos_dados) 
+        : contrato.produtos_dados;
+    } catch (parseError) {
+      console.error("❌ Erro ao fazer parse de produtos_dados:", parseError);
+      return;
+    }
+
+    if (!Array.isArray(produtosDados) || produtosDados.length === 0) {
+      console.log("⚠️ produtos_dados não é um array válido ou está vazio");
+      return;
+    }
+
+    console.log(`✅ Criando vendas para ${produtosDados.length} produto(s)`);
+
+    // 4. Verificar se cliente_id existe no contrato (deve ter sido convertido)
+    if (!contrato.cliente_id) {
+      console.log("⚠️ Contrato não tem cliente_id, tentando converter pre_cliente...");
+      if (contrato.pre_cliente_id) {
+        const clienteId = await converterPreClienteParaCliente(contrato.pre_cliente_id, connection);
+        if (clienteId) {
+          await connection.query(
+            `UPDATE contratos SET cliente_id = ? WHERE id = ?`,
+            [clienteId, contratoId]
+          );
+          contrato.cliente_id = clienteId;
+        }
+      }
+    }
+
+    if (!contrato.cliente_id) {
+      console.log("⚠️ Não foi possível obter cliente_id, pulando criação de vendas");
+      return;
+    }
+
+    // 5. Iterar sobre cada produto e criar vendas para cada parcela
+    let vendasCriadas = 0;
+    for (const produto of produtosDados) {
+      if (!produto.parcelas_detalhadas || !Array.isArray(produto.parcelas_detalhadas)) {
+        console.log(`⚠️ Produto ${produto.id || produto.nome} não tem parcelas_detalhadas válidas`);
+        continue;
+      }
+
+      for (const parcela of produto.parcelas_detalhadas) {
+        if (!parcela.data_vencimento || !parcela.valor) {
+          console.log(`⚠️ Parcela ${parcela.numero} não tem data_vencimento ou valor válidos`);
+          continue;
+        }
+
+        // Calcular mes_referencia e ano_referencia da data de vencimento
+        // Extrair diretamente da string para evitar problemas de timezone
+        const dataStr = parcela.data_vencimento.split('T')[0]; // Garantir formato YYYY-MM-DD
+        const [anoStr, mesStr, diaStr] = dataStr.split('-');
+        const mesReferencia = parseInt(mesStr, 10);
+        const anoReferencia = parseInt(anoStr, 10);
+
+        // Criar venda
+        await connection.query(`
+          INSERT INTO vendas (
+            cliente_id, 
+            empresa_id, 
+            valor_venda, 
+            vencimento, 
+            situacao, 
+            tipo_venda,
+            observacoes, 
+            contrato_id, 
+            mes_referencia, 
+            ano_referencia,
+            categoria_id, 
+            subcategoria_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          contrato.cliente_id,
+          contrato.empresa_id,
+          parseFloat(parcela.valor) || 0,
+          dataStr, // Apenas a data (YYYY-MM-DD)
+          'pendente',
+          'recorrente',
+          `Contrato ${contratoId} - Produto: ${produto.nome || 'N/A'} - Parcela ${parcela.numero}/${produto.total_parcelas || produto.parcelas || 1}`,
+          contratoId,
+          mesReferencia,
+          anoReferencia,
+          contrato.categoria_id || null,
+          contrato.subcategoria_id || null
+        ]);
+
+        vendasCriadas++;
+      }
+    }
+
+    console.log(`✅ ${vendasCriadas} venda(s) criada(s) para contrato ${contratoId}`);
+  } catch (error) {
+    console.error("❌ Erro ao criar vendas de produtos_dados:", error);
+    // Não falha o processo de assinatura por erro na criação de vendas
+  }
+}
+
 // Função para cadastrar funcionário quando contrato/documento for assinado
 async function cadastrarFuncionarioAposAssinatura(recordId, connection, tableType = 'contratos') {
   try {
     console.log("🔍 Verificando se deve cadastrar funcionário para", tableType, "ID:", recordId);
     
     // 1. Buscar dados do contrato/documento e verificar se o modelo tem funcionario = 1
-    const modelField = tableType === 'contratos' ? 'modelo_id' : 'modelos_contrato_id';
+    //    Correção: em contratos o campo é modelos_contrato_id; em documentos pode variar
+    const modelField = tableType === 'contratos' ? 'modelos_contrato_id' : 'modelos_contrato_id';
     const [[record]] = await connection.query(`
-      SELECT r.*, mc.funcionario, pc.*, pc.nome as cliente_nome, pc.email as cliente_email
+      SELECT r.*, mc.funcionario, mc.straton, pc.*, pc.nome as cliente_nome, pc.email as cliente_email
       FROM ${tableType} r
       JOIN modelos_contrato mc ON r.${modelField} = mc.id
       JOIN pre_clientes pc ON r.pre_cliente_id = pc.id
@@ -44,6 +252,12 @@ async function cadastrarFuncionarioAposAssinatura(recordId, connection, tableTyp
 
     if (!record) {
       console.log("ℹ️", tableType, "não encontrado ou modelo não é de funcionário");
+      return;
+    }
+
+    // Se o modelo é financeiro/straton=1, não cadastrar funcionário
+    if (record.straton === 1) {
+      console.log("ℹ️ Modelo com straton = 1 (financeiro). Pular cadastro de funcionário.");
       return;
     }
 
@@ -162,9 +376,22 @@ router.post("/html", verifyToken, async (req, res) => {
     valor_recorrente,
     expires_at,
     start_at,
-    end_at
+    end_at,
+    produtos_dados,
+    // Dados financeiros (Straton)
+    categoria_id,
+    sub_categoria_id,
+    centro_de_custo_id,
+    conta_api_id
   } = req.body;
   const createdBy = req.user.id;
+
+  // Debug: verificar dados recebidos
+  console.log('🔍 [POST /html] produtos_dados recebido:', produtos_dados ? (Array.isArray(produtos_dados) ? `Array com ${produtos_dados.length} items` : typeof produtos_dados) : 'null/undefined');
+  console.log('🔍 [POST /html] categoria_id:', categoria_id);
+  console.log('🔍 [POST /html] sub_categoria_id:', sub_categoria_id);
+  console.log('🔍 [POST /html] centro_de_custo_id:', centro_de_custo_id);
+  console.log('🔍 [POST /html] conta_api_id:', conta_api_id);
 
   // Validação dos campos (mesma estrutura do contratos.js)
   if (!template_id || !client_id || !Array.isArray(signatories) || signatories.length === 0 || !empresa_id) {
@@ -261,8 +488,45 @@ router.post("/html", verifyToken, async (req, res) => {
 
         // 5️⃣ Criar o contrato no banco (mesma estrutura do contratos.js)
         const [contractResult] = await db.query(
-          "INSERT INTO contratos (modelos_contrato_id, conteudo, status, criado_por, pre_cliente_id, expirado_em, comeca_em, termina_em, empresa_id, valor, valor_recorrente, autentique, autentique_id) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          [template_id, cloudUpload.secure_url, createdBy, client_id, expires_at, start_at, end_at, empresa_id, valor || null, valor_recorrente || null, 1, doc.id]
+          `INSERT INTO contratos (
+            modelos_contrato_id, 
+            conteudo, 
+            status, 
+            criado_por, 
+            pre_cliente_id, 
+            expirado_em, 
+            comeca_em, 
+            termina_em, 
+            empresa_id, 
+            valor, 
+            valor_recorrente, 
+            autentique, 
+            autentique_id,
+            produtos_dados,
+            categoria_id,
+            subcategoria_id,
+            centro_custo_id,
+            conta_api_id
+          ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            template_id, 
+            cloudUpload.secure_url, 
+            createdBy, 
+            client_id, 
+            expires_at, 
+            start_at, 
+            end_at, 
+            empresa_id, 
+            valor || null, 
+            valor_recorrente || null, 
+            1, 
+            doc.id,
+            (produtos_dados && Array.isArray(produtos_dados) && produtos_dados.length > 0) ? JSON.stringify(produtos_dados) : (Array.isArray(produtos_dados) ? '[]' : null),
+            categoria_id || null,
+            sub_categoria_id || null, // Recebe sub_categoria_id do body e salva como subcategoria_id na tabela
+            centro_de_custo_id || null,
+            conta_api_id || null
+          ]
         );
 
         const contract_id = contractResult.insertId;
@@ -336,9 +600,16 @@ router.post("/", verifyToken, upload.single("arquivo"), async (req, res) => {
       valor,
       valor_recorrente,
       client_id,
-      start_at,       // ⬅️ novo
-      end_at,         // ⬅️ novo
-      expires_at      // ⬅️ novo
+      start_at,
+      end_at,
+      expires_at,
+      produtos_dados,
+      // Dados financeiros (Straton)
+      categoria_id,
+      sub_categoria_id,
+      centro_de_custo_id,
+      conta_api_id,
+      vendedor_id
     } = req.body;
 
     // signatories pode vir como string JSON quando multipart
@@ -385,9 +656,14 @@ router.post("/", verifyToken, upload.single("arquivo"), async (req, res) => {
          criado_por,
          comeca_em,
          termina_em,
-         expirado_em
+         expirado_em,
+         produtos_dados,
+         categoria_id,
+         subcategoria_id,
+         centro_custo_id,
+         conta_api_id
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         1,                          // autentique
         doc.id,                    // autentique_id
@@ -400,7 +676,12 @@ router.post("/", verifyToken, upload.single("arquivo"), async (req, res) => {
         (created_by || req.user?.id || null), // criado_por
         start_at || null,          // comeca_em
         end_at || null,            // termina_em
-        expires_at || null         // expirado_em
+        expires_at || null,        // expirado_em
+        (produtos_dados && Array.isArray(produtos_dados) && produtos_dados.length > 0) ? JSON.stringify(produtos_dados) : (Array.isArray(produtos_dados) ? '[]' : null),
+        categoria_id || null,
+        sub_categoria_id || null, // Recebe sub_categoria_id mas salva como subcategoria_id na tabela
+        centro_de_custo_id || null,
+        conta_api_id || null
       ]
     );
 
@@ -575,7 +856,7 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
               );
               if (fasePerdeu?.id) {
                 await connection.query(
-                  `UPDATE leads SET fase_funil_id = ?, status = 'perdeu' WHERE id = ?`,
+                  `UPDATE leads SET funil_fase_id = ?, status = 'perdeu' WHERE id = ?`,
                   [fasePerdeu.id, lead.id]
                 );
               } else {
@@ -690,6 +971,32 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
       contratoCompletamenteAssinado = true;
     }
 
+    // 🎯 CONVERTER PRE_CLIENTE EM CLIENTE E ATUALIZAR CONTRATO
+    if (contratoCompletamenteAssinado && scope.table === 'contratos') {
+      const [[contrato]] = await connection.query(
+        `SELECT pre_cliente_id, cliente_id FROM contratos WHERE id = ?`,
+        [recordId]
+      );
+
+      if (contrato?.pre_cliente_id && !contrato.cliente_id) {
+        console.log("🔄 Convertendo pre_cliente para cliente...");
+        const clienteId = await converterPreClienteParaCliente(contrato.pre_cliente_id, connection);
+        
+        if (clienteId) {
+          await connection.query(
+            `UPDATE contratos SET cliente_id = ? WHERE id = ?`,
+            [clienteId, recordId]
+          );
+          console.log("✅ Contrato atualizado com cliente_id:", clienteId);
+        }
+      }
+    }
+
+    // 🎯 CRIAR VENDAS BASEADAS EM PRODUTOS_DADOS SE STRATON = 1
+    if (contratoCompletamenteAssinado && scope.table === 'contratos') {
+      await criarVendasDeProdutosDados(recordId, connection);
+    }
+
     // 🎯 CADASTRAR FUNCIONÁRIO APÓS ASSINATURA COMPLETA
     if (contratoCompletamenteAssinado && (scope.table === 'contratos' || scope.table === 'documentos')) {
       await cadastrarFuncionarioAposAssinatura(recordId, connection, scope.table);
@@ -718,7 +1025,7 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
             );
             if (faseGanhou?.id) {
               await connection.query(
-                `UPDATE leads SET fase_funil_id = ?, status = 'ganhou' WHERE id = ?`,
+                `UPDATE leads SET funil_fase_id = ?, status = 'ganhou' WHERE id = ?`,
                 [faseGanhou.id, lead.id]
               );
             } else {
