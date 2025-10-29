@@ -367,7 +367,7 @@ export default function ContratosPage() {
       // Primeiro, buscar o código de solicitação do contrato
       console.log(`🔍 Buscando código de solicitação para contrato ${contratoId}`);
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inter-boletos/boletos/por-contrato/${contratoId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/boletos/por-contrato/${contratoId}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -394,7 +394,7 @@ export default function ContratosPage() {
       console.log(`📄 Baixando boleto para contrato ${contratoId} com código: ${boleto.codigoSolicitacao}`);
 
       // Baixar o PDF do boleto
-      const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inter-boletos/pdf-simples/${boleto.codigoSolicitacao}`, {
+      const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/boletos/pdf-simples/${boleto.codigoSolicitacao}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
