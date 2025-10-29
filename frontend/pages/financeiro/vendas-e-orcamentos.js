@@ -250,10 +250,13 @@ export default function VendasOrcamentosPage() {
   };
 
   // Unificar vendas e contratos mantendo a estrutura de vendas
+  // Nota: Os contratos já são filtrados no hook useContratos para mostrar apenas
+  // aqueles com modelos_contrato_id = null OU straton = 1
   const itensUnificados = useMemo(() => {
     const items = [...vendasOrcamentos];
     
     // Adicionar contratos como "vendas" para exibição
+    // (os contratos já vêm filtrados do hook)
     contratos.forEach(contrato => {
       // Verificar se o contrato está dentro do período selecionado
       if (periodFilter !== "all" && contrato.data_inicio) {

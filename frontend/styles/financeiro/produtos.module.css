@@ -187,7 +187,7 @@
   width: 90%;
   background: transparent;
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-m);
   color: var(--onity-color-text);
   font-size: var(--onity-type-body-size);
   transition: all 120ms ease;
@@ -202,7 +202,7 @@
 .selectTriggerSmall {
   background: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
-  border-radius: var(--onity-radius-xs);
+  border-radius: 10px;
   color: var(--onity-color-text);
   padding: var(--onity-space-s) var(--onity-space-m);
   font-size: var(--onity-type-body-size);
@@ -409,7 +409,7 @@
   background: color-mix(in srgb, var(--onity-color-info) 20%, var(--onity-color-surface));
   color: var(--onity-color-info);
   border: 1px solid color-mix(in srgb, var(--onity-color-info) 30%, var(--onity-color-border));
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-m);
   padding: var(--onity-space-xs) var(--onity-space-s);
   font-size: var(--onity-type-caption-size);
   display: inline-flex;
@@ -420,7 +420,7 @@
   background: color-mix(in srgb, var(--onity-color-info) 20%, var(--onity-color-surface));
   color: var(--onity-color-info);
   border: 1px solid color-mix(in srgb, var(--onity-color-info) 30%, var(--onity-color-border));
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-m);
   padding: var(--onity-space-xs) var(--onity-space-s);
   font-size: var(--onity-type-caption-size);
   display: inline-flex;
@@ -431,7 +431,7 @@
   background: color-mix(in srgb, #9C27B0 20%, var(--onity-color-surface));
   color: #9C27B0;
   border: 1px solid color-mix(in srgb, #9C27B0 30%, var(--onity-color-border));
-  border-radius: var(--onity-radius-xs);
+  border-radius: var(--onity-radius-m);
   padding: var(--onity-space-xs) var(--onity-space-s);
   font-size: var(--onity-type-caption-size);
   display: inline-flex;
@@ -754,7 +754,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 9999;
 }
 
 .modalContainer {
