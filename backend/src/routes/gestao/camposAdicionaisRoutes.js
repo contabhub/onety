@@ -17,7 +17,7 @@ router.get('/:empresaId', autenticarToken, verificarPermissao('clientes.visualiz
     
     const [campos] = await db.query(
       `SELECT * FROM campos_adicionais 
-       WHERE empresaId = ? AND ativo = true 
+       WHERE empresa_id = ? AND ativo = 1 
        ORDER BY ordem ASC, nome ASC`,
       [empresaId]
     );
@@ -42,7 +42,7 @@ router.post('/', autenticarToken, async (req, res) => {
 
     // Verificar se já existe campo com esse nome na empresa
     const [existe] = await db.query(
-      'SELECT id FROM campos_adicionais WHERE empresaId = ? AND nome = ? AND ativo = true',
+      'SELECT id FROM campos_adicionais WHERE empresa_id = ? AND nome = ? AND ativo = 1',
       [empresaId, nome]
     );
 
@@ -54,7 +54,7 @@ router.post('/', autenticarToken, async (req, res) => {
     let proximaOrdem = ordem;
     if (!proximaOrdem) {
       const [ultimaOrdem] = await db.query(
-        'SELECT MAX(ordem) as max_ordem FROM campos_adicionais WHERE empresaId = ?',
+        'SELECT MAX(ordem) as max_ordem FROM campos_adicionais WHERE empresa_id = ?',
         [empresaId]
       );
       proximaOrdem = (ultimaOrdem[0]?.max_ordem || 0) + 1;
@@ -62,9 +62,16 @@ router.post('/', autenticarToken, async (req, res) => {
 
     const [resultado] = await db.query(
       `INSERT INTO campos_adicionais 
-       (empresaId, nome, tipo, opcoes, obrigatorio, ordem) 
+       (empresa_id, nome, tipo, opcoes, obrigatorio, ordem) 
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [empresaId, nome, tipo || 'texto', opcoes ? JSON.stringify(opcoes) : null, obrigatorio || false, proximaOrdem]
+      [
+        empresaId,
+        nome,
+        tipo || 'texto',
+        opcoes ? JSON.stringify(opcoes) : null,
+        obrigatorio ? 1 : 0,
+        proximaOrdem
+      ]
     );
 
     res.status(201).json({ 
@@ -92,7 +99,7 @@ router.put('/:id', autenticarToken, verificarPermissao('clientes.editar'), async
 
     // Buscar campo atual para verificar empresa
     const [campoAtual] = await db.query(
-      'SELECT empresaId FROM campos_adicionais WHERE id = ?',
+      'SELECT empresa_id FROM campos_adicionais WHERE id = ?',
       [id]
     );
 
@@ -102,8 +109,8 @@ router.put('/:id', autenticarToken, verificarPermissao('clientes.editar'), async
 
     // Verificar se já existe outro campo com esse nome na mesma empresa
     const [existe] = await db.query(
-      'SELECT id FROM campos_adicionais WHERE empresaId = ? AND nome = ? AND id <> ? AND ativo = true',
-      [campoAtual[0].empresaId, nome, id]
+      'SELECT id FROM campos_adicionais WHERE empresa_id = ? AND nome = ? AND id <> ? AND ativo = 1',
+      [campoAtual[0].empresa_id, nome, id]
     );
 
     if (existe.length > 0) {
@@ -114,7 +121,15 @@ router.put('/:id', autenticarToken, verificarPermissao('clientes.editar'), async
       `UPDATE campos_adicionais 
        SET nome = ?, tipo = ?, opcoes = ?, obrigatorio = ?, ordem = ?, ativo = ?
        WHERE id = ?`,
-      [nome, tipo, opcoes ? JSON.stringify(opcoes) : null, obrigatorio, ordem, ativo, id]
+      [
+        nome,
+        tipo,
+        opcoes ? JSON.stringify(opcoes) : null,
+        obrigatorio ? 1 : 0,
+        ordem,
+        typeof ativo === 'boolean' ? (ativo ? 1 : 0) : ativo,
+        id
+      ]
     );
 
     if (resultado.affectedRows === 0) {
@@ -166,7 +181,7 @@ router.put('/reordenar/:empresaId', autenticarToken, verificarPermissao('cliente
     // Atualizar ordem de cada campo
     for (const campo of campos) {
       await db.query(
-        'UPDATE campos_adicionais SET ordem = ? WHERE id = ? AND empresaId = ?',
+        'UPDATE campos_adicionais SET ordem = ? WHERE id = ? AND empresa_id = ?',
         [campo.ordem, campo.id, empresaId]
       );
     }
@@ -192,7 +207,7 @@ router.get('/cliente/:clienteId', autenticarToken, verificarPermissao('clientes.
     const [valores] = await db.query(
       `SELECT 
         cca.id,
-        cca.campoAdicionalId,
+        cca.campo_adicional_id,
         cca.valor,
         ca.nome as campoNome,
         ca.tipo as campoTipo,
@@ -200,8 +215,8 @@ router.get('/cliente/:clienteId', autenticarToken, verificarPermissao('clientes.
         ca.obrigatorio as campoObrigatorio,
         ca.ordem as campoOrdem
        FROM clientes_campos_adicionais cca
-       INNER JOIN campos_adicionais ca ON cca.campoAdicionalId = ca.id
-       WHERE cca.clienteId = ? AND ca.ativo = true
+       INNER JOIN campos_adicionais ca ON cca.campo_adicional_id = ca.id
+       WHERE cca.cliente_id = ? AND ca.ativo = 1
        ORDER BY ca.ordem ASC, ca.nome ASC`,
       [clienteId]
     );
@@ -247,20 +262,20 @@ router.post('/cliente/:clienteId', autenticarToken, verificarPermissao('clientes
 
       // Verificar se já existe valor para este campo
       const [existe] = await db.query(
-        'SELECT id FROM clientes_campos_adicionais WHERE clienteId = ? AND campoAdicionalId = ?',
+      'SELECT id FROM clientes_campos_adicionais WHERE cliente_id = ? AND campo_adicional_id = ?',
         [clienteId, campoAdicionalId]
       );
 
       if (existe.length > 0) {
         // Atualizar valor existente
         await db.query(
-          'UPDATE clientes_campos_adicionais SET valor = ? WHERE clienteId = ? AND campoAdicionalId = ?',
+        'UPDATE clientes_campos_adicionais SET valor = ? WHERE cliente_id = ? AND campo_adicional_id = ?',
           [valor, clienteId, campoAdicionalId]
         );
       } else {
         // Inserir novo valor
         await db.query(
-          'INSERT INTO clientes_campos_adicionais (clienteId, campoAdicionalId, valor) VALUES (?, ?, ?)',
+        'INSERT INTO clientes_campos_adicionais (cliente_id, campo_adicional_id, valor) VALUES (?, ?, ?)',
           [clienteId, campoAdicionalId, valor]
         );
       }
@@ -281,7 +296,7 @@ router.delete('/cliente/:clienteId/campo/:campoAdicionalId', autenticarToken, ve
     const { clienteId, campoAdicionalId } = req.params;
 
     const [resultado] = await db.query(
-      'DELETE FROM clientes_campos_adicionais WHERE clienteId = ? AND campoAdicionalId = ?',
+      'DELETE FROM clientes_campos_adicionais WHERE cliente_id = ? AND campo_adicional_id = ?',
       [clienteId, campoAdicionalId]
     );
 
