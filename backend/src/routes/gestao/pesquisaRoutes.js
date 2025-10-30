@@ -416,20 +416,20 @@ router.get('/cliente/:clienteId', autenticarToken, async (req, res) => {
   const { periodo } = req.query; // opcional: '3m', '6m', '1a', 'todos'
   
   try {
-    let whereClause = 'WHERE p.clienteId = ?';
+    let whereClause = 'WHERE p.cliente_id = ?';
     const params = [clienteId];
     
     // Filtro por período
     if (periodo) {
       switch (periodo) {
         case '3m':
-          whereClause += ' AND p.dataEnvio >= DATE_SUB(NOW(), INTERVAL 3 MONTH)';
+          whereClause += ' AND p.data_envio >= DATE_SUB(NOW(), INTERVAL 3 MONTH)';
           break;
         case '6m':
-          whereClause += ' AND p.dataEnvio >= DATE_SUB(NOW(), INTERVAL 6 MONTH)';
+          whereClause += ' AND p.data_envio >= DATE_SUB(NOW(), INTERVAL 6 MONTH)';
           break;
         case '1a':
-          whereClause += ' AND p.dataEnvio >= DATE_SUB(NOW(), INTERVAL 1 YEAR)';
+          whereClause += ' AND p.data_envio >= DATE_SUB(NOW(), INTERVAL 1 YEAR)';
           break;
         case 'todos':
         default:
@@ -441,18 +441,18 @@ router.get('/cliente/:clienteId', autenticarToken, async (req, res) => {
     const [pesquisas] = await db.query(`
       SELECT 
         p.id,
-        p.dataEnvio,
-        p.dataResposta,
+        p.data_envio AS dataEnvio,
+        p.data_resposta AS dataResposta,
         p.nota,
         p.comentario,
         p.status,
         p.nps_classificacao,
         p.token,
-        DATE_FORMAT(p.dataEnvio, '%d/%m/%Y') as dataEnvioFormatada,
-        DATE_FORMAT(p.dataResposta, '%d/%m/%Y') as dataRespostaFormatada
+        DATE_FORMAT(p.data_envio, '%d/%m/%Y') as dataEnvioFormatada,
+        DATE_FORMAT(p.data_resposta, '%d/%m/%Y') as dataRespostaFormatada
       FROM pesquisas_satisfacao p
       ${whereClause}
-      ORDER BY p.dataEnvio DESC
+      ORDER BY p.data_envio DESC
     `, params);
     
     res.json(pesquisas);
