@@ -3,7 +3,7 @@ const router = express.Router();
 const nodemailer = require("nodemailer");
 const multer = require("multer");
 const db = require("../../config/database");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 
 const upload = multer(); // usa memória RAM
 

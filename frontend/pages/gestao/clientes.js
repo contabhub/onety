@@ -327,12 +327,21 @@ export default function ClientesPage() {
   const [abaAtiva, setAbaAtiva] = useState("clientes");
   const [loading, setLoading] = useState(false);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [mostrarAbaFranqueados, setMostrarAbaFranqueados] = useState(false);
   
   // Estado para ordenação
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc"
   });
+
+  useEffect(() => {
+    setMounted(true);
+    try {
+      setMostrarAbaFranqueados(isFranqueadora() && hasPermissao("anjos", "visualizar"));
+    } catch {}
+  }, []);
 
 
   // Estados para grupos
@@ -395,7 +404,7 @@ export default function ClientesPage() {
     if (!window.confirm("Tem certeza que deseja excluir este grupo?")) return;
     try {
       const token = (typeof window !== 'undefined') ? localStorage.getItem("token") : null;
-      await api.delete(`/api/clientes/grupos/${grupoId}`, {
+      await api.delete(`/gestao/clientes/grupos/${grupoId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Grupo excluído com sucesso!");
@@ -413,7 +422,7 @@ export default function ClientesPage() {
       const token = (typeof window !== 'undefined') ? localStorage.getItem("token") : null;
       const empresaId = (typeof window !== 'undefined') ? (JSON.parse(localStorage.getItem("userData") || '{}')?.EmpresaId) : null;
       if (!token || !empresaId) return;
-      const response = await api.get("/api/clientes/grupos", {
+      const response = await api.get("/gestao/clientes/grupos", {
         params: {
           empresaId,
           search: pesquisaGrupo,
@@ -480,7 +489,7 @@ export default function ClientesPage() {
     if (abaAtiva === "franqueados") {
       const token = (typeof window !== 'undefined') ? localStorage.getItem("token") : null;
       if (token) {
-        api.get("/api/franqueados/opcoes/cidade", {
+        api.get("/gestao/franqueados/opcoes/cidade", {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesCidade(res.data.map((c) => ({ label: c, value: c })));
@@ -507,7 +516,7 @@ export default function ClientesPage() {
 
 
 
-      const response = await api.get("/api/franqueados", {
+      const response = await api.get("/gestao/franqueados", {
         params: {
           empresaId,
           search: pesquisaFranqueado,
@@ -614,7 +623,7 @@ export default function ClientesPage() {
     if (filtrosFranqueados.uf && abaAtiva === "franqueados") {
       const token = (typeof window !== 'undefined') ? localStorage.getItem("token") : null;
       if (token) {
-        api.get(`/api/franqueados/opcoes/cidade?uf=${filtrosFranqueados.uf}`, {
+        api.get(`/gestao/franqueados/opcoes/cidade?uf=${filtrosFranqueados.uf}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesCidade(res.data.map((c) => ({ label: c, value: c })));
@@ -632,7 +641,7 @@ export default function ClientesPage() {
       // Se não há UF selecionada, buscar todas as cidades
       const token = (typeof window !== 'undefined') ? localStorage.getItem("token") : null;
       if (token) {
-        api.get("/api/franqueados/opcoes/cidade", {
+        api.get("/gestao/franqueados/opcoes/cidade", {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesCidade(res.data.map((c) => ({ label: c, value: c })));
@@ -656,10 +665,10 @@ export default function ClientesPage() {
 
   useEffect(() => {
     // Buscar dores e solucoes do backend
-    api.get("/api/clientes/dores").then(res => {
+    api.get("/gestao/clientes/dores").then(res => {
       setOpcoesDores(res.data.map((d) => ({ label: d, value: d })));
     });
-    api.get("/api/clientes/solucoes").then(res => {
+    api.get("/gestao/clientes/solucoes").then(res => {
       setOpcoesSolucoes(res.data.map((s) => ({ label: s, value: s })));
     });
     
@@ -667,14 +676,14 @@ export default function ClientesPage() {
     const token = (typeof window !== 'undefined') ? localStorage.getItem("token") : null;
     const empresaId = (typeof window !== 'undefined') ? (JSON.parse(localStorage.getItem("userData") || '{}')?.EmpresaId) : null;
     if (token && empresaId) {
-      api.get(`/api/clientes/grupos/todos?empresaId=${empresaId}`).then(res => {
+      api.get(`/gestao/clientes/grupos/todos?empresaId=${empresaId}`).then(res => {
         setOpcoesGrupos(res.data.grupos.map((g) => ({ label: g.nome, value: g.id.toString() })));
       }).catch(err => {
         console.error("Erro ao buscar grupos:", err);
       });
 
       // Buscar status existentes na carteira da empresa
-      api.get(`/api/clientes/opcoes/status`, {
+      api.get(`/gestao/clientes/opcoes/status`, {
         params: { empresaId },
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
@@ -712,7 +721,7 @@ export default function ClientesPage() {
       const token = sessionStorage.getItem("token");
       if (token) {
         // Buscar ANJOs únicos
-        api.get("/api/franqueados/opcoes/anjo", {
+        api.get("/gestao/franqueados/opcoes/anjo", {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesAnjo(res.data.map((a) => ({ label: a, value: a })));
@@ -727,7 +736,7 @@ export default function ClientesPage() {
         });
 
         // Buscar UFs únicas
-        api.get("/api/franqueados/opcoes/uf", {
+        api.get("/gestao/franqueados/opcoes/uf", {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesUF(res.data.map((u) => ({ label: u, value: u })));
@@ -753,7 +762,7 @@ export default function ClientesPage() {
         });
 
         // Buscar cidades únicas
-        api.get("/api/franqueados/opcoes/cidade", {
+        api.get("/gestao/franqueados/opcoes/cidade", {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesCidade(res.data.map((c) => ({ label: c, value: c })));
@@ -768,7 +777,7 @@ export default function ClientesPage() {
         });
 
         // Buscar conselheiros únicos
-        api.get("/api/franqueados/opcoes/conselheiro", {
+        api.get("/gestao/franqueados/opcoes/conselheiro", {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => {
           setOpcoesConselheiro(res.data.map((c) => ({ label: c, value: c })));
@@ -795,7 +804,7 @@ export default function ClientesPage() {
         return;
       }
 
-      const response = await api.get(`/api/clientes`, {
+      const response = await api.get(`/gestao/clientes`, {
         params: {
           empresaId,
           page: paginaAtual,
@@ -896,7 +905,7 @@ export default function ClientesPage() {
         "CNPJ/CPF": "cnpjCpf",
         "TRIBUTAÇÃO": "regimeTributario"
       }));
-      const response = await api.post("/api/clientes/importar-planilha", formData, {
+      const response = await api.post("/gestao/clientes/importar-planilha", formData, {
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -959,7 +968,7 @@ export default function ClientesPage() {
           >
             Grupos
           </div>
-          {isFranqueadora() && hasPermissao("anjos", "visualizar") && (
+          {mounted && mostrarAbaFranqueados && (
             <div
               className={`${styles.tab} ${abaAtiva === "franqueados" ? styles.activeTab : ""}`}
               onClick={() => setAbaAtiva("franqueados")}
@@ -1324,7 +1333,7 @@ export default function ClientesPage() {
                     grupos: filtros.grupos.join(","),
                     search: pesquisa,
                   });
-                  const url = `/api/clientes/exportar-excel?${params.toString()}`;
+                  const url = `/gestao/clientes/exportar-excel?${params.toString()}`;
                   try {
                     const res = await api.get(url, {
                       responseType: 'blob',

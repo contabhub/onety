@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../config/database');
-const { autenticarToken } = require('../../middlewares/auth');
-const { verificarPermissao } = require('../../middlewares/permissaoMiddleware');
+const autenticarToken = require('../../middlewares/auth');
+const { verificarPermissao } = require('../../middlewares/permissao');
 
 /**
  * Criar novo cargo
@@ -10,7 +10,7 @@ const { verificarPermissao } = require('../../middlewares/permissaoMiddleware');
 router.post('/', autenticarToken, verificarPermissao('cargos.criar'), async (req, res) => {
   try {
     const { nome, descricao, permissoes } = req.body;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
 
     if (!nome || !empresaId) {
       return res.status(400).json({ error: 'Nome do cargo e empresaId são obrigatórios.' });
@@ -40,8 +40,8 @@ router.post('/', autenticarToken, verificarPermissao('cargos.criar'), async (req
  */
 router.get('/', autenticarToken, verificarPermissao('cargos.visualizar'), async (req, res) => {
   try {
-    let empresaId = req.usuario.empresaId;
-    const permissoes = req.usuario?.permissoes || {};
+    let empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
+    const permissoes = (req.user && req.user.permissoes) || {};
     // Se for superadmin e mandou empresaId na query, usa ele
     if (permissoes.adm && permissoes.adm.includes('superadmin') && req.query.empresaId) {
       empresaId = req.query.empresaId;
@@ -69,7 +69,7 @@ router.get('/', autenticarToken, verificarPermissao('cargos.visualizar'), async 
 router.get('/:id', autenticarToken, verificarPermissao('cargos.visualizar'), async (req, res) => {
   try {
     const { id } = req.params;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
 
     const [cargos] = await db.query(
       `SELECT * FROM cargos WHERE id = ? AND empresa_id = ?`,
@@ -96,7 +96,7 @@ router.put('/:id', autenticarToken, verificarPermissao('cargos.editar'), async (
   try {
     const { id } = req.params;
     const { nome, descricao, permissoes } = req.body;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
 
     // ✅ Garantir que permissões básicas estejam sempre presentes
     const permissoesAtualizadas = {

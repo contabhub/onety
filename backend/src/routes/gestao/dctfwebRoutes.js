@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../../config/database");
 const { consultarDCTFWeb } = require("../../services/gestao/dctfwebService");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 
 // 🔹 GET: listar todas DCTFWeb de uma empresa
 router.get("/:empresaId", autenticarToken, async (req, res) => {

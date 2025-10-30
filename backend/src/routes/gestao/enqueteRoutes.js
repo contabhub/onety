@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../config/database");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 
 // 🔸 Middleware para extrair empresaId do token
 router.use(autenticarToken, (req, res, next) => {

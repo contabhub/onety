@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const db = require("../../config/database");
 const cloudinary = require("../../config/cloudinary");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 
 // Middleware para validar se a empresa é franqueadora
 async function validarFranqueadora(req, res, next) {

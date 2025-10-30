@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../config/database");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 const { processarTodasAsImagens } = require("../../services/gestao/cloudinaryService");
 
 // Middleware para verificar se é superadmin

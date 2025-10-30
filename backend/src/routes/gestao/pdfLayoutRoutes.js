@@ -3,8 +3,8 @@ const router = express.Router();
 const db = require("../../config/database");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
-const { autenticarToken } = require("../../middlewares/auth");
-const { verificarPermissao } = require("../../middlewares/permissaoMiddleware");
+const autenticarToken = require("../../middlewares/auth");
+const { verificarPermissao } = require("../../middlewares/permissao");
 
 // Usar multer na memória (sem salvar no disco)
 const upload = multer({ storage: multer.memoryStorage() });

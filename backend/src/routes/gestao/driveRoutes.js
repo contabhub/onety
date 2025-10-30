@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { listCompetenciasFromDrive, navigateToFirstCompetencia, navigateToCompetenciaAndOpenFiles, processCompetenciasSequential } = require("../../services/gestao/drivePuppeteerService");
 const { matchExtractionToAtividade } = require("../../services/gestao/pdfMatchingService");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 const db = require("../../config/database");
 
 // POST /api/drive/open-and-login

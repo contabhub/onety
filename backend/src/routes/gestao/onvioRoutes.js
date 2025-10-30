@@ -1,6 +1,6 @@
 const express = require('express');
 const { onvioService } = require('../../services/gestao/onvioService');
-const { autenticarToken } = require('../../middlewares/auth');
+const autenticarToken = require("../../middlewares/auth");
 const db = require('../../config/database');
 const { authenticator } = require("otplib");
 

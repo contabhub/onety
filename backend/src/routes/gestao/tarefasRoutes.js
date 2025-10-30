@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const tarefaController = require("../../controllers/gestao/tarefaController");
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 const db = require("../../config/database");
-const { verificarPermissao } = require("../../middlewares/permissaoMiddleware");
+const { verificarPermissao } = require("../../middlewares/permissao");
 
 // =================== ROTAS ESPECÍFICAS ===================
 
@@ -44,7 +44,7 @@ router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
   const { usuarioId, filtrosAtivos, mes, ano } = req.query; // ✅ Parâmetros para filtrar por responsabilidade e mês/ano
   
   // ✅ Verificar se usuário é superadmin
-  const isSuperadmin = req.usuario?.permissoes?.adm?.includes('superadmin');
+  const isSuperadmin = req.user?.permissoes?.adm?.includes('superadmin');
   
   // ✅ Não aplicar filtro de responsabilidade se:
   // 1. Usuário é superadmin OU
@@ -318,7 +318,7 @@ router.get("/todas/:empresaId", autenticarToken, async (req, res) => {
   const { usuarioId, filtrosAtivos } = req.query; // ✅ Parâmetros para filtrar por responsabilidade
 
   // ✅ Verificar se usuário é superadmin
-  const isSuperadmin = req.usuario?.permissoes?.adm?.includes('superadmin');
+  const isSuperadmin = req.user?.permissoes?.adm?.includes('superadmin');
   
   // ✅ Não aplicar filtro de responsabilidade se:
   // 1. Usuário é superadmin OU
@@ -544,7 +544,7 @@ router.post("/comentarios/lote", autenticarToken, async (req, res) => {
 router.post("/:id/comentarios", autenticarToken, async (req, res) => {
   const { id } = req.params;
   const { comentario, base64, nomeArquivo } = req.body;
-  const usuarioId = req.usuario.id;
+  const usuarioId = req.user?.id;
 
   if ((!comentario || comentario.trim() === "") && !base64) {
     return res.status(400).json({ erro: "Comentário vazio ou sem arquivo." });
