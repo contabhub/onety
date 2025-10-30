@@ -21,6 +21,8 @@ const empresasConteudosRoutes = require('./onety/empresas-conteudos');
 const provaGrupoRoutes = require('./onety/prova_grupo');
 const notificacoesRoutes = require('./onety/notificacoes');
 
+
+
 // Rotas do Atendimento
 const apikeyRoutes = require('./atendimento/apikey');
 const conversasRoutes = require('./atendimento/conversas');
@@ -96,10 +98,39 @@ const tiposRoutes = require('./financeiro/tipos');
 const transacoesRoutes = require('./financeiro/transacoes');
 const transferenciasCaixinhasRoutes = require('./financeiro/transferencias_caixinha');
 const vendasRoutes = require('./financeiro/vendas');
-// Rotas do OpenFinance
 const openfinanceRoutes = require('../apis/openfinance');
 const contasRoutes = require('./financeiro/contas');
 const transacoesApiRoutes = require('./financeiro/transacoes-api');
+
+// Rotas da Gestão
+const gestaoCargosRoutes = require('./gestao/cargosRoutes');
+const gestaoCamposAdicionaisRoutes = require('./gestao/camposAdicionaisRoutes');
+const gestaoProcessosRoutes = require('./gestao/processosRoutes');
+const gestaoTarefasRoutes = require('./gestao/tarefasRoutes');
+const gestaoDepartamentoRoutes = require('./gestao/departamentoRoutes');
+const gestaoClientesRoutes = require('./gestao/clientesRoutes');
+const gestaoCompetenciasRoutes = require('./gestao/competenciasRoutes');
+const gestaoDasRoutes = require('./gestao/dasRoutes');
+const gestaoDctfwebRoutes = require('./gestao/dctfwebRoutes');
+const gestaoEmailRoutes = require('./gestao/emailRoutes');
+const gestaoGuiaRoutes = require('./gestao/guiaRoutes');
+const gestaoIntegracoesRoutes = require('./gestao/integracoesRoutes');
+const gestaoObrigacoesRoutes = require('./gestao/obrigacoesRoutes');
+const gestaoObrigacoesClientesRoutes = require('./gestao/obrigacoesClientesRoutes');
+const gestaoOnvioRoutes = require('./gestao/onvioRoutes');
+const gestaoParcelamentoRoutes = require('./gestao/parcelamentoRoutes');
+const gestaoPdfLayoutRoutes = require('./gestao/pdfLayoutRoutes');
+const gestaoPesquisaRoutes = require('./gestao/pesquisaRoutes');
+const gestaoRelatoriosRoutes = require('./gestao/relatoriosRoutes');
+const gestaoSerproRoutes = require('./gestao/serproRoutes');
+const gestaoSitfisRoutes = require('./gestao/sitfisRoutes');
+const gestaoEpluginRoutes = require('./gestao/epluginRoutes');
+const gestaoDriveRoutes = require('./gestao/driveRoutes');
+const gestaoEnqueteRoutes = require('./gestao/enqueteRoutes');
+const gestaoResumoRoutes = require('./gestao/ResumoRoutes');
+
+
+
 
 // Rotas do Onety
 router.use('/auth', authRoutes);
@@ -198,10 +229,40 @@ router.use('/financeiro/transferencias-caixinha', transferenciasCaixinhasRoutes)
 router.use('/financeiro/vendas', vendasRoutes);
 router.use('/financeiro/vendas', vendasRoutes);
 router.use('/financeiro/contratos', contratosFinanceiroRoutes);
-// Rotas do OpenFinance
 router.use('/openfinance', openfinanceRoutes);
 router.use('/financeiro/contas', contasRoutes);
 router.use('/financeiro/transacoes-api', transacoesApiRoutes);
+
+
+// Rotas da Gestão
+router.use('/gestao/cargos', gestaoCargosRoutes);
+router.use('/gestao/campos-adicionais', gestaoCamposAdicionaisRoutes);
+router.use('/gestao/processos', gestaoProcessosRoutes);
+router.use('/gestao/tarefas', gestaoTarefasRoutes);
+router.use('/gestao/departamentos', gestaoDepartamentoRoutes);
+router.use('/gestao/clientes', gestaoClientesRoutes);
+router.use('/gestao/competencias', gestaoCompetenciasRoutes);
+router.use('/gestao/das', gestaoDasRoutes);
+router.use('/gestao/dctfweb', gestaoDctfwebRoutes);
+router.use('/gestao/email', gestaoEmailRoutes);
+router.use('/gestao/guia', gestaoGuiaRoutes);
+router.use('/gestao/integracoes', gestaoIntegracoesRoutes);
+router.use('/gestao/obrigacoes', gestaoObrigacoesRoutes);
+router.use('/gestao/obrigacoes-clientes', gestaoObrigacoesClientesRoutes);
+router.use('/gestao/onvio', gestaoOnvioRoutes);
+router.use('/gestao/parcelamento', gestaoParcelamentoRoutes);
+router.use('/gestao/pdf-layout', gestaoPdfLayoutRoutes);
+router.use('/gestao/pesquisa', gestaoPesquisaRoutes);
+router.use('/gestao/relatorios', gestaoRelatoriosRoutes);
+router.use('/gestao/serpro', gestaoSerproRoutes);
+router.use('/gestao/sitfis', gestaoSitfisRoutes);
+router.use('/gestao/eplugin', gestaoEpluginRoutes);
+router.use('/gestao/drive', gestaoDriveRoutes);
+router.use('/gestao/enquete', gestaoEnqueteRoutes);
+router.use('/gestao/resumo', gestaoResumoRoutes);
+
+
+
 
 router.get("/", (req, res) => {
   res.send("API rodando!");
