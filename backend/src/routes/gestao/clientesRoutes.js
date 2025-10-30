@@ -74,13 +74,13 @@ router.get('/usuarios-vinculados', autenticarToken, verificarPermissao('clientes
       SELECT DISTINCT 
         c.id,
         c.razao_social as nome,
-        c.cnpjCpf,
-        c.telefone,
-        c.email,
+        c.cpf_cnpj as cnpjCpf,
+        c.telefone_comercial as telefone,
+        c.email_principal as email,
         c.cidade,
         c.estado,
         c.status,
-        c.dataInicio,
+        c.data_inicio as dataInicio,
         u.nome as responsavelNome
       FROM clientes c
       INNER JOIN obrigacoes_responsaveis_cliente orc ON c.id = orc.clienteId
@@ -88,7 +88,7 @@ router.get('/usuarios-vinculados', autenticarToken, verificarPermissao('clientes
     `;
 
     let params = [empresaId, ...idsArray];
-    let whereClause = `WHERE c.empresaId = ? AND orc.usuarioId IN (${idsArray.map(() => '?').join(',')})`;
+    let whereClause = `WHERE c.empresa_id = ? AND orc.usuarioId IN (${idsArray.map(() => '?').join(',')})`;
 
     // ✅ Adicionar filtro por grupo se especificado
     if (grupoId) {
@@ -168,11 +168,11 @@ router.get("/exportar-excel", autenticarToken, verificarPermissao('clientes.visu
       });
     }
 
-    let whereClause = "WHERE c.empresaId = ?";
-    if (tipoInscricao) whereClause += " AND c.tipoInscricao = ?";
+    let whereClause = "WHERE c.empresa_id = ?";
+    if (tipoInscricao) whereClause += " AND c.tipo_inscricao as tipoInscricao = ?";
     if (tipo) whereClause += " AND c.tipo = ?";
     if (status) whereClause += " AND c.status = ?";
-    if (search) whereClause += " AND (c.razao_social as nome LIKE ? OR c.cnpjCpf LIKE ?)";
+    if (search) whereClause += " AND (c.razao_social as nome LIKE ? OR c.cpf_cnpj as cnpjCpf LIKE ?)";
 
     // Filtro por dores
     let joinDores = "";
@@ -289,7 +289,7 @@ router.get("/grupo/:grupoId", async (req, res) => {
   const { grupoId } = req.params;
   try {
     const [clientes] = await db.query(
-      `SELECT c.id, c.razao_social as nome, c.cnpjCpf
+      `SELECT c.id, c.razao_social as nome, c.cpf_cnpj as cnpjCpf
          FROM clientes c
          JOIN clientes_grupos_vinculo cgv ON c.id = cgv.clienteId
         WHERE cgv.grupoId = ?`,
@@ -603,7 +603,7 @@ router.post("/cadastrar/individual", async (req, res) => {
     // Verificar por CNPJ/CPF se fornecido
     if (cnpjCpf && cnpjCpf.trim()) {
       const [existeCnpj] = await db.query(
-        "SELECT id, nome, cnpjCpf FROM clientes WHERE cnpjCpf = ? AND empresaId = ?",
+        "SELECT id, razao_social as nome, cpf_cnpj as cnpjCpf FROM clientes WHERE cpf_cnpj = ? AND empresa_id = ?",
         [cnpjCpf.trim(), empresaId]
       );
       if (existeCnpj.length > 0) {
@@ -618,7 +618,7 @@ router.post("/cadastrar/individual", async (req, res) => {
     // Verificar por nome se não encontrou duplicata por CNPJ/CPF
     if (!duplicataEncontrada && nome && nome.trim()) {
       const [existeNome] = await db.query(
-        "SELECT id, nome, cnpjCpf FROM clientes WHERE LOWER(TRIM(nome)) = LOWER(TRIM(?)) AND empresaId = ?",
+        "SELECT id, razao_social as nome, cpf_cnpj as cnpjCpf FROM clientes WHERE LOWER(TRIM(razao_social)) = LOWER(TRIM(?)) AND empresa_id = ?",
         [nome.trim(), empresaId]
       );
       if (existeNome.length > 0) {
@@ -641,10 +641,10 @@ router.post("/cadastrar/individual", async (req, res) => {
 
     const [resultado] = await db.query(
       `INSERT INTO clientes (
-        empresaId, tipoInscricao, cnpjCpf, nome, apelido, tipo, sistema, base, codigo,
-        status, statusComplementar, dataInicio, dataFim, dataNascimento,
-        telefone, email, responsavelLegal, regimeTributario, endereco,
-        rua, complemento, bairro, cidade, estado, cep, pais, observacao
+        empresa_id, tipo_inscricao, cpf_cnpj, razao_social, apelido, tipo, sistema, base, codigo,
+        status, status_complementar, data_inicio, data_fim, data_nascimento,
+        telefone_comercial, email_principal, responsavel_legal, regime_tributario, endereco,
+        rua, complemento, bairro, cidade, estado, cep, pais, observacoes
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         empresaId, tipoInscricao || null, cnpjCpf, nome, apelido || null,
@@ -805,7 +805,7 @@ router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), asyn
     if (!empresaId) return res.status(400).json({ error: "Empresa ID é obrigatório." });
 
     const offset = (page - 1) * limit;
-    let whereClause = "WHERE c.empresaId = ?";
+    let whereClause = "WHERE c.empresa_id = ?";
     const params = [empresaId];
 
     if (tipoInscricao) {
@@ -824,12 +824,12 @@ router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), asyn
     }
 
     if (statusComplementar) {
-      whereClause += " AND c.statusComplementar LIKE ?";
+      whereClause += " AND c.status_complementar LIKE ?";
       params.push(`%${statusComplementar}%`);
     }
 
     if (req.query.search) {
-      whereClause += " AND (c.razao_social as nome LIKE ? OR c.cnpjCpf LIKE ?)";
+      whereClause += " AND (c.razao_social LIKE ? OR c.cpf_cnpj LIKE ?)";
       params.push(`%${req.query.search}%`, `%${req.query.search}%`);
     }
 
@@ -874,10 +874,10 @@ router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), asyn
     }
 
     const sql = `SELECT 
-      c.id, c.razao_social as nome, c.cnpjCpf, c.telefone, c.email, c.endereco, c.rua, c.complemento, c.bairro, c.cidade, c.estado, c.cep, c.pais,
-      c.dataCriacao, c.dataFim, c.dataNascimento, c.observacao,
-      c.regimeTributario, c.tipoInscricao, c.apelido, c.sistema,
-      c.tipo, c.status, c.statusComplementar, c.responsavelLegal, c.dataInicio
+      c.id, c.razao_social as nome, c.cpf_cnpj as cnpjCpf, c.telefone_comercial as telefone, c.email_principal as email, c.endereco, c.rua, c.complemento, c.bairro, c.cidade, c.estado, c.cep, c.pais,
+      c.criado_em as dataCriacao, c.data_fim as dataFim, c.data_nascimento as dataNascimento, c.observacoes,
+      c.regime_tributario as regimeTributario, c.tipo_inscricao as tipoInscricao, c.apelido, c.sistema,
+      c.tipo, c.status, c.status_complementar as statusComplementar, c.responsavel_legal as responsavelLegal, c.data_inicio as dataInicio
       FROM clientes c
       ${joinDores}
       ${joinSolucoes}
@@ -1024,10 +1024,10 @@ router.get("/:id", autenticarToken, verificarPermissao('clientes.visualizar'), a
   try {
     const [rows] = await db.query(
       `SELECT
-        id, empresaId, nome, cnpjCpf, telefone, email, endereco, rua, complemento, bairro, cidade, estado, cep, pais,
-        dataCriacao, dataFim, dataNascimento, observacao,
-        regimeTributario, tipoInscricao, apelido, sistema, base, codigo,
-        tipo, status, statusComplementar, responsavelLegal, dataInicio
+        id, empresa_id, razao_social, cpf_cnpj, telefone_comercial, email_principal, endereco, rua, complemento, bairro, cidade, estado, cep, pais,
+        criado_em, data_fim, data_nascimento, observacoes,
+        regime_tributario, tipo_inscricao, apelido, sistema, base, codigo,
+        tipo, status, status_complementar, responsavel_legal, data_inicio
       FROM clientes WHERE id = ?`,
       [id]
     );
@@ -1477,24 +1477,21 @@ router.patch("/:id", autenticarToken, verificarPermissao('clientes.editar'), asy
   const { id } = req.params;
   const {
     empresaId,
-    tipoInscricao,
-    cnpjCpf,
-    nome,
+    tipo_inscricao,
+    cpf_cnpj,
+    razao_social,
     apelido,
     tipo,
     sistema,
     base,
     codigo,
     status,
-    statusComplementar,
-    dataInicio,
-    dataFim,
-    dataNascimento,
-    telefone,
-    email,
-    responsavelLegal,
-    regimeTributario,
-    endereco,
+    data_inicio,
+    data_fim,
+    data_nascimento,
+    telefone_comercial,
+    email_principal,
+    responsavel_legal,
     rua,
     complemento,
     bairro,
@@ -1502,6 +1499,7 @@ router.patch("/:id", autenticarToken, verificarPermissao('clientes.editar'), asy
     estado,
     cep,
     pais,
+    observacoes,
     observacao,
     dores,
     solucoes
@@ -1514,19 +1512,20 @@ router.patch("/:id", autenticarToken, verificarPermissao('clientes.editar'), asy
   };
 
   try {
+    const obsValor = (typeof observacoes !== 'undefined' ? observacoes : observacao) || null;
     const [resultado] = await db.query(
       `UPDATE clientes SET 
-        tipoInscricao = ?, cnpjCpf = ?, nome = ?, apelido = ?, tipo = ?, sistema = ?, base = ?, codigo = ?,
-        status = ?, statusComplementar = ?, dataInicio = ?, dataFim = ?, dataNascimento = ?,
-        telefone = ?, email = ?, responsavelLegal = ?, regimeTributario = ?, endereco = ?,
-        rua = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ?, pais = ?, observacao = ?
+        tipo_inscricao = ?, cpf_cnpj = ?, razao_social = ?, apelido = ?, tipo = ?, sistema = ?, base = ?, codigo = ?,
+        status = ?, data_inicio = ?, data_fim = ?, data_nascimento = ?,
+        telefone_comercial = ?, email_principal = ?, responsavel_legal = ?,
+        rua = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ?, pais = ?, observacoes = ?
       WHERE id = ?`,
       [
-        tipoInscricao || null, cnpjCpf, nome, apelido || null,
+        tipo_inscricao || null, cpf_cnpj || null, razao_social || null, apelido || null,
         tipo || null, sistema || null, base || null, codigo || null, status || null,
-        statusComplementar || null, formatDate(dataInicio) || null, formatDate(dataFim) || null, formatDate(dataNascimento) || null,
-        telefone || null, email || null, responsavelLegal || null, regimeTributario || null, endereco || null,
-        rua || null, complemento || null, bairro || null, cidade || null, estado || null, cep || null, pais || null, observacao || null,
+        formatDate(data_inicio) || null, formatDate(data_fim) || null, formatDate(data_nascimento) || null,
+        telefone_comercial || null, email_principal || null, responsavel_legal || null,
+        rua || null, complemento || null, bairro || null, cidade || null, estado || null, cep || null, pais || null, obsValor,
         id
       ]
     );

@@ -53,16 +53,18 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
 
   // Busca os grupos da empresa ao montar
   useEffect(() => {
-    const empresaId = sessionStorage.getItem("empresaId");
+    const empresaId = (typeof window !== 'undefined')
+      ? (JSON.parse(localStorage.getItem('userData') || '{}')?.EmpresaId?.toString() || localStorage.getItem('empresaId') || sessionStorage.getItem('empresaId'))
+      : '';
     if (empresaId) {
       setForm((prev) => ({ ...prev, empresaId }));
     }
     // Buscar grupos
     async function fetchGrupos() {
-      const token = sessionStorage.getItem("token");
+      const token = (typeof window !== 'undefined') ? (localStorage.getItem('token') || sessionStorage.getItem('token')) : null;
       if (!empresaId || !token) return;
       try {
-        const res = await api.get("/api/clientes/grupos/todos", {
+        const res = await api.get("/gestao/clientes/grupos/todos", {
           params: { empresaId },
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -84,7 +86,7 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
     };
 
     // DORES
-    api.get("/api/clientes/dores").then(res => {
+    api.get("/gestao/clientes/dores").then(res => {
       let options = Array.isArray(res.data) ? res.data.map((d) => ({ value: d, label: d })) : [];
       if (!options.length) {
         options = [
@@ -110,7 +112,7 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
     });
 
     // SOLUÇÕES
-    api.get("/api/clientes/solucoes").then(res => {
+    api.get("/gestao/clientes/solucoes").then(res => {
       let options = Array.isArray(res.data) ? res.data.map((s) => ({ value: s, label: s })) : [];
       if (!options.length) {
         const allFromLocal = Array.from(new Set(Object.values(localMapa).flat()));
@@ -125,7 +127,7 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
     });
 
     // MAPA DORES → SOLUÇÕES
-    api.get("/api/clientes/mapa-dores-solucoes").then(res => {
+    api.get("/gestao/clientes/mapa-dores-solucoes").then(res => {
       const remoteMapa = (res && res.data && typeof res.data === 'object') ? res.data : {};
       const merged = { ...localMapa, ...remoteMapa };
       setMapaDoresSolucoes(merged);
@@ -161,7 +163,20 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
 
   const handleConfirmar = async () => {
     try {
-      await api.post("/api/clientes/cadastrar/individual", form);
+      const userData = (typeof window !== 'undefined') ? JSON.parse(localStorage.getItem('userData') || '{}') : {};
+      const empresaIdFinal = form.empresaId || userData?.EmpresaId || localStorage.getItem('empresaId') || sessionStorage.getItem('empresaId') || '';
+      const cnpjCpfDigits = (form.cnpjCpf || '').replace(/\D/g, '');
+      const payload = {
+        ...form,
+        empresaId: empresaIdFinal,
+        nome: form.nome && form.nome.trim() ? form.nome : (form.apelido || '').trim(),
+        cnpjCpf: cnpjCpfDigits,
+      };
+      if (!payload.empresaId || !payload.nome) {
+        toast.error('Preencha empresa e nome/apelido.');
+        return;
+      }
+      await api.post("/gestao/clientes/cadastrar/individual", payload);
       toast.success("Cliente cadastrado com sucesso!");
       onClose();
     } catch (error) {

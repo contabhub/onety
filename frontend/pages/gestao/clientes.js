@@ -192,6 +192,7 @@ import NovoClienteModal from "@/components/gestao/NovoClienteModal";
 import ClientesImportTemplateModal from "@/components/gestao/ClientesImportTemplateModal";
 import styles from "../../styles/gestao/Clientes.module.css";
 import EnviarPesquisaFranqueadosModal from "@/components/gestao/EnviarPesquisaFranqueadosModal";
+import NovoGrupoModal from "@/components/gestao/NovoGrupoModal";
 import PrincipalSidebar from "@/components/onety/principal/PrincipalSidebar";
 import { Pencil, Trash2, Loader2, Send, Users } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
@@ -1498,7 +1499,7 @@ export default function ClientesPage() {
                       <td className={styles.td}>{c.tipoInscricao || ""}</td>
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
-                        onClick={() => router.push(`/dashboard/clientes/${c.id}`)}
+                        onClick={() => router.push(`gestao/clientes/${c.id}`)}
                       >
                         <span className={styles.cellHighlight}>
                           {formatarCnpjCpf(c.cnpjCpf)}
@@ -1506,7 +1507,7 @@ export default function ClientesPage() {
                       </td>
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
-                        onClick={() => router.push(`/dashboard/clientes/${c.id}`)}
+                        onClick={() => router.push(`gestao/clientes/${c.id}`)}
                       >
                         <span className={styles.cellHighlight}>
                           {c.nome || ""}
@@ -1632,6 +1633,16 @@ export default function ClientesPage() {
               />
 
             </div>
+            {mostrarModalGrupo && (
+              <NovoGrupoModal
+                isOpen={mostrarModalGrupo}
+                onClose={() => setMostrarModalGrupo(false)}
+                onCreated={() => {
+                  setMostrarModalGrupo(false);
+                  buscarGrupos();
+                }}
+              />
+            )}
             {loadingGrupos ? (
               <div style={{
                 display: 'flex',
@@ -1665,7 +1676,7 @@ export default function ClientesPage() {
                       <td className={styles.td}>{(paginaGrupos - 1) * limiteGruposPorPagina + idx + 1}</td>
                       <td 
                         className={`${styles.td} ${styles.linkTd}`}
-                        onClick={() => window.open(`/dashboard/grupos/${g.id}`, '_blank')}
+                        onClick={() => window.open(`gestao/grupos/${g.id}`, '_blank')}
                         style={{ cursor: 'pointer' }}
                       >
                         <span className={styles.cellHighlight}>
@@ -2277,7 +2288,7 @@ export default function ClientesPage() {
                         className={`${styles.td} ${styles.linkTd}`} 
                         style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} 
                         title={f.unidade || "-"}
-                        onClick={() => router.push(`/dashboard/franqueado/${f.id}`)}
+                        onClick={() => router.push(`gestao/franqueado/${f.id}`)}
                       >
                         <span className={styles.cellHighlight}>
                           {f.unidade || "-"}

@@ -83,9 +83,9 @@ router.get("/setores", autenticarToken, async (req, res) => {
 
     // 1) Buscar todos os clientes vinculados ao grupo
     const [clientesGrupo] = await db.query(
-      'SELECT clienteId FROM clientes_grupos_vinculo WHERE grupoId = ?',[grupoId]
+      'SELECT cliente_id FROM clientes_grupos_vinculo WHERE grupo_id = ?',[grupoId]
     );
-    const clienteIds = clientesGrupo.map(c => c.clienteId);
+    const clienteIds = clientesGrupo.map(c => c.cliente_id);
     if (clienteIds.length === 0) {
       return res.json({ resultado: [] });
     }
@@ -93,48 +93,48 @@ router.get("/setores", autenticarToken, async (req, res) => {
     // 2) Buscar respostas (particularidades) de TODOS OS clientes de uma vez
     const placeholders = clienteIds.map(() => '?').join(',');
     const [respostasRows] = await db.query(`
-      SELECT cr.clienteId, r.particularidadeId
+      SELECT cr.cliente_id, r.particularidade_id
       FROM cliente_respostas cr
-      JOIN enquete_respostas r ON cr.respostaId = r.id
-      WHERE cr.clienteId IN (${placeholders})
+      JOIN enquete_respostas r ON cr.resposta_id = r.id
+      WHERE cr.cliente_id IN (${placeholders})
     `, clienteIds);
 
     // 3) Buscar responsáveis fixos (por cliente) e globais
     const [respClienteRows] = await db.query(`
-      SELECT orc.obrigacaoId, orc.clienteId, u.id as usuarioId, u.nome AS responsavel_nome
+      SELECT orc.obrigacao_id, orc.cliente_id, u.id as usuarioId, u.nome AS responsavel_nome
       FROM obrigacoes_responsaveis_cliente orc
-      JOIN usuarios u ON u.id = orc.usuarioId
-      WHERE orc.clienteId IN (${placeholders})
+      JOIN usuarios u ON u.id = orc.usuario_id
+      WHERE orc.cliente_id IN (${placeholders})
     `, clienteIds);
 
     const [respGlobalRows] = await db.query(`
-      SELECT orc.obrigacaoId, u.id as usuarioId, u.nome AS responsavel_nome
+      SELECT orc.obrigacao_id, u.id as usuarioId, u.nome AS responsavel_nome
       FROM obrigacoes_responsaveis_cliente orc
-      JOIN usuarios u ON u.id = orc.usuarioId
-      WHERE orc.clienteId IS NULL
+      JOIN usuarios u ON u.id = orc.usuario_id
+      WHERE orc.cliente_id IS NULL
     `);
 
     // Mapas de responsáveis (múltiplos)
     const respClienteArrayMap = new Map(); // key: `${clienteId}:${obrigacaoId}` -> [{usuarioId, nome}, ...]
     for (const row of respClienteRows) {
-      const key = `${row.clienteId}:${row.obrigacaoId}`;
+      const key = `${row.cliente_id}:${row.obrigacao_id}`;
       if (!respClienteArrayMap.has(key)) respClienteArrayMap.set(key, []);
       respClienteArrayMap.get(key).push({ usuarioId: row.usuarioId, nome: row.responsavel_nome });
     }
     const respGlobalArrayMap = new Map(); // key: obrigacaoId -> [{usuarioId, nome}, ...]
     for (const row of respGlobalRows) {
-      if (!respGlobalArrayMap.has(row.obrigacaoId)) respGlobalArrayMap.set(row.obrigacaoId, []);
-      respGlobalArrayMap.get(row.obrigacaoId).push({ usuarioId: row.usuarioId, nome: row.responsavel_nome });
+      if (!respGlobalArrayMap.has(row.obrigacao_id)) respGlobalArrayMap.set(row.obrigacao_id, []);
+      respGlobalArrayMap.get(row.obrigacao_id).push({ usuarioId: row.usuarioId, nome: row.responsavel_nome });
     }
 
     // Mapa: clienteId -> [particularidadeId, ...]
     const clienteIdToParticularidades = new Map();
     for (const cid of clienteIds) clienteIdToParticularidades.set(cid, []);
     for (const row of respostasRows) {
-      if (!clienteIdToParticularidades.has(row.clienteId)) {
-        clienteIdToParticularidades.set(row.clienteId, []);
+      if (!clienteIdToParticularidades.has(row.cliente_id)) {
+        clienteIdToParticularidades.set(row.cliente_id, []);
       }
-      clienteIdToParticularidades.get(row.clienteId).push(row.particularidadeId);
+      clienteIdToParticularidades.get(row.cliente_id).push(row.particularidade_id);
     }
 
     // 4) Buscar TODAS as obrigações e suas particularidades (uma vez só)
@@ -143,10 +143,10 @@ router.get("/setores", autenticarToken, async (req, res) => {
         o.*, 
         d.nome as departamentoNome,
         op.tipo as tipoPart,
-        op.particularidadeId
+        op.particularidade_id
       FROM obrigacoes o
-      JOIN departamentos d ON o.departamentoId = d.id
-      JOIN obrigacoes_particularidades op ON op.obrigacaoId = o.id
+      JOIN departamentos d ON o.departamento_id = d.id
+      JOIN obrigacoes_particularidades op ON op.obrigacao_id = o.id
     `);
 
     // Agrupar particularidades por obrigação, como na rota individual
@@ -162,9 +162,9 @@ router.get("/setores", autenticarToken, async (req, res) => {
         });
       }
       const ob = obrigacoesMap.get(row.id);
-      if (row.tipoPart === 'E') ob.particularidadesE.push(row.particularidadeId);
-      else if (row.tipoPart === 'OU') ob.particularidadesOU.push(row.particularidadeId);
-      else if (row.tipoPart === 'EXCETO') ob.particularidadesEXCETO.push(row.particularidadeId);
+      if (row.tipoPart === 'E') ob.particularidadesE.push(row.particularidade_id);
+      else if (row.tipoPart === 'OU') ob.particularidadesOU.push(row.particularidade_id);
+      else if (row.tipoPart === 'EXCETO') ob.particularidadesEXCETO.push(row.particularidade_id);
     }
     const obrigacoesBase = Array.from(obrigacoesMap.values());
 
@@ -420,12 +420,12 @@ router.get("/para-gerar-tarefas", autenticarToken, async (req, res) => {
   try {
     // 1. Buscar respostas do cliente
     const [respostas] = await db.query(`
-      SELECT r.particularidadeId
+      SELECT r.particularidade_id
       FROM cliente_respostas cr
-      JOIN enquete_respostas r ON cr.respostaId = r.id
-      WHERE cr.clienteId = ?
+      JOIN enquete_respostas r ON cr.resposta_id = r.id
+      WHERE cr.cliente_id = ?
     `, [clienteId]);
-    const particularidadesCliente = respostas.map(r => r.particularidadeId);
+    const particularidadesCliente = respostas.map(r => r.particularidade_id);
 
     // 2. Buscar obrigações com suas particularidades
     let query = `
@@ -1588,12 +1588,12 @@ router.get("/cliente/:clienteId", async (req, res) => {
   try {
     // 1. Buscar respostas do cliente
     const [respostas] = await db.query(`
-      SELECT r.particularidadeId
+      SELECT r.particularidade_id
       FROM cliente_respostas cr
-      JOIN enquete_respostas r ON cr.respostaId = r.id
-      WHERE cr.clienteId = ?
+      JOIN enquete_respostas r ON cr.resposta_id = r.id
+      WHERE cr.cliente_id = ?
     `, [clienteId]);
-    const particularidadesCliente = respostas.map(r => r.particularidadeId);
+    const particularidadesCliente = respostas.map(r => r.particularidade_id);
 
     // 2. Buscar obrigações com suas particularidades
     const [obrigacoes] = await db.query(`
@@ -1601,10 +1601,10 @@ router.get("/cliente/:clienteId", async (req, res) => {
         o.*, 
         d.nome as departamentoNome,
         op.tipo as tipoPart,
-        op.particularidadeId
+        op.particularidade_id
       FROM obrigacoes o
-      JOIN departamentos d ON o.departamentoId = d.id
-      JOIN obrigacoes_particularidades op ON op.obrigacaoId = o.id
+      JOIN departamentos d ON o.departamento_id = d.id
+      JOIN obrigacoes_particularidades op ON op.obrigacao_id = o.id
     `);
 
     // 3. Agrupar particularidades por obrigação
@@ -1622,11 +1622,11 @@ router.get("/cliente/:clienteId", async (req, res) => {
       }
 
       if (row.tipoPart === "E") {
-        obrigacoesMap[row.id].particularidadesE.push(row.particularidadeId);
+        obrigacoesMap[row.id].particularidadesE.push(row.particularidade_id);
       } else if (row.tipoPart === "OU") {
-        obrigacoesMap[row.id].particularidadesOU.push(row.particularidadeId);
+        obrigacoesMap[row.id].particularidadesOU.push(row.particularidade_id);
       } else if (row.tipoPart === "EXCETO") {
-        obrigacoesMap[row.id].particularidadesEXCETO.push(row.particularidadeId);
+        obrigacoesMap[row.id].particularidadesEXCETO.push(row.particularidade_id);
       }
     }
 
@@ -1665,18 +1665,18 @@ router.get("/cliente/:clienteId/com-departamentos", async (req, res) => {
   try {
     // 1. Buscar respostas do cliente
     const [respostas] = await db.query(`
-      SELECT r.particularidadeId
+      SELECT r.particularidade_id
       FROM cliente_respostas cr
-      JOIN enquete_respostas r ON cr.respostaId = r.id
-      WHERE cr.clienteId = ?
+      JOIN enquete_respostas r ON cr.resposta_id = r.id
+      WHERE cr.cliente_id = ?
     `, [clienteId]);
-    const particularidadesCliente = respostas.map(r => r.particularidadeId);
+    const particularidadesCliente = respostas.map(r => r.particularidade_id);
 
     // 2. Buscar departamentos da empresa
     const [departamentos] = await db.query(`
       SELECT d.* FROM departamentos d
-      JOIN empresas e ON d.empresaId = e.id
-      JOIN clientes c ON c.empresaId = e.id AND c.id = ?
+      JOIN empresas e ON d.empresa_id = e.id
+      JOIN clientes c ON c.empresa_id = e.id AND c.id = ?
       ORDER BY d.nome
     `, [clienteId]);
 
@@ -1686,12 +1686,12 @@ router.get("/cliente/:clienteId/com-departamentos", async (req, res) => {
         o.*, 
         d.nome as departamentoNome,
         op.tipo as tipoPart,
-        op.particularidadeId
+        op.particularidade_id
       FROM obrigacoes o
-      JOIN departamentos d ON o.departamentoId = d.id
-      JOIN obrigacoes_particularidades op ON op.obrigacaoId = o.id
-      JOIN empresas e ON o.empresaId = e.id
-      JOIN clientes c ON c.empresaId = e.id AND c.id = ?
+      JOIN departamentos d ON o.departamento_id = d.id
+      JOIN obrigacoes_particularidades op ON op.obrigacao_id = o.id
+      JOIN empresas e ON o.empresa_id = e.id
+      JOIN clientes c ON c.empresa_id = e.id AND c.id = ?
     `, [clienteId]);
 
     // 4. Agrupar particularidades por obrigação
@@ -1709,11 +1709,11 @@ router.get("/cliente/:clienteId/com-departamentos", async (req, res) => {
       }
 
       if (row.tipoPart === "E") {
-        obrigacoesMap[row.id].particularidadesE.push(row.particularidadeId);
+        obrigacoesMap[row.id].particularidadesE.push(row.particularidade_id);
       } else if (row.tipoPart === "OU") {
-        obrigacoesMap[row.id].particularidadesOU.push(row.particularidadeId);
+        obrigacoesMap[row.id].particularidadesOU.push(row.particularidade_id);
       } else if (row.tipoPart === "EXCETO") {
-        obrigacoesMap[row.id].particularidadesEXCETO.push(row.particularidadeId);
+        obrigacoesMap[row.id].particularidadesEXCETO.push(row.particularidade_id);
       }
     }
 
