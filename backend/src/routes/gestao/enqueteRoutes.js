@@ -3,10 +3,36 @@ const router = express.Router();
 const db = require("../../config/database");
 const autenticarToken = require("../../middlewares/auth");
 
-// 🔸 Middleware para extrair empresaId do token
-router.use(autenticarToken, (req, res, next) => {
-  req.empresaId = req.usuario.empresaId;
-  next();
+// 🔸 Middleware para resolver empresaId (header/query/body) e validar vínculo do usuário
+router.use(autenticarToken, async (req, res, next) => {
+  try {
+    const rawEmpresaId = req.header("X-Empresa-Id") || req.query.empresaId || req.body?.empresaId || null;
+    const empresaId = rawEmpresaId ? parseInt(rawEmpresaId, 10) : null;
+
+    if (!empresaId) {
+      return res.status(400).json({ error: "empresaId não informado" });
+    }
+
+    // Valida se o usuário tem vínculo com a empresa
+    const usuarioId = req.user?.id;
+    if (!usuarioId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+
+    const [rows] = await db.query(
+      `SELECT 1 FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? LIMIT 1`,
+      [usuarioId, empresaId]
+    );
+    if (!rows.length) {
+      return res.status(403).json({ error: "Usuário não possui acesso a esta empresa" });
+    }
+
+    req.empresaId = empresaId;
+    next();
+  } catch (err) {
+    console.error("Erro ao validar empresaId:", err);
+    res.status(500).json({ error: "Falha ao validar empresaId" });
+  }
 });
 
 /** ------------------ GRUPOS ------------------ **/
@@ -19,7 +45,7 @@ router.post("/grupos", async (req, res) => {
   try {
     // Verifica se já existe um grupo com o mesmo nome para a mesma empresa
     const [existentes] = await db.query(
-      `SELECT id FROM enquete_grupos WHERE titulo = ? AND empresaId = ?`,
+      `SELECT id FROM enquete_grupos WHERE titulo = ? AND empresa_id = ?`,
       [grupo, empresaId]
     );
 
@@ -29,13 +55,13 @@ router.post("/grupos", async (req, res) => {
 
     // Continua a lógica normal de classificação
     const [[{ total }]] = await db.query(
-      `SELECT COUNT(*) AS total FROM enquete_grupos WHERE empresaId = ?`,
+      `SELECT COUNT(*) AS total FROM enquete_grupos WHERE empresa_id = ?`,
       [empresaId]
     );
     const classificacao = (total + 1).toString().padStart(2, '0');
 
     const [r] = await db.query(
-      `INSERT INTO enquete_grupos (empresaId, classificacao, titulo) VALUES (?, ?, ?)`,
+      `INSERT INTO enquete_grupos (empresa_id, classificacao, titulo) VALUES (?, ?, ?)`,
       [empresaId, classificacao, grupo]
     );
 
@@ -50,7 +76,7 @@ router.post("/grupos", async (req, res) => {
 router.get("/grupos", async (req, res) => {
   try {
     const [grupos] = await db.query(
-      `SELECT * FROM enquete_grupos WHERE empresaId = ?`,
+      `SELECT * FROM enquete_grupos WHERE empresa_id = ?`,
       [req.empresaId]
     );
     res.json(grupos);
@@ -67,7 +93,7 @@ router.get("/grupos/:grupoId", async (req, res) => {
   try {
     // Consulta no banco de dados para obter o grupo com o grupoId
     const [grupo] = await db.query(
-      `SELECT * FROM enquete_grupos WHERE id = ? AND empresaId = ?`,
+      `SELECT * FROM enquete_grupos WHERE id = ? AND empresa_id = ?`,
       [grupoId, req.empresaId] // Certifique-se de que o grupo pertence à empresa do usuário
     );
 
@@ -90,7 +116,7 @@ router.put("/grupos/:id", async (req, res) => {
 
   try {
     const [r] = await db.query(
-      `UPDATE enquete_grupos SET classificacao = ?, titulo = ? WHERE id = ? AND empresaId = ?`,
+      `UPDATE enquete_grupos SET classificacao = ?, titulo = ? WHERE id = ? AND empresa_id = ?`,
       [classificacao, grupo, id, req.empresaId]
     );
     res.json({ success: true });
@@ -113,7 +139,7 @@ router.delete("/grupos/:id", async (req, res) => {
 
     // Depois exclui o grupo
     await db.query(
-      `DELETE FROM enquete_grupos WHERE id = ? AND empresaId = ?`,
+      `DELETE FROM enquete_grupos WHERE id = ? AND empresa_id = ?`,
       [id, req.empresaId]
     );
 
@@ -134,7 +160,7 @@ router.post("/perguntas", async (req, res) => {
   try {
     const tipo = multiplaEscolha ? 'múltipla' : 'única';
     const [r] = await db.query(
-      `INSERT INTO enquete_perguntas (grupoId, texto, tipo) VALUES (?, ?, ?)`,
+      `INSERT INTO enquete_perguntas (grupo_id, texto, tipo) VALUES (?, ?, ?)`,
       [grupoId, pergunta, tipo]
     );
     res.status(201).json({ success: true, perguntaId: r.insertId });
@@ -150,7 +176,7 @@ router.get("/grupos/:grupoId/perguntas", async (req, res) => {
 
   try {
     const [perguntas] = await db.query(
-      `SELECT * FROM enquete_perguntas WHERE grupoId = ?`,
+      `SELECT * FROM enquete_perguntas WHERE grupo_id = ?`,
       [grupoId]
     );
     res.json(perguntas);
@@ -168,7 +194,7 @@ router.get("/perguntas/:perguntaId", async (req, res) => {
     const [pergunta] = await db.query(
       `SELECT ep.id, ep.texto, ep.tipo, eg.classificacao AS classificacaoGrupo 
        FROM enquete_perguntas ep 
-       JOIN enquete_grupos eg ON ep.grupoId = eg.id 
+       JOIN enquete_grupos eg ON ep.grupo_id = eg.id 
        WHERE ep.id = ?`,
       [perguntaId]
     );
@@ -226,7 +252,7 @@ router.post("/respostas", async (req, res) => {
 
   try {
     const [r] = await db.query(
-      `INSERT INTO enquete_respostas (perguntaId, particularidadeId) VALUES (?, ?)`,
+      `INSERT INTO enquete_respostas (pergunta_id, particularidade_id) VALUES (?, ?)`,
       [perguntaId, particularidadeId]
     );
     res.status(201).json({ success: true, respostaId: r.insertId });
@@ -243,8 +269,8 @@ router.get("/respostas/:perguntaId", async (req, res) => {
   try {
     const [respostas] = await db.query(
       `SELECT r.*, p.nome AS particularidade FROM enquete_respostas r
-       JOIN particularidades p ON r.particularidadeId = p.id
-       WHERE r.perguntaId = ?`,
+       JOIN particularidades p ON r.particularidade_id = p.id
+       WHERE r.pergunta_id = ?`,
       [perguntaId]
     );
     res.json(respostas);
@@ -283,7 +309,7 @@ router.post("/particularidades", async (req, res) => {
     if (categoriaId) {
       // Busca o nome da categoria correspondente
       const [result] = await db.query(
-        `SELECT nome FROM particularidades_categorias WHERE id = ? AND empresaId = ?`,
+        `SELECT nome FROM particularidades_categorias WHERE id = ? AND empresa_id = ?`,
         [categoriaId, empresaId]
       );
 
@@ -294,7 +320,7 @@ router.post("/particularidades", async (req, res) => {
 
     // Faz o insert com o nome da categoria já preenchido
     const [r] = await db.query(
-      `INSERT INTO particularidades (empresaId, nome, descricao, categoriaId, categoria) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO particularidades (empresa_id, nome, descricao, categoria_id, categoria) VALUES (?, ?, ?, ?, ?)`,
       [empresaId, nome, descricao, categoriaId, categoriaNome]
     );
 
@@ -309,7 +335,7 @@ router.post("/particularidades", async (req, res) => {
 router.get("/particularidades", async (req, res) => {
   try {
     const [dados] = await db.query(
-      `SELECT * FROM particularidades WHERE empresaId = ?`,
+      `SELECT * FROM particularidades WHERE empresa_id = ?`,
       [req.empresaId]
     );
     res.json(dados);
@@ -326,7 +352,7 @@ router.put("/particularidades/:id", async (req, res) => {
 
   try {
     const [r] = await db.query(
-      `UPDATE particularidades SET nome = ?, descricao = ?, categoria = ? WHERE id = ? AND empresaId = ?`,
+      `UPDATE particularidades SET nome = ?, descricao = ?, categoria = ? WHERE id = ? AND empresa_id = ?`,
       [nome, descricao, categoria, id, req.empresaId]
     );
     res.json({ success: true, affectedRows: r.affectedRows });
@@ -342,7 +368,7 @@ router.delete("/particularidades/:id", async (req, res) => {
 
   try {
     const [r] = await db.query(
-      `DELETE FROM particularidades WHERE id = ? AND empresaId = ?`,
+      `DELETE FROM particularidades WHERE id = ? AND empresa_id = ?`,
       [id, req.empresaId]
     );
     res.json({ success: true });
@@ -361,7 +387,7 @@ router.post("/categorias", async (req, res) => {
 
   try {
     const [r] = await db.query(
-      `INSERT INTO particularidades_categorias (empresaId, nome) VALUES (?, ?)`,
+      `INSERT INTO particularidades_categorias (empresa_id, nome) VALUES (?, ?)`,
       [empresaId, nome]
     );
     res.status(201).json({ success: true, id: r.insertId });
@@ -375,7 +401,7 @@ router.post("/categorias", async (req, res) => {
 router.get("/categorias", async (req, res) => {
   try {
     const [dados] = await db.query(
-      `SELECT * FROM particularidades_categorias WHERE empresaId = ?`,
+      `SELECT * FROM particularidades_categorias WHERE empresa_id = ?`,
       [req.empresaId]
     );
     res.json(dados);
@@ -392,7 +418,7 @@ router.put("/categorias/:id", async (req, res) => {
 
   try {
     const [r] = await db.query(
-      `UPDATE particularidades_categorias SET nome = ? WHERE id = ? AND empresaId = ?`,
+      `UPDATE particularidades_categorias SET nome = ? WHERE id = ? AND empresa_id = ?`,
       [nome, id, req.empresaId]
     );
     res.json({ success: true });
@@ -408,7 +434,7 @@ router.delete("/categorias/:id", async (req, res) => {
 
   try {
     await db.query(
-      `DELETE FROM particularidades_categorias WHERE id = ? AND empresaId = ?`,
+      `DELETE FROM particularidades_categorias WHERE id = ? AND empresa_id = ?`,
       [id, req.empresaId]
     );
     res.json({ success: true });
@@ -438,10 +464,10 @@ router.get("/arvore", async (req, res) => {
         er.id AS respostaId,
         p.nome AS particularidade
       FROM enquete_grupos eg
-      LEFT JOIN enquete_perguntas ep ON eg.id = ep.grupoId
-      LEFT JOIN enquete_respostas er ON ep.id = er.perguntaId
-      LEFT JOIN particularidades p ON er.particularidadeId = p.id
-      WHERE eg.empresaId = ?
+      LEFT JOIN enquete_perguntas ep ON eg.id = ep.grupo_id
+      LEFT JOIN enquete_respostas er ON ep.id = er.pergunta_id
+      LEFT JOIN particularidades p ON er.particularidade_id = p.id
+      WHERE eg.empresa_id = ?
       ORDER BY eg.classificacao ASC, ep.id ASC, er.id ASC
     `, [empresaId]);
 
@@ -520,7 +546,7 @@ router.get("/arvore", async (req, res) => {
 router.get("/respostas-cliente/:clienteId", async (req, res) => {
   const { clienteId } = req.params;
   const [respostas] = await db.query(`
-    SELECT respostaId FROM cliente_respostas WHERE clienteId = ?`, [clienteId]);
+    SELECT resposta_id AS respostaId FROM cliente_respostas WHERE cliente_id = ?`, [clienteId]);
   res.json(respostas.map(r => r.respostaId));
 });
 
@@ -544,7 +570,7 @@ router.post("/respostas-cliente/:clienteId", async (req, res) => {
     // Se estiver vazio, só apaga e sai
     if (respostaIds.length === 0) {
       console.log("Array vazio - removendo todas as respostas do cliente");
-      await db.query(`DELETE FROM cliente_respostas WHERE clienteId = ?`, [clienteId]);
+      await db.query(`DELETE FROM cliente_respostas WHERE cliente_id = ?`, [clienteId]);
       console.log("Respostas removidas com sucesso");
       return res.json({ success: true });
     }
@@ -553,7 +579,7 @@ router.post("/respostas-cliente/:clienteId", async (req, res) => {
     const [dados] = await db.query(`
       SELECT r.id AS respostaId, p.id AS perguntaId, p.tipo
       FROM enquete_respostas r
-      JOIN enquete_perguntas p ON r.perguntaId = p.id
+      JOIN enquete_perguntas p ON r.pergunta_id = p.id
       WHERE r.id IN (?)
     `, [respostaIds]);
 
@@ -578,11 +604,11 @@ router.post("/respostas-cliente/:clienteId", async (req, res) => {
 
     // Substitui respostas anteriores
     console.log("Removendo respostas anteriores do cliente");
-    await db.query(`DELETE FROM cliente_respostas WHERE clienteId = ?`, [clienteId]);
+    await db.query(`DELETE FROM cliente_respostas WHERE cliente_id = ?`, [clienteId]);
     
     const values = respostaIds.map((id) => [clienteId, id]);
     console.log("Inserindo novas respostas:", values);
-    await db.query(`INSERT INTO cliente_respostas (clienteId, respostaId) VALUES ?`, [values]);
+    await db.query(`INSERT INTO cliente_respostas (cliente_id, resposta_id) VALUES ?`, [values]);
     
     console.log("Respostas salvas com sucesso");
     res.json({ success: true });

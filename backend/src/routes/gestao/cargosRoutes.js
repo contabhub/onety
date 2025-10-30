@@ -64,6 +64,36 @@ router.get('/', autenticarToken, verificarPermissao('cargos.visualizar'), async 
 });
 
 /**
+ * Listar cargos de uma empresa específica (rota explícita)
+ * - Superadmin pode acessar qualquer empresa
+ * - Demais usuários só podem acessar a própria empresa do token
+ */
+router.get('/empresa/:empresaId', autenticarToken, verificarPermissao('cargos.visualizar'), async (req, res) => {
+  try {
+    const { empresaId } = req.params;
+    const userEmpresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
+    const permissoes = (req.user && req.user.permissoes) || {};
+
+    const isSuperadmin = Array.isArray(permissoes?.adm) && permissoes.adm.includes('superadmin');
+    if (!isSuperadmin && String(empresaId) !== String(userEmpresaId)) {
+      return res.status(403).json({ error: 'Acesso negado para a empresa informada.' });
+    }
+
+    const [cargos] = await db.query(
+      `SELECT id, nome, descricao, permissoes FROM cargos WHERE empresa_id = ? AND LOWER(nome) NOT LIKE '%superadmin%'`,
+      [empresaId]
+    );
+    res.json(cargos.map(c => ({
+      ...c,
+      permissoes: typeof c.permissoes === 'string' ? JSON.parse(c.permissoes) : (c.permissoes || {})
+    })));
+  } catch (error) {
+    console.error('Erro ao listar cargos por empresa:', error);
+    res.status(500).json({ error: 'Erro interno ao listar os cargos.' });
+  }
+});
+
+/**
  * Detalhar um cargo por ID
  */
 router.get('/:id', autenticarToken, verificarPermissao('cargos.visualizar'), async (req, res) => {
@@ -76,6 +106,7 @@ router.get('/:id', autenticarToken, verificarPermissao('cargos.visualizar'), asy
       [id, empresaId]
     );
 
+    
     if (cargos.length === 0) {
       return res.status(404).json({ error: 'Cargo não encontrado.' });
     }
@@ -97,6 +128,8 @@ router.put('/:id', autenticarToken, verificarPermissao('cargos.editar'), async (
     const { id } = req.params;
     const { nome, descricao, permissoes } = req.body;
     const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
+    const permissoesUser = (req.user && req.user.permissoes) || {};
+    const isSuperadmin = Array.isArray(permissoesUser?.adm) && permissoesUser.adm.includes('superadmin');
 
     // ✅ Garantir que permissões básicas estejam sempre presentes
     const permissoesAtualizadas = {
@@ -105,10 +138,23 @@ router.put('/:id', autenticarToken, verificarPermissao('cargos.editar'), async (
       ...permissoes // ✅ Permissões customizadas sobrescrevem as básicas
     };
 
-    await db.query(
-      `UPDATE cargos SET nome = ?, descricao = ?, permissoes = ?, atualizado_em = NOW() WHERE id = ? AND empresa_id = ?`,
-      [nome, descricao || '', JSON.stringify(permissoesAtualizadas), id, empresaId]
-    );
+    let result;
+    if (isSuperadmin) {
+      // Superadmin pode atualizar independentemente da empresa
+      [result] = await db.query(
+        `UPDATE cargos SET nome = ?, descricao = ?, permissoes = ?, atualizado_em = NOW() WHERE id = ?`,
+        [nome, descricao || '', JSON.stringify(permissoesAtualizadas), id]
+      );
+    } else {
+      [result] = await db.query(
+        `UPDATE cargos SET nome = ?, descricao = ?, permissoes = ?, atualizado_em = NOW() WHERE id = ? AND empresa_id = ?`,
+        [nome, descricao || '', JSON.stringify(permissoesAtualizadas), id, empresaId]
+      );
+    }
+
+    if (!result || result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Cargo não encontrado para a empresa informada.' });
+    }
 
     res.json({ message: 'Cargo atualizado com sucesso!' });
   } catch (error) {
