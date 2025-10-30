@@ -626,7 +626,7 @@ router.post("/atividade/:atividadeTarefaId/anexos", autenticarToken, async (req,
   try {
     for (const anexo of anexos) {
       await db.query(
-        `INSERT INTO anexos_atividade (atividade_tarefa_id, nome_arquivo, base64) VALUES (?, ?, ?)`,
+        `INSERT INTO anexos_atividade (atividade_tarefa_id, nome_arquivo, pdf) VALUES (?, ?, ?)`,
         [atividadeTarefaId, anexo.nomeArquivo, anexo.base64]
       );
     }
@@ -643,7 +643,7 @@ router.get("/atividade/:atividadeTarefaId/anexos", autenticarToken, async (req, 
   const { atividadeTarefaId } = req.params;
   try {
     const [anexos] = await db.query(
-      `SELECT id, nome_arquivo, base64, criado_em FROM anexos_atividade WHERE atividade_tarefa_id = ?`,
+      `SELECT id, nome_arquivo, pdf, criado_em FROM anexos_atividade WHERE atividade_tarefa_id = ?`,
       [atividadeTarefaId]
     );
     res.json(anexos);
