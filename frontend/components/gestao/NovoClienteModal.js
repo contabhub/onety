@@ -72,18 +72,65 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
       }
     }
     fetchGrupos();
+
+    // Mapeamento local (fallback)
+    const localMapa = {
+      "Tributário": ["Projeto Tributário"],
+      "Financeiro": ["Curadoria", "Consultoria Financeira - CDC", "Consultoria Financeira - Implantação"],
+      "Gestão de Pessoas": ["Recrutamento e Seleção", "Empresa Inquebrável"],
+      "MKT e Vendas": ["Marketing - Indicação"],
+      "Nenhuma dor aparente": [],
+      "Outros": ["Outros"],
+    };
+
+    // DORES
     api.get("/api/clientes/dores").then(res => {
-      const options = res.data.map((d) => ({ value: d, label: d }));
-      const hasOutros = options.some((o) => o.value === "Outros");
+      let options = Array.isArray(res.data) ? res.data.map((d) => ({ value: d, label: d })) : [];
+      if (!options.length) {
+        options = [
+          { value: "Tributário", label: "Tributário" },
+          { value: "Financeiro", label: "Financeiro" },
+          { value: "Gestão de Pessoas", label: "Gestão de Pessoas" },
+          { value: "MKT e Vendas", label: "MKT e Vendas" },
+          { value: "Nenhuma dor aparente", label: "Nenhuma dor aparente" },
+        ];
+      }
+      const hasOutros = options.some((o) => (o.value || "").toLowerCase() === "outros");
       setDoresOptions(hasOutros ? options : [...options, { value: "Outros", label: "Outros" }]);
+    }).catch(() => {
+      const fallback = [
+        { value: "Tributário", label: "Tributário" },
+        { value: "Financeiro", label: "Financeiro" },
+        { value: "Gestão de Pessoas", label: "Gestão de Pessoas" },
+        { value: "MKT e Vendas", label: "MKT e Vendas" },
+        { value: "Nenhuma dor aparente", label: "Nenhuma dor aparente" },
+        { value: "Outros", label: "Outros" },
+      ];
+      setDoresOptions(fallback);
     });
+
+    // SOLUÇÕES
     api.get("/api/clientes/solucoes").then(res => {
-      const options = res.data.map((s) => ({ value: s, label: s }));
-      const hasOutros = options.some((o) => o.value === "Outros");
+      let options = Array.isArray(res.data) ? res.data.map((s) => ({ value: s, label: s })) : [];
+      if (!options.length) {
+        const allFromLocal = Array.from(new Set(Object.values(localMapa).flat()));
+        options = allFromLocal.map((s) => ({ value: s, label: s }));
+      }
+      const hasOutros = options.some((o) => (o.value || "").toLowerCase() === "outros");
       setSolucoesOptions(hasOutros ? options : [...options, { value: "Outros", label: "Outros" }]);
+    }).catch(() => {
+      const allFromLocal = Array.from(new Set(Object.values(localMapa).flat()));
+      const fallback = allFromLocal.map((s) => ({ value: s, label: s }));
+      setSolucoesOptions(fallback);
     });
+
+    // MAPA DORES → SOLUÇÕES
     api.get("/api/clientes/mapa-dores-solucoes").then(res => {
-      setMapaDoresSolucoes(res.data);
+      const remoteMapa = (res && res.data && typeof res.data === 'object') ? res.data : {};
+      const merged = { ...localMapa, ...remoteMapa };
+      setMapaDoresSolucoes(merged);
+    }).catch(() => {
+      setMapaDoresSolucoes(localMapa);
     });
   }, []);
 
@@ -484,7 +531,7 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
                     outline: "none",
                   }),
                 }}
-                menuPlacement="auto"
+                menuPlacement="bottom"
               />
             </div>
           </div>
@@ -574,7 +621,7 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
                     outline: "none",
                   }),
                 }}
-                menuPlacement="auto"
+                menuPlacement="bottom"
               />
             </div>
             <div style={columnStyle}>
@@ -590,34 +637,34 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
                     ...base,
                     minHeight: 30,
                     maxHeight: 34,
-                    borderRadius: "var(--titan-radius-sm)",
-                    fontSize: "var(--titan-font-size-sm)",
+                    borderRadius: "var(--onity-radius-xs)",
+                    fontSize: "var(--onity-type-body-size)",
                     outline: "none",
                     boxShadow: "none",
-                    borderColor: "var(--titan-stroke)",
-                    backgroundColor: "var(--titan-input-bg)",
-                    color: "var(--titan-text-high)",
+                    borderColor: "var(--onity-color-border)",
+                    backgroundColor: "var(--onity-color-surface)",
+                    color: "var(--onity-color-text)",
                     ...(state.isFocused ? { 
-                      borderColor: "var(--titan-primary)",
-                      boxShadow: "var(--titan-glow-primary)"
+                      borderColor: "var(--onity-color-primary)",
+                      boxShadow: "0 0 0 3px rgba(68, 84, 100, 0.15)"
                     } : {}),
                   }),
                   placeholder: (base) => ({
                     ...base,
-                    color: "var(--titan-text-low)",
+                    color: "var(--onity-color-text)",
                     opacity: 1,
-                    fontWeight: "var(--titan-font-weight-normal)",
+                    fontWeight: 400,
                   }),
                   multiValue: (base) => ({
                     ...base,
-                    backgroundColor: "var(--titan-primary)",
+                    backgroundColor: "var(--onity-color-primary)",
                     margin: 0,
-                    borderRadius: "var(--titan-radius-sm)",
+                    borderRadius: "var(--onity-radius-xs)",
                   }),
                   multiValueLabel: (base) => ({
                     ...base,
                     color: "white",
-                    fontWeight: "var(--titan-font-weight-medium)",
+                    fontWeight: 500,
                   }),
                   multiValueRemove: (base) => ({
                     ...base,
@@ -636,11 +683,11 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
                   option: (base, state) => ({
                     ...base,
                     backgroundColor: state.isSelected
-                      ? "var(--titan-primary)"
+                      ? "var(--onity-color-primary)"
                       : state.isFocused
                         ? "rgba(255, 255, 255, 0.02)"
-                        : "var(--titan-base-00)",
-                    color: state.isSelected ? "white" : "var(--titan-text-high)",
+                        : "var(--onity-color-surface)",
+                    color: state.isSelected ? "white" : "var(--onity-color-text)",
                     cursor: "pointer",
                     boxShadow: "none",
                     outline: "none",
@@ -649,10 +696,10 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
                   menu: (base) => ({
                     ...base,
                     zIndex: 9999,
-                    backgroundColor: "var(--titan-base-00)",
-                    border: "1px solid var(--titan-stroke)",
-                    borderRadius: "var(--titan-radius-md)",
-                    boxShadow: "var(--titan-shadow-lg)",
+                    backgroundColor: "var(--onity-color-surface)",
+                    border: "1px solid var(--onity-color-border)",
+                    borderRadius: "var(--onity-radius-m)",
+                    boxShadow: "var(--onity-elev-high)",
                   }),
                   menuList: (base) => ({
                     ...base,
@@ -660,7 +707,7 @@ export default function NovoClienteModal({ onClose, onSuccess }) {
                     outline: "none",
                   }),
                 }}
-                menuPlacement="auto"
+                 menuPlacement="bottom"
               />
             </div>
           </div>

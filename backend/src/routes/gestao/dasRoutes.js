@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../../config/database");
 const { consultarServico } = require("../../services/gestao/consultarService"); // serviço genérico para consulta API Serpro
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 
 const CONTRATANTE_CNPJ = "17422651000172"; // fixo
 

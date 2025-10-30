@@ -1,6 +1,6 @@
 const { consultarServico } = require("./consultarService");
 const { extrairDataTransmissao } = require("../../utils/gestao/extrairDataTransmissao");
-const db = require("../config/db");
+const db = require("../../config/database");
 
 const MEU_CNPJ = "17422651000172"; // Substitua pelo CNPJ correto
 

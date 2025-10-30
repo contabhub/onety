@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../config/database');
-const { autenticarToken } = require('../../middlewares/auth');
-const { verificarPermissao } = require('../../middlewares/permissaoMiddleware');
+const autenticarToken = require('../../middlewares/auth');
+const { verificarPermissao } = require('../../middlewares/permissao');
 
 // =====================================================
 // 📋 ROTAS PARA CAMPOS ADICIONAIS

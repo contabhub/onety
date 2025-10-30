@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 const processoController = require("../../controllers/gestao/processoController");
 const db = require("../../config/database");
-const { verificarPermissao } = require("../../middlewares/permissaoMiddleware");
+const { verificarPermissao } = require("../../middlewares/permissao");
 
 
 router.get("/disponiveis/:departamentoId", autenticarToken, verificarPermissao('processos.visualizar'), processoController.listarProcessosDisponiveis);
@@ -51,7 +51,7 @@ router.put('/atividades/:id/ordem', autenticarToken, verificarPermissao('process
 router.get("/email-template/:atividadeId", autenticarToken, async (req, res) => {
   try {
     const { atividadeId } = req.params;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
     
     
     const [templates] = await db.query(
@@ -100,7 +100,7 @@ router.get("/email-template/:atividadeId", autenticarToken, async (req, res) => 
 router.post("/email-template/:atividadeId", autenticarToken, async (req, res) => {
   try {
     const { atividadeId } = req.params;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
     const { nome, assunto, corpo, destinatario, cc, co, variaveis } = req.body;
     
     
@@ -397,7 +397,7 @@ router.put("/:id", autenticarToken, verificarPermissao('processos.editar'), asyn
   }
 });
 
-const { buscarSubprocessosComTarefas } = require("../controllers/tarefaController");
+const { buscarSubprocessosComTarefas } = require("../../controllers/gestao/tarefaController");
 
 
 router.put("/atividades/:processoId/reordenar", autenticarToken, verificarPermissao('processos.editar'), async (req, res) => {

@@ -5,8 +5,8 @@ const { processarSituacaoFiscalCliente } = require("../../services/gestao/sitfis
 const { consultarDCTFWeb } = require("../../services/gestao/dctfwebService"); // Função DCTF Web
 const axios = require("axios");
 const db = require('../../config/database');
-const { autenticarToken } = require('../../middlewares/auth');
-const { verificarPermissao } = require('../../middlewares/permissaoMiddleware');
+const autenticarToken = require('../../middlewares/auth');
+const { verificarPermissao } = require('../../middlewares/permissao');
 const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
@@ -28,7 +28,7 @@ router.get('/opcoes/status', autenticarToken, verificarPermissao('clientes.visua
     if (!empresaId) return res.status(400).json({ error: 'empresaId é obrigatório.' });
 
     const [rows] = await db.query(
-      `SELECT DISTINCT c.status FROM clientes c WHERE c.empresaId = ? AND c.status IS NOT NULL AND TRIM(c.status) <> '' ORDER BY c.status ASC`,
+      `SELECT DISTINCT c.status FROM clientes c WHERE c.empresa_id = ? AND c.status IS NOT NULL AND TRIM(c.status) <> '' ORDER BY c.status ASC`,
       [empresaId]
     );
 
@@ -73,7 +73,7 @@ router.get('/usuarios-vinculados', autenticarToken, verificarPermissao('clientes
     let sql = `
       SELECT DISTINCT 
         c.id,
-        c.nome,
+        c.razao_social as nome,
         c.cnpjCpf,
         c.telefone,
         c.email,
@@ -97,7 +97,7 @@ router.get('/usuarios-vinculados', autenticarToken, verificarPermissao('clientes
       params.push(grupoId);
     }
 
-    sql += ` ${whereClause} ORDER BY c.nome ASC`;
+    sql += ` ${whereClause} ORDER BY c.razao_social as nome ASC`;
 
     console.log('🔍 Query clientes vinculados:', sql);
     console.log('🔍 Parâmetros:', params);
@@ -172,7 +172,7 @@ router.get("/exportar-excel", autenticarToken, verificarPermissao('clientes.visu
     if (tipoInscricao) whereClause += " AND c.tipoInscricao = ?";
     if (tipo) whereClause += " AND c.tipo = ?";
     if (status) whereClause += " AND c.status = ?";
-    if (search) whereClause += " AND (c.nome LIKE ? OR c.cnpjCpf LIKE ?)";
+    if (search) whereClause += " AND (c.razao_social as nome LIKE ? OR c.cnpjCpf LIKE ?)";
 
     // Filtro por dores
     let joinDores = "";
@@ -203,7 +203,17 @@ router.get("/exportar-excel", autenticarToken, verificarPermissao('clientes.visu
     }
 
     // Montar query final concatenando joins corretamente, sempre com espaço
-    const sql = `SELECT c.id, c.nome, c.cnpjCpf, c.telefone, c.email, c.cidade, c.estado, c.status, c.dataInicio FROM clientes c${joinDores ? ' ' + joinDores : ''}${joinSolucoes ? ' ' + joinSolucoes : ''}${joinGrupos ? ' ' + joinGrupos : ''} ${whereClause} GROUP BY c.id ORDER BY nome ASC`;
+    const sql = `SELECT 
+      c.id,
+      c.apelido AS nome,
+      c.cpf_cnpj AS cnpjCpf,
+      c.telefone_comercial AS telefone,
+      c.email_principal AS email,
+      c.cidade,
+      c.estado,
+      c.status,
+      c.data_inicio AS dataInicio
+    FROM clientes c${joinDores ? ' ' + joinDores : ''}${joinSolucoes ? ' ' + joinSolucoes : ''}${joinGrupos ? ' ' + joinGrupos : ''} ${whereClause} GROUP BY c.id ORDER BY nome ASC`;
     // Montar os parâmetros na ordem correta
     let sqlParams = [];
     if (doresArr.length > 0) sqlParams.push(...doresArr);
@@ -265,7 +275,7 @@ router.get("/grupos/todos", async (req, res) => {
 
   try {
     const [grupos] = await db.query(
-      "SELECT id, nome FROM clientes_grupos WHERE empresaId = ? ORDER BY nome ASC",
+      "SELECT id, nome FROM clientes_grupos WHERE empresa_id = ? ORDER BY nome ASC",
       [empresaId]
     );
     res.json({ grupos });
@@ -279,7 +289,7 @@ router.get("/grupo/:grupoId", async (req, res) => {
   const { grupoId } = req.params;
   try {
     const [clientes] = await db.query(
-      `SELECT c.id, c.nome, c.cnpjCpf
+      `SELECT c.id, c.razao_social as nome, c.cnpjCpf
          FROM clientes c
          JOIN clientes_grupos_vinculo cgv ON c.id = cgv.clienteId
         WHERE cgv.grupoId = ?`,
@@ -819,7 +829,7 @@ router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), asyn
     }
 
     if (req.query.search) {
-      whereClause += " AND (c.nome LIKE ? OR c.cnpjCpf LIKE ?)";
+      whereClause += " AND (c.razao_social as nome LIKE ? OR c.cnpjCpf LIKE ?)";
       params.push(`%${req.query.search}%`, `%${req.query.search}%`);
     }
 
@@ -864,7 +874,7 @@ router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), asyn
     }
 
     const sql = `SELECT 
-      c.id, c.nome, c.cnpjCpf, c.telefone, c.email, c.endereco, c.rua, c.complemento, c.bairro, c.cidade, c.estado, c.cep, c.pais,
+      c.id, c.razao_social as nome, c.cnpjCpf, c.telefone, c.email, c.endereco, c.rua, c.complemento, c.bairro, c.cidade, c.estado, c.cep, c.pais,
       c.dataCriacao, c.dataFim, c.dataNascimento, c.observacao,
       c.regimeTributario, c.tipoInscricao, c.apelido, c.sistema,
       c.tipo, c.status, c.statusComplementar, c.responsavelLegal, c.dataInicio

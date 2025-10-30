@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 const db = require("../../config/database");
 const jwt = require("jsonwebtoken");
 const { addDays, subDays, parseISO, isEqual, isBefore, addBusinessDays } = require('date-fns');
 const { consultarDCTFWeb } = require("../../services/gestao/dctfwebService"); // Importa a função que já existe
-const { verificarPermissao } = require("../../middlewares/permissaoMiddleware");
+const { verificarPermissao } = require("../../middlewares/permissao");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");

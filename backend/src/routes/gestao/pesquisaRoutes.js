@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require("../../config/database");
 const crypto = require('crypto');
-const { autenticarToken } = require("../../middlewares/auth");
+const autenticarToken = require("../../middlewares/auth");
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 
