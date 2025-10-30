@@ -1,0 +1,429 @@
+/* ClientesPage.module.css - SISTEMA TITAN */
+
+.container {
+    padding: var(--onity-space-l);
+    font-family: var(--onity-font-family-sans);
+    background: var(--onity-color-bg); /* MESMA COR DO DASHBOARD LAYOUT */
+    color: var(--onity-color-text);
+  }
+  
+  .filtersRow {
+    display: flex;
+    gap: var(--onity-space-s);
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--onity-space-s);
+    padding: var(--onity-space-m);
+    background: var(--onity-color-surface); /* Card neutro claro */
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .filtroSelect,
+  .filtroInput {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-body-size);
+    font-family: var(--onity-font-family-sans);
+    min-width: 120px;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 0.2s ease;
+  }
+  
+  .filtroInput:hover,
+  .filtroInput:focus,
+  .filtroSelect:hover,
+  .filtroSelect:focus {
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+    outline: none;
+    background: var(--onity-color-surface);
+  }
+  
+  /* Estilos para os selects nativos */
+  .filtroSelect option {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: none;
+    padding: var(--onity-space-s);
+  }
+  
+  .filtroSelect option:hover {
+    background: var(--onity-color-primary);
+    color: white;
+  }
+  
+  .buttonsRow {
+    display: flex;
+    gap: var(--onity-space-s);
+    align-items: center;
+    margin-bottom: var(--onity-space-m);
+    padding: var(--onity-space-m);
+    background: var(--onity-color-surface); /* Card neutro claro */
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .botaoClientes,
+  .botaoAplicar,
+  .botaoLimpar {
+    background-color: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    cursor: pointer;
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: var(--onity-elev-low);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Efeito de brilho deslizante */
+  .botaoClientes::before,
+  .botaoAplicar::before,
+  .botaoLimpar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .botaoAplicar {
+    background-color: #059669; /* Verde mais profundo e sério */
+    border: 1px solid #059669;
+  }
+  
+  .botaoLimpar {
+    background-color: #dc2626; /* Vermelho mais profundo e sério */
+    border: 1px solid #dc2626;
+  }
+  
+  
+  .botaoClientes:hover,
+  .botaoAplicar:hover,
+  .botaoLimpar:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--titan-shadow-md);
+  }
+  
+  .botaoClientes:hover::before,
+  .botaoAplicar:hover::before,
+  .botaoLimpar:hover::before {
+    left: 100%;
+  }
+  
+  .botaoAplicar:hover {
+    background-color: #1db894; /* Verde mais claro no hover */
+    border-color: #1db894;
+  }
+  
+  .botaoLimpar:hover {
+    background-color: #e53e3e; /* Vermelho mais claro no hover */
+    border-color: #e53e3e;
+  }
+  
+  /* Estilo especial para botões principais */
+  .botaoClientes {
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  
+  .botaoClientes:hover {
+    background: var(--onity-color-surface);
+    border-color: var(--onity-color-primary-hover);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: var(--onity-elev-med);
+    border-radius: var(--onity-radius-m);
+    overflow: hidden;
+    background: var(--onity-color-surface); /* Fundo mais neutro (cinza vidro) */
+    border: 1px solid var(--onity-color-border);
+  }
+  
+  .table thead tr {
+    background: var(--onity-color-surface); /* FUNDO MAIS ESCURO NO HEADER */
+  }
+  
+  .th {
+    padding: var(--onity-space-s);
+    font-weight: 600;
+    font-size: var(--onity-type-body-size);
+    text-align: left;
+    border-bottom: 1px solid var(--onity-color-border);
+    color: var(--onity-color-text);
+    background: var(--onity-color-surface);
+  }
+  
+  .sortableTh {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  
+  .sortableTh:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--onity-color-primary);
+  }
+  
+  .td {
+    padding: var(--onity-space-s);
+    font-size: var(--onity-type-body-size);
+    border-bottom: 1px solid var(--onity-color-border);
+    color: var(--onity-color-text);
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.082); /* Cinza neutro (menos azul) */
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.038); /* Cinza neutro sutil */
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.048);
+    border-left: 2px solid var(--onity-color-primary);
+    box-shadow: inset 0 0 0 1px var(--onity-color-border);
+  }
+  
+  .linkTd {
+    color: var(--onity-color-text);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  
+  .linkTd:hover {
+    color: var(--onity-icon-secondary);
+    transform: scale(1.02);
+    text-shadow: 0 0 2px rgba(234, 242, 255, 0.25);
+  }
+  
+  /* Estilo específico para células de inscrição e apelido */
+  .cellHighlight {
+    color: var(--onity-color-text);
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .cellHighlight:hover {
+    color: var(--onity-icon-secondary);
+  }
+  
+  .pagination {
+    margin-top: var(--onity-space-l);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--onity-space-m);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    color: var(--onity-color-text);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .paginationSelect {
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-caption-size);
+    height: 28px;
+    min-width: 28px;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.1;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 0.2s ease;
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .paginationSelect:focus {
+    border-color: var(--onity-color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.1);
+  }
+  
+  .paginationButtons {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+  
+  .paginationArrow,
+  .paginationButtonActive {
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    color: var(--onity-color-text);
+    border-radius: var(--onity-radius-xs);
+    min-width: 28px;
+    height: 28px;
+    font-size: var(--onity-type-caption-size);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--onity-font-family-sans);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .paginationArrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .paginationArrow:hover:not(:disabled) {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border-color: var(--onity-color-primary-hover);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .paginationButtonActive {
+    background: rgba(0, 76, 255, 0.18);
+    color: var(--onity-color-text);
+    font-weight: 600;
+    border: 1px solid var(--onity-color-primary);
+    box-shadow: var(--onity-elev-low);
+    transform: scale(1.02);
+  }
+  
+  .tab {
+    padding: var(--onity-space-s) var(--onity-space-l);
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-icon-secondary);
+    background: rgba(255, 255, 255, 0.02); /* FUNDO MAIS SUTIL */
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    font-weight: 400;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .activeTab {
+    color: var(--onity-color-text); /* Texto branco/alto contraste */
+    font-weight: 600;
+    background: var(--onity-color-surface); /* FUNDO MAIS ESCURO NA ABA ATIVA */
+    border-bottom: 3px solid var(--onity-color-primary);
+    z-index: 2;
+  }
+  
+  .tabsContainer {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--onity-color-border);
+    background: rgba(255, 255, 255, 0.02); /* FUNDO MAIS SUTIL */
+    margin-bottom: var(--onity-space-l);
+    position: relative;
+    border-radius: var(--onity-radius-m) var(--onity-radius-m) 0 0;
+  }
+  
+  .actionsTd {
+    text-align: right;
+    min-width: 110px;
+    padding-right: var(--onity-space-l);
+  }
+  
+  .actionIcon {
+    color: var(--onity-icon-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .actionIcon.edit:hover {
+    color: var(--onity-color-primary);
+    transform: scale(1.1);
+  }
+  
+  .actionIcon.delete:hover {
+    color: var(--onity-color-error);
+    transform: scale(1.1);
+  }
+  
+  /* Estilos para os status dos franqueados */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: var(--onity-type-caption-size);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  
+  .statusAtivo {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+  
+  .statusAtivo::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .statusDistrato {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  .statusDistrato::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .statusCongelado {
+    background: rgba(107, 114, 128, 0.15);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+  }
+  
+  .statusCongelado::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #6b7280;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  /* Estilos para os selects do react-select movidos para globals.css */

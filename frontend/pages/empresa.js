@@ -165,9 +165,14 @@ export default function Empresa() {
       const updated = {
         ...user,
         EmpresaId: company.id,
-        EmpresaNome: company.nome || company.name
+        EmpresaNome: company.nome || company.name,
+        tipoEmpresa: company.tipo_empresa || company.tipoEmpresa || ''
       }
       localStorage.setItem('userData', JSON.stringify(updated))
+      // Persistir separadamente para acessos rápidos
+      if (company.tipo_empresa || company.tipoEmpresa) {
+        localStorage.setItem('tipoEmpresa', company.tipo_empresa || company.tipoEmpresa)
+      }
     } catch {
       // Se falhar o parse/serialize, segue o fluxo de navegação
     }
