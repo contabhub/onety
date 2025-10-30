@@ -238,10 +238,10 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
-        id: 'processos',
-        label: 'Processos',
-        icon: <Settings size={18} />,
-        route: '/gestao-processos/processos'
+        id: 'departamentos',
+        label: 'Departamentos',
+        icon: <Building2 size={18} />,
+        route: '/gestao/departamentos'
       },
       {
         id: 'workflows',

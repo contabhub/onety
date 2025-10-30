@@ -1,0 +1,509 @@
+/* DepartamentosPage.module.css - SISTEMA TITAN */
+
+.container {
+    padding: var(--onity-space-l);
+    font-family: var(--onity-font-family-sans);
+    background: var(--onity-color-bg);
+    color: var(--onity-color-text);
+  }
+  
+  /* ===== HEADER E CONTROLES ===== */
+  .headerRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--onity-space-l);
+    padding: var(--onity-space-m);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .headerTitle {
+    font-size: var(--onity-type-h2-size);
+    font-weight: var(--onity-type-h2-weight);
+    color: var(--onity-color-text);
+    margin: 0;
+  }
+  
+  .buttonNovo {
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-l);
+    cursor: pointer;
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    font-weight: 600;
+    transition: all 120ms ease;
+    box-shadow: var(--onity-elev-low);
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .buttonNovo:hover {
+    background: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .buttonNovo:active {
+    transform: translateY(0) scale(1);
+  }
+  
+  .icon {
+    font-size: var(--titan-font-size-base);
+  }
+  
+  .title {
+    font-size: var(--onity-type-h2-size);
+    font-weight: var(--onity-type-h2-weight);
+    margin-bottom: var(--onity-space-xl);
+    color: var(--onity-color-text);
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--onity-space-l);
+  }
+  
+  .searchWrapper {
+    position: relative;
+    width: fit-content;
+    display: inline-block;
+    margin-bottom: var(--onity-space-l);
+  }
+  
+  .searchIcon {
+    position: absolute;
+    top: 50%;
+    left: var(--onity-space-s);
+    transform: translateY(-50%);
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-body-size);
+    pointer-events: none;
+  }
+  
+  .filterInput {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    padding-left: calc(var(--onity-space-m) + 24px);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    width: 250px;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 120ms ease;
+    outline: none;
+  }
+  
+  .filterInput:hover,
+  .filterInput:focus {
+    border-color: var(--onity-color-primary);
+    box-shadow: var(--onity-elev-low);
+    background: var(--onity-color-surface);
+  }
+  
+  .filterInput::placeholder {
+    color: var(--onity-color-text);
+    opacity: 0.6;
+  }
+  
+  .table {
+    width: 100%;
+    background: var(--onity-color-surface);
+    border-collapse: collapse;
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    overflow: hidden;
+    box-shadow: var(--onity-elev-med);
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .tableHeaderRow {
+    background: var(--onity-color-surface);
+  }
+  
+  .th {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    text-align: left;
+    padding: var(--onity-space-s);
+    font-weight: 600;
+    font-size: var(--onity-type-body-size);
+    border-bottom: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .td {
+    padding: var(--onity-space-s);
+    border-bottom: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    font-weight: 400;
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-color-text);
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.038);
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.082);
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.048);
+    border-left: 2px solid var(--onity-color-primary);
+    box-shadow: inset 0 0 0 1px var(--onity-color-border);
+  }
+  
+  .linkTd {
+    font-weight: 600;
+    color: var(--onity-color-text);
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+  
+  .linkTd:hover {
+    color: var(--onity-color-info);
+  }
+  
+  /* ===== PAGINAÇÃO ===== */
+  .pagination {
+    margin-top: var(--onity-space-l);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--onity-space-m);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    color: var(--onity-color-text);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .paginationSelect {
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-caption-size);
+    height: 28px;
+    min-width: 28px;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.1;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 120ms ease;
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .paginationSelect:focus {
+    border-color: var(--onity-color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  }
+  
+  .paginationButtons {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+  
+  .paginationArrow,
+  .paginationButtonActive {
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    color: var(--onity-color-text);
+    border-radius: var(--onity-radius-xs);
+    min-width: 28px;
+    height: 28px;
+    font-size: var(--onity-type-caption-size);
+    cursor: pointer;
+    transition: all 120ms ease;
+    font-family: var(--onity-font-family-sans);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .paginationArrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .paginationArrow:hover:not(:disabled) {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border-color: var(--onity-color-primary-hover);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .paginationButtonActive {
+    background: rgba(0, 76, 255, 0.18);
+    color: var(--onity-color-text);
+    font-weight: 600;
+    border: 1px solid var(--onity-color-primary);
+    box-shadow: var(--onity-elev-low);
+    transform: scale(1.02);
+  }
+  
+  /* ===== MODAL ===== */
+  /* Estilos removidos - agora usando inline styles como ModalEcontador.tsx */
+  
+  /* ===== ANIMAÇÕES ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  .fadeInOverlay {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  
+  .fadeOutOverlay {
+    animation: fadeOut 0.3s ease forwards;
+  }
+  
+  .fadeInContent {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  
+  .fadeOutContent {
+    animation: fadeOut 0.3s ease forwards;
+  }
+  
+  /* ===== RESPONSIVIDADE ===== */
+  /* ===== ESTILOS MOVIDOS DO INLINE (departamentos.js) ===== */
+  .loadingContainer {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  .spinnerIcon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .loadingText {
+    font-size: 15px;
+    color: #444;
+  }
+
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .modalOverlayLight {
+    background: rgba(0,0,0,0.35);
+  }
+
+  .modalOverlayDark {
+    background: rgba(0,0,0,0.5);
+  }
+
+  .modalContent {
+    border-radius: var(--onity-radius-l);
+    max-width: 500px;
+    width: 90%;
+    padding: var(--onity-space-xl);
+    box-shadow: var(--onity-elev-high);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modalContentLight {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .modalContentDark {
+    background: rgba(11, 11, 17, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--onity-space-l);
+  }
+
+  .modalTitle {
+    margin: 0;
+    font-size: var(--onity-type-h3-size);
+    font-weight: 600;
+    color: var(--onity-color-text);
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--onity-color-text);
+    opacity: 0.8;
+    padding: 4px;
+    border-radius: var(--onity-radius-xs);
+    transition: all 120ms ease;
+  }
+
+  .closeButton:hover {
+    opacity: 1;
+    background: var(--onity-color-bg);
+  }
+
+  .formGroup {
+    margin-bottom: var(--onity-space-m);
+  }
+
+  .label {
+    display: block;
+    margin-bottom: var(--onity-space-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    color: var(--onity-color-text);
+  }
+
+  .required {
+    color: var(--onity-color-error);
+  }
+
+  .inputField,
+  .selectField {
+    width: 100%;
+    padding: var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 120ms ease;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .inputField:focus,
+  .selectField:focus {
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  }
+
+  .modalActions {
+    display: flex;
+    gap: var(--onity-space-s);
+    justify-content: flex-end;
+  }
+
+  .btnCancel {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+
+  .btnCancel:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+  }
+
+  .btnPrimary {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+
+  .btnPrimary:hover {
+    background: var(--onity-color-primary-hover);
+    transform: scale(1.02);
+  }
+  @media (max-width: 768px) {
+    .container {
+      padding: var(--onity-space-m);
+    }
+    
+    .title {
+      font-size: var(--onity-type-h3-size);
+      margin-bottom: var(--onity-space-l);
+    }
+    
+    .searchWrapper {
+      width: 100%;
+    }
+    
+    .filterInput {
+      width: 100%;
+    }
+    
+    .table {
+      font-size: var(--onity-type-caption-size);
+    }
+    
+    .th, .td {
+      padding: var(--onity-space-xs);
+    }
+    
+    .modalContent {
+      width: 95%;
+      padding: var(--onity-space-l);
+    }
+    
+    /* Responsividade da paginação */
+    .pagination {
+      flex-direction: column;
+      gap: var(--onity-space-m);
+      text-align: center;
+    }
+    
+    .paginationButtons {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
