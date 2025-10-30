@@ -144,7 +144,7 @@
   
   .linkTd {
     font-weight: 600;
-    color: var(--onity-color-primary-contrast);
+    color: var(--onity-color-text);
     cursor: pointer;
     transition: all 120ms ease;
     position: relative;
@@ -158,23 +158,15 @@
     left: -100%;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, var(--onity-color-primary-contrast), var(--onity-color-primary));
+    background: linear-gradient(90deg, var(--onity-color-info), var(--onity-color-primary));
     transition: left 120ms ease;
   }
   
   .linkTd:hover {
-    color: var(--onity-color-primary-contrast);
+    color: var(--onity-color-info);
     transform: translateY(-1px);
   }
 
-  /* ===== ESTILOS MOVIDOS DO INLINE (cargos.js) ===== */
-  .linkColorLight {
-    color: var(--onity-color-text);
-  }
-
-  .linkColorDark {
-    color: var(--onity-color-primary);
-  }
 
   .tableLoadingCell {
     text-align: center;
@@ -327,6 +319,175 @@
   .btnPrimary:hover {
     background: var(--onity-color-primary-hover);
     transform: scale(1.02);
+  }
+
+  /* ====== DETALHE DO CARGO ([id].js) ====== */
+  .sectionHeader {
+    margin-bottom: var(--onity-space-xl);
+  }
+
+  .pageTitle {
+    color: var(--onity-color-text);
+    font-weight: 600;
+    font-size: var(--onity-type-h2-size);
+    margin: 0;
+  }
+
+  .tabsRow {
+    margin-bottom: var(--onity-space-l);
+  }
+
+  .tabsInline {
+    display: flex;
+    gap: var(--onity-space-s);
+  }
+
+  .tab {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--onity-type-body-size);
+    transition: all 120ms ease;
+  }
+
+  .tabActive {
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border-color: transparent;
+  }
+
+  .infoCard {
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-m);
+    padding: var(--onity-space-l);
+    max-width: 420px;
+    border: 1px solid var(--onity-color-border);
+    box-shadow: var(--onity-elev-low);
+  }
+
+  .actionsRow {
+    display: flex;
+    gap: var(--onity-space-s);
+  }
+
+  .btnSecondary {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+    min-width: 140px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btnSecondary:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+  }
+
+  .btnDanger {
+    background: var(--onity-color-error);
+    color: #fff;
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+    min-width: 100px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btnDanger:hover {
+    background: #ff4444;
+    transform: scale(1.02);
+  }
+
+  .permissionsWrapper {
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    padding: var(--onity-space-l);
+    max-width: 1200px;
+    box-shadow: var(--onity-elev-med);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--onity-space-l);
+    justify-content: center;
+  }
+
+  .permGroupCard {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-low);
+    border: 1px solid var(--onity-color-border);
+    min-width: 180px;
+    padding: var(--onity-space-m);
+    margin-bottom: var(--onity-space-s);
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .permGroupHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--onity-space-s);
+    padding-bottom: var(--onity-space-xs);
+    border-bottom: 1px solid var(--onity-color-border);
+  }
+
+  .permGroupTitle {
+    font-weight: 600;
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-body-size);
+  }
+
+  .permOption {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--onity-space-xs);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    font-weight: 500;
+    font-size: var(--onity-type-body-size);
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+
+  .permOption[data-checked="true"] {
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border-color: var(--onity-color-primary);
+  }
+
+  .permOption input {
+    margin-right: var(--onity-space-xs);
+    width: 14px;
+    height: 14px;
+  }
+
+  .permissionsFooter {
+    flex-basis: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: var(--onity-space-l);
   }
   
   .linkTd:hover::before {

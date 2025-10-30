@@ -15,13 +15,23 @@ export default function Cargos() {
   const [permissoes, setPermissoes] = useState({});
   const [filtro, setFiltro] = useState("");
   const [loading, setLoading] = useState(false);
+  const [empresaId, setEmpresaId] = useState(null);
+  const [canView, setCanView] = useState(null); // null = pendente, true/false = decidido
 
   // ✅ Estado para detecção de tema
   const [isLight, setIsLight] = useState(false);
 
   useEffect(() => {
-    if (!hasPermissao("cargos", "visualizar") && !hasPermissao("cargos", "criar") && !hasPermissao("adm", "admin")) return;
-    fetchCargos();
+    // calcula permissão no client para evitar mismatch de hidratação
+    const allowed = hasPermissao("cargos", "visualizar") || hasPermissao("cargos", "criar") || hasPermissao("adm", "admin");
+    setCanView(allowed);
+    if (!allowed) return;
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      const detected = parsed?.EmpresaId || parsed?.empresa?.id || null;
+      if (detected) setEmpresaId(String(detected));
+    } catch {}
   }, []);
 
   // ✅ Detecção de tema
@@ -40,7 +50,8 @@ export default function Cargos() {
     setLoading(true);
     try {
       const token = typeof window !== "undefined" ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") : "";
-      const res = await fetch(`${BASE_URL}/gestao/cargos`, {
+      const url = `${BASE_URL}/gestao/cargos/empresa/${empresaId}`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) {
@@ -55,6 +66,12 @@ export default function Cargos() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (canView && empresaId) {
+      fetchCargos();
+    }
+  }, [canView, empresaId]);
 
   const criarCargo = async () => {
     try {
@@ -86,7 +103,11 @@ export default function Cargos() {
     }
   };
 
-  if (!hasPermissao("cargos", "visualizar") && !hasPermissao("cargos", "criar") && !hasPermissao("adm", "admin")) {
+  if (canView === null) {
+    return <></>;
+  }
+
+  if (!canView) {
     return <>
       <PrincipalSidebar />
       <div className={styles.container}><h2>Acesso negado.</h2></div>
@@ -137,8 +158,8 @@ export default function Cargos() {
                 <tr key={cargo.id}>
                   <td className={styles.td}>{idx + 1}</td>
                   <td 
-                    className={`${styles.td} ${styles.linkTd} ${isLight ? styles.linkColorLight : styles.linkColorDark}`} 
-                    onClick={() => window.location.href = `/dashboard/cargos/${cargo.id}`}
+                    className={`${styles.td} ${styles.linkTd}`} 
+                    onClick={() => window.location.href = `/gestao/cargos/${cargo.id}`}
                   >
                     {cargo.nome}
                   </td>

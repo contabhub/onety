@@ -244,6 +244,18 @@ const MODULE_REGISTRY = {
         route: '/gestao/departamentos'
       },
       {
+        id: 'cargos',
+        label: 'Cargos',
+        icon: <Users size={18} />,
+        route: '/gestao/cargos'
+      },
+      {
+        id: 'enquete',
+        label: 'Enquete',
+        icon: <FileText size={18} />,
+        route: '/gestao/enquete'
+      },
+      {
         id: 'workflows',
         label: 'Workflows',
         icon: <ChevronRight size={18} />,

@@ -1,0 +1,79 @@
+/* NavTabs.module.css - SISTEMA ONETY */
+
+.navTabsContainer {
+    display: flex;
+    gap: var(--onity-space-s);
+    padding: 20px;
+  }
+  
+  .tab {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    cursor: pointer;
+    font-weight: 500;
+    user-select: none;
+    font-size: var(--onity-type-body-size);
+    transition: all 120ms ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .tab:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    color: var(--onity-color-text);
+    transform: translateY(-1px);
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .tab:active {
+    transform: translateY(0);
+  }
+  
+  .activeTab {
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border-color: var(--onity-color-primary);
+    font-weight: 600;
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .activeTab:hover {
+    background: var(--onity-color-primary-hover);
+    border-color: var(--onity-color-primary-hover);
+    color: var(--onity-color-primary-contrast);
+    transform: translateY(-1px);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .disabledTab {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--onity-color-border);
+  }
+  
+  .disabledTab:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--onity-color-border);
+    color: var(--onity-color-text);
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* ===== RESPONSIVIDADE ===== */
+  @media (max-width: 768px) {
+    .navTabsContainer {
+      flex-wrap: wrap;
+      gap: var(--onity-space-xs);
+    }
+    
+    .tab {
+      font-size: var(--onity-type-caption-size);
+      padding: var(--onity-space-xs) var(--onity-space-s);
+    }
+  }
+  
