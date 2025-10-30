@@ -16,8 +16,8 @@ router.post("/", autenticarToken, verificarPermissao('departamentos.criar'), asy
     // Só valida o responsável se ele for informado
     if (responsavelId) {
       const [[check]] = await db.query(`
-        SELECT id FROM relacao_empresas
-        WHERE id = ? AND empresaId = ?
+        SELECT id FROM usuarios_empresas
+        WHERE id = ? AND empresa_id = ?
       `, [responsavelId, empresaId]);
       if (!check) {
         return res.status(403).json({ error: "Responsável não pertence à empresa." });
@@ -25,7 +25,7 @@ router.post("/", autenticarToken, verificarPermissao('departamentos.criar'), asy
     }
 
     await db.query(
-      `INSERT INTO departamentos (empresaId, nome, responsavelId)
+      `INSERT INTO departamentos (empresa_id, nome, responsavel_id)
        VALUES (?, ?, ?)`,
       [empresaId, nome, responsavelId || null]
     );
@@ -42,7 +42,7 @@ router.get("/empresa/:empresaId/nomes", autenticarToken, verificarPermissao('dep
   const { empresaId } = req.params;
   try {
     const [dados] = await db.query(
-      `SELECT id, nome FROM departamentos WHERE empresaId = ? ORDER BY nome`,
+      `SELECT id, nome FROM departamentos WHERE empresa_id = ? ORDER BY nome`,
       [empresaId]
     );
     res.json(dados);
@@ -58,9 +58,9 @@ router.get("/empresa/:empresaId", autenticarToken, verificarPermissao('departame
   try {
     const [dados] = await db.query(`
       SELECT r.id AS relacaoId, u.nome
-      FROM relacao_empresas r
-      JOIN usuarios u ON u.id = r.usuarioId
-      WHERE r.empresaId = ?
+      FROM usuarios_empresas r
+      JOIN usuarios u ON u.id = r.usuario_id
+      WHERE r.empresa_id = ?
     `, [empresaId]);
 
     res.json(dados);
@@ -82,9 +82,9 @@ router.get("/:departamentoId/usuarios", autenticarToken, verificarPermissao('dep
         r.id AS relacaoId,
         c.nome AS cargoNome
       FROM usuarios u
-      JOIN relacao_empresas r ON u.id = r.usuarioId
-      LEFT JOIN cargos c ON r.cargoId = c.id
-      WHERE r.departamentoId = ?
+      JOIN usuarios_empresas r ON u.id = r.usuario_id
+      LEFT JOIN cargos c ON r.cargo_id = c.id
+      WHERE r.departamento_id = ?
         AND (LOWER(c.nome) NOT LIKE '%superadmin%' OR c.nome IS NULL)
         AND (u.nivel IS NULL OR LOWER(u.nivel) NOT LIKE '%superadmin%')
       ORDER BY u.nome
@@ -103,14 +103,14 @@ router.get("/:empresaId", autenticarToken, verificarPermissao('departamentos.vis
     const { empresaId } = req.params;
 
     const [dados] = await db.query(`
-      SELECT d.id, d.nome, d.dataCriacao,
-       d.responsavelId,
-       re.usuarioId AS responsavelUsuarioId,      -- ADICIONE ESSA LINHA
+      SELECT d.id, d.nome, d.criado_em AS dataCriacao,
+       d.responsavel_id,
+       re.usuario_id AS responsavelUsuarioId,
        u.nome AS responsavelNome
 FROM departamentos d
-LEFT JOIN relacao_empresas re ON d.responsavelId = re.id
-LEFT JOIN usuarios u ON u.id = re.usuarioId
-WHERE d.empresaId = ?
+LEFT JOIN usuarios_empresas re ON d.responsavel_id = re.id
+LEFT JOIN usuarios u ON u.id = re.usuario_id
+WHERE d.empresa_id = ?
 ORDER BY d.nome
     `, [empresaId]);
 
@@ -126,7 +126,7 @@ router.get("/:id/global", autenticarToken, verificarPermissao('departamentos.vis
   const { id } = req.params;
   try {
     const [[dep]] = await db.query(
-      "SELECT departamentoGlobalId FROM departamentos WHERE id = ?",
+      "SELECT departamento_global_id FROM departamentos WHERE id = ?",
       [id]
     );
     if (!dep) return res.status(404).json({ error: "Departamento não encontrado" });
@@ -155,7 +155,7 @@ router.put("/:id", autenticarToken, verificarPermissao('departamentos.editar'), 
 
     // Atualiza os dados
     await db.query(
-      `UPDATE departamentos SET nome = ?, responsavelId = ? WHERE id = ?`,
+      `UPDATE departamentos SET nome = ?, responsavel_id = ? WHERE id = ?`,
       [nome, responsavelId, id]
     );
 
@@ -174,7 +174,7 @@ router.patch("/relacao-empresas/:id", autenticarToken, verificarPermissao('depar
   try {
     // Verifica se existe a relação
     const [[relacao]] = await db.query(
-      `SELECT * FROM relacao_empresas WHERE id = ?`,
+      `SELECT * FROM usuarios_empresas WHERE id = ?`,
       [id]
     );
 
@@ -184,8 +184,8 @@ router.patch("/relacao-empresas/:id", autenticarToken, verificarPermissao('depar
 
     // Atualiza o departamento
     await db.query(
-      `UPDATE relacao_empresas SET departamentoId = ? WHERE id = ?`,
-      [departamentoId || null, id] // permite definir como NULL
+      `UPDATE usuarios_empresas SET departamento_id = ? WHERE id = ?`,
+      [departamentoId || null, id]
     );
 
     res.json({ message: "Departamento atualizado com sucesso." });
@@ -200,7 +200,7 @@ router.get("/relacao-empresas/usuario/:usuarioId", autenticarToken, verificarPer
   const { usuarioId } = req.params;
   try {
     const [dados] = await db.query(
-      `SELECT * FROM relacao_empresas WHERE usuarioId = ?`,
+      `SELECT * FROM usuarios_empresas WHERE usuario_id = ?`,
       [usuarioId]
     );
     res.json(dados);
@@ -216,7 +216,7 @@ router.delete("/relacao-empresas/:id", autenticarToken, verificarPermissao('depa
   try {
     // Verifica se a relação existe
     const [[relacao]] = await db.query(
-      `SELECT * FROM relacao_empresas WHERE id = ?`,
+      `SELECT * FROM usuarios_empresas WHERE id = ?`,
       [id]
     );
 
@@ -226,7 +226,7 @@ router.delete("/relacao-empresas/:id", autenticarToken, verificarPermissao('depa
 
     // Deleta a relação
     await db.query(
-      `DELETE FROM relacao_empresas WHERE id = ?`,
+      `DELETE FROM usuarios_empresas WHERE id = ?`,
       [id]
     );
 

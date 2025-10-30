@@ -1,0 +1,366 @@
+/* CargosPage.module.css - SISTEMA TITAN */
+
+.container {
+    padding: var(--onity-space-l);
+    font-family: var(--onity-font-family-sans);
+    background: var(--onity-color-bg);
+    color: var(--onity-color-text);
+  }
+  
+  /* ===== HEADER E CONTROLES ===== */
+  .headerRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--onity-space-l);
+    padding: var(--onity-space-m);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .headerTitle {
+    font-size: var(--onity-type-h2-size);
+    font-weight: var(--onity-type-h2-weight);
+    color: var(--onity-color-text);
+    margin: 0;
+  }
+  
+  .buttonNovo {
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-l);
+    cursor: pointer;
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    font-weight: 600;
+    transition: all 120ms ease;
+    box-shadow: var(--onity-elev-low);
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .buttonNovo:hover {
+    background: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .buttonNovo:active {
+    transform: translateY(0) scale(1);
+  }
+  
+  .icon {
+    font-size: var(--onity-type-body-size);
+  }
+  
+  .searchWrapper {
+    position: relative;
+    width: fit-content;
+    display: inline-block;
+    margin-bottom: var(--onity-space-l);
+  }
+  
+  .filterInput {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    width: 250px;
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 120ms ease;
+    outline: none;
+  }
+  
+  .filterInput:hover,
+  .filterInput:focus {
+    border-color: var(--onity-color-primary);
+    box-shadow: var(--onity-elev-low);
+    background: var(--onity-color-surface);
+  }
+  
+  .filterInput::placeholder {
+    color: var(--onity-color-text);
+    opacity: 0.6;
+  }
+  
+  /* ===== TABELA ===== */
+  .table {
+    width: 100%;
+    background: var(--onity-color-surface);
+    border-collapse: collapse;
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    overflow: hidden;
+    box-shadow: var(--onity-elev-med);
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .tableHeaderRow {
+    background: var(--onity-color-surface);
+  }
+  
+  .th {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    text-align: left;
+    padding: var(--onity-space-s);
+    font-weight: 600;
+    font-size: var(--onity-type-body-size);
+    border-bottom: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .td {
+    padding: var(--onity-space-s);
+    border-bottom: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    font-weight: 400;
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-color-text);
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.038);
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.082);
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.048);
+    border-left: 2px solid var(--onity-color-primary);
+    box-shadow: inset 0 0 0 1px var(--onity-color-border);
+  }
+  
+  .linkTd {
+    font-weight: 600;
+    color: var(--onity-color-primary-contrast);
+    cursor: pointer;
+    transition: all 120ms ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .linkTd::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--onity-color-primary-contrast), var(--onity-color-primary));
+    transition: left 120ms ease;
+  }
+  
+  .linkTd:hover {
+    color: var(--onity-color-primary-contrast);
+    transform: translateY(-1px);
+  }
+
+  /* ===== ESTILOS MOVIDOS DO INLINE (cargos.js) ===== */
+  .linkColorLight {
+    color: var(--onity-color-text);
+  }
+
+  .linkColorDark {
+    color: var(--onity-color-primary);
+  }
+
+  .tableLoadingCell {
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .modalOverlayLight {
+    background: rgba(0,0,0,0.35);
+  }
+
+  .modalOverlayDark {
+    background: rgba(0,0,0,0.5);
+  }
+
+  .modalContent {
+    border-radius: var(--onity-radius-l);
+    max-width: 500px;
+    width: 90%;
+    padding: var(--onity-space-xl);
+    box-shadow: var(--onity-elev-high);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modalContentLight {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .modalContentDark {
+    background: rgba(11, 11, 17, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--onity-space-l);
+  }
+
+  .modalTitle {
+    margin: 0;
+    font-size: var(--onity-type-h3-size);
+    font-weight: 600;
+    color: var(--onity-color-text);
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--onity-color-text);
+    opacity: 0.8;
+    padding: 4px;
+    border-radius: var(--onity-radius-xs);
+    transition: all 120ms ease;
+  }
+
+  .closeButton:hover {
+    opacity: 1;
+    background: var(--onity-color-bg);
+  }
+
+  .formGroup {
+    margin-bottom: var(--onity-space-m);
+  }
+
+  .label {
+    display: block;
+    margin-bottom: var(--onity-space-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    color: var(--onity-color-text);
+  }
+
+  .required {
+    color: var(--onity-color-error);
+  }
+
+  .inputField {
+    width: 100%;
+    padding: var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    font-size: var(--onity-type-body-size);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 120ms ease;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .inputField:focus {
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  }
+
+  .modalActions {
+    display: flex;
+    gap: var(--onity-space-s);
+    justify-content: flex-end;
+  }
+
+  .btnCancel {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+
+  .btnCancel:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+  }
+
+  .btnPrimary {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+
+  .btnPrimary:hover {
+    background: var(--onity-color-primary-hover);
+    transform: scale(1.02);
+  }
+  
+  .linkTd:hover::before {
+    left: 0;
+  }
+  
+  /* ===== MODAL ===== */
+  /* Estilos removidos - agora usando inline styles como ModalEcontador.tsx */
+  
+  /* ===== RESPONSIVIDADE ===== */
+  @media (max-width: 768px) {
+    .container {
+      padding: var(--onity-space-m);
+    }
+    
+    .headerTitle {
+      font-size: var(--onity-type-h3-size);
+      margin-bottom: var(--onity-space-l);
+    }
+    
+    .searchWrapper {
+      width: 100%;
+    }
+    
+    .filterInput {
+      width: 100%;
+    }
+    
+    .table {
+      font-size: var(--onity-type-caption-size);
+    }
+    
+    .th, .td {
+      padding: var(--onity-space-xs);
+    }
+  }
+  

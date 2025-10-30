@@ -123,10 +123,10 @@ router.put('/:id', autenticarToken, verificarPermissao('cargos.editar'), async (
 router.delete('/:id', autenticarToken, verificarPermissao('cargos.excluir'), async (req, res) => {
   try {
     const { id } = req.params;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.user && (req.user.EmpresaId || req.user.empresaId);
 
     const [relacoes] = await db.query(
-      `SELECT * FROM relacao_empresas WHERE cargoId = ?`,
+      `SELECT id FROM usuarios_empresas WHERE cargo_id = ? LIMIT 1`,
       [id]
     );
 
