@@ -37,13 +37,13 @@ const obterEscritorio = async (req, res) => {
     } else {
       // 🔎 Pega a empresa vinculada ao usuário
       const [relacao] = await db.query(
-        "SELECT empresaId FROM relacao_empresas WHERE usuarioId = ?",
+        "SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ?",
         [usuarioId]
       );
       if (relacao.length === 0) {
         return res.status(404).json({ error: "Nenhuma empresa vinculada ao usuário." });
       }
-      empresaId = relacao[0].empresaId;
+      empresaId = relacao[0].empresa_id;
     }
 
     // 🔍 Busca os dados da empresa vinculada
@@ -88,7 +88,7 @@ const cadastrarEscritorio = async (req, res) => {
 
       // 🧠 Verificar se o usuário tem acesso à empresa específica
       const [relacao] = await db.query(
-        "SELECT empresaId FROM relacao_empresas WHERE usuarioId = ? AND empresaId = ?",
+        "SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?",
         [usuarioId, empresaId]
       );
 
@@ -99,7 +99,7 @@ const cadastrarEscritorio = async (req, res) => {
       // ✅ Atualizar apenas os campos do certificado na empresa
       await db.query(
         `UPDATE empresas 
-         SET pfx = ?, senhaPfx = ?, apiKeyEplugin = ? 
+         SET pfx = ?, senhaPfx = ?, apiKey_ePlugin = ? 
          WHERE id = ?`,
         [pfxBase64, senhaCertificado, apiKeyEplugin, empresaId]
       );
@@ -127,7 +127,7 @@ const atualizarLogoEmpresa = async (req, res) => {
       
       // Verificar se o usuário tem acesso à empresa específica
       const [relacao] = await db.query(
-        "SELECT empresaId FROM relacao_empresas WHERE usuarioId = ? AND empresaId = ?",
+        "SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?",
         [usuarioId, empresaId]
       );
       if (relacao.length === 0) {

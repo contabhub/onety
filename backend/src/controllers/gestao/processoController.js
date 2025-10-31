@@ -36,7 +36,7 @@ const criarProcesso = async (req, res) => {
 
     if (isPadrao) {
       // Buscar o departamento global do departamento informado
-      const [[dep]] = await db.query("SELECT departamentoGlobalId FROM departamentos WHERE id = ?", [departamentoId]);
+      const [[dep]] = await db.query("SELECT departamento_global_id as departamentoGlobalId FROM departamentos WHERE id = ?", [departamentoId]);
 
       if (!dep || !dep.departamentoGlobalId) {
         return res.status(400).json({ error: "Departamento global não encontrado para esse departamento." });
@@ -65,9 +65,9 @@ const criarProcesso = async (req, res) => {
     
     const [result] = await db.execute(
       `INSERT INTO processos (
-        nome, departamentoid, responsavelid, diasMeta, diasPrazo, 
-        dataReferencia, empresaId, notificarAbertura, notificarFinalizacao, 
-        podeFinalizarAntesSubatendimentos, padraoFranqueadora, departamentoGlobalId
+        nome, departamento_id, responsavel_id, dias_meta, dias_prazo, 
+        data_referencia, empresa_id, notificar_abertura, notificar_finalizacao, 
+        pode_finalizar_antes_subatendimentos, padrao_franqueadora, departamento_global_id
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         nome,
@@ -102,11 +102,29 @@ const listarProcessos = async (req, res) => {
     const { empresaId } = req.usuario;
 
     const [processos] = await db.query(
-      `SELECT p.*, p.padraoFranqueadora, d.nome AS departamento, u.nome AS responsavel
+      `SELECT 
+        p.id,
+        p.nome,
+        p.empresa_id as empresaId,
+        p.departamento_id as departamentoId,
+        p.responsavel_id as responsavelId,
+        p.data_referencia as dataReferencia,
+        p.dias_meta as diasMeta,
+        p.dias_prazo as diasPrazo,
+        p.notificar_abertura as notificarAbertura,
+        p.notificar_finalizacao as notificarFinalizacao,
+        p.pode_finalizar_antes_subatendimentos as podeFinalizarAntesSubatendimentos,
+        p.padrao_franqueadora as padraoFranqueadora,
+        p.departamento_global_id as departamentoGlobalId,
+        p.criado_em as criadoEm,
+        d.nome AS departamento,
+        u.nome AS responsavel,
+        v.processo_pai_id
        FROM processos p
-       LEFT JOIN departamentos d ON p.departamentoId = d.id
-       LEFT JOIN usuarios u ON p.responsavelId = u.id
-       WHERE p.empresaId = ? OR p.padraoFranqueadora = 1`,
+       LEFT JOIN departamentos d ON p.departamento_id = d.id
+       LEFT JOIN usuarios u ON p.responsavel_id = u.id
+       LEFT JOIN processos_vinculos v ON v.processo_filho_id = p.id
+       WHERE p.empresa_id = ? OR p.padrao_franqueadora = 1`,
       [empresaId]
     );
 
@@ -122,7 +140,7 @@ const listarProcessos = async (req, res) => {
 const adicionarAtividade = async (req, res) => {
   const { processoId, tipo, texto, tipoCancelamento, descricao } = req.body;
 
-  const [verifica] = await db.query("SELECT padraoFranqueadora FROM processos WHERE id = ?", [processoId]);
+  const [verifica] = await db.query("SELECT padrao_franqueadora as padraoFranqueadora FROM processos WHERE id = ?", [processoId]);
 
   if (verifica.length === 0) {
     return res.status(404).json({ error: "Processo não encontrado." });
@@ -136,7 +154,7 @@ const adicionarAtividade = async (req, res) => {
 
   try {
     const [[{ maiorOrdem }]] = await db.query(
-      `SELECT MAX(ordem) AS maiorOrdem FROM atividades_processo WHERE processoId = ?`,
+      `SELECT MAX(ordem) AS maiorOrdem FROM atividades_processo WHERE processo_id = ?`,
       [processoId]
     );
 
@@ -144,7 +162,7 @@ const adicionarAtividade = async (req, res) => {
 
     const [result] = await db.execute(
       `INSERT INTO atividades_processo 
-       (empresaId, processoId, ordem, tipo, texto, tipoCancelamento, descricao)
+       (empresa_id, processo_id, ordem, tipo, texto, tipo_cancelamento, descricao)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [empresaId, processoId, ordem, tipo, texto, tipoCancelamento || "Com justificativa", descricao || null]
     );
@@ -163,11 +181,27 @@ const adicionarAtividade = async (req, res) => {
   
     try {
       const [rows] = await db.query(
-        `SELECT p.*, d.nome AS departamento, u.nome AS responsavel
+        `SELECT 
+          p.id,
+          p.nome,
+          p.empresa_id as empresaId,
+          p.departamento_id as departamentoId,
+          p.responsavel_id as responsavelId,
+          p.data_referencia as dataReferencia,
+          p.dias_meta as diasMeta,
+          p.dias_prazo as diasPrazo,
+          p.notificar_abertura as notificarAbertura,
+          p.notificar_finalizacao as notificarFinalizacao,
+          p.pode_finalizar_antes_subatendimentos as podeFinalizarAntesSubatendimentos,
+          p.padrao_franqueadora as padraoFranqueadora,
+          p.departamento_global_id as departamentoGlobalId,
+          p.criado_em as criadoEm,
+          d.nome AS departamento,
+          u.nome AS responsavel
          FROM processos p
-         LEFT JOIN departamentos d ON p.departamentoId = d.id
-         LEFT JOIN usuarios u ON p.responsavelId = u.id
-         WHERE p.id = ? AND (p.empresaId = ? OR p.padraoFranqueadora = 1)`,
+         LEFT JOIN departamentos d ON p.departamento_id = d.id
+         LEFT JOIN usuarios u ON p.responsavel_id = u.id
+         WHERE p.id = ? AND (p.empresa_id = ? OR p.padrao_franqueadora = 1)`,
         [id, req.usuario.empresaId]
       );
       
@@ -190,7 +224,16 @@ const adicionarAtividade = async (req, res) => {
   
     try {
       const [rows] = await db.execute(
-        `SELECT * FROM atividades_processo WHERE processoId = ? ORDER BY ordem`,
+        `SELECT 
+          id,
+          empresa_id as empresaId,
+          processo_id as processoId,
+          ordem,
+          tipo,
+          texto,
+          tipo_cancelamento as tipoCancelamento,
+          descricao
+         FROM atividades_processo WHERE processo_id = ? ORDER BY ordem`,
         [processoId]
       );
   
@@ -223,7 +266,7 @@ const adicionarAtividade = async (req, res) => {
       console.log('[listarProcessosDisponiveis] empresaId do usuário:', empresaId);
       // Buscar o departamento global do departamento local do franqueado
       const [[dep]] = await db.query(
-        `SELECT departamentoGlobalId FROM departamentos WHERE id = ?`,
+        `SELECT departamento_global_id as departamentoGlobalId FROM departamentos WHERE id = ?`,
         [departamentoId]
       );
   
@@ -242,22 +285,54 @@ const adicionarAtividade = async (req, res) => {
       
       if (departamentoGlobalId) {
         // Se tem departamento global, busca processos da empresa + processos padrão da franqueadora
-        query = `SELECT p.*, d.nome AS departamento, u.nome AS responsavel
+        query = `SELECT 
+                   p.id,
+                   p.nome,
+                   p.empresa_id as empresaId,
+                   p.departamento_id as departamentoId,
+                   p.responsavel_id as responsavelId,
+                   p.data_referencia as dataReferencia,
+                   p.dias_meta as diasMeta,
+                   p.dias_prazo as diasPrazo,
+                   p.notificar_abertura as notificarAbertura,
+                   p.notificar_finalizacao as notificarFinalizacao,
+                   p.pode_finalizar_antes_subatendimentos as podeFinalizarAntesSubatendimentos,
+                   p.padrao_franqueadora as padraoFranqueadora,
+                   p.departamento_global_id as departamentoGlobalId,
+                   p.criado_em as criadoEm,
+                   d.nome AS departamento,
+                   u.nome AS responsavel
                  FROM processos p
-                 LEFT JOIN departamentos d ON p.departamentoId = d.id
-                 LEFT JOIN usuarios u ON p.responsavelId = u.id
+                 LEFT JOIN departamentos d ON p.departamento_id = d.id
+                 LEFT JOIN usuarios u ON p.responsavel_id = u.id
                  WHERE 
-                   (p.empresaId = ? AND p.departamentoId = ?)
+                   (p.empresa_id = ? AND p.departamento_id = ?)
                    OR 
-                   (p.padraoFranqueadora = 1 AND p.departamentoGlobalId = ?)`;
+                   (p.padrao_franqueadora = 1 AND p.departamento_global_id = ?)`;
         params = [empresaId, departamentoId, departamentoGlobalId];
       } else {
         // Se não tem departamento global, busca apenas processos da empresa
-        query = `SELECT p.*, d.nome AS departamento, u.nome AS responsavel
+        query = `SELECT 
+                   p.id,
+                   p.nome,
+                   p.empresa_id as empresaId,
+                   p.departamento_id as departamentoId,
+                   p.responsavel_id as responsavelId,
+                   p.data_referencia as dataReferencia,
+                   p.dias_meta as diasMeta,
+                   p.dias_prazo as diasPrazo,
+                   p.notificar_abertura as notificarAbertura,
+                   p.notificar_finalizacao as notificarFinalizacao,
+                   p.pode_finalizar_antes_subatendimentos as podeFinalizarAntesSubatendimentos,
+                   p.padrao_franqueadora as padraoFranqueadora,
+                   p.departamento_global_id as departamentoGlobalId,
+                   p.criado_em as criadoEm,
+                   d.nome AS departamento,
+                   u.nome AS responsavel
                  FROM processos p
-                 LEFT JOIN departamentos d ON p.departamentoId = d.id
-                 LEFT JOIN usuarios u ON p.responsavelId = u.id
-                 WHERE p.empresaId = ? AND p.departamentoId = ?`;
+                 LEFT JOIN departamentos d ON p.departamento_id = d.id
+                 LEFT JOIN usuarios u ON p.responsavel_id = u.id
+                 WHERE p.empresa_id = ? AND p.departamento_id = ?`;
         params = [empresaId, departamentoId];
       }
       

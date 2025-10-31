@@ -128,7 +128,7 @@ const gestaoEpluginRoutes = require('./gestao/epluginRoutes');
 const gestaoDriveRoutes = require('./gestao/driveRoutes');
 const gestaoEnqueteRoutes = require('./gestao/enqueteRoutes');
 const gestaoResumoRoutes = require('./gestao/ResumoRoutes');
-
+const escritorioRoutes = require('./gestao/escritorioRoutes');
 
 
 
@@ -260,6 +260,7 @@ router.use('/gestao/eplugin', gestaoEpluginRoutes);
 router.use('/gestao/drive', gestaoDriveRoutes);
 router.use('/gestao/enquete', gestaoEnqueteRoutes);
 router.use('/gestao/resumo', gestaoResumoRoutes);
+router.use('/gestao/escritorio', escritorioRoutes);
 
 
 
