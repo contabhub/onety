@@ -348,12 +348,27 @@ router.get("/particularidades", async (req, res) => {
 // Atualizar particularidade
 router.put("/particularidades/:id", async (req, res) => {
   const { id } = req.params;
-  const { nome, descricao, categoria } = req.body;
+  const { nome, descricao, categoriaId } = req.body;
+  const empresaId = req.empresaId;
 
   try {
+    let categoriaNome = null;
+
+    if (categoriaId) {
+      // Busca o nome da categoria correspondente
+      const [result] = await db.query(
+        `SELECT nome FROM particularidades_categorias WHERE id = ? AND empresa_id = ?`,
+        [categoriaId, empresaId]
+      );
+
+      if (result.length > 0) {
+        categoriaNome = result[0].nome;
+      }
+    }
+
     const [r] = await db.query(
-      `UPDATE particularidades SET nome = ?, descricao = ?, categoria = ? WHERE id = ? AND empresa_id = ?`,
-      [nome, descricao, categoria, id, req.empresaId]
+      `UPDATE particularidades SET nome = ?, descricao = ?, categoria_id = ?, categoria = ? WHERE id = ? AND empresa_id = ?`,
+      [nome, descricao, categoriaId, categoriaNome, id, empresaId]
     );
     res.json({ success: true, affectedRows: r.affectedRows });
   } catch (err) {

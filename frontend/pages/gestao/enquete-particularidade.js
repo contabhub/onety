@@ -265,7 +265,7 @@ export default function EnqueteParticularidadePage() {
           <table className={`${styles.table} ${hasLoaded ? styles.fadeIn : ""}`}>
             <thead>
               <tr>
-                <th className={styles.th}>#</th>
+                <th className={styles.th}>ID</th>
                 <th className={styles.th}>Nome</th>
                 <th className={styles.th}>Descrição</th>
                 <th className={styles.th}>Categoria</th>
