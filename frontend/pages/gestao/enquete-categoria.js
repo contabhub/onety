@@ -208,7 +208,7 @@ export default function EnqueteCategoriaPage() {
           <table className={`${styles.table} ${hasLoaded ? styles.fadeIn : ""}`}>
             <thead>
               <tr>
-                <th className={styles.th}>#</th>
+                <th className={styles.th}>ID</th>
                 <th className={styles.th}>Nome</th>
               </tr>
             </thead>
