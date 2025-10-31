@@ -250,6 +250,12 @@ const MODULE_REGISTRY = {
         route: '/gestao/cargos'
       },
       {
+        id: 'clientes-gestao',
+        label: 'Clientes',
+        icon: <Users size={18} />,
+        route: '/gestao/clientes'
+      },
+      {
         id: 'enquete',
         label: 'Enquete',
         icon: <FileText size={18} />,
