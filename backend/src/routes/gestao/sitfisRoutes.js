@@ -25,9 +25,9 @@ router.post("/:empresaId", async (req, res) => {
         const autorPedidoNumero = empresa[0].cnpj;
 
         // 🔹 Buscar todos os clientes da empresa
-    const [clientes] = await db.execute(
+        const [clientes] = await db.execute(
       `SELECT id, cpf_cnpj FROM clientes WHERE empresa_id = ?`, [empresaId]
-    );
+        );
 
         if (clientes.length === 0) {
             return res.status(404).json({ error: "Nenhum cliente encontrado para essa empresa." });
@@ -38,7 +38,7 @@ router.post("/:empresaId", async (req, res) => {
         let erroCertificado = "";
 
         for (const cliente of clientes) {
-      const clienteId = cliente.id;
+            const clienteId = cliente.id;
       const cnpjContribuinte = cliente.cpf_cnpj;
 
             // 🔒 Bloqueio: Verifica se já existe um relatório neste mês para o cliente
@@ -203,6 +203,7 @@ router.get("/detalhado/:empresaId", async (req, res) => {
   try {
     const [dados] = await db.execute(
       `SELECT 
+        s.id AS registro_id,
         c.id AS cliente_id,
         c.cpf_cnpj AS cnpj,
         c.razao_social AS nome,
@@ -217,17 +218,30 @@ router.get("/detalhado/:empresaId", async (req, res) => {
       ORDER BY s.data_criacao DESC`,
       [empresaId]
     );
+    // Converter BLOB (Buffer) em base64 string para JSON
+    const normalizados = (dados || []).map(r => {
+      let base64 = null;
+      if (r.binary_file) {
+        try {
+          base64 = Buffer.isBuffer(r.binary_file)
+            ? r.binary_file.toString('base64')
+            : (typeof r.binary_file === 'string' ? r.binary_file : null);
+        } catch {}
+      }
+      return { ...r, binary_file: base64 };
+    });
+
     // Debug: verificar presença de arquivos
     try {
-      const total = Array.isArray(dados) ? dados.length : 0;
-      const comArquivo = (dados || []).filter(r => !!r.binary_file).length;
-      const amostras = (dados || [])
+      const total = normalizados.length;
+      const comArquivo = normalizados.filter(r => !!r.binary_file).length;
+      const amostras = normalizados
         .slice(0, 3)
-        .map(r => ({ id: r.cliente_id, len: r.binary_file ? String(r.binary_file).length : 0 }));
+        .map(r => ({ id: r.cliente_id, len: r.binary_file ? r.binary_file.length : 0 }));
       console.log(`[SITFIS][DETALHADO] empresa ${empresaId} periodo="${periodo || 'Todos'}" total=${total} comArquivo=${comArquivo} amostras=`, amostras);
     } catch {}
 
-    res.json(dados);
+    res.json(normalizados);
   } catch (error) {
     console.error("❌ Erro ao buscar Situação Fiscal detalhada:", error.message);
     res.status(500).json({ error: "Erro ao buscar Situação Fiscal detalhada" });
@@ -340,5 +354,45 @@ router.post("/:empresaId/clientes-selecionados", async (req, res) => {
   }
 });
 
-  
+// 🔹 Endpoint para servir o PDF diretamente
+router.get("/arquivo/:registroId", async (req, res) => {
+  const { registroId } = req.params;
+  try {
+    const [rows] = await db.execute(
+      "SELECT binary_file FROM sitfis WHERE id = ?",
+      [registroId]
+    );
+    if (!rows.length || !rows[0].binary_file) {
+      return res.status(404).json({ error: "Arquivo não encontrado" });
+    }
+    const raw = rows[0].binary_file;
+    let buffer;
+    if (Buffer.isBuffer(raw)) {
+      const head = raw.slice(0, 4).toString('utf8');
+      if (head === '%PDF') {
+        buffer = raw; // já são bytes de PDF
+      } else {
+        // provavel base64 armazenado em BLOB
+        const asString = raw.toString('utf8');
+        buffer = Buffer.from(asString.replace(/\s+/g, ''), 'base64');
+      }
+    } else if (typeof raw === 'string') {
+      buffer = Buffer.from(String(raw).replace(/\s+/g, ''), 'base64');
+    } else {
+      return res.status(415).json({ error: 'Formato de arquivo inválido' });
+    }
+    // Log pequeno header para validar
+    try {
+      const sig = buffer.slice(0, 4).toString('utf8');
+      console.log('[SITFIS][ARQUIVO] registro', registroId, 'bytes:', buffer.length, 'signature:', sig);
+    } catch {}
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="sitfis.pdf"');
+    res.send(buffer);
+  } catch (error) {
+    console.error("❌ Erro ao servir arquivo SitFis:", error.message);
+    res.status(500).json({ error: "Erro ao servir arquivo" });
+  }
+});
+
 module.exports = router;
