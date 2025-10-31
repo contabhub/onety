@@ -43,7 +43,7 @@ router.get(
         return res.status(404).json({ error: "Empresa não encontrada." });
 
       const [clienteRows] = await db.execute(
-        "SELECT id, nome, cnpjCpf FROM clientes WHERE id = ? AND empresaId = ?",
+        "SELECT id, razao_social as nome, cpf_cnpj as cnpjCpf FROM clientes WHERE id = ? AND empresa_id = ?",
         [clienteId, empresaId]
       );
       const cliente = clienteRows[0];
@@ -51,7 +51,7 @@ router.get(
       if (!cliente)
         return res.status(404).json({ error: "Cliente não encontrado." });
 
-      const { consultarServico } = require("../services/consultarService");
+      const { consultarServico } = require("../../services/gestao/consultarService");
 
       const resultado = await consultarServico(
         "17422651000172",
@@ -125,11 +125,11 @@ router.post(
         return res.status(404).json({ error: "Empresa não encontrada." });
 
       const clientesData = await db.query(
-        `SELECT id, nome, cnpjCpf FROM clientes WHERE id IN (?) AND empresaId = ?`,
+        `SELECT id, razao_social as nome, cpf_cnpj as cnpjCpf FROM clientes WHERE id IN (?) AND empresa_id = ?`,
         [clientesSelecionados, empresaId]
       );
 
-      const { consultarServico } = require("../services/consultarService");
+      const { consultarServico } = require("../../services/gestao/consultarService");
 
       const resultados = [];
 
@@ -214,9 +214,9 @@ router.get("/api/parcelamentos/:empresaId", async (req, res) => {
           p.numero,
           p.status,
           p.vencimento,
-          p.guia_pdf_base64,
-          c.nome AS cliente,
-          c.cnpjCpf AS cnpj,
+          p.guia_pdf,
+          c.razao_social AS cliente,
+          c.cpf_cnpj AS cnpj,
           p.tipo
         FROM parcelamentos p
         JOIN clientes c ON p.cliente_id = c.id
@@ -232,7 +232,24 @@ router.get("/api/parcelamentos/:empresaId", async (req, res) => {
         [empresaId]
       );
 
-      return res.json(parcelamentos);
+      // Converter BLOB para Base64 antes de retornar
+      const parcelamentosComBase64 = parcelamentos.map(p => {
+        let base64 = null;
+        if (p.guia_pdf) {
+          if (Buffer.isBuffer(p.guia_pdf)) {
+            base64 = p.guia_pdf.toString('base64');
+          } else if (typeof p.guia_pdf === 'string') {
+            // Já é string Base64
+            base64 = p.guia_pdf;
+          }
+        }
+        return {
+          ...p,
+          guia_pdf_base64: base64
+        };
+      });
+
+      return res.json(parcelamentosComBase64);
     }
 
     // Se há parâmetros de paginação, aplica LIMIT e OFFSET
@@ -246,9 +263,9 @@ router.get("/api/parcelamentos/:empresaId", async (req, res) => {
         p.numero,
         p.status,
         p.vencimento,
-        p.guia_pdf_base64,
-        c.nome AS cliente,
-        c.cnpjCpf AS cnpj,
+        p.guia_pdf,
+        c.razao_social AS cliente,
+        c.cpf_cnpj AS cnpj,
         p.tipo
       FROM parcelamentos p
       JOIN clientes c ON p.cliente_id = c.id
@@ -270,8 +287,25 @@ router.get("/api/parcelamentos/:empresaId", async (req, res) => {
       [empresaId]
     );
 
+    // Converter BLOB para Base64 antes de retornar
+    const parcelamentosComBase64 = parcelamentos.map(p => {
+      let base64 = null;
+      if (p.guia_pdf) {
+        if (Buffer.isBuffer(p.guia_pdf)) {
+          base64 = p.guia_pdf.toString('base64');
+        } else if (typeof p.guia_pdf === 'string') {
+          // Já é string Base64
+          base64 = p.guia_pdf;
+        }
+      }
+      return {
+        ...p,
+        guia_pdf_base64: base64
+      };
+    });
+
     res.json({
-      data: parcelamentos,
+      data: parcelamentosComBase64,
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -301,7 +335,7 @@ router.post(
       console.log("🏢 Empresa:", empresa);
 
       const [[cliente]] = await db.query(
-        "SELECT cnpjCpf FROM clientes WHERE id = ?",
+        "SELECT cpf_cnpj as cnpjCpf FROM clientes WHERE id = ?",
         [clienteId]
       );
       console.log("👤 Cliente:", cliente);
@@ -336,7 +370,7 @@ router.post(
       console.log("📄 Guia emitida com sucesso. Atualizando banco de dados...");
 
       await db.query(
-        `UPDATE parcelamentos SET guia_pdf_base64 = ? WHERE empresa_id = ? AND cliente_id = ? AND numero = ?`,
+        `UPDATE parcelamentos SET guia_pdf = ? WHERE empresa_id = ? AND cliente_id = ? AND numero = ?`,
         [guia, empresaId, clienteId, numero]
       );
 
@@ -367,7 +401,7 @@ router.post("/api/parcelamentos/emitir/:id", async (req, res) => {
 
   try {
     const [[registro]] = await db.query(
-      `SELECT p.numero, p.cliente_id, p.empresa_id, c.cnpjCpf, c.nome AS cliente_nome, e.cnpj 
+      `SELECT p.numero, p.cliente_id, p.empresa_id, c.cpf_cnpj AS cnpjCpf, c.razao_social AS cliente_nome, e.cnpj 
        FROM parcelamentos p 
        JOIN clientes c ON p.cliente_id = c.id 
        JOIN empresas e ON p.empresa_id = e.id 
@@ -398,7 +432,7 @@ router.post("/api/parcelamentos/emitir/:id", async (req, res) => {
     }
 
     await db.query(
-      `UPDATE parcelamentos SET guia_pdf_base64 = ? WHERE id = ?`,
+      `UPDATE parcelamentos SET guia_pdf = ? WHERE id = ?`,
       [guia, id]
     );
 

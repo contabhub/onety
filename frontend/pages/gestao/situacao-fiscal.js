@@ -110,8 +110,9 @@ export default function SituacaoFiscalFederal() {
       }
 
       const safe = normalizeBase64(base64);
+      console.info('[SITFIS][FRONT] downloadPDF base64 length:', safe.length, 'nome:', nome);
 
-      // Preferir Data URL direto para evitar inconsistências de decodificação
+      // Abrir em nova aba para validar conteúdo
       const dataUrl = `data:application/pdf;base64,${safe}`;
       const link = document.createElement("a");
       link.href = dataUrl;
@@ -119,11 +120,51 @@ export default function SituacaoFiscalFederal() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
       toast.success(`Download iniciado: ${nome || 'documento'}.pdf`);
     } catch (error) {
       console.error("Erro ao fazer download:", error);
       toast.error("PDF inválido ou corrompido.");
+    }
+  };
+
+  const openPdfById = async (registroId, nome) => {
+    try {
+      const fileUrl = `${API_BASE}/gestao/sitfis/arquivo/${registroId}`;
+      console.info('[SITFIS][FRONT] openPdfById url:', fileUrl, 'registroId:', registroId, 'nome:', nome);
+      const res = await fetch(fileUrl, {
+        method: 'GET',
+        headers: { ...getAuthHeaders() }
+      });
+      const ct = res.headers.get('content-type') || '';
+      const clen = res.headers.get('content-length') || '';
+      console.info('[SITFIS][FRONT] openPdfById status:', res.status, res.statusText, 'content-type:', ct, 'content-length:', clen);
+      if (!res.ok) {
+        toast.error('Não foi possível abrir o PDF.');
+        return;
+      }
+      // Se não vier como PDF, tentar ler texto para diagnosticar
+      if (!ct.includes('application/pdf')) {
+        const text = await res.text();
+        console.error('[SITFIS][FRONT] resposta não é PDF. Corpo:', text?.slice(0, 500));
+        toast.error('Resposta não é PDF. Veja o console para detalhes.');
+        return;
+      }
+      const blob = await res.blob();
+      console.info('[SITFIS][FRONT] openPdfById blob size:', blob.size);
+      if (!blob || blob.size === 0) {
+        toast.error('PDF vazio retornado pelo servidor.');
+        return;
+      }
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${nome || 'documento'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+    } catch (e) {
+      toast.error('Erro ao obter PDF.');
     }
   };
 
@@ -491,11 +532,17 @@ useEffect(() => {
                     <FaDownload
                       className="download-icon"
                       onClick={() => {
-                        if (!r?.binary_file) {
-                          toast.warning("PDF não disponível para este registro.");
+                        // 1) Preferir abrir pelo endpoint (garante headers/mime corretos)
+                        if (r?.registro_id) {
+                          openPdfById(r.registro_id, r.nome);
                           return;
                         }
-                        downloadPDF(r.binary_file, r.nome);
+                        // 2) Fallback: base64 inline
+                        if (r?.binary_file) {
+                          downloadPDF(r.binary_file, r.nome);
+                          return;
+                        }
+                        toast.warning("PDF não disponível para este registro.");
                       }}
                     />
                   </td>

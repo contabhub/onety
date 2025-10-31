@@ -172,7 +172,7 @@ async function salvarParcelamentos(parcelamentosPorCliente, empresaId, empresaCN
 
         if (guiaPdfBase64) {
           await db.execute(
-            `UPDATE parcelamentos SET guia_pdf_base64 = ? 
+            `UPDATE parcelamentos SET guia_pdf = ? 
              WHERE cliente_id = ? AND numero = ? AND empresa_id = ?`,
             [guiaPdfBase64, clienteId, numero, empresaId]
           );
