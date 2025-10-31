@@ -661,23 +661,23 @@ const listarAtividadesComStatus = async (req, res) => {
       `
 SELECT
   at.id AS atividadeTarefaId,
-  at.atividadeId,
+  at.atividade_id as atividadeId,
   ap.ordem,
   COALESCE(ap.tipo, at.tipo) AS tipo,
   COALESCE(ap.texto, at.texto) AS texto,
   COALESCE(ap.descricao, at.descricao) AS descricao,
-  COALESCE(ap.tipoCancelamento, at.tipoCancelamento) AS tipoCancelamento,
-  at.concluida,
-  at.cancelada,
+  COALESCE(ap.tipo_cancelamento, at.tipo_cancelamento) AS tipoCancelamento,
+  at.concluido as concluida,
+  at.cancelado as cancelada,
   at.justificativa,
-  at.dataConclusao,
-  at.dataCancelamento,
-  at.concluidoPorNome,
+  at.data_conclusao as dataConclusao,
+  at.data_conclusao as dataCancelamento,
+  at.concluido_por as concluidoPorNome,
   at.base64 AS base64,
   at.nomeArquivo
 FROM atividades_tarefas at
-LEFT JOIN atividades_processo ap ON at.atividadeId = ap.id
-WHERE at.tarefaId = ?
+LEFT JOIN atividades_processo ap ON at.atividade_id = ap.id
+WHERE at.tarefa_id = ?
 ORDER BY ap.ordem IS NULL, ap.ordem, at.id
       `,
       [id]

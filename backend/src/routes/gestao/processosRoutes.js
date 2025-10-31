@@ -19,7 +19,7 @@ router.get("/", autenticarToken, processoController.listarProcessos);
 router.get("/globais", autenticarToken, async (req, res) => {
   try {
     const [processos] = await db.query(
-      `SELECT * FROM processos WHERE padraoFranqueadora = 1`
+      `SELECT * FROM processos WHERE padrao_franqueadora = 1`
     );
     res.json(processos);
   } catch (error) {
@@ -55,7 +55,7 @@ router.get("/email-template/:atividadeId", autenticarToken, async (req, res) => 
     
     
     const [templates] = await db.query(
-      "SELECT * FROM processos_email_templates WHERE atividadeId = ? AND empresaId = ?",
+      "SELECT * FROM processos_email_templates WHERE atividade_id = ? AND empresa_id = ?",
       [atividadeId, empresaId]
     );
     
@@ -106,7 +106,7 @@ router.post("/email-template/:atividadeId", autenticarToken, async (req, res) =>
     
     // Verifica se já existe
     const [existentes] = await db.query(
-      "SELECT id FROM processos_email_templates WHERE atividadeId = ? AND empresaId = ?",
+      "SELECT id FROM processos_email_templates WHERE atividade_id = ? AND empresa_id = ?",
       [atividadeId, empresaId]
     );
     
@@ -114,13 +114,13 @@ router.post("/email-template/:atividadeId", autenticarToken, async (req, res) =>
     if (existentes.length > 0) {
       // Atualiza
       await db.execute(
-        `UPDATE processos_email_templates SET nome=?, assunto=?, corpo=?, destinatario=?, cc=?, co=?, variaveis=?, atualizadoEm=NOW() WHERE atividadeId=? AND empresaId=?`,
+        `UPDATE processos_email_templates SET nome=?, assunto=?, corpo=?, destinatario=?, cc=?, co=?, variaveis=?, atualizado_em=NOW() WHERE atividade_id=? AND empresa_id=?`,
         [nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis || {}), atividadeId, empresaId]
       );
     } else {
       // Cria novo
       await db.execute(
-        `INSERT INTO processos_email_templates (atividadeId, empresaId, nome, assunto, corpo, destinatario, cc, co, variaveis, criadoEm, atualizadoEm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        `INSERT INTO processos_email_templates (atividade_id, empresa_id, nome, assunto, corpo, destinatario, cc, co, variaveis, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [atividadeId, empresaId, nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis || {})]
       );
     }
@@ -141,7 +141,7 @@ router.post("/processar-template/:processoId/:atividadeId", autenticarToken, asy
 
     // Buscar template
     const [templates] = await db.query(
-      "SELECT * FROM processos_email_templates WHERE atividadeId = ? AND empresaId = ?",
+      "SELECT * FROM processos_email_templates WHERE atividade_id = ? AND empresa_id = ?",
       [atividadeId, empresaId]
     );
 
@@ -169,9 +169,9 @@ router.post("/processar-template/:processoId/:atividadeId", autenticarToken, asy
       SELECT 
         p.id,
         p.nome as processoNome,
-        p.diasMeta,
-        p.diasPrazo,
-        p.dataReferencia,
+        p.dias_meta as diasMeta,
+        p.dias_prazo as diasPrazo,
+        p.data_referencia as dataReferencia,
         d.nome as departamentoNome,
         u.nome as responsavelNome,
         u.email as responsavelEmail,
@@ -179,10 +179,10 @@ router.post("/processar-template/:processoId/:atividadeId", autenticarToken, asy
         e.cnpj as empresaCnpj,
         e.razaoSocial as empresaRazaoSocial
       FROM processos p
-      LEFT JOIN departamentos d ON p.departamentoId = d.id
-      LEFT JOIN usuarios u ON p.responsavelId = u.id
-      LEFT JOIN empresas e ON p.empresaId = e.id
-      WHERE p.id = ? AND p.empresaId = ?
+      LEFT JOIN departamentos d ON p.departamento_id = d.id
+      LEFT JOIN usuarios u ON p.responsavel_id = u.id
+      LEFT JOIN empresas e ON p.empresa_id = e.id
+      WHERE p.id = ? AND p.empresa_id = ?
     `, [processoId, empresaId]);
 
     if (processos.length === 0) {
@@ -279,7 +279,7 @@ router.put("/atividades/:id", autenticarToken, verificarPermissao('processos.edi
   try {
     await db.query(
       `UPDATE atividades_processo 
-       SET texto = ?, tipoCancelamento = ?, descricao = ?
+       SET texto = ?, tipo_cancelamento = ?, descricao = ?
        WHERE id = ?`,
       [texto, tipoCancelamento, descricao, id]
     );
@@ -299,7 +299,7 @@ router.delete("/atividades/:id", autenticarToken, verificarPermissao('processos.
   try {
     // 1. Buscar os dados da atividade mãe
     const [[atividadeMae]] = await conexao.query(
-      `SELECT tipo, texto, descricao, tipoCancelamento FROM atividades_processo WHERE id = ?`,
+      `SELECT tipo, texto, descricao, tipo_cancelamento as tipoCancelamento FROM atividades_processo WHERE id = ?`,
       [id]
     );
     if (!atividadeMae) {
@@ -310,8 +310,8 @@ router.delete("/atividades/:id", autenticarToken, verificarPermissao('processos.
     // 2. Atualizar todas as atividades_tarefas vinculadas a essa atividade
     await conexao.query(
       `UPDATE atividades_tarefas
-       SET tipo = ?, texto = ?, descricao = ?, tipoCancelamento = ?, atividadeId = NULL
-       WHERE atividadeId = ?`,
+       SET tipo = ?, texto = ?, descricao = ?, tipo_cancelamento = ?, atividade_id = NULL
+       WHERE atividade_id = ?`,
       [
         atividadeMae.tipo,
         atividadeMae.texto,
@@ -387,7 +387,7 @@ router.put("/:id", autenticarToken, verificarPermissao('processos.editar'), asyn
 
   try {
     await db.query(
-      `UPDATE processos SET nome = ?, diasMeta = ?, diasPrazo = ?, departamentoId = ?, responsavelId = ? WHERE id = ?`,
+      `UPDATE processos SET nome = ?, dias_meta = ?, dias_prazo = ?, departamento_id = ?, responsavel_id = ? WHERE id = ?`,
       [nome, diasMeta, diasPrazo, departamentoId, responsavelId, id]
     );
     res.json({ message: "Processo atualizado com sucesso." });
@@ -405,7 +405,7 @@ router.put("/atividades/:processoId/reordenar", autenticarToken, verificarPermis
 
   try {
     const [atividades] = await db.query(
-      `SELECT id FROM atividades_processo WHERE processoId = ? ORDER BY ordem, id`,
+      `SELECT id FROM atividades_processo WHERE processo_id = ? ORDER BY ordem, id`,
       [processoId]
     );
 
@@ -448,7 +448,7 @@ router.delete('/:id', autenticarToken, verificarPermissao('processos.excluir'), 
 
     // 1. Buscar todas as atividades do processo a ser deletado
     const [atividades] = await conexao.query(
-      "SELECT id FROM atividades_processo WHERE processoId = ?",
+      "SELECT id FROM atividades_processo WHERE processo_id = ?",
       [id]
     );
     console.log(`[DELETE PROCESSO] Atividades encontradas: ${atividades.length}`);
@@ -458,7 +458,7 @@ router.delete('/:id', autenticarToken, verificarPermissao('processos.excluir'), 
     for (const atividade of atividades) {
       // 1. Pega os dados da atividade original do processo (tipo, texto, descricao, tipoCancelamento)
       const [[dadosAtividade]] = await conexao.query(
-        "SELECT tipo, texto, descricao, tipoCancelamento FROM atividades_processo WHERE id = ?",
+        "SELECT tipo, texto, descricao, tipo_cancelamento as tipoCancelamento FROM atividades_processo WHERE id = ?",
         [atividade.id]
       );
 
@@ -470,9 +470,9 @@ router.delete('/:id', autenticarToken, verificarPermissao('processos.excluir'), 
       tipo = ?,
       texto = ?,
       descricao = ?,
-      tipoCancelamento = ?,
-      atividadeId = NULL
-    WHERE atividadeId = ?
+      tipo_cancelamento = ?,
+      atividade_id = NULL
+    WHERE atividade_id = ?
     `,
         [
           dadosAtividade?.tipo || null,
@@ -488,21 +488,21 @@ router.delete('/:id', autenticarToken, verificarPermissao('processos.excluir'), 
 
     // 3. Agora pode deletar as atividades desse processo
     const [delAtividades] = await conexao.query(
-      "DELETE FROM atividades_processo WHERE processoId = ?",
+      "DELETE FROM atividades_processo WHERE processo_id = ?",
       [id]
     );
     console.log(`[DELETE PROCESSO] Atividades deletadas: ${delAtividades.affectedRows}`);
 
     // 3.1. Desvincular tarefas que possuem esse processoId
     const [tarefasVinculadas] = await conexao.query(
-      "SELECT id FROM tarefas WHERE processoId = ?",
+      "SELECT id FROM tarefas WHERE processo_id = ?",
       [id]
     );
     console.log(`[DELETE PROCESSO] Tarefas vinculadas ao processo: ${tarefasVinculadas.length}`);
 
     if (tarefasVinculadas.length > 0) {
       const [updTarefas] = await conexao.query(
-        "UPDATE tarefas SET processoId = NULL WHERE processoId = ?",
+        "UPDATE tarefas SET processo_id = NULL WHERE processo_id = ?",
         [id]
       );
       console.log(`[DELETE PROCESSO] Tarefas desvinculadas do processo: ${updTarefas.affectedRows}`);

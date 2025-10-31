@@ -1,0 +1,605 @@
+/* ProcessosDetalhes.module.css - SISTEMA ONETY */
+
+.container {
+    display: flex;
+    gap: var(--onity-space-l);
+    padding: var(--onity-space-l);
+    font-family: var(--onity-font-family-sans);
+    background: var(--onity-color-bg);
+    min-height: 100vh;
+    color: var(--onity-color-text);
+  }
+  
+  .colLeft {
+    flex: 2;
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-m);
+    padding: var(--onity-space-l);
+    box-shadow: var(--onity-elev-med);
+    font-size: var(--onity-type-body-size);
+    display: flex;
+    flex-direction: column;
+    gap: var(--onity-space-m);
+    border: 1px solid var(--onity-color-border);
+  }
+  
+  .colRight {
+    flex: 1;
+  }
+  
+  .card {
+    background: var(--onity-color-surface);
+    padding: var(--onity-space-m);
+    border-radius: var(--onity-radius-m);
+    margin-bottom: var(--onity-space-m);
+    box-shadow: var(--onity-elev-med);
+    border: 1px solid var(--onity-color-border);
+  }
+  
+  .infoRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--onity-space-s);
+    font-size: var(--onity-type-body-size);
+  }
+  
+  .infoLabel {
+    font-weight: 600;
+    color: var(--onity-color-text);
+  }
+  
+  .infoValue {
+    background: var(--onity-info-light);
+    border-radius: var(--onity-radius-xs);
+    padding: 4px var(--onity-space-s);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--onity-info-text);
+    font-size: var(--onity-type-caption-size);
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--onity-space-s);
+    font-size: var(--onity-type-body-size);
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-m);
+    overflow: hidden;
+    border: 1px solid var(--onity-color-border);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .table th,
+  .table td {
+    padding: var(--onity-space-s) var(--onity-space-s);
+    border: 1px solid var(--onity-color-border);
+    vertical-align: middle;
+  }
+  
+  .table th {
+    background: var(--onity-color-surface);
+    font-weight: 600;
+    color: var(--onity-color-text);
+    text-align: left;
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.082);
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.038);
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.048);
+    border-left: 2px solid var(--onity-color-primary);
+    box-shadow: inset 0 0 0 1px var(--onity-color-border);
+  }
+  
+  .iconCell {
+    text-align: center;
+    font-size: var(--onity-type-h3-size);
+    color: var(--onity-color-text);
+  }
+  
+  .buttonPrimary {
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-l);
+    cursor: pointer;
+    transition: all 120ms ease;
+    font-weight: 600;
+    font-size: var(--onity-type-body-size);
+    align-self: flex-start;
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .buttonPrimary:hover {
+    background-color: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .buttonSecondary {
+    background-color: var(--onity-color-info);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-l);
+    cursor: pointer;
+    width: 100%;
+    transition: all 120ms ease;
+    font-weight: 600;
+    font-size: var(--onity-type-body-size);
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .buttonSecondary:hover {
+    background-color: var(--onity-color-info);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .buttonDanger {
+    background-color: var(--onity-error);
+    color: #fff;
+    border: none;
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    cursor: pointer;
+    transition: all 120ms ease;
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .buttonDanger:hover {
+    background-color: var(--onity-error);
+    transform: scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .modalBox {
+    background: var(--onity-color-surface);
+    padding: var(--onity-space-xl);
+    border-radius: var(--onity-radius-l);
+    width: 520px;
+    max-width: 95%;
+    font-family: var(--onity-font-family-sans);
+    box-shadow: var(--onity-elev-high);
+    border: 1px solid var(--onity-color-border);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  
+  .input {
+    width: 100%;
+    padding: var(--onity-space-s);
+    margin: var(--onity-space-xs) 0 var(--onity-space-m) 0;
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-body-size);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    font-family: var(--onity-font-family-sans);
+    transition: box-shadow 120ms ease, border-color 120ms ease;
+  }
+  
+  .input:hover,
+  .input:focus {
+    border-color: var(--onity-color-primary);
+    box-shadow: var(--onity-elev-low);
+    outline: none;
+  }
+  
+  .modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--onity-space-m);
+  }
+  
+  .listSubprocessos {
+    list-style-type: none;
+    padding-left: 0;
+    margin-left: 0;
+    font-size: var(--onity-type-body-size);
+    margin-bottom: var(--onity-space-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+  
+  .listSubprocessos li {
+    font-size: var(--onity-type-body-size);
+    margin-bottom: var(--onity-space-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+    color: var(--onity-color-text);
+  }
+  
+  .botaoAcaoPrimario {
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    margin-bottom: var(--onity-space-s);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    transition: all 120ms ease;
+    cursor: pointer;
+    display: inline-block;
+    white-space: nowrap;
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .botaoAcaoPrimario:hover {
+    background-color: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .cellCentralizada {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .iconesAcoes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  /* Estilos específicos para o processo principal */
+  .processoPrincipal {
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-m);
+    padding: var(--onity-space-l);
+    margin-bottom: var(--onity-space-m);
+    box-shadow: var(--onity-elev-med);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-body-size);
+  }
+  
+  .processoNome {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+    margin-bottom: var(--onity-space-s);
+  }
+  
+  .processoNome span {
+    color: var(--onity-color-text);
+    font-weight: 500;
+  }
+  
+  .processoNome .editavel {
+    color: var(--onity-info);
+    cursor: pointer;
+    text-decoration: underline;
+    transition: all 120ms ease;
+  }
+  
+  .processoNome .editavel:hover {
+    color: var(--onity-color-info);
+    transform: scale(1.02);
+  }
+  
+  .processoNome .naoEditavel {
+    color: var(--onity-color-text);
+    opacity: 0.7;
+    cursor: default;
+  }
+  
+  .processoInfo {
+    margin-bottom: var(--onity-space-xs);
+    color: var(--onity-color-text);
+  }
+  
+  .processoInfo strong {
+    color: var(--onity-color-text);
+    font-weight: 600;
+  }
+  
+  /* Estilos para subprocessos */
+  .subprocessoCard {
+    background: var(--onity-color-surface);
+    padding: var(--onity-space-m);
+    border-radius: var(--onity-radius-m);
+    margin-bottom: var(--onity-space-m);
+    box-shadow: var(--onity-elev-med);
+    border: 1px solid var(--onity-color-border);
+  }
+  
+  .subprocessoHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--onity-space-s);
+  }
+  
+  .subprocessoNome {
+    font-weight: 600;
+    color: var(--onity-color-text);
+    margin-bottom: var(--onity-space-s);
+  }
+  
+  .subprocessoAtividades {
+    padding-left: var(--onity-space-m);
+  }
+  
+  .subprocessoAtividades li {
+    font-size: var(--onity-type-body-size);
+    margin-bottom: var(--onity-space-xs);
+    color: var(--onity-color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+  }
+  
+  /* Estilos para botões de ação */
+  .botoesAcao {
+    display: flex;
+    gap: var(--onity-space-s);
+    margin-bottom: var(--onity-space-m);
+  }
+  
+  .botaoAtividade {
+    flex-grow: 1;
+    padding: var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    border: none;
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 120ms ease;
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .botaoAtividade:hover {
+    background-color: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .botaoNormalizar {
+    flex-shrink: 0;
+    padding: var(--onity-space-s) var(--onity-space-m);
+    border-radius: var(--onity-radius-xs);
+    border: none;
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 120ms ease;
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .botaoNormalizar:hover {
+    background-color: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .botaoSubprocesso {
+    margin-bottom: var(--onity-space-m);
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    width: 100%;
+    transition: all 120ms ease;
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .botaoSubprocesso:hover {
+    background-color: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  /* Estilos para ícones de ação */
+  .iconeAcao {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--onity-radius-xs);
+    transition: all 120ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+  }
+  
+  .iconeAcao:hover {
+    background: var(--onity-color-bg);
+    transform: scale(1.1);
+  }
+  
+  .iconeAcao svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Container para os ícones de ação ficarem lado a lado */
+  .iconesAcaoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--onity-space-xs);
+  }
+  
+  /* Estilos para o ícone de lixeira */
+  .iconeLixeira {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: var(--onity-space-xs);
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+  
+  .iconeLixeira:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Estilos para o modal de subprocessos */
+  .modalSubprocesso {
+    width: 600px;
+  }
+  
+  .modalSubprocesso h3 {
+    margin-bottom: var(--onity-space-s);
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-h3-size);
+    font-weight: 600;
+  }
+  
+  .modalSubprocesso p {
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-color-text);
+    margin-bottom: var(--onity-space-m);
+  }
+  
+  /* Estilos para o modal de atividade */
+  .modalAtividade h3 {
+    margin-bottom: var(--onity-space-m);
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-h3-size);
+    font-weight: 600;
+  }
+  
+  .modalAtividade label {
+    color: var(--onity-color-text);
+    font-weight: 500;
+    font-size: var(--onity-type-body-size);
+    margin-bottom: var(--onity-space-xs);
+    display: block;
+  }
+  
+  /* Estilos para o modal de editar processo */
+  .modalEditarProcesso h3 {
+    margin-bottom: var(--onity-space-m);
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-h3-size);
+    font-weight: 600;
+  }
+  
+  .modalEditarProcesso label {
+    color: var(--onity-color-text);
+    font-weight: 500;
+    font-size: var(--onity-type-body-size);
+    margin-bottom: var(--onity-space-xs);
+    display: block;
+  }
+  
+  .checkboxGroup {
+    display: flex;
+    gap: var(--onity-space-m);
+    margin: var(--onity-space-s) 0;
+    flex-wrap: wrap;
+  }
+  
+  .checkboxItem {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-xs);
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-body-size);
+  }
+  
+  .checkboxItem input[type="checkbox"] {
+    accent-color: var(--onity-color-primary);
+  }
+  
+  /* Estilos para botões do modal */
+  .modalButton {
+    padding: var(--onity-space-s) var(--onity-space-l);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 120ms ease;
+    border: none;
+    font-family: var(--onity-font-family-sans);
+  }
+  
+  .modalButtonCancel {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+  }
+  
+  .modalButtonCancel:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    transform: scale(1.02);
+  }
+  
+  .modalButtonSave {
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+  }
+  
+  .modalButtonSave:hover {
+    background: var(--onity-color-primary-hover);
+    transform: scale(1.02);
+    box-shadow: var(--onity-elev-low);
+  }
+  
+  .modalOverlayLight {
+    background-color: rgba(0, 0, 0, 0.35);
+  }
+  .modalBoxLight {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .iconCellCol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ordemBadge {
+    font-size: 11px;
+    color: var(--onity-color-text);
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+  .textoCell {
+    max-width: 400px;
+    min-width: 280px;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .textoTitulo { font-weight: 500; }
+  .textoDescricao { font-size: 12px; color: var(--onity-color-text); opacity: 0.7; margin-top: 4px; }
+  .iconEmailAccent { color: var(--onity-color-info); }
+  .textareaSmall { min-height: 80px; }
+  .strokeLow svg path { stroke: var(--onity-color-text); opacity: 0.6; }
+  .fillError svg path { fill: var(--onity-error); }
+  
