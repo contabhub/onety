@@ -262,11 +262,24 @@ const MODULE_REGISTRY = {
         route: '/gestao/enquete'
       },
       {
-        id: 'workflows',
-        label: 'Workflows',
-        icon: <ChevronRight size={18} />,
-        route: '/gestao-processos/workflows'
-      }
+        id: 'parcelamento',
+        label: 'Parcelamento',
+        icon: <FileBarChart size={18} />,
+        route: '/gestao/parcelamento'
+      },
+      {
+        id: 'situacao-fiscal',
+        label: 'Situação Fiscal',
+        icon: <Shield size={18} />,
+        route: '/gestao/situacao-fiscal'
+      },
+      {
+        id: 'certificados',
+        label: 'Certificados',
+        icon: <FileText size={18} />,
+        route: '/gestao/certificados'
+      },
+
     ]
   },
   auditoria: {
