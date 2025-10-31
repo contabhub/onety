@@ -192,7 +192,7 @@ import NovoClienteModal from "@/components/gestao/NovoClienteModal";
 import ClientesImportTemplateModal from "@/components/gestao/ClientesImportTemplateModal";
 import styles from "../../styles/gestao/Clientes.module.css";
 import EnviarPesquisaFranqueadosModal from "@/components/gestao/EnviarPesquisaFranqueadosModal";
-import NovoGrupoModal from "@/components/gestao/NovoGrupoModal";
+import NovoGrupoClienteModal from "@/components/gestao/NovoGrupoClienteModal";
 import PrincipalSidebar from "@/components/onety/principal/PrincipalSidebar";
 import { Pencil, Trash2, Loader2, Send, Users } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
@@ -1634,13 +1634,14 @@ export default function ClientesPage() {
 
             </div>
             {mostrarModalGrupo && (
-              <NovoGrupoModal
+              <NovoGrupoClienteModal
                 isOpen={mostrarModalGrupo}
                 onClose={() => setMostrarModalGrupo(false)}
                 onCreated={() => {
                   setMostrarModalGrupo(false);
                   buscarGrupos();
                 }}
+                grupo={grupoEditando}
               />
             )}
             {loadingGrupos ? (

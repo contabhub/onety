@@ -1,0 +1,125 @@
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(3, 8, 66, 0.7);
+}
+
+.modalContent {
+  width: 400px;
+  max-width: 95%;
+  border-radius: var(--onity-radius-l);
+  padding: var(--onity-space-l);
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+}
+
+.modalTitle {
+  margin: 0 0 var(--onity-space-m) 0;
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-type-h3-weight);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.label {
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+}
+
+.inputField {
+  width: 100%;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  outline: none;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+  font-size: var(--onity-type-body-size);
+}
+
+.inputField:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+  margin-top: var(--onity-space-l);
+}
+
+
+.btnPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease, box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.btnPrimary:hover {
+  background: var(--onity-color-primary-hover);
+  border-color: var(--onity-color-primary-hover);
+  box-shadow: var(--onity-elev-low);
+  transform: translateY(-1px);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.btnCancel {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-type-body-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease, box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.btnCancel:hover {
+  border-color: var(--onity-color-primary-hover);
+  box-shadow: var(--onity-elev-low);
+  transform: translateY(-1px);
+}
+
+.btnCancel:disabled,
+.btnPrimary:disabled {
+  opacity: 0.7;
+  cursor: default;
+  transform: none;
+}
+
+/* Foco acessível */
+.btnPrimary:focus-visible,
+.btnCancel:focus-visible,
+.inputField:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+

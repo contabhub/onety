@@ -291,8 +291,8 @@ router.get("/grupo/:grupoId", async (req, res) => {
     const [clientes] = await db.query(
       `SELECT c.id, c.razao_social as nome, c.cpf_cnpj as cnpjCpf
          FROM clientes c
-         JOIN clientes_grupos_vinculo cgv ON c.id = cgv.clienteId
-        WHERE cgv.grupoId = ?`,
+         JOIN clientes_grupos_vinculo cgv ON c.id = cgv.cliente_id
+        WHERE cgv.grupo_id = ?`,
       [grupoId]
     );
     res.json({ clientes });
@@ -308,14 +308,14 @@ router.post("/grupos", async (req, res) => {
 
   try {
     const [existentes] = await db.query(
-      "SELECT id FROM clientes_grupos WHERE nome = ? AND empresaId = ?",
+      "SELECT id FROM clientes_grupos WHERE nome = ? AND empresa_id = ?",
       [nome, empresaId]
     );
     if (existentes.length > 0) {
       return res.status(409).json({ error: "Já existe um grupo com esse nome." });
     }
     const [r] = await db.query(
-      "INSERT INTO clientes_grupos (empresaId, nome) VALUES (?, ?)",
+      "INSERT INTO clientes_grupos (empresa_id, nome) VALUES (?, ?)",
       [empresaId, nome]
     );
     res.status(201).json({ success: true, grupoId: r.insertId });
@@ -329,18 +329,30 @@ router.delete("/grupos/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
+    console.log("[DELETE /gestao/clientes/grupos/:id] iniciando exclusão", { id });
     // Remove os vínculos primeiro (caso existam)
-    await db.query("DELETE FROM clientes_grupos_vinculo WHERE grupoId = ?", [id]);
+    const [delVinc] = await db.query("DELETE FROM clientes_grupos_vinculo WHERE grupo_id = ?", [id]);
+    console.log("[DELETE grupos] vínculos removidos:", delVinc?.affectedRows || 0);
     // Depois remove o grupo em si
     const [resultado] = await db.query(
       "DELETE FROM clientes_grupos WHERE id = ?", [id]
     );
+    console.log("[DELETE grupos] grupo removido affectedRows:", resultado?.affectedRows || 0);
     if (resultado.affectedRows === 0) {
       return res.status(404).json({ error: "Grupo não encontrado." });
     }
     res.json({ success: true, message: "Grupo excluído com sucesso!" });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao excluir grupo." });
+    console.error("[DELETE grupos] erro ao excluir grupo:", {
+      message: err?.message,
+      code: err?.code,
+      errno: err?.errno,
+      sqlState: err?.sqlState,
+      sqlMessage: err?.sqlMessage,
+      stack: err?.stack,
+      id,
+    });
+    res.status(500).json({ error: "Erro ao excluir grupo.", detail: err?.message || "" });
   }
 });
 
@@ -353,7 +365,7 @@ router.get("/grupos/:id", async (req, res) => {
 
   try {
     const [grupos] = await db.query(
-      "SELECT id, nome, empresaId FROM clientes_grupos WHERE id = ? AND empresaId = ?",
+      "SELECT id, nome, empresa_id FROM clientes_grupos WHERE id = ? AND empresa_id = ?",
       [id, empresaId]
     );
     
@@ -379,7 +391,7 @@ router.get("/grupos", async (req, res) => {
   const search = (req.query.search || "").trim();
 
   try {
-    let where = "WHERE empresaId = ?";
+    let where = "WHERE empresa_id = ?";
     let params = [empresaId];
 
     if (search) {
@@ -412,10 +424,10 @@ router.post("/vincular-grupos", async (req, res) => {
 
   try {
     // Remove vínculos antigos
-    await db.query("DELETE FROM clientes_grupos_vinculo WHERE clienteId = ?", [clienteId]);
+    await db.query("DELETE FROM clientes_grupos_vinculo WHERE cliente_id = ?", [clienteId]);
     if (grupoIds.length > 0) {
       const values = grupoIds.map(grupoId => [clienteId, grupoId]);
-      await db.query("INSERT INTO clientes_grupos_vinculo (clienteId, grupoId) VALUES ?", [values]);
+      await db.query("INSERT INTO clientes_grupos_vinculo (cliente_id, grupo_id) VALUES ?", [values]);
     }
     res.json({ success: true });
   } catch (err) {
@@ -430,8 +442,8 @@ router.get("/:clienteId/grupos", async (req, res) => {
     const [grupos] = await db.query(
       `SELECT cg.id, cg.nome
        FROM clientes_grupos_vinculo cgv
-       JOIN clientes_grupos cg ON cgv.grupoId = cg.id
-       WHERE cgv.clienteId = ?`, [clienteId]
+       JOIN clientes_grupos cg ON cgv.grupo_id = cg.id
+       WHERE cgv.cliente_id = ?`, [clienteId]
     );
     res.json(grupos);
   } catch (err) {
