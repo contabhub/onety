@@ -1499,7 +1499,7 @@ export default function ClientesPage() {
                       <td className={styles.td}>{c.tipoInscricao || ""}</td>
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
-                        onClick={() => router.push(`gestao/clientes/${c.id}`)}
+                        onClick={() => router.push(`/gestao/clientes/${c.id}`)}
                       >
                         <span className={styles.cellHighlight}>
                           {formatarCnpjCpf(c.cnpjCpf)}
@@ -1507,7 +1507,7 @@ export default function ClientesPage() {
                       </td>
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
-                        onClick={() => router.push(`gestao/clientes/${c.id}`)}
+                        onClick={() => router.push(`/gestao/clientes/${c.id}`)}
                       >
                         <span className={styles.cellHighlight}>
                           {c.nome || ""}
