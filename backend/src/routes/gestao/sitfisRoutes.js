@@ -25,9 +25,9 @@ router.post("/:empresaId", async (req, res) => {
         const autorPedidoNumero = empresa[0].cnpj;
 
         // 🔹 Buscar todos os clientes da empresa
-        const [clientes] = await db.execute(
-            `SELECT id, cnpjCpf FROM clientes WHERE empresaId = ?`, [empresaId]
-        );
+    const [clientes] = await db.execute(
+      `SELECT id, cpf_cnpj FROM clientes WHERE empresa_id = ?`, [empresaId]
+    );
 
         if (clientes.length === 0) {
             return res.status(404).json({ error: "Nenhum cliente encontrado para essa empresa." });
@@ -38,8 +38,8 @@ router.post("/:empresaId", async (req, res) => {
         let erroCertificado = "";
 
         for (const cliente of clientes) {
-            const clienteId = cliente.id;
-            const cnpjContribuinte = cliente.cnpjCpf;
+      const clienteId = cliente.id;
+      const cnpjContribuinte = cliente.cpf_cnpj;
 
             // 🔒 Bloqueio: Verifica se já existe um relatório neste mês para o cliente
             const [registroExistente] = await db.execute(
@@ -204,8 +204,8 @@ router.get("/detalhado/:empresaId", async (req, res) => {
     const [dados] = await db.execute(
       `SELECT 
         c.id AS cliente_id,
-        c.cnpjCpf AS cnpj,
-        c.nome,
+        c.cpf_cnpj AS cnpj,
+        c.razao_social AS nome,
         s.status,
         s.pendencias,
         s.data_criacao,
@@ -217,6 +217,15 @@ router.get("/detalhado/:empresaId", async (req, res) => {
       ORDER BY s.data_criacao DESC`,
       [empresaId]
     );
+    // Debug: verificar presença de arquivos
+    try {
+      const total = Array.isArray(dados) ? dados.length : 0;
+      const comArquivo = (dados || []).filter(r => !!r.binary_file).length;
+      const amostras = (dados || [])
+        .slice(0, 3)
+        .map(r => ({ id: r.cliente_id, len: r.binary_file ? String(r.binary_file).length : 0 }));
+      console.log(`[SITFIS][DETALHADO] empresa ${empresaId} periodo="${periodo || 'Todos'}" total=${total} comArquivo=${comArquivo} amostras=`, amostras);
+    } catch {}
 
     res.json(dados);
   } catch (error) {
@@ -250,13 +259,13 @@ router.post("/:empresaId/clientes-selecionados", async (req, res) => {
 
     for (const clienteId of clientesSelecionados) {
       console.log(`[SITFIS] ▶️ Iniciando processamento do cliente ${clienteId} (empresa ${empresaId}) em ${new Date().toLocaleString('pt-BR')}`);
-      const [clienteData] = await db.execute("SELECT cnpjCpf FROM clientes WHERE id = ? AND empresaId = ?", [clienteId, empresaId]);
+      const [clienteData] = await db.execute("SELECT cpf_cnpj FROM clientes WHERE id = ? AND empresa_id = ?", [clienteId, empresaId]);
       if (clienteData.length === 0) {
         resultados.push({ clienteId, status: "cliente não encontrado" });
         continue;
       }
 
-      const cnpjContribuinte = clienteData[0].cnpjCpf;
+      const cnpjContribuinte = clienteData[0].cpf_cnpj;
 
       // Verifica se já consultado no mês
       const [registroExistente] = await db.execute(

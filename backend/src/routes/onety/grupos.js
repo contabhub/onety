@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
         m.nome as modulo_nome
       FROM grupos g
       LEFT JOIN modulos m ON g.modulo_id = m.id
-    `;
+  `
     let params = [];
 
     if (moduloId) {
