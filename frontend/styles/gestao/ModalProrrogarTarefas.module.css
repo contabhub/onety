@@ -1,0 +1,57 @@
+/* ModalProrrogarTarefas styles with Onity tokens */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 8, 66, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContainer {
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  max-width: 600px;
+  width: 90%;
+  padding: var(--onity-space-l);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--onity-space-l); }
+.modalTitle { margin: 0; font-size: 20px; font-weight: 600; color: var(--onity-color-text); }
+.closeButton { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--onity-color-text); opacity: .7; padding: 4px; border-radius: var(--onity-radius-xs); transition: background-color 120ms ease, opacity 120ms ease; }
+.closeButton:hover { background: var(--onity-color-bg); opacity: 1; }
+
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--onity-space-m); margin-bottom: var(--onity-space-l); }
+.inlineLabel { display: flex; align-items: center; gap: var(--onity-space-xs); margin-bottom: var(--onity-space-xs); }
+.checkbox { margin: 0; accent-color: var(--onity-color-primary); }
+.labelActive { font-size: 14px; font-weight: 600; color: var(--onity-color-text); }
+.labelMuted { font-size: 14px; font-weight: 500; color: var(--onity-color-text); opacity: .6; }
+
+.input { width: 100%; padding: var(--onity-space-s) var(--onity-space-m); border: 1px solid var(--onity-color-border); border-radius: var(--onity-radius-xs); font-size: 14px; background: var(--onity-color-surface); color: var(--onity-color-text); outline: none; transition: box-shadow 120ms ease, border-color 120ms ease; }
+.input:focus { border-color: var(--onity-color-primary); box-shadow: 0 0 0 3px rgba(68,84,100,.15); }
+.inputDisabled { background: var(--onity-color-bg); color: var(--onity-color-text); opacity: .6; cursor: not-allowed; }
+
+.section { margin-bottom: var(--onity-space-l); }
+.formLabel { display: block; margin-bottom: var(--onity-space-xs); font-size: 14px; font-weight: 600; color: var(--onity-color-text); }
+.textarea { width: 100%; padding: var(--onity-space-s) var(--onity-space-m); border: 1px solid var(--onity-color-border); border-radius: var(--onity-radius-xs); font-size: 14px; background: var(--onity-color-surface); color: var(--onity-color-text); outline: none; transition: box-shadow 120ms ease, border-color 120ms ease; resize: vertical; }
+.textarea:focus { border-color: var(--onity-color-primary); box-shadow: 0 0 0 3px rgba(68,84,100,.15); }
+
+.actions { display: flex; gap: var(--onity-space-s); justify-content: flex-end; margin-bottom: var(--onity-space-l); }
+.button { padding: calc(var(--onity-space-s) - 2px) var(--onity-space-m); border-radius: var(--onity-radius-xs); font-size: 14px; font-weight: 500; cursor: pointer; }
+.buttonSecondary { background: var(--onity-color-bg); color: var(--onity-color-text); border: 1px solid var(--onity-color-border); }
+.buttonSecondary:hover { border-color: var(--onity-color-primary); box-shadow: 0 0 0 3px rgba(68,84,100,.1); }
+.buttonPrimary { background: var(--onity-color-primary); color: var(--onity-color-primary-contrast); border: 1px solid var(--onity-color-primary); }
+.buttonPrimary:hover { background: var(--onity-color-primary-hover); }
+
+@media (max-width: 1024px) {
+  .grid3 { grid-template-columns: 1fr; }
+}
+
