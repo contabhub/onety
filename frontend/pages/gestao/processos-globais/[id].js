@@ -1,41 +1,20 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import DashboardLayout from "../dashboardlayout";
-import api from "../../../app/utils/api";
-import { getPermissoes } from "@/app/utils/permissoes";
+import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar";
+import { getPermissoes } from "../../../utils/gestao/permissoes";
 import { FaArrowLeft, FaTrash, FaPlus, FaEdit, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import ProcessosEmailTemplateModal from '@/components/ProcessosEmailTemplateModal';
+import ProcessosEmailTemplateModal from '../../../components/gestao/ProcessosEmailTemplateModal';
 import { Settings as LucideSettings } from 'lucide-react';
-import styles from "../../../styles/ProcessosGlobaisDetalhes.module.css";
+import styles from "../../../styles/gestao/ProcessosGlobaisDetalhes.module.css";
 
-type ProcessoGlobal = {
-  id: number;
-  nome: string;
-  diasMeta: number;
-  diasPrazo: number;
-  dataReferencia: string;
-  departamentoGlobalId: number;
-  departamentoGlobalNome: string;
-  empresaId: number;
-  padraoFranqueadora: number;
-};
-
-type Atividade = {
-  id: number;
-  texto: string;
-  descricao?: string;
-  tipo: string;
-  tipoCancelamento: string;
-  ordem: number;
-  criadoEm: string;
-};
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProcessoGlobalDetalhes() {
   const router = useRouter();
   const params = useParams() || {};
   const processoId = params.id || "";
-  const [processo, setProcesso] = useState<ProcessoGlobal | null>(null);
-  const [atividades, setAtividades] = useState<Atividade[]>([]);
+  const [processo, setProcesso] = useState(null);
+  const [atividades, setAtividades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
   const [modalAtividade, setModalAtividade] = useState(false);
@@ -46,17 +25,28 @@ export default function ProcessoGlobalDetalhes() {
     tipoCancelamento: "Com justificativa",
     ordem: 1,
   });
-  const [atividadeEditando, setAtividadeEditando] = useState<Atividade | null>(null);
-  const [modalEmailTemplate, setModalEmailTemplate] = useState<{atividadeId: number} | null>(null);
-  const [subprocessos, setSubprocessos] = useState<any[]>([]);
-  const [todosProcessos, setTodosProcessos] = useState<any[]>([]);
+  const [atividadeEditando, setAtividadeEditando] = useState(null);
+  const [modalEmailTemplate, setModalEmailTemplate] = useState(null);
+  const [subprocessos, setSubprocessos] = useState([]);
+  const [todosProcessos, setTodosProcessos] = useState([]);
   const [mostrarModalSub, setMostrarModalSub] = useState(false);
-  const [selecionados, setSelecionados] = useState<number[]>([]);
-  
+  const [selecionados, setSelecionados] = useState([]);
+
   // Estado para detecção de tema
   const [isLight, setIsLight] = useState(false);
 
-  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : "";
+  const token = typeof window !== "undefined" ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") : "";
+
+  const getEmpresaIdFromStorage = () => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      const id = parsed?.EmpresaId || localStorage.getItem("empresaId") || sessionStorage.getItem("empresaId");
+      return id ? Number(id) : null;
+    } catch {
+      return null;
+    }
+  };
 
   // Verificar permissão de superadmin
   useEffect(() => {
@@ -81,10 +71,20 @@ export default function ProcessoGlobalDetalhes() {
   const fetchProcessoGlobal = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/admin/processos-franqueadora/${processoId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      const response = await fetch(`${BASE_URL}/gestao/admin/processos-franqueadora/${processoId}`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
-      setProcesso(response.data);
+      if (!response.ok) throw new Error("Falha ao buscar processo global");
+      const data = await response.json();
+      const normalizado = data ? {
+        ...data,
+        diasMeta: data.diasMeta ?? data.dias_meta ?? null,
+        diasPrazo: data.diasPrazo ?? data.dias_prazo ?? null,
+        dataReferencia: data.dataReferencia ?? data.data_referencia ?? null,
+      } : null;
+      setProcesso(normalizado);
     } catch (err) {
       setErro("Erro ao carregar processo global.");
     } finally {
@@ -94,11 +94,14 @@ export default function ProcessoGlobalDetalhes() {
 
   const fetchAtividades = async () => {
     try {
-      // Leitura independente de empresaId para processos globais
-      const response = await api.get(`/api/processos/atividades/${processoId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      const response = await fetch(`${BASE_URL}/gestao/admin/atividades-global/${processoId}`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
-      setAtividades(response.data);
+      if (!response.ok) throw new Error("Falha ao buscar atividades");
+      const data = await response.json();
+      setAtividades(Array.isArray(data) ? data : []);
     } catch (err) {
       setAtividades([]);
     }
@@ -112,16 +115,13 @@ export default function ProcessoGlobalDetalhes() {
     try {
       setLoading(true);
       setErro("");
-      await api.post(
-        "/api/admin/atividade-global",
-        {
-          processoId: Number(processoId),
-          ...formAtividade,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      await fetch(`${BASE_URL}/gestao/admin/atividade-global`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
+        body: JSON.stringify({ processoId: Number(processoId), ...formAtividade }),
+      });
       setFormAtividade({
         texto: "",
         descricao: "",
@@ -138,12 +138,15 @@ export default function ProcessoGlobalDetalhes() {
     }
   };
 
-  const excluirAtividade = async (atividadeId: number) => {
+  const excluirAtividade = async (atividadeId) => {
     if (!confirm("Tem certeza que deseja excluir esta atividade?")) return;
     try {
       setLoading(true);
-      await api.delete(`/api/admin/atividade-global/${atividadeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      await fetch(`${BASE_URL}/gestao/admin/atividade-global/${atividadeId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
       fetchAtividades();
     } catch (error) {
@@ -158,13 +161,17 @@ export default function ProcessoGlobalDetalhes() {
     setLoading(true);
     setErro("");
     try {
-      await api.put(`/api/admin/atividade-global/${atividadeEditando.id}`, {
-        texto: atividadeEditando.texto,
-        descricao: atividadeEditando.descricao,
-        tipo: atividadeEditando.tipo,
-        tipoCancelamento: atividadeEditando.tipoCancelamento,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      await fetch(`${BASE_URL}/gestao/admin/atividade-global/${atividadeEditando.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
+        body: JSON.stringify({
+          texto: atividadeEditando.texto,
+          descricao: atividadeEditando.descricao,
+          tipo: atividadeEditando.tipo,
+          tipoCancelamento: atividadeEditando.tipoCancelamento,
+        }),
       });
       setAtividadeEditando(null);
       fetchAtividades();
@@ -175,16 +182,26 @@ export default function ProcessoGlobalDetalhes() {
     }
   };
 
-  const trocarOrdem = async (atividadeId: number, direcao: "up" | "down") => {
+  const trocarOrdem = async (atividadeId, direcao) => {
     const indexAtual = atividades.findIndex((a) => a.id === atividadeId);
     const novoIndex = direcao === "up" ? indexAtual - 1 : indexAtual + 1;
     if (novoIndex < 0 || novoIndex >= atividades.length) return;
     const atividadeAtual = atividades[indexAtual];
     const atividadeAlvo = atividades[novoIndex];
     try {
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
       await Promise.all([
-        api.put(`/api/admin/atividade-global/${atividadeAtual.id}/ordem`, { novaOrdem: atividadeAlvo.ordem }, { headers: { Authorization: `Bearer ${token}` } }),
-        api.put(`/api/admin/atividade-global/${atividadeAlvo.id}/ordem`, { novaOrdem: atividadeAtual.ordem }, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${BASE_URL}/gestao/admin/atividade-global/${atividadeAtual.id}/ordem`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
+          body: JSON.stringify({ novaOrdem: atividadeAlvo.ordem }),
+        }),
+        fetch(`${BASE_URL}/gestao/admin/atividade-global/${atividadeAlvo.id}/ordem`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
+          body: JSON.stringify({ novaOrdem: atividadeAtual.ordem }),
+        }),
       ]);
       fetchAtividades();
     } catch (error) {
@@ -203,19 +220,21 @@ export default function ProcessoGlobalDetalhes() {
 
   const fetchSubprocessos = async () => {
     try {
-      const res = await api.get(`/api/processos/${processoId}/subprocessos`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      const res = await fetch(`${BASE_URL}/gestao/processos/${processoId}/subprocessos`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
-
-      const lista = res.data || [];
+      const lista = (await res.json()) || [];
       // Anexa atividades de cada subprocesso, sem filtrar por empresa
       const completos = await Promise.all(
-        lista.map(async (sub: any) => {
+        lista.map(async (sub) => {
           try {
-            const atividadesRes = await api.get(`/api/processos/atividades/${sub.id}`, {
-              headers: { Authorization: `Bearer ${token}` },
+            const atividadesRes = await fetch(`${BASE_URL}/gestao/processos/atividades/${sub.id}`, {
+              headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
             });
-            return { ...sub, atividades: atividadesRes.data };
+            const atividadesData = await atividadesRes.json();
+            return { ...sub, atividades: atividadesData };
           } catch (_) {
             return { ...sub, atividades: [] };
           }
@@ -231,12 +250,15 @@ export default function ProcessoGlobalDetalhes() {
   // Atualizar fetchTodosProcessos para garantir filtro correto
   const fetchTodosProcessos = async () => {
     try {
-      const res = await api.get('/api/processos/globais', {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      const res = await fetch(`${BASE_URL}/gestao/processos/globais`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
+      const all = await res.json();
       const subprocessosIds = subprocessos.map((sub) => sub.id);
       setTodosProcessos(
-        res.data.filter((p: any) =>
+        (Array.isArray(all) ? all : []).filter((p) =>
           p.id !== Number(processoId) &&
           !subprocessosIds.includes(p.id)
         )
@@ -254,12 +276,14 @@ export default function ProcessoGlobalDetalhes() {
 
   const adicionarSubprocessos = async () => {
     try {
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
       for (const subId of selecionados) {
-        await api.post(
-          `/api/processos/vincular-subprocesso`,
-          { processoPaiId: Number(processoId), processoFilhoId: subId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await fetch(`${BASE_URL}/gestao/processos/vincular-subprocesso`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
+          body: JSON.stringify({ processoPaiId: Number(processoId), processoFilhoId: subId })
+        });
       }
       setMostrarModalSub(false);
       setSelecionados([]);
@@ -270,38 +294,44 @@ export default function ProcessoGlobalDetalhes() {
     }
   };
 
-  const removerSubprocesso = async (subId: number) => {
+  const removerSubprocesso = async (subId) => {
     try {
-      await api.delete(`/api/processos/vincular-subprocesso/${processoId}/${subId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) throw new Error("EmpresaId não encontrado no storage");
+      await fetch(`${BASE_URL}/gestao/processos/vincular-subprocesso/${processoId}/${subId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
       setSubprocessos((prev) => prev.filter((s) => s.id !== subId));
       fetchTodosProcessos();
-    } catch (err) {}
+    } catch (err) { }
   };
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+      <>
+        <PrincipalSidebar />
+        <div className={styles.centerFill}>
           <div>Carregando...</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!processo) {
     return (
-      <DashboardLayout>
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+      <>
+        <PrincipalSidebar />
+        <div className={styles.centerFill}>
           <div>Processo global não encontrado.</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
+      <PrincipalSidebar />
       <div className={styles.container}>
         {/* Header */}
         <div className={styles.header}>
@@ -332,7 +362,13 @@ export default function ProcessoGlobalDetalhes() {
               <strong>Dias Prazo:</strong> {processo.diasPrazo}
             </div>
             <div className={styles.infoItem}>
-              <strong>Data Referência:</strong> {processo.dataReferencia === "hoje" ? "Data Atual" : processo.dataReferencia}
+              <strong>Data Referência:</strong> {(() => {
+                const v = processo.dataReferencia;
+                if (!v) return "—";
+                if (v === "hoje") return "Data Atual";
+                const dt = new Date(v);
+                return isNaN(dt) ? String(v) : dt.toLocaleDateString('pt-BR');
+              })()}
             </div>
           </div>
         </div>
@@ -363,7 +399,7 @@ export default function ProcessoGlobalDetalhes() {
                 >
                   <div className={styles.atividadeHeader}>
                     <div className={styles.atividadeLeft}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "5px" }}>
+                      <div className={styles.atividadeTopRow}>
                         <span className={styles.ordemBadge}>
                           {atividade.ordem}
                         </span>
@@ -428,7 +464,7 @@ export default function ProcessoGlobalDetalhes() {
                 </button>
               </div>
               <ul className={styles.subprocessoAtividades}>
-                {sub.atividades?.map((a: any) => (
+                {sub.atividades?.map((a) => (
                   <li key={a.id}>{a.texto}</li>
                 ))}
               </ul>
@@ -444,19 +480,11 @@ export default function ProcessoGlobalDetalhes() {
 
         {/* Modal de Adicionar Atividade */}
         {modalAtividade && (
-          <div 
-            className={styles.modalOverlay}
-            style={{
-              background: isLight ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.5)",
-              zIndex: 9999
-            }}
+          <div
+            className={`${styles.modalOverlay} ${isLight ? styles.modalOverlayLight : ''}`}
           >
-            <div 
-              className={styles.modalContent}
-              style={{
-                background: isLight ? "rgba(255, 255, 255, 0.98)" : "var(--titan-card-bg)",
-                border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid var(--titan-stroke)"
-              }}
+            <div
+              className={`${styles.modalContent} ${isLight ? styles.modalContentLight : ''}`}
             >
               <h3 className={styles.modalTitle}>Adicionar Atividade</h3>
               <form className={styles.modalForm} onSubmit={(e) => { e.preventDefault(); adicionarAtividade(); }}>
@@ -548,19 +576,11 @@ export default function ProcessoGlobalDetalhes() {
 
         {/* Modal de Editar Atividade */}
         {atividadeEditando && (
-          <div 
-            className={styles.modalOverlay}
-            style={{
-              background: isLight ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.5)",
-              zIndex: 9999
-            }}
+          <div
+            className={`${styles.modalOverlay} ${isLight ? styles.modalOverlayLight : ''}`}
           >
-            <div 
-              className={styles.modalContent}
-              style={{
-                background: isLight ? "rgba(255, 255, 255, 0.98)" : "var(--titan-card-bg)",
-                border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid var(--titan-stroke)"
-              }}
+            <div
+              className={`${styles.modalContent} ${isLight ? styles.modalContentLight : ''}`}
             >
               <h3 className={styles.modalTitle}>Editar Atividade</h3>
               <form className={styles.modalForm} onSubmit={(e) => { e.preventDefault(); editarAtividade(); }}>
@@ -647,25 +667,17 @@ export default function ProcessoGlobalDetalhes() {
         )}
 
         {mostrarModalSub && (
-          <div 
-            className={styles.modalOverlay}
-            style={{
-              background: isLight ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.5)",
-              zIndex: 9999
-            }}
+          <div
+            className={`${styles.modalOverlay} ${isLight ? styles.modalOverlayLight : ''}`}
           >
-            <div 
-              className={styles.modalContent}
-              style={{
-                background: isLight ? "rgba(255, 255, 255, 0.98)" : "var(--titan-card-bg)",
-                border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid var(--titan-stroke)"
-              }}
+            <div
+              className={`${styles.modalContent} ${isLight ? styles.modalContentLight : ''}`}
             >
               <h3 className={styles.modalTitle}>Selecionar Subprocessos</h3>
               <div className={styles.modalForm}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Selecione um processo:</label>
-                                    <select
+                  <select
                     onChange={e => {
                       const selectedId = parseInt(e.target.value);
                       if (!selecionados.includes(selectedId)) {
@@ -676,30 +688,29 @@ export default function ProcessoGlobalDetalhes() {
                     className={styles.formSelect}
                   >
                     <option value="">Selecione um processo</option>
-                    {todosProcessos.map((p: any) => (
+                    {todosProcessos.map((p) => (
                       <option key={p.id} value={p.id}>{p.nome}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <ul className={styles.subprocessoAtividades}>
-                {selecionados.map((id) => {
-                  const processo = todosProcessos.find((p) => p.id === id);
-                  return processo ? (
-                    <li key={id}>
-                      {processo.nome}
-                      <button 
-                        onClick={() => setSelecionados((prev) => prev.filter((pid) => pid !== id))} 
-                        className={styles.unlinkButton}
-                        style={{ marginLeft: 8, padding: "2px 8px" }}
-                      >
-                        Remover
-                      </button>
-                    </li>
-                  ) : null;
-                })}
-              </ul>
-                
+                  {selecionados.map((id) => {
+                    const processo = todosProcessos.find((p) => p.id === id);
+                    return processo ? (
+                      <li key={id}>
+                        {processo.nome}
+                        <button
+                          onClick={() => setSelecionados((prev) => prev.filter((pid) => pid !== id))}
+                          className={`${styles.unlinkButton} ${styles.unlinkButtonSmall}`}
+                        >
+                          Remover
+                        </button>
+                      </li>
+                    ) : null;
+                  })}
+                </ul>
+
                 <div className={styles.modalButtons}>
                   <button onClick={() => setMostrarModalSub(false)} className={styles.cancelButton}>
                     Cancelar
@@ -713,6 +724,6 @@ export default function ProcessoGlobalDetalhes() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 } 

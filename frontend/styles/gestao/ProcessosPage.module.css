@@ -310,7 +310,7 @@
   .modalContent {
     background: var(--onity-color-surface);
     border-radius: var(--onity-radius-l);
-    padding: var(--onity-space-2xl);
+    padding: 20px;
     max-width: 500px;
     width: 90%;
     box-shadow: var(--onity-elev-high);
@@ -450,3 +450,19 @@
     animation: fadeOut 0.3s ease forwards;
   }
   
+  /* Lista de atividades (Processos Globais) */
+  .atividadesSection {
+    margin-top: var(--onity-space-l);
+  }
+  .atividadesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .atividadeItem {
+    padding: var(--onity-space-s);
+    margin: var(--onity-space-xs) 0;
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+  }

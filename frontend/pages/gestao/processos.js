@@ -345,8 +345,8 @@ export default function Processos() {
           <table className={styles.table}>
             <thead>
               <tr>
+              <th className={styles.th}>Nome</th>
                 <th className={styles.th}>Departamento</th>
-                <th className={styles.th}>Assunto</th>
                 <th className={styles.th}>Data Referência</th>
                 <th className={styles.th}>Dias Meta</th>
                 <th className={styles.th}>Dias Prazo</th>
@@ -356,13 +356,15 @@ export default function Processos() {
             <tbody>
               {processosPaginados.map((p) => (
                 <tr key={p.id}>
-                  <td className={styles.td}>{p.departamento}</td>
                   <td
                     className={`${styles.td} ${styles.linkTd}`}
                     onClick={() => router.push(`/gestao/processos/${p.id}`)}
                   >
                     {p.nome}
                   </td>
+
+                  <td className={styles.td}>{p.departamento}</td>
+
                   <td className={styles.td}>
                     {p.dataReferencia === "hoje"
                       ? "Data Atual"
