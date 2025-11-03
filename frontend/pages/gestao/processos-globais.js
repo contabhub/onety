@@ -1,45 +1,18 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "./dashboardlayout";
+import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import { useRouter } from "next/navigation";
-import api from "../../app/utils/api";
-import styles from "../../styles/ProcessosPage.module.css";
+import styles from "../../styles/gestao/ProcessosPage.module.css";
 import { FaRegFileAlt, FaSearch } from "react-icons/fa";
-import { hasPermissao, getPermissoes } from "@/app/utils/permissoes";
-import { useAuthRedirect } from "@/app/utils/useAuthRedirect";
-
-type DepartamentoGlobal = {
-  id: number;
-  nome: string;
-};
-
-type Usuario = {
-  id: number;
-  nome: string;
-  departamentoId?: number;
-};
-
-type ProcessoGlobal = {
-  id: number;
-  nome: string;
-  diasMeta: number;
-  diasPrazo: number;
-  dataReferencia: string;
-  departamentoGlobalId: number;
-  departamentoGlobalNome: string;
-  empresaId: number;
-  padraoFranqueadora: number;
-  responsavelId?: number;
-  responsavel?: string;
-};
+import { hasPermissao, getPermissoes } from "../../utils/gestao/permissoes";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProcessosGlobais() {
-  useAuthRedirect();
   const router = useRouter();
 
   // Estados para listagem
-  const [processosGlobais, setProcessosGlobais] = useState<ProcessoGlobal[]>([]);
-  const [departamentosGlobais, setDepartamentosGlobais] = useState<DepartamentoGlobal[]>([]);
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [processosGlobais, setProcessosGlobais] = useState([]);
+  const [departamentosGlobais, setDepartamentosGlobais] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [filtro, setFiltro] = useState("");
   const [departamentoFiltro, setDepartamentoFiltro] = useState("");
   const [responsavelFiltro, setResponsavelFiltro] = useState("");
@@ -68,8 +41,8 @@ export default function ProcessosGlobais() {
 
   // Estados para modal de atividades
   const [modalAtividades, setModalAtividades] = useState(false);
-  const [processoSelecionado, setProcessoSelecionado] = useState<ProcessoGlobal | null>(null);
-  const [atividades, setAtividades] = useState<any[]>([]);
+  const [processoSelecionado, setProcessoSelecionado] = useState(null);
+  const [atividades, setAtividades] = useState([]);
   const [formAtividade, setFormAtividade] = useState({
     texto: "",
     tipo: "Checklist",
@@ -77,10 +50,22 @@ export default function ProcessosGlobais() {
     ordem: 1,
   });
 
-  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : "";
+  const token = typeof window !== "undefined" ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") : "";
   const usuarioLogado = typeof window !== "undefined"
-    ? JSON.parse(sessionStorage.getItem("usuario") || "{}")
+    ? JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}")
     : {};
+
+  // Helper: obter empresaId exclusivamente do storage
+  const getEmpresaIdFromStorage = () => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      const id = parsed?.EmpresaId || localStorage.getItem("empresaId") || sessionStorage.getItem("empresaId");
+      return id ? Number(id) : null;
+    } catch {
+      return null;
+    }
+  };
 
   // Verificar permissão de superadmin
   useEffect(() => {
@@ -105,10 +90,25 @@ export default function ProcessosGlobais() {
   const fetchProcessosGlobais = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/api/admin/processos-franqueadora", {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) {
+        console.error("EmpresaId não encontrado no storage");
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${BASE_URL}/gestao/admin/processos-franqueadora`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
-      setProcessosGlobais(response.data);
+      if (!response.ok) throw new Error("Falha ao buscar processos globais");
+      const raw = await response.json();
+      const data = Array.isArray(raw) ? raw.map((p) => ({
+        ...p,
+        diasMeta: p.diasMeta ?? p.dias_meta ?? p.diasmeta ?? null,
+        diasPrazo: p.diasPrazo ?? p.dias_prazo ?? p.diasprazo ?? null,
+        dataReferencia: p.dataReferencia ?? p.data_referencia ?? null,
+        responsavelId: p.responsavelId ?? p.responsavel_id ?? null,
+      })) : [];
+      setProcessosGlobais(data);
     } catch (err) {
       console.error("Erro ao buscar processos globais:", err);
     } finally {
@@ -118,10 +118,17 @@ export default function ProcessosGlobais() {
 
   const fetchDepartamentosGlobais = async () => {
     try {
-      const response = await api.get("/api/admin/departamentos-globais", {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) {
+        console.error("EmpresaId não encontrado no storage");
+        return;
+      }
+      const response = await fetch(`${BASE_URL}/gestao/admin/departamentos-globais`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
-      setDepartamentosGlobais(response.data);
+      if (!response.ok) throw new Error("Falha ao buscar departamentos globais");
+      const data = await response.json();
+      setDepartamentosGlobais(data);
     } catch (err) {
       console.error("Erro ao buscar departamentos globais:", err);
     }
@@ -129,21 +136,35 @@ export default function ProcessosGlobais() {
 
   const fetchUsuarios = async () => {
     try {
-      const response = await api.get("/api/usuarios", {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) {
+        console.error("EmpresaId não encontrado no storage");
+        return;
+      }
+      const response = await fetch(`${BASE_URL}/usuarios-empresas/empresa/${empresaId}`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": String(empresaId) },
       });
-      setUsuarios(response.data);
+      if (!response.ok) throw new Error("Falha ao buscar usuários");
+      const data = await response.json();
+      setUsuarios(data);
     } catch (err) {
       console.error("Erro ao buscar usuários:", err);
     }
   };
 
-  const fetchAtividades = async (processoId: number) => {
+  const fetchAtividades = async (processoId) => {
     try {
-      const response = await api.get(`/api/admin/atividades-global/${processoId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) {
+        console.error("EmpresaId não encontrado no storage");
+        return;
+      }
+      const response = await fetch(`${BASE_URL}/gestao/admin/atividades-global/${processoId}`, {
+        headers: { Authorization: `Bearer ${token}`, "X-Empresa-Id": empresaId.toString() },
       });
-      setAtividades(response.data);
+      if (!response.ok) throw new Error("Falha ao buscar atividades");
+      const data = await response.json();
+      setAtividades(data);
     } catch (err) {
       console.error("Erro ao buscar atividades:", err);
       setAtividades([]);
@@ -168,17 +189,30 @@ export default function ProcessosGlobais() {
       setErro("");
       setSucesso("");
 
-      const response = await api.post(
-        "/api/admin/processo-global",
-        {
-          ...formProcesso,
-          departamentoGlobalId: Number(formProcesso.departamentoGlobalId),
-          responsavelId: formProcesso.responsavelId ? Number(formProcesso.responsavelId) : null,
+      const payload = {
+        ...formProcesso,
+        departamentoGlobalId: Number(formProcesso.departamentoGlobalId),
+        responsavelId: formProcesso.responsavelId ? Number(formProcesso.responsavelId) : null,
+      };
+      // LOG do que está sendo enviado na criação (solicitado)
+      // eslint-disable-next-line no-console
+      console.log("[ProcessosGlobais][criarProcessoGlobal][payload]", payload);
+
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) {
+        console.error("EmpresaId não encontrado no storage");
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${BASE_URL}/gestao/admin/processo-global`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-Empresa-Id": empresaId.toString(),
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        body: JSON.stringify(payload),
+      });
 
       if (response.status === 201) {
         setSucesso("Processo global criado com sucesso!");
@@ -192,6 +226,8 @@ export default function ProcessosGlobais() {
         });
         fetchProcessosGlobais(); // Recarregar lista
         setTimeout(() => setSucesso(""), 3000);
+        // Fechar modal após criar com sucesso
+        fecharModal();
       }
     } catch (error) {
       console.error("Erro ao criar processo global:", error);
@@ -211,16 +247,24 @@ export default function ProcessosGlobais() {
       setLoading(true);
       setErro("");
 
-      const response = await api.post(
-        "/api/admin/atividade-global",
-        {
+      const empresaId = getEmpresaIdFromStorage();
+      if (!empresaId) {
+        console.error("EmpresaId não encontrado no storage");
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${BASE_URL}/gestao/admin/atividade-global`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-Empresa-Id": empresaId.toString(),
+        },
+        body: JSON.stringify({
           processoId: processoSelecionado.id,
           ...formAtividade,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        }),
+      });
 
       if (response.status === 201) {
         setSucesso("Atividade adicionada com sucesso!");
@@ -241,7 +285,7 @@ export default function ProcessosGlobais() {
     }
   };
 
-  const abrirModalAtividades = (processo: ProcessoGlobal) => {
+  const abrirModalAtividades = (processo) => {
     setProcessoSelecionado(processo);
     setModalAtividades(true);
     fetchAtividades(processo.id);
@@ -274,8 +318,10 @@ export default function ProcessosGlobais() {
     const matchNome = p.nome.toLowerCase().includes(filtro.toLowerCase());
     const matchDepartamento = departamentoFiltro === "" || 
       p.departamentoGlobalId === Number(departamentoFiltro);
-    const matchResponsavel = responsavelFiltro === "" || 
-      p.responsavelId === Number(responsavelFiltro);
+    const responsavelIdProcesso = p.responsavelId != null ? p.responsavelId : (p.responsavelUsuarioId != null ? p.responsavelUsuarioId : null);
+    const matchResponsavel = responsavelFiltro === "" || (
+      responsavelIdProcesso != null && Number(responsavelFiltro) === Number(responsavelIdProcesso)
+    );
     return matchNome && matchDepartamento && matchResponsavel;
   });
 
@@ -305,27 +351,34 @@ export default function ProcessosGlobais() {
     return () => clearInterval(interval);
   }, [processosFiltrados.length]);
 
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleItemsPerPageChange = (e) => {
     setItensPorPagina(Number(e.target.value));
   };
 
-  const handlePageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePageChange = (e) => {
     setPagina(Number(e.target.value));
   };
 
   if (loading && processosGlobais.length === 0) {
     return (
-      <DashboardLayout>
+      <>
+        <PrincipalSidebar />
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <div>Carregando processos globais...</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
+      <PrincipalSidebar />
       <div className={styles.container}>
+        {/* helper local para resolver nome do responsável a partir do ID */}
+        {/* eslint-disable-next-line no-unused-vars */}
+        {false && null}
+        {/* formatação de data local */}
+        {false && null}
         <div className={styles.actions}>
           {hasPermissao("processos", "criar") && (
             <button
@@ -368,8 +421,8 @@ export default function ProcessosGlobais() {
           >
             <option value="">Todos os Responsáveis</option>
             {usuarios.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.nome}
+              <option key={user.usuario_id ?? user.id} value={(user.usuario_id ?? user.id)}>
+                {user.full_name ?? user.nome}
               </option>
             ))}
           </select>
@@ -378,8 +431,8 @@ export default function ProcessosGlobais() {
         <table className={styles.table}>
           <thead>
             <tr className={styles.tableHeaderRow}>
+            <th className={`${styles.th}`}>Nome</th>
               <th className={styles.th}>Departamento Global</th>
-              <th className={`${styles.th} ${styles.thJustify}`}>Nome</th>
               <th className={styles.th}>Responsável</th>
               <th className={styles.th}>Data Referência</th>
               <th className={styles.th}>Dias Meta</th>
@@ -390,17 +443,32 @@ export default function ProcessosGlobais() {
           <tbody>
             {processosFiltrados.map((p) => (
               <tr key={p.id}>
-                <td className={styles.td}>{p.departamentoGlobalNome}</td>
                 <td
                   className={`${styles.td} ${styles.linkTd}`}
-                  onClick={() => router.push(`/dashboard/processos-globais/${p.id}`)}
+                  onClick={() => router.push(`/gestao/processos-globais/${p.id}`)}
                 >
                   {p.nome}
                 </td>
-                <td className={styles.td}>{p.responsavel || "Não definido"}</td>
-                <td className={styles.td}>
-                  {p.dataReferencia === "hoje" ? "Data Atual" : p.dataReferencia}
-                </td>
+
+                <td className={styles.td}>{p.departamentoGlobalNome}</td>
+
+                <td className={styles.td}>{
+                  (() => {
+                    const rid = p.responsavelId != null ? p.responsavelId : (p.responsavelUsuarioId != null ? p.responsavelUsuarioId : null);
+                    if (rid == null) return p.responsavelNome || p.responsavel || "Não definido";
+                    const u = usuarios.find(ux => Number(ux.usuario_id ?? ux.id) === Number(rid));
+                    return (u && (u.full_name || u.nome)) || p.responsavelNome || p.responsavel || "Não definido";
+                  })()
+                }</td>
+                {/* Exibe nome do responsável a partir da lista de usuários, se disponível */}
+                {/* <td className={styles.td}>{getResponsavelNome(p)}</td> */}
+                <td className={styles.td}>{(() => {
+                  const v = p.dataReferencia;
+                  if (!v) return "—";
+                  if (v === "hoje") return "Data Atual";
+                  const dt = new Date(v);
+                  return isNaN(dt) ? String(v) : dt.toLocaleDateString('pt-BR');
+                })()}</td>
                 <td className={styles.td}>{p.diasMeta}</td>
                 <td className={styles.td}>{p.diasPrazo}</td>
                 <td className={styles.td}>
@@ -513,8 +581,8 @@ export default function ProcessosGlobais() {
                   >
                     <option value="">Selecione...</option>
                     {usuarios.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.nome}
+                      <option key={user.usuario_id ?? user.id} value={(user.usuario_id ?? user.id)}>
+                        {user.full_name ?? user.nome}
                       </option>
                     ))}
                   </select>
@@ -661,18 +729,13 @@ export default function ProcessosGlobais() {
 
                 {/* Lista de atividades existentes */}
                 {atividades.length > 0 && (
-                  <div style={{ marginTop: 20 }}>
+                  <div className={styles.atividadesSection}>
                     <h3>Atividades Existentes:</h3>
-                    <ul style={{ listStyle: "none", padding: 0 }}>
+                    <ul className={styles.atividadesList}>
                       {atividades.map((atividade, index) => (
                         <li
                           key={atividade.id}
-                          style={{
-                            padding: "8px",
-                            margin: "4px 0",
-                            background: "#f5f5f5",
-                            borderRadius: 4,
-                          }}
+                          className={styles.atividadeItem}
                         >
                           <strong>{atividade.ordem}.</strong> {atividade.texto} ({atividade.tipo})
                         </li>
@@ -691,6 +754,6 @@ export default function ProcessosGlobais() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 } 

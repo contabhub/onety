@@ -70,20 +70,20 @@ Estamos aqui para ajudar! Entre em contato conosco sempre que precisar. E acompa
 
 // 📌 Cadastro do usuário principal
 router.post("/usuario", async (req, res) => {
-  const { nome, email, senha, nivel, empresaId, cargoId } = req.body;
+  const { nome, email, senha, empresaId, cargoId } = req.body;
 
   try {
     const hash = await bcrypt.hash(senha, 10);
     const [result] = await db.execute(
-      "INSERT INTO usuarios (nome, email, senha, nivel) VALUES (?, ?, ?, ?)",
-      [nome, email, hash, nivel || "usuario"]
+      "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+      [nome, email, hash]
     );
     const usuarioId = result.insertId;
 
-    // Associar usuário à empresa e cargo na relacao_empresas
+    // Associar usuário à empresa e cargo na usuarios_empresas
     if (empresaId && cargoId) {
       await db.execute(
-        `INSERT INTO relacao_empresas (usuarioId, empresaId, dataAssociacao, cargoId) VALUES (?, ?, NOW(), ?)`,
+        `INSERT INTO usuarios_empresas (usuario_id, empresa_id, criado_em, cargo_id) VALUES (?, ?, NOW(), ?)`,
         [usuarioId, empresaId, cargoId]
       );
     }
@@ -101,7 +101,7 @@ router.post("/empresa", async (req, res) => {
 
   try {
     const [result] = await db.execute(
-      `INSERT INTO empresas (cnpj, razaoSocial, endereco, telefone, pfx, senhaPfx, apiKeyEplugin, dataCriacao)
+      `INSERT INTO empresas (cnpj, razaoSocial, endereco, telefone, pfx, senhaPfx, apiKeyEplugin, criado_em)
        VALUES (?, ?, ?, ?, NULL, NULL, NULL, NOW())`,
       [cnpj, razaoSocial, endereco, telefone]
     );
@@ -133,7 +133,7 @@ router.post("/empresa", async (req, res) => {
       // ✅ OTIMIZADO: Inserir departamentos da empresa em lote
       const valoresEmpresa = novosDepartamentosGlobais.map(dep => [empresaId, dep.nome, dep.id]);
       await db.query(
-        "INSERT INTO departamentos (empresaId, nome, departamentoGlobalId) VALUES ?",
+        "INSERT INTO departamentos (empresa_id, nome, departamento_global_id) VALUES ?",
         [valoresEmpresa]
       );
       console.log(`✅ ${novosDepartamentosGlobais.length} departamentos criados em lote para empresa ${empresaId}`);
@@ -141,7 +141,7 @@ router.post("/empresa", async (req, res) => {
       // ✅ OTIMIZADO: Inserir departamentos da empresa em lote
       const valoresEmpresa = departamentosGlobais.map(dep => [empresaId, dep.nome, dep.id]);
       await db.query(
-        "INSERT INTO departamentos (empresaId, nome, departamentoGlobalId) VALUES ?",
+        "INSERT INTO departamentos (empresa_id, nome, departamento_global_id) VALUES ?",
         [valoresEmpresa]
       );
       console.log(`✅ ${departamentosGlobais.length} departamentos clonados em lote para empresa ${empresaId}`);
@@ -166,7 +166,7 @@ router.post("/empresa", async (req, res) => {
 
     // Associar usuário 1 à empresa e ao cargo Superadmin
     await db.execute(
-      `INSERT INTO relacao_empresas (usuarioId, empresaId, dataAssociacao, cargoId) VALUES (?, ?, NOW(), ?)`,
+      `INSERT INTO usuarios_empresas (usuario_id, empresa_id, criado_em, cargo_id) VALUES (?, ?, NOW(), ?)` ,
       [1, empresaId, cargoSuperadminId]
     );
 
@@ -564,7 +564,7 @@ async function clonarDadosPadrao(novaEmpresaId) {
     const mapeamentoCategorias = new Map();
     for (const categoria of dadosPadrao.categorias) {
       const [novaCategoria] = await db.query(
-        "INSERT INTO particularidades_categorias (empresaid, nome) VALUES (?, ?)",
+        "INSERT INTO particularidades_categorias (empresa_id, nome) VALUES (?, ?)",
         [novaEmpresaId, categoria.nome]
       );
       mapeamentoCategorias.set(categoria.nome, novaCategoria.insertId);
@@ -576,7 +576,7 @@ async function clonarDadosPadrao(novaEmpresaId) {
       for (const particularidade of dadosPadrao.particularidades) {
         const categoriaId = mapeamentoCategorias.get(particularidade.categoria);
         const [novaParticularidade] = await db.query(
-          "INSERT INTO particularidades (empresaid, categoria, nome, descricao, categoriaId) VALUES (?, ?, ?, ?, ?)",
+          "INSERT INTO particularidades (empresa_id, categoria, nome, descricao, categoria_id) VALUES (?, ?, ?, ?, ?)",
           [novaEmpresaId, particularidade.categoria, particularidade.nome, particularidade.descricao, categoriaId]
         );
         mapeamentoParticularidades.set(particularidade.nome, novaParticularidade.insertId);
@@ -586,7 +586,7 @@ async function clonarDadosPadrao(novaEmpresaId) {
     // 3️⃣ Criar grupos de enquetes
     for (const grupo of dadosPadrao.grupos) {
       const [novoGrupo] = await db.query(
-        "INSERT INTO enquete_grupos (empresaid, classificacao, titulo) VALUES (?, ?, ?)",
+        "INSERT INTO enquete_grupos (empresa_id, classificacao, titulo) VALUES (?, ?, ?)",
         [novaEmpresaId, grupo.classificacao, grupo.titulo]
       );
       const grupoId = novoGrupo.insertId;
@@ -606,7 +606,7 @@ async function clonarDadosPadrao(novaEmpresaId) {
           const particularidadeId = mapeamentoParticularidades.get(resposta);
           if (particularidadeId) {
             await db.query(
-              "INSERT INTO enquete_respostas (perguntaId, particularidadeId) VALUES (?, ?)",
+              "INSERT INTO enquete_respostas (pergunta_id, particularidade_id) VALUES (?, ?)",
               [perguntaId, particularidadeId]
             );
             console.log(`✅ Resposta criada: ${resposta} → pergunta ${perguntaId}`);
@@ -627,50 +627,37 @@ async function clonarDadosPadrao(novaEmpresaId) {
 
 router.post("/processo-global", verifyToken, async (req, res) => {
   try {
-    const { nome, diasMeta, diasPrazo, departamentoGlobalId } = req.body;
+  const { nome, diasMeta, diasPrazo, departamentoGlobalId, responsavelId, dataReferencia } = req.body;
     const empresaId = req.usuario.empresaId;
 
     if (!departamentoGlobalId) {
       return res.status(400).json({ error: "Departamento Global ID é obrigatório." });
     }
 
-   // Verifica se o departamento já existe para a empresa com base no departamentoGlobalId
-const [departamentosExistentes] = await db.query(
-  "SELECT id FROM departamentos WHERE departamentoGlobalId = ? AND empresaId = ?",
-  [departamentoGlobalId, empresaId]
-);
+  // Tenta localizar departamento existente ligado ao mesmo departamento_global_id para a empresa
+  const [departamentosExistentes] = await db.query(
+    "SELECT id FROM departamentos WHERE departamento_global_id = ? AND empresa_id = ?",
+    [departamentoGlobalId, empresaId]
+  );
 
-
-    let departamentoId;
-
-    if (departamentosExistentes.length > 0) {
-      departamentoId = departamentosExistentes[0].id;
-    } else {
-      // Buscar nome do departamento global
-      const [[departamentoGlobal]] = await db.query(
-        "SELECT nome FROM departamentos_globais WHERE id = ?",
-        [departamentoGlobalId]
-      );
-
-      if (!departamentoGlobal) {
-        return res.status(404).json({ error: "Departamento global não encontrado." });
-      }
-
-      // Inserir o departamento para a empresa
-      const [novoDep] = await db.query(
-        "INSERT INTO departamentos (nome, empresaId) VALUES (?, ?)",
-        [departamentoGlobal.nome, empresaId]
-      );
-
-      departamentoId = novoDep.insertId;
-    }
+    // Regra: não criar departamentos automaticamente; usar existente se houver
+    const departamentoId = departamentosExistentes.length > 0 ? departamentosExistentes[0].id : null;
 
     // Criar o processo
     const [result] = await db.query(
       `INSERT INTO processos 
-       (nome, diasMeta, diasPrazo, padraoFranqueadora, empresaId, departamentoId, departamentoGlobalId) 
-       VALUES (?, ?, ?, 1, ?, ?, ?)`,
-      [nome, diasMeta, diasPrazo, empresaId, departamentoId, departamentoGlobalId]
+       (nome, dias_meta, dias_prazo, data_referencia, responsavel_id, padrao_franqueadora, empresa_id, departamento_id, departamento_global_id) 
+       VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+      [
+        nome,
+        diasMeta,
+        diasPrazo,
+        dataReferencia || null,
+        responsavelId || null,
+        empresaId,
+        departamentoId,
+        departamentoGlobalId
+      ]
     );
     
     res.status(201).json({ message: "Processo padrão criado", processId: result.insertId });
@@ -703,7 +690,7 @@ router.post("/atividade-global", verifyToken, async (req, res) => {
     }
 
     const [processos] = await db.query(
-      "SELECT id FROM processos WHERE id = ? AND empresaId = ?",
+      "SELECT id FROM processos WHERE id = ? AND empresa_id = ?",
       [processoId, req.usuario.empresaId]
     );
 
@@ -713,7 +700,7 @@ router.post("/atividade-global", verifyToken, async (req, res) => {
 
     await db.execute(
       `INSERT INTO atividades_processo
-        (processoId, empresaId, texto, descricao, tipo, tipoCancelamento, ordem, criadoEm)
+        (processo_id, empresa_id, texto, descricao, tipo, tipo_cancelamento, ordem, criado_em)
        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
       [processoId, req.usuario.empresaId, texto, descricao || null, tipo, tipoCancelamento, ordem]
     );
@@ -732,8 +719,8 @@ router.get("/processos-franqueadora", verifyToken, async (req, res) => {
     const [processos] = await db.query(
       `SELECT p.*, dg.nome as departamentoGlobalNome 
        FROM processos p 
-       LEFT JOIN departamentos_globais dg ON p.departamentoGlobalId = dg.id 
-       WHERE p.padraoFranqueadora = 1 AND p.empresaId = ?`,
+       LEFT JOIN departamentos_globais dg ON p.departamento_global_id = dg.id 
+       WHERE p.padrao_franqueadora = 1 AND p.empresa_id = ?`,
       [empresaId]
     );
 
@@ -753,8 +740,8 @@ router.get("/processos-franqueadora/:id", verifyToken, async (req, res) => {
     const [processos] = await db.query(
       `SELECT p.*, dg.nome as departamentoGlobalNome 
        FROM processos p 
-       LEFT JOIN departamentos_globais dg ON p.departamentoGlobalId = dg.id 
-       WHERE p.id = ? AND p.padraoFranqueadora = 1 AND p.empresaId = ?`,
+       LEFT JOIN departamentos_globais dg ON p.departamento_global_id = dg.id 
+       WHERE p.id = ? AND p.padrao_franqueadora = 1 AND p.empresa_id = ?`,
       [id, empresaId]
     );
 
@@ -776,9 +763,9 @@ router.get("/atividades-global/:processoId", verifyToken, async (req, res) => {
     const empresaId = req.usuario.empresaId;
 
     const [atividades] = await db.query(
-      `SELECT id, texto, descricao, tipo, tipoCancelamento, ordem, criadoEm 
+      `SELECT id, texto, descricao, tipo, tipo_cancelamento as tipoCancelamento, ordem, criado_em as criadoEm 
        FROM atividades_processo 
-       WHERE processoId = ? AND empresaId = ? 
+       WHERE processo_id = ? AND empresa_id = ? 
        ORDER BY ordem ASC`,
       [processoId, empresaId]
     );
@@ -798,7 +785,7 @@ router.delete("/atividade-global/:id", verifyToken, async (req, res) => {
 
     // Verificar se a atividade pertence à empresa do usuário
     const [atividades] = await db.query(
-      "SELECT id FROM atividades_processo WHERE id = ? AND empresaId = ?",
+      "SELECT id FROM atividades_processo WHERE id = ? AND empresa_id = ?",
       [id, empresaId]
     );
 
@@ -807,7 +794,7 @@ router.delete("/atividade-global/:id", verifyToken, async (req, res) => {
     }
 
     await db.execute(
-      "DELETE FROM atividades_processo WHERE id = ? AND empresaId = ?",
+      "DELETE FROM atividades_processo WHERE id = ? AND empresa_id = ?",
       [id, empresaId]
     );
 
@@ -826,7 +813,7 @@ router.put("/atividade-global/:id", verifyToken, async (req, res) => {
     const empresaId = req.usuario.empresaId;
 
     const [atividades] = await db.query(
-      "SELECT id FROM atividades_processo WHERE id = ? AND empresaId = ?",
+      "SELECT id FROM atividades_processo WHERE id = ? AND empresa_id = ?",
       [id, empresaId]
     );
     if (atividades.length === 0) {
@@ -834,7 +821,7 @@ router.put("/atividade-global/:id", verifyToken, async (req, res) => {
     }
 
     await db.execute(
-      `UPDATE atividades_processo SET texto = ?, descricao = ?, tipo = ?, tipoCancelamento = ? WHERE id = ? AND empresaId = ?`,
+      `UPDATE atividades_processo SET texto = ?, descricao = ?, tipo = ?, tipo_cancelamento = ? WHERE id = ? AND empresa_id = ?`,
       [texto, descricao || null, tipo, tipoCancelamento, id, empresaId]
     );
     res.json({ message: "Atividade atualizada com sucesso." });
@@ -852,7 +839,7 @@ router.put("/atividade-global/:id/ordem", verifyToken, async (req, res) => {
     const empresaId = req.usuario.empresaId;
 
     const [atividades] = await db.query(
-      "SELECT id FROM atividades_processo WHERE id = ? AND empresaId = ?",
+      "SELECT id FROM atividades_processo WHERE id = ? AND empresa_id = ?",
       [id, empresaId]
     );
     if (atividades.length === 0) {
@@ -860,7 +847,7 @@ router.put("/atividade-global/:id/ordem", verifyToken, async (req, res) => {
     }
 
     await db.execute(
-      `UPDATE atividades_processo SET ordem = ? WHERE id = ? AND empresaId = ?`,
+      `UPDATE atividades_processo SET ordem = ? WHERE id = ? AND empresa_id = ?`,
       [novaOrdem, id, empresaId]
     );
     res.json({ message: "Ordem atualizada com sucesso." });
@@ -874,10 +861,9 @@ router.put("/atividade-global/:id/ordem", verifyToken, async (req, res) => {
 router.get("/processos-email-template/:atividadeId", verifyToken, async (req, res) => {
   try {
     const { atividadeId } = req.params;
-    const empresaId = req.usuario.empresaId;
     const [templates] = await db.query(
-      "SELECT * FROM processos_email_templates WHERE atividadeId = ? AND empresaId = ?",
-      [atividadeId, empresaId]
+      "SELECT * FROM processos_email_templates WHERE atividade_id = ?",
+      [atividadeId]
     );
     if (templates.length === 0) {
       return res.json(null);
@@ -892,24 +878,23 @@ router.get("/processos-email-template/:atividadeId", verifyToken, async (req, re
 router.post("/processos-email-template/:atividadeId", verifyToken, async (req, res) => {
   try {
     const { atividadeId } = req.params;
-    const empresaId = req.usuario.empresaId;
     const { nome, assunto, corpo, destinatario, cc, co, variaveis } = req.body;
     // Verifica se já existe
     const [existentes] = await db.query(
-      "SELECT id FROM processos_email_templates WHERE atividadeId = ? AND empresaId = ?",
-      [atividadeId, empresaId]
+      "SELECT id FROM processos_email_templates WHERE atividade_id = ?",
+      [atividadeId]
     );
     if (existentes.length > 0) {
       // Atualiza
       await db.execute(
-        `UPDATE processos_email_templates SET nome=?, assunto=?, corpo=?, destinatario=?, cc=?, co=?, variaveis=?, atualizadoEm=NOW() WHERE atividadeId=? AND empresaId=?`,
-        [nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis || {}), atividadeId, empresaId]
+        `UPDATE processos_email_templates SET nome=?, assunto=?, corpo=?, destinatario=?, cc=?, co=?, variaveis=?, atualizado_em=NOW() WHERE atividade_id=?`,
+        [nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis || {}), atividadeId]
       );
     } else {
       // Cria novo
       await db.execute(
-        `INSERT INTO processos_email_templates (atividadeId, empresaId, nome, assunto, corpo, destinatario, cc, co, variaveis, criadoEm, atualizadoEm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [atividadeId, empresaId, nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis || {})]
+        `INSERT INTO processos_email_templates (atividade_id, nome, assunto, corpo, destinatario, cc, co, variaveis, criado_em, atualizado_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [atividadeId, nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis || {})]
       );
     }
     res.json({ message: "Template salvo com sucesso" });
@@ -1151,7 +1136,7 @@ router.get('/usuarios/preferencias', verifyToken, async (req, res) => {
 // 📌 Listar todos os usuários com informações de vínculos e filtros
 router.get('/usuarios', verifyToken, async (req, res) => {
   try {
-    const { page = 1, limit = 20, empresas, nivel, search } = req.query;
+    const { page = 1, limit = 20, empresas, search } = req.query;
     const offset = (page - 1) * limit;
     
     // Construir WHERE clause dinamicamente
@@ -1163,16 +1148,16 @@ router.get('/usuarios', verifyToken, async (req, res) => {
       if (empresas === 'none' || empresas === 'null') {
         // Filtro para usuários SEM vínculos
         whereConditions.push(`NOT EXISTS (
-          SELECT 1 FROM relacao_empresas re2 
-          WHERE re2.usuarioId = u.id
+          SELECT 1 FROM usuarios_empresas re2 
+          WHERE re2.usuario_id = u.id
         )`);
       } else {
         const empresaIds = empresas.split(',').filter(id => id.trim() !== '');
         if (empresaIds.length > 0) {
           whereConditions.push(`EXISTS (
-            SELECT 1 FROM relacao_empresas re2 
-            WHERE re2.usuarioId = u.id 
-            AND re2.empresaId IN (${empresaIds.map(() => '?').join(',')})
+            SELECT 1 FROM usuarios_empresas re2 
+            WHERE re2.usuario_id = u.id 
+            AND re2.empresa_id IN (${empresaIds.map(() => '?').join(',')})
           )`);
           params.push(...empresaIds);
         }
@@ -1180,11 +1165,7 @@ router.get('/usuarios', verifyToken, async (req, res) => {
     }
     // ✅ SE não há filtro de empresas, trazer TODOS os usuários (com ou sem vínculos)
     
-    // Filtro por nível (só aplicar se especificado)
-    if (nivel && nivel !== '') {
-      whereConditions.push('u.nivel = ?');
-      params.push(nivel);
-    }
+    // Removido filtro por nível (não existe mais em usuarios)
     // ✅ REMOVIDO: Não excluir usuários admin automaticamente
     
     // Filtro por busca (nome ou email)
@@ -1200,9 +1181,9 @@ router.get('/usuarios', verifyToken, async (req, res) => {
       SELECT COUNT(DISTINCT u.id) as total
       FROM usuarios u
       ${whereConditions.length > 0 ? `
-      LEFT JOIN relacao_empresas re ON u.id = re.usuarioId
-      LEFT JOIN empresas e ON re.empresaId = e.id
-      LEFT JOIN cargos c ON re.cargoId = c.id
+      LEFT JOIN usuarios_empresas re ON u.id = re.usuario_id
+      LEFT JOIN empresas e ON re.empresa_id = e.id
+      LEFT JOIN cargos c ON re.cargo_id = c.id
       ` : ''}
       ${whereClause}
     `;
@@ -1216,7 +1197,6 @@ router.get('/usuarios', verifyToken, async (req, res) => {
         u.id,
         u.nome,
         u.email,
-        u.nivel,
         ${whereConditions.length > 0 ? `
         COALESCE(
           GROUP_CONCAT(
@@ -1229,19 +1209,19 @@ router.get('/usuarios', verifyToken, async (req, res) => {
         (SELECT GROUP_CONCAT(
           CONCAT(e2.razaoSocial, ' (', c2.nome, ')') 
           SEPARATOR ', '
-        ) FROM relacao_empresas re2 
-         LEFT JOIN empresas e2 ON re2.empresaId = e2.id 
-         LEFT JOIN cargos c2 ON re2.cargoId = c2.id 
-         WHERE re2.usuarioId = u.id) as empresaAtual
+        ) FROM usuarios_empresas re2 
+         LEFT JOIN empresas e2 ON re2.empresa_id = e2.id 
+         LEFT JOIN cargos c2 ON re2.cargo_id = c2.id 
+         WHERE re2.usuario_id = u.id) as empresaAtual
         `}
       FROM usuarios u
       ${whereConditions.length > 0 ? `
-      LEFT JOIN relacao_empresas re ON u.id = re.usuarioId
-      LEFT JOIN empresas e ON re.empresaId = e.id
-      LEFT JOIN cargos c ON re.cargoId = c.id
+      LEFT JOIN usuarios_empresas re ON u.id = re.usuario_id
+      LEFT JOIN empresas e ON re.empresa_id = e.id
+      LEFT JOIN cargos c ON re.cargo_id = c.id
       ` : ''}
       ${whereClause}
-      ${whereConditions.length > 0 ? 'GROUP BY u.id, u.nome, u.email, u.nivel' : ''}
+      ${whereConditions.length > 0 ? 'GROUP BY u.id, u.nome, u.email' : ''}
       ORDER BY u.nome
       LIMIT ? OFFSET ?
     `;
@@ -1251,7 +1231,7 @@ router.get('/usuarios', verifyToken, async (req, res) => {
     // ✅ NOVO: Log detalhado para debug
     console.log('🔍 Filtros aplicados:', { 
       empresas, 
-      nivel, 
+      nivel: undefined, 
       search, 
       total, 
       page: parseInt(page),
@@ -1282,7 +1262,7 @@ router.post('/vincular-usuario', verifyToken, async (req, res) => {
     
     // Verificar se o vínculo já existe
     const [vinculoExistente] = await db.query(
-      "SELECT id FROM relacao_empresas WHERE usuarioId = ? AND empresaId = ? AND cargoId = ?",
+      "SELECT id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ? AND cargo_id = ?",
       [usuarioId, empresaId, cargoId]
     );
     
@@ -1295,7 +1275,7 @@ router.post('/vincular-usuario', verifyToken, async (req, res) => {
     
     // Criar novo vínculo
     await db.execute(
-      "INSERT INTO relacao_empresas (usuarioId, empresaId, cargoId, dataAssociacao) VALUES (?, ?, ?, NOW())",
+      "INSERT INTO usuarios_empresas (usuario_id, empresa_id, cargo_id, criado_em) VALUES (?, ?, ?, NOW())",
       [usuarioId, empresaId, cargoId]
     );
     
@@ -1369,7 +1349,7 @@ router.delete('/vinculo/:vinculoId', verifyToken, async (req, res) => {
     
     // Verificar se o vínculo existe
     const [vinculos] = await db.query(
-      "SELECT * FROM relacao_empresas WHERE id = ?", 
+      "SELECT * FROM usuarios_empresas WHERE id = ?", 
       [vinculoId]
     );
     
@@ -1378,7 +1358,7 @@ router.delete('/vinculo/:vinculoId', verifyToken, async (req, res) => {
     }
     
     // Remover vínculo
-    await db.query("DELETE FROM relacao_empresas WHERE id = ?", [vinculoId]);
+    await db.query("DELETE FROM usuarios_empresas WHERE id = ?", [vinculoId]);
     
     res.json({ 
       success: true, 
@@ -1397,7 +1377,7 @@ router.get('/usuario/:usuarioId/detalhes', verifyToken, async (req, res) => {
     
     // Buscar dados do usuário
     const [usuarios] = await db.query(
-      "SELECT id, nome, email, nivel, telefone, dataCriacao FROM usuarios WHERE id = ?", 
+      "SELECT id, nome, email, telefone, criado_em FROM usuarios WHERE id = ?", 
       [usuarioId]
     );
     
@@ -1418,12 +1398,12 @@ router.get('/usuario/:usuarioId/detalhes', verifyToken, async (req, res) => {
         c.nome as cargoNome,
         d.id as departamentoId,
         d.nome as departamentoNome
-      FROM relacao_empresas re
-      LEFT JOIN empresas e ON re.empresaId = e.id
-      LEFT JOIN cargos c ON re.cargoId = c.id
-      LEFT JOIN departamentos d ON re.departamentoId = d.id
-      WHERE re.usuarioId = ?
-      ORDER BY re.dataAssociacao DESC
+      FROM usuarios_empresas re
+      LEFT JOIN empresas e ON re.empresa_id = e.id
+      LEFT JOIN cargos c ON re.cargo_id = c.id
+      LEFT JOIN departamentos d ON re.departamento_id = d.id
+      WHERE re.usuario_id = ?
+      ORDER BY re.criado_em DESC
     `, [usuarioId]);
     
     res.json({
@@ -1444,7 +1424,7 @@ router.put('/vinculo/:vinculoId', verifyToken, async (req, res) => {
     
     // Verificar se o vínculo existe
     const [vinculos] = await db.query(
-      "SELECT * FROM relacao_empresas WHERE id = ?", 
+      "SELECT * FROM usuarios_empresas WHERE id = ?", 
       [vinculoId]
     );
     
@@ -1457,15 +1437,15 @@ router.put('/vinculo/:vinculoId', verifyToken, async (req, res) => {
     const updateValues = [];
     
     if (empresaId !== undefined) {
-      updateFields.push("empresaId = ?");
+      updateFields.push("empresa_id = ?");
       updateValues.push(empresaId);
     }
     if (cargoId !== undefined) {
-      updateFields.push("cargoId = ?");
+      updateFields.push("cargo_id = ?");
       updateValues.push(cargoId);
     }
     if (departamentoId !== undefined) {
-      updateFields.push("departamentoId = ?");
+      updateFields.push("departamento_id = ?");
       updateValues.push(departamentoId);
     }
     
@@ -1475,7 +1455,7 @@ router.put('/vinculo/:vinculoId', verifyToken, async (req, res) => {
     
     updateValues.push(vinculoId);
     await db.query(
-      `UPDATE relacao_empresas SET ${updateFields.join(", ")} WHERE id = ?`,
+      `UPDATE usuarios_empresas SET ${updateFields.join(", ")} WHERE id = ?`,
       updateValues
     );
     
@@ -1732,8 +1712,8 @@ async function criarObrigacoesPadrao(novaEmpresaId) {
     ];
     
     // Buscar todos os departamentos da empresa para mapear corretamente as obrigações
-    const [departamentos] = await db.query(
-      "SELECT id, nome FROM departamentos WHERE empresaId = ?",
+  const [departamentos] = await db.query(
+      "SELECT id, nome FROM departamentos WHERE empresa_id = ?",
       [novaEmpresaId]
     );
     
@@ -1776,16 +1756,16 @@ async function criarObrigacoesPadrao(novaEmpresaId) {
         // 2️⃣ Inserir a obrigação
         const [novaObrigacao] = await db.query(
           `INSERT INTO obrigacoes (
-            empresaid, departamentoid, nome, frequencia, diaSemana, acaoQtdDias, acaoTipoDias, 
-            metaQtdDias, metaTipoDias, vencimentoTipo, vencimentoDia, fatoGerador, 
-            orgao, aliasValidacao, geraMulta, usarRelatorio, reenviarEmail, dataCriacao
+            empresa_id, departamento_id, nome, frequencia, dia_semana, acao_qtd_dias, acao_tipo_dias, 
+            meta_qtd_dias, meta_tipo_dias, vencimento_tipo, vencimento_dia, fato_gerador, 
+            orgao, alias_validacao, gera_multa, usar_relatorio, reenviar_email, data_criacao
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
           [
             novaEmpresaId,
             departamentoId,
             obrigacao.nome,
             obrigacao.frequencia,
-            null, // diaSemana (não aplicável para estas obrigações)
+            null, // dia_semana (não aplicável para estas obrigações)
             obrigacao.acaoQtdDias,
             obrigacao.acaoTipoDias,
             obrigacao.metaQtdDias,
@@ -1794,10 +1774,10 @@ async function criarObrigacoesPadrao(novaEmpresaId) {
             obrigacao.vencimentoDia,
             obrigacao.fatoGerador,
             obrigacao.orgao,
-            null, // aliasValidacao
-            0,    // geraMulta (padrão: não)
-            0,    // usarRelatorio (padrão: não)
-            0     // reenviarEmail (padrão: não)
+            null, // alias_validacao
+            0,    // gera_multa (padrão: não)
+            0,    // usar_relatorio (padrão: não)
+            0     // reenviar_email (padrão: não)
           ]
         );
         
@@ -1813,7 +1793,7 @@ async function criarObrigacoesPadrao(novaEmpresaId) {
             try {
               // Buscar a particularidade pelo nome
               const [particularidades] = await db.query(
-                "SELECT id FROM particularidades WHERE empresaid = ? AND nome = ?",
+                "SELECT id FROM particularidades WHERE empresa_id = ? AND nome = ?",
                 [novaEmpresaId, nomeParticularidade]
               );
               
@@ -1824,7 +1804,7 @@ async function criarObrigacoesPadrao(novaEmpresaId) {
                 const tipoRelacao = obrigacao.tipoRelacao === "OU" ? "OU" : "E";
                 await db.query(
                   `INSERT INTO obrigacoes_particularidades (
-                    obrigacaoid, tipo, particularidadeId
+                    obrigacao_id, tipo, particularidade_id
                   ) VALUES (?, ?, ?)`,
                   [obrigacaoId, tipoRelacao, particularidadeId]
                 );
@@ -1876,7 +1856,7 @@ router.post("/recriar-enquetes/:empresaId", verifyToken, async (req, res) => {
 
     // Verificar se já existem enquetes para esta empresa
     const [enquetesExistentes] = await db.query(
-      "SELECT COUNT(*) as total FROM enquete_grupos WHERE empresaid = ?", 
+      "SELECT COUNT(*) as total FROM enquete_grupos WHERE empresa_id = ?", 
       [empresaId]
     );
 
@@ -1896,21 +1876,21 @@ router.post("/recriar-enquetes/:empresaId", verifyToken, async (req, res) => {
       console.log(`🗑️ Limpando enquetes existentes...`);
       
       // Buscar IDs dos grupos para deletar em cascata
-      const [grupos] = await db.query("SELECT id FROM enquete_grupos WHERE empresaid = ?", [empresaId]);
+      const [grupos] = await db.query("SELECT id FROM enquete_grupos WHERE empresa_id = ?", [empresaId]);
       const grupoIds = grupos.map(g => g.id);
       
       if (grupoIds.length > 0) {
         // Deletar respostas
         await db.query(
-          `DELETE FROM enquete_respostas WHERE perguntaId IN (
-            SELECT id FROM enquete_perguntas WHERE grupoId IN (${grupoIds.map(() => '?').join(',')})
+          `DELETE FROM enquete_respostas WHERE pergunta_id IN (
+            SELECT id FROM enquete_perguntas WHERE grupo_id IN (${grupoIds.map(() => '?').join(',')})
           )`,
           grupoIds
         );
         
         // Deletar perguntas
         await db.query(
-          "DELETE FROM enquete_perguntas WHERE grupoId IN (" + grupoIds.map(() => '?').join(',') + ")",
+          "DELETE FROM enquete_perguntas WHERE grupo_id IN (" + grupoIds.map(() => '?').join(',') + ")",
           grupoIds
         );
         

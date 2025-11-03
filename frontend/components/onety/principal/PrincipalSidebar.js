@@ -259,6 +259,18 @@ const MODULE_REGISTRY = {
         route: '/gestao/clientes'
       },
       {
+        id: 'processos',
+        label: 'Processos',
+        icon: <FileText size={18} />,
+        route: '/gestao/processos'
+      },
+      {
+        id: 'processos-globais',
+        label: 'Processos Globais',
+        icon: <FileText size={18} />,
+        route: '/gestao/processos-globais'
+      },
+      {
         id: 'enquete',
         label: 'Enquete',
         icon: <FileText size={18} />,
