@@ -36,6 +36,9 @@ import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
 import EditarPerfil from '../menu/EditarPerfil';
 import { useWebSocket } from '../../../hooks/useWebSocket';
+import CriarModal from '../../gestao/CriarModal';
+import NovoClienteModal from '../../gestao/NovoClienteModal';
+import NovaTarefaModal from '../../gestao/NovaTarefaModal';
 
 // Registry de módulos com seus itens específicos
 const MODULE_REGISTRY = {
@@ -365,6 +368,9 @@ export default function PrincipalSidebar() {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [criarModalOpen, setCriarModalOpen] = useState(false);
+  const [novoClienteModalOpen, setNovoClienteModalOpen] = useState(false);
+  const [novoProcessoModalOpen, setNovoProcessoModalOpen] = useState(false);
   const [ajustesExpanded, setAjustesExpanded] = useState(false);
   const [vendasExpanded, setVendasExpanded] = useState(false);
   const [financeiroExpanded, setFinanceiroExpanded] = useState(false);
@@ -1451,6 +1457,10 @@ export default function PrincipalSidebar() {
               <MessageSquare size={20} />
               <span>Notificações {unreadCount > 0 ? `(${unreadCount})` : ''}</span>
             </button>
+            <button className={styles.dropdownItem} onClick={() => { setCriarModalOpen(true); setUserMenuOpen(false); }}>
+              <Edit3 size={20} />
+                <span>Criar Tarefas</span>
+            </button>
             <button className={styles.dropdownItem} onClick={handleEditProfile}>
               <Edit3 size={20} />
               <span>Editar Perfil</span>
@@ -1481,6 +1491,33 @@ export default function PrincipalSidebar() {
       onClose={() => setModalOpen(false)}
       onUpdated={(u) => setUserData(u)}
     />
+
+    {/* Criar Modal (atalho rápido) */}
+    <CriarModal
+      isOpen={criarModalOpen}
+      onClose={() => setCriarModalOpen(false)}
+      onNovaSolicitacao={() => { setCriarModalOpen(false); setNovoProcessoModalOpen(true); }}
+      onNovaSolicitacaoUnica={() => { setCriarModalOpen(false); }}
+      onNovoCliente={() => { setCriarModalOpen(false); setNovoClienteModalOpen(true); }}
+      onNovaObrigacaoEsporadica={() => { setCriarModalOpen(false); }}
+      podeCriarTarefa={true}
+      podeCriarCliente={true}
+    />
+
+    {/* Novo Cliente Modal */}
+    {novoClienteModalOpen && (
+      <NovoClienteModal
+        onClose={() => setNovoClienteModalOpen(false)}
+        onSuccess={() => setNovoClienteModalOpen(false)}
+      />
+    )}
+
+    {/* Novo Processo (Nova Tarefa) */}
+    {novoProcessoModalOpen && (
+      <NovaTarefaModal
+        onClose={() => setNovoProcessoModalOpen(false)}
+      />
+    )}
 
     {/* Modal de confirmação para trocar de empresa */}
     {confirmModalOpen && (

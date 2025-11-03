@@ -5,6 +5,28 @@ const autenticarToken = require("../../middlewares/auth");
 const db = require("../../config/database");
 const { verificarPermissao } = require("../../middlewares/permissao");
 
+// ==== DEBUG LOG MIDDLEWARE (temporário) =====
+router.use((req, res, next) => {
+  try {
+    const safeHeaders = {
+      host: req.headers.host,
+      'user-agent': req.headers['user-agent'],
+      authorization: req.headers.authorization ? 'Bearer ***' : undefined,
+    };
+    console.log('[tarefasRoutes]', {
+      method: req.method,
+      url: req.originalUrl,
+      params: req.params,
+      query: req.query,
+      body: req.body,
+      headers: safeHeaders,
+    });
+  } catch (e) {
+    console.log('[tarefasRoutes] log error', e);
+  }
+  next();
+});
+
 // =================== ROTAS ESPECÍFICAS ===================
 
 // Tarefas abertas (usada em "Progresso Atual")

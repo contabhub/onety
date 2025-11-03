@@ -68,7 +68,9 @@ export default function Processos() {
       const token = typeof window !== "undefined" 
         ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") 
         : "";
-      const rawUserData = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const rawUserData = typeof window !== "undefined"
+        ? (localStorage.getItem("userData") || sessionStorage.getItem("userData"))
+        : null;
       const userData = rawUserData ? JSON.parse(rawUserData) : {};
       const empresaId = userData?.EmpresaId;
       
@@ -101,7 +103,9 @@ export default function Processos() {
       const token = typeof window !== "undefined" 
         ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") 
         : "";
-      const rawUserData = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const rawUserData = typeof window !== "undefined"
+        ? (localStorage.getItem("userData") || sessionStorage.getItem("userData"))
+        : null;
       const userData = rawUserData ? JSON.parse(rawUserData) : {};
       const empresaId = userData?.EmpresaId;
       
@@ -134,7 +138,9 @@ export default function Processos() {
       const token = typeof window !== "undefined" 
         ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") 
         : "";
-      const rawUserData = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const rawUserData = typeof window !== "undefined"
+        ? (localStorage.getItem("userData") || sessionStorage.getItem("userData"))
+        : null;
       const userData = rawUserData ? JSON.parse(rawUserData) : {};
       const empresaId = userData?.EmpresaId;
       
@@ -167,7 +173,9 @@ export default function Processos() {
       const token = typeof window !== "undefined" 
         ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "") 
         : "";
-      const rawUserData = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      const rawUserData = typeof window !== "undefined"
+        ? (localStorage.getItem("userData") || sessionStorage.getItem("userData"))
+        : null;
       const userData = rawUserData ? JSON.parse(rawUserData) : {};
       const empresaId = userData?.EmpresaId;
       

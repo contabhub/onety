@@ -172,7 +172,7 @@ router.post(
           });
         } catch (e) {
           console.error(
-            `❌ Erro ao consultar cliente ${cliente.nome}:`,
+            `❌ Erro ao consultar cliente $ {cliente.nome}:`,
             e.message
           );
         }
