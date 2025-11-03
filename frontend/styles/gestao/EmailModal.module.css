@@ -1,0 +1,544 @@
+/* =====================================================
+   EMAIL MODAL - SISTEMA TITAN
+   Padronizado com design-tokens.css
+   Suporte para temas dark e light
+   ===================================================== */
+
+/* ===== OVERLAY ===== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--titan-z-modal-backdrop);
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Tema Light - Overlay */
+  :root[data-theme="light"] .overlay {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  /* ===== MODAL ===== */
+  .modal {
+    background: var(--titan-card-bg);
+    border-radius: var(--titan-radius-lg);
+    padding: var(--titan-spacing-xl);
+    width: 500px;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-shadow: var(--titan-shadow-lg);
+    font-family: var(--titan-font-family);
+    border: 1px solid var(--titan-stroke);
+    backdrop-filter: blur(20px);
+  }
+  
+  /* Tema Light - Modal */
+  :root[data-theme="light"] .modal {
+    background: var(--titan-base-10);
+    border: 1px solid var(--titan-stroke);
+    box-shadow: var(--titan-shadow-lg);
+  }
+  
+  /* ===== HEADER ===== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--titan-spacing-lg);
+  }
+  
+  .title {
+    font-size: var(--titan-font-size-xl);
+    font-weight: var(--titan-font-weight-semibold);
+    margin: 0;
+    color: var(--titan-text-high);
+  }
+  
+  .loadingTemplate {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-sm);
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-med);
+  }
+  
+  .spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--titan-stroke);
+    border-top: 2px solid var(--titan-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* ===== CAMPOS DE FORMULÁRIO ===== */
+  .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--titan-spacing-sm);
+    gap: var(--titan-spacing-sm);
+  }
+  
+  .fieldLabel {
+    font-weight: var(--titan-font-weight-semibold);
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-med);
+    width: 70px;
+    display: inline-block;
+  }
+  
+  .input {
+    width: 100%;
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    border-radius: var(--titan-radius-sm);
+    border: 1px solid var(--titan-stroke);
+    font-size: var(--titan-font-size-sm);
+    outline: none;
+    box-shadow: none;
+    background: var(--titan-input-bg);
+    color: var(--titan-text-high);
+    transition: all var(--titan-transition-fast);
+    /* Garantir que o texto seja sempre visível */
+    -webkit-text-fill-color: var(--titan-text-high);
+  }
+  
+  .input:focus {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+  }
+  
+  .input::placeholder {
+    color: var(--titan-text-low);
+  }
+  
+  /* ===== SELECT CUSTOMIZADO ===== */
+  .selectContainer {
+    flex: 1;
+  }
+  
+  /* ===== BOTÃO DE ANEXO ===== */
+  .anexoButton {
+    display: inline-block;
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background-color: var(--titan-primary);
+    color: white;
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    cursor: pointer;
+    margin-bottom: var(--titan-spacing-sm);
+    border: none;
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .anexoButton:hover {
+    background-color: var(--titan-primary-hover);
+    transform: translateY(-1px);
+  }
+  
+  /* Tema Light - Botão de Anexo */
+  :root[data-theme="light"] .anexoButton {
+    background-color: var(--titan-cta-bg);
+    color: var(--titan-cta-text);
+  }
+  
+  :root[data-theme="light"] .anexoButton:hover {
+    background-color: var(--titan-cta-bg-hover);
+  }
+  
+  .anexoButton input[type="file"] {
+    display: none;
+  }
+  
+  /* ===== LISTA DE ANEXOS ===== */
+  .anexoList {
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-med);
+    margin-top: var(--titan-spacing-xs);
+  }
+  
+  .anexoItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--titan-base-00);
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    margin-bottom: var(--titan-spacing-xs);
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-high);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  /* Tema Light - Lista de Anexos */
+  :root[data-theme="light"] .anexoItem {
+    background-color: var(--titan-base-10);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  .anexoInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .removeButton {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: var(--titan-error);
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .removeButton:hover {
+    color: var(--titan-error-hover);
+    transform: scale(1.1);
+  }
+  
+  /* ===== TOOLBAR DO EDITOR ===== */
+  .toolbarContainer {
+    display: flex;
+    gap: var(--titan-spacing-xs);
+    margin-bottom: var(--titan-spacing-sm);
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    background-color: var(--titan-base-00);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  /* Tema Light - Toolbar do Editor */
+  :root[data-theme="light"] .toolbarContainer {
+    background-color: var(--titan-base-10);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  .toolbarBtn {
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    background-color: var(--titan-base-00);
+    color: var(--titan-text-med);
+    border: none;
+    font-weight: var(--titan-font-weight-semibold);
+    cursor: pointer;
+    font-size: var(--titan-font-size-sm);
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .toolbarBtn:hover {
+    background-color: var(--titan-stroke);
+    color: var(--titan-text-high);
+  }
+  
+  .toolbarBtn.active {
+    background-color: var(--titan-primary);
+    color: white;
+  }
+  
+  .toolbarBtn.active:hover {
+    background-color: var(--titan-primary-hover);
+  }
+  
+  /* Tema Light - Botões da Toolbar */
+  :root[data-theme="light"] .toolbarBtn {
+    background-color: var(--titan-base-10);
+    color: var(--titan-text-med);
+  }
+  
+  :root[data-theme="light"] .toolbarBtn:hover {
+    background-color: var(--titan-stroke);
+    color: var(--titan-text-high);
+  }
+  
+  :root[data-theme="light"] .toolbarBtn.active {
+    background-color: var(--titan-cta-bg);
+    color: var(--titan-cta-text);
+  }
+  
+  :root[data-theme="light"] .toolbarBtn.active:hover {
+    background-color: var(--titan-cta-bg-hover);
+  }
+  
+  /* ===== EDITOR ===== */
+  .editorWrapper {
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    padding: var(--titan-spacing-sm);
+    min-height: 140px;
+    max-height: 260px;
+    background-color: var(--titan-input-bg);
+    cursor: text;
+    outline: none;
+    box-shadow: none;
+    overflow-y: auto;
+  }
+  
+  /* Tema Light - Editor */
+  :root[data-theme="light"] .editorWrapper {
+    background-color: var(--titan-input-bg);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  .editorContent {
+    width: 100%;
+    min-height: 120px;
+    font-size: var(--titan-font-size-sm);
+    border: none;
+    outline: none;
+    cursor: text;
+    background: transparent;
+    color: var(--titan-text-high);
+  }
+  
+  /* ===== FOOTER ===== */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--titan-spacing-lg);
+  }
+  
+  .cancelButton {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background-color: var(--titan-stroke);
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .cancelButton:hover {
+    background-color: var(--titan-text-low);
+    transform: translateY(-1px);
+  }
+  
+  .sendButton {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background-color: var(--titan-primary);
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    color: white;
+    font-size: var(--titan-font-size-sm);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .sendButton:hover {
+    background-color: var(--titan-primary-hover);
+    transform: translateY(-1px);
+  }
+  
+  /* Tema Light - Botões do Footer */
+  :root[data-theme="light"] .cancelButton {
+    background-color: var(--titan-stroke);
+    color: var(--titan-text-high);
+  }
+  
+  :root[data-theme="light"] .cancelButton:hover {
+    background-color: var(--titan-text-low);
+  }
+  
+  :root[data-theme="light"] .sendButton {
+    background-color: var(--titan-cta-bg);
+    color: var(--titan-cta-text);
+  }
+  
+  :root[data-theme="light"] .sendButton:hover {
+    background-color: var(--titan-cta-bg-hover);
+  }
+  
+  .sendButton svg {
+    margin-right: var(--titan-spacing-xs);
+  }
+  
+  /* ===== BOTÃO DESABILITADO ===== */
+  .sendButtonDisabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+  }
+  
+  .sendButtonDisabled:hover {
+    transform: none !important;
+  }
+  
+  /* ===== RESPONSIVIDADE ===== */
+  @media (max-width: 768px) {
+    .modal {
+      width: 95%;
+      margin: var(--titan-spacing-md);
+      padding: var(--titan-spacing-lg);
+    }
+    
+    .row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--titan-spacing-xs);
+    }
+    
+    .fieldLabel {
+      width: auto;
+      margin-bottom: var(--titan-spacing-xs);
+    }
+  }
+  
+  /* ===== ESTILOS DO EDITOR ===== */
+  .editorWrapper :global(.ProseMirror:focus) {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  
+  .editorWrapper :global(.ProseMirror) {
+    cursor: text !important;
+    user-select: text !important;
+    color: var(--titan-text-high);
+  }
+  
+  .editorWrapper :global(.tiptap-editor) {
+    cursor: text !important;
+  }
+  
+  /* ===== ESTILOS DO REACT-SELECT ===== */
+  .selectContainer :global(.react-select__control) {
+    border-radius: var(--titan-radius-sm) !important;
+    border-color: var(--titan-stroke) !important;
+    box-shadow: none !important;
+    font-size: var(--titan-font-size-sm) !important;
+    min-height: 32px !important;
+    outline: none !important;
+    transition: none !important;
+    width: 100% !important;
+    background-color: var(--titan-input-bg) !important;
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__control:hover) {
+    border-color: var(--titan-stroke) !important;
+  }
+  
+  .selectContainer :global(.react-select__control--is-focused) {
+    border-color: var(--titan-primary) !important;
+    box-shadow: var(--titan-glow-primary) !important;
+  }
+  
+  .selectContainer :global(.react-select__value-container) {
+    padding: 2px 8px !important;
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__input) {
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 24px !important;
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__placeholder) {
+    color: var(--titan-text-low) !important;
+  }
+  
+  .selectContainer :global(.react-select__single-value) {
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__menu) {
+    z-index: 9999 !important;
+    background-color: var(--titan-card-bg) !important;
+    border: 1px solid var(--titan-stroke) !important;
+    border-radius: var(--titan-radius-sm) !important;
+  }
+  
+  .selectContainer :global(.react-select__option) {
+    background-color: var(--titan-card-bg) !important;
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__option--is-focused) {
+    background-color: var(--titan-stroke) !important;
+  }
+  
+  .selectContainer :global(.react-select__option--is-selected) {
+    background-color: var(--titan-primary) !important;
+    color: white !important;
+  }
+  
+  /* Tema Light - React Select */
+  :root[data-theme="light"] .selectContainer :global(.react-select__control) {
+    background-color: var(--titan-input-bg) !important;
+    border-color: var(--titan-stroke) !important;
+  }
+  
+  :root[data-theme="light"] .selectContainer :global(.react-select__control--is-focused) {
+    border-color: var(--titan-primary) !important;
+    box-shadow: var(--titan-glow-primary) !important;
+  }
+  
+  :root[data-theme="light"] .selectContainer :global(.react-select__menu) {
+    background-color: var(--titan-base-10) !important;
+    border: 1px solid var(--titan-stroke) !important;
+  }
+  
+  :root[data-theme="light"] .selectContainer :global(.react-select__option) {
+    background-color: var(--titan-base-10) !important;
+    color: var(--titan-text-high) !important;
+  }
+  
+  :root[data-theme="light"] .selectContainer :global(.react-select__option--is-focused) {
+    background-color: var(--titan-stroke) !important;
+  }
+  
+  :root[data-theme="light"] .selectContainer :global(.react-select__option--is-selected) {
+    background-color: var(--titan-cta-bg) !important;
+    color: var(--titan-cta-text) !important;
+  }
+  
+  /* ===== ESTILOS ADICIONAIS PARA GARANTIR TEMA ESCURO ===== */
+  .selectContainer :global(.react-select__control) {
+    background-color: var(--titan-input-bg) !important;
+  }
+  
+  .selectContainer :global(.react-select__control *),
+  .selectContainer :global(.react-select__control *::placeholder) {
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__input-container) {
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__single-value) {
+    color: var(--titan-text-high) !important;
+  }
+  
+  .selectContainer :global(.react-select__multi-value) {
+    background-color: var(--titan-primary) !important;
+    color: white !important;
+  }
+  
+  .selectContainer :global(.react-select__multi-value__label) {
+    color: white !important;
+  }
+  
+  .selectContainer :global(.react-select__multi-value__remove:hover) {
+    background-color: var(--titan-error) !important;
+    color: white !important;
+  }
+  

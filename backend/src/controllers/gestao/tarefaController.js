@@ -52,16 +52,16 @@ const criarTarefa = async (req, res) => {
 
     console.log("Tarefa criada com sucesso. ID:", id);
 
-    const [[{ processoId: processoIdDb }]] = await conn.query(`SELECT processoId FROM tarefas WHERE id = ?`, [id]);
+    const [[{ processo_id: processoIdDb }]] = await conn.query(`SELECT processo_id FROM tarefas WHERE id = ?`, [id]);
 
     const [atividades] = await conn.query(
-      `SELECT id FROM atividades_processo WHERE processoId = ?`,
+      `SELECT id FROM atividades_processo WHERE processo_id = ?`,
       [processoIdDb]
     );
 
     for (const atividade of atividades) {
       await conn.query(
-        `INSERT INTO atividades_tarefas (tarefaId, atividadeId, concluida) VALUES (?, ?, 0)`,
+        `INSERT INTO atividades_tarefas (tarefa_id, atividade_id, concluida) VALUES (?, ?, 0)`,
         [id, atividade.id]
       );
     }
@@ -93,7 +93,7 @@ const criarTarefa = async (req, res) => {
 
       // Buscar dados do processo filho para replicar corretamente (usando diasMeta/diasPrazo)
       const [[subProcessoData]] = await conn.query(
-        `SELECT nome, responsavelId, departamentoId, diasMeta, diasPrazo FROM processos WHERE id = ?`,
+        `SELECT nome, responsavel_id AS responsavelId, departamento_id AS departamentoId, dias_meta AS diasMeta, dias_prazo AS diasPrazo FROM processos WHERE id = ?`,
         [subId]
       );
 
@@ -139,13 +139,13 @@ const criarTarefa = async (req, res) => {
       });
 
       const [atividadesSub] = await conn.query(
-        `SELECT id FROM atividades_processo WHERE processoId = ?`,
+        `SELECT id FROM atividades_processo WHERE processo_id = ?`,
         [subId]
       );
 
       for (const at of atividadesSub) {
         await conn.query(
-          `INSERT INTO atividades_tarefas (tarefaId, atividadeId, concluida) VALUES (?, ?, 0)`,
+          `INSERT INTO atividades_tarefas (tarefa_id, atividade_id, concluida) VALUES (?, ?, 0)`,
           [subTarefaId, at.id]
         );
       }
@@ -360,12 +360,12 @@ const buscarTarefaPorId = async (req, res) => {
       `
       SELECT 
         t.*,
-        c.nome AS clienteNome,
-        c.cnpjCpf AS clienteCnpjCpf,
+        c.razao_social AS clienteNome,
+        c.cpf_cnpj AS clienteCnpjCpf,
         u.nome AS responsavelNome
       FROM tarefas t
-      LEFT JOIN clientes c ON t.clienteId = c.id
-      LEFT JOIN usuarios u ON t.responsavelId = u.id
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      LEFT JOIN usuarios u ON t.responsavel_id = u.id
       WHERE t.id = ?
       `,
       [id]
@@ -380,12 +380,12 @@ const buscarTarefaPorId = async (req, res) => {
     res.json({
       ...tarefa,
       cliente: {
-        id: tarefa.clienteId,
+        id: tarefa.cliente_id ?? tarefa.clienteId,
         nome: tarefa.clienteNome,
         cnpjCpf: tarefa.clienteCnpjCpf,
       },
       responsavel: {
-        id: tarefa.responsavelId,
+        id: tarefa.responsavel_id ?? tarefa.responsavelId,
         nome: tarefa.responsavelNome,
       },
     });
@@ -415,7 +415,7 @@ const buscarSubprocessosComTarefas = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [[tarefa]] = await db.query("SELECT empresaId FROM tarefas WHERE id = ?", [id]);
+    const [[tarefa]] = await db.query("SELECT empresa_id AS empresaId FROM tarefas WHERE id = ?", [id]);
 
     if (!tarefa) {
       return res.status(404).json({ error: "Tarefa não encontrada" });
@@ -426,15 +426,15 @@ const buscarSubprocessosComTarefas = async (req, res) => {
       SELECT 
         t.id, 
         t.assunto, 
-        t.dataAcao, 
-        t.dataMeta,
-        t.dataPrazo,
+      t.data_acao AS dataAcao, 
+      t.data_meta AS dataMeta,
+      t.data_prazo AS dataPrazo,
         t.status,
-        t.departamentoId
+      t.departamento_id AS departamentoId
       FROM tarefas t
-      WHERE t.tarefaPaiId = ?
-        AND t.empresaId = ?
-      ORDER BY t.dataPrazo
+      WHERE t.tarefa_pai_id = ?
+        AND t.empresa_id = ?
+      ORDER BY t.data_prazo
       `,
       [id, tarefa.empresaId]
     );
@@ -673,8 +673,8 @@ SELECT
   at.data_conclusao as dataConclusao,
   at.data_conclusao as dataCancelamento,
   at.concluido_por as concluidoPorNome,
-  at.base64 AS base64,
-  at.nomeArquivo
+  NULL AS base64,
+  NULL AS nomeArquivo
 FROM atividades_tarefas at
 LEFT JOIN atividades_processo ap ON at.atividade_id = ap.id
 WHERE at.tarefa_id = ?
@@ -714,17 +714,24 @@ const concluirAtividadeTarefa = async (req, res) => {
 
 const salvarAnexoAtividade = async (req, res) => {
   const { atividadeTarefaId } = req.params;
-  const { base64, nomeArquivo } = req.body;
+  const { base64, nomeArquivo, anexos } = req.body || {};
 
   try {
-    await db.query(
-      `
-        UPDATE atividades_tarefas
-        SET base64 = ?, nomeArquivo = ?
-        WHERE id = ?
-      `,
-      [base64, nomeArquivo, atividadeTarefaId]
-    );
+    if (Array.isArray(anexos) && anexos.length > 0) {
+      for (const a of anexos) {
+        await db.query(
+          `INSERT INTO anexos_atividade (atividade_tarefa_id, nome_arquivo, base64) VALUES (?, ?, ?)`,
+          [atividadeTarefaId, a.nomeArquivo || a.nome_arquivo || 'Arquivo', a.base64 || '']
+        );
+      }
+    } else if (base64 && nomeArquivo) {
+      await db.query(
+        `INSERT INTO anexos_atividade (atividade_tarefa_id, nome_arquivo, base64) VALUES (?, ?, ?)`,
+        [atividadeTarefaId, nomeArquivo, base64]
+      );
+    } else {
+      return res.status(400).json({ erro: 'Payload de anexo inválido' });
+    }
 
     res.json({ mensagem: "Anexo salvo com sucesso." });
   } catch (error) {
@@ -741,10 +748,10 @@ const excluirAnexoAtividade = async (req, res) => {
       `DELETE FROM anexos_atividade WHERE atividade_tarefa_id = ?`,
       [atividadeTarefaId]
     );
-    // Limpa campos da tabela atividades_tarefas (mantém compatibilidade)
-    await db.query(
+  // Reseta status na tabela de atividades_tarefas
+  await db.query(
       `UPDATE atividades_tarefas 
-       SET base64 = NULL, nomeArquivo = NULL, concluida = 0, dataConclusao = NULL, concluidoPorNome = NULL 
+       SET concluida = 0, dataConclusao = NULL, concluidoPorNome = NULL 
        WHERE id = ?`,
       [atividadeTarefaId]
     );

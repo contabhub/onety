@@ -1,4 +1,16 @@
 const express = require("express");
+const path = require("path");
+try {
+  // Garante carregamento do .env caso o servidor não tenha carregado
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+    const rootEnv = path.resolve(__dirname, "../../../.env");
+    const backendEnv = path.resolve(__dirname, "../../.env");
+    require("dotenv").config({ path: backendEnv });
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+      require("dotenv").config({ path: rootEnv });
+    }
+  }
+} catch {}
 const router = express.Router();
 const nodemailer = require("nodemailer");
 const multer = require("multer");
@@ -8,6 +20,15 @@ const autenticarToken = require("../../middlewares/auth");
 const upload = multer(); // usa memória RAM
 
 router.post("/enviar", autenticarToken, upload.array("anexo"), async (req, res) => {
+  // LOG de entrada
+  try {
+    const safeHeaders = {
+      authorization: req.headers.authorization ? 'Bearer ***' : undefined,
+      'x-empresa-id': req.headers['x-empresa-id'] || req.headers['X-Empresa-Id'] || undefined,
+      'content-type': req.headers['content-type']
+    };
+    console.log('[EMAIL ENVIAR] IN', { url: req.originalUrl, method: req.method, headers: safeHeaders });
+  } catch {}
 
 const {
   para,
@@ -26,6 +47,8 @@ const {
 let emailUsuarioProcessado = emailUsuario;
 if (emailUsuario && typeof emailUsuario === 'string') {
   try {
+    console.log('[EMAIL ENVIAR] body', { para, cc, co, assunto, obrigacaoId, tarefaId, empresaId: empresaId || req.usuario?.empresaId });
+    console.log('[EMAIL ENVIAR] files', (req.files || []).map(f => ({ name: f.originalname, size: f.size })));
     // Se parece ser um JSON, tenta fazer parse
     if (emailUsuario.startsWith('{') || emailUsuario.startsWith('[')) {
       const parsed = JSON.parse(emailUsuario);
@@ -66,18 +89,44 @@ if (!para || !assunto || !corpo || (!obrigacaoId && !tarefaId)) {
       }
     }
 
+    const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'cfcontabilidade.hybriddc.com.br';
+    const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+    const smtpPass = process.env.SMTP_PASSWORD || process.env.EMAIL_PASS;
+
+    try {
+      console.log('[EMAIL ENVIAR] SMTP CONFIG', {
+        host: smtpHost,
+        port: 587,
+        secure: false,
+        user: smtpUser,
+        hasPass: Boolean(smtpPass)
+      });
+    } catch {}
+
+    if (!smtpUser || !smtpPass) {
+      return res.status(500).json({ error: 'Configuração SMTP ausente', detail: 'Defina SMTP_USER e SMTP_PASSWORD nas variáveis de ambiente' });
+    }
+
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT),
-      secure: parseInt(process.env.EMAIL_PORT) === 465,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+      host: smtpHost,
+      port: 587,
+      secure: false,
+      auth: { user: smtpUser, pass: smtpPass },
+      requireTLS: true,
+      family: 4,
       tls: {
         rejectUnauthorized: false,
+        servername: smtpHost,
       },
     });
+
+    // valida conexão antes de enviar
+    try {
+      await transporter.verify();
+    } catch (verifyErr) {
+      console.error('[EMAIL ENVIAR] SMTP VERIFY ERRO', { message: verifyErr?.message, code: verifyErr?.code, command: verifyErr?.command });
+      return res.status(502).json({ error: 'Falha ao conectar no servidor SMTP', detail: verifyErr?.message });
+    }
 
     // Separar destinatários por vírgula
     const destinatarios = para.split(',').map(email => email.trim()).filter(email => email);
@@ -86,13 +135,14 @@ if (!para || !assunto || !corpo || (!obrigacaoId && !tarefaId)) {
     const promises = destinatarios.map(async (destinatario, index) => {
       const fromName = nomeEmpresa ? `${nomeUsuario} da ${nomeEmpresa}` : nomeUsuario;
       const mailOptions = {
-        from: `"${fromName}" <${process.env.EMAIL_USER}>`,
+        from: `"${fromName}" <${smtpUser}>`,
+        envelope: { from: smtpUser, to: destinatario },
         to: destinatario,
         cc: cc || undefined,
         bcc: co || undefined,
         subject: assunto,
         html: corpo,
-        replyTo: emailUsuarioProcessado || process.env.EMAIL_USER,
+        replyTo: emailUsuarioProcessado || smtpUser,
         attachments,
       };
 
@@ -124,26 +174,20 @@ ${co ? `<b>CO:</b> ${co}<br/>` : ""}
 
 
     if (obrigacaoId) {
-  await db.query(`
-    INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, anexos, tipo, criadoEm)
-    VALUES (?, ?, ?, ?, 'email', NOW())
-  `, [
-    obrigacaoId,
-    usuarioId,
-    emailResumo,
-    anexos,
-  ]);
-} else if (tarefaId) {
-  await db.query(`
-    INSERT INTO comentarios_tarefa (tarefaId, usuarioId, comentario, criadoEm)
-    VALUES (?, ?, ?, NOW())
-  `, [
-    tarefaId,
-    usuarioId,
-    emailResumo,
-    anexos,
-  ]);
-}
+      // Ajuste conforme schema real (snake_case provável). Mantido nomes antigos por compatibilidade.
+      await db.query(
+        `INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, anexos, tipo, criadoEm)
+         VALUES (?, ?, ?, ?, 'email', NOW())`,
+        [obrigacaoId, usuarioId, emailResumo, anexos]
+      );
+    } else if (tarefaId) {
+      // Usar snake_case seguro e apenas os parâmetros corretos
+      await db.query(
+        `INSERT INTO comentarios_tarefa (tarefa_id, usuario_id, comentario, criado_em)
+         VALUES (?, ?, ?, NOW())`,
+        [tarefaId, usuarioId, emailResumo]
+      );
+    }
 
 
 
@@ -155,7 +199,13 @@ ${co ? `<b>CO:</b> ${co}<br/>` : ""}
       falhas: falhas.length > 0 ? falhas : null
     });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao enviar e-mail ou salvar comentário." });
+    console.error('[EMAIL ENVIAR] ERRO', { message: err?.message, stack: err?.stack });
+    try {
+      if (err?.response && err.response.data) {
+        console.error('[EMAIL ENVIAR] ERRO DATA', err.response.data);
+      }
+    } catch {}
+    res.status(500).json({ error: "Erro ao enviar e-mail ou salvar comentário.", detail: err?.message });
   }
 });
 

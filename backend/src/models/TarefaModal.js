@@ -40,7 +40,7 @@ const TarefaModal = {
     if (!dataAcao || !dataMeta || !dataPrazo) {
       // Buscar dados do processo para pegar diasMeta e diasPrazo
       const [[processo]] = await db.query(
-        `SELECT diasMeta, diasPrazo FROM processos WHERE id = ?`,
+        `SELECT dias_meta AS diasMeta, dias_prazo AS diasPrazo FROM processos WHERE id = ?`,
         [processoId]
       );
       if (!processo) {
@@ -59,8 +59,8 @@ const TarefaModal = {
 
     const [resultado] = await db.execute(
       `INSERT INTO tarefas (
-        empresaId, departamentoId, processoId, atividadeId, clienteId, assunto,
-        dataAcao, dataMeta, dataPrazo, descricao, responsavelId, anexos, podeFinalizarAntesSubatendimentos, tarefaPaiId
+        empresa_id, departamento_id, processo_id, atividade_id, cliente_id, assunto,
+        data_acao, data_meta, data_prazo, descricao, responsavel_id, anexos, pode_finalizar_antes_subatendimento, tarefa_pai_id
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tarefaData.empresaId,
@@ -75,7 +75,7 @@ const TarefaModal = {
         tarefaData.descricao,
         tarefaData.responsavelId,
         tarefaData.anexos,
-        tarefaData.podeFinalizarAntesSubatendimentos,
+        tarefaData.podeFinalizarAntesSubatendimentos ? 1 : 0,
         tarefaData.tarefaPaiId,
       ]
     );

@@ -72,7 +72,7 @@ export default function NovaTarefaModal({
           setDepartamentos(Array.isArray(list) ? list : []);
         })
         .catch((e) => { console.error('[NovaTarefaModal] GET gestao/departamentos error', e); setDepartamentos([]); });
-      const usersUrl = buildUrl('/gestao/usuarios');
+      const usersUrl = buildUrl('/usuarios');
       console.log('[NovaTarefaModal] fetching usuarios', usersUrl);
       fetch(usersUrl, { headers: { Authorization: `Bearer ${token}` } })
         .then(r => r.json())
@@ -94,11 +94,22 @@ export default function NovaTarefaModal({
     const BASE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
     const buildUrl = (p) => `${BASE}${p.startsWith('/') ? '' : '/'}${p}`;
 
+    // Resolve empresaId prioritariamente do userData (localStorage || sessionStorage)
+    let empresaIdHeader = null;
+    try {
+      const rawUserData = (typeof window !== 'undefined') ? (localStorage.getItem('userData') || sessionStorage.getItem('userData') || sessionStorage.getItem('usuario')) : null;
+      const userData = rawUserData ? JSON.parse(rawUserData) : null;
+      if (userData?.EmpresaId) empresaIdHeader = String(userData.EmpresaId);
+    } catch (_) {}
+
     if (form.departamentoId && token) {
       const url = buildUrl(`/gestao/processos/disponiveis/${form.departamentoId}`);
-      console.log('[NovaTarefaModal] fetching processos disponiveis', { url, departamentoId: form.departamentoId });
+      console.log('[NovaTarefaModal] fetching processos disponiveis', { url, departamentoId: form.departamentoId, empresaIdHeader });
       fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(empresaIdHeader ? { 'X-Empresa-Id': empresaIdHeader } : {}),
+        },
       })
         .then(r => r.json())
         .then(data => { const list = Array.isArray(data) ? data : (data?.data || []); console.log('[NovaTarefaModal] GET gestao/processos/disponiveis', list); setProcessos(list); })
