@@ -1,0 +1,309 @@
+/* NovaTarefaModal.module.css - Estilo ONETY */
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10002;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  /* Light theme: overlay claro */
+  [data-theme="light"] .overlay {
+    background: rgba(255, 255, 255, 0.55);
+  }
+  
+  .modal {
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-l);
+    min-width: 700px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--onity-color-border);
+    font-family: var(--onity-font-family-sans);
+    position: relative;
+  }
+  
+  /* Light theme: conteúdo branco com borda e sombra suaves */
+  [data-theme="light"] .modal {
+    background: var(--onity-light-surface);
+    border: 1px solid var(--onity-light-border);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  /* Loading Overlay */
+  .loadingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.05);
+    z-index: 999;
+    cursor: not-allowed;
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--onity-space-xl);
+    border-bottom: 1px solid var(--onity-color-border);
+  }
+  
+  .title {
+    margin: 0;
+    font-size: var(--onity-type-h2-size);
+    font-weight: var(--onity-type-h2-weight);
+    color: var(--onity-color-text);
+    text-align: left;
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--onity-color-text);
+    padding: 4px;
+    border-radius: var(--onity-radius-xs);
+    transition: background-color 120ms ease, color 120ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .closeButton:hover {
+    background: var(--onity-color-bg);
+    color: var(--onity-color-text);
+  }
+  
+  /* Form */
+  .form {
+    padding: var(--onity-space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--onity-space-m);
+  }
+  
+  .formRow {
+    display: flex;
+    flex-direction: column;
+    gap: var(--onity-space-xs);
+  }
+  
+  /* Labels */
+  .label {
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    color: var(--onity-color-text);
+    display: block;
+    margin-bottom: var(--onity-space-xs);
+  }
+  
+  /* Inputs */
+  .input, .select, .textarea {
+    padding: var(--onity-space-s);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    font-size: var(--onity-type-body-size);
+    font-family: var(--onity-font-family-sans);
+    width: 100%;
+    transition: box-shadow 120ms ease, border-color 120ms ease;
+  }
+  
+  .input:focus, .select:focus, .textarea:focus {
+    outline: none;
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+    background: var(--onity-color-surface);
+  }
+  
+  .input::placeholder, .textarea::placeholder {
+    color: var(--onity-color-text);
+    opacity: 1;
+  }
+  
+  /* Textarea específico */
+  .textarea {
+    min-height: 100px;
+    resize: none;
+    line-height: var(--onity-type-body-line);
+  }
+  
+  /* Estados especiais */
+  .readOnly {
+    background: var(--onity-color-bg) !important;
+    color: var(--onity-color-text);
+    cursor: not-allowed;
+  }
+  
+  .disabled {
+    background: var(--onity-color-bg) !important;
+    color: var(--onity-color-text);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  /* Date Grid */
+  .dateGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--onity-space-l);
+  }
+  
+  .dateField {
+    display: flex;
+    flex-direction: column;
+    gap: var(--onity-space-xs);
+  }
+  
+  /* Checkbox */
+  .checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: var(--onity-space-s);
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-color-text);
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--onity-color-primary);
+    cursor: pointer;
+  }
+  
+  .checkbox:checked {
+    background: var(--onity-color-primary);
+    border-color: var(--onity-color-primary);
+  }
+  
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--onity-space-s);
+    padding: var(--onity-space-xl);
+    border-top: 1px solid var(--onity-color-border);
+    background: var(--onity-color-surface);
+  }
+  
+  .cancelButton {
+    padding: var(--onity-space-s) var(--onity-space-l);
+    background: transparent;
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    font-family: var(--onity-font-family-sans);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+    min-width: 100px;
+  }
+  
+  /* Light theme: botão cancelar claro */
+  [data-theme="light"] .cancelButton {
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    color: var(--onity-color-text);
+  }
+  
+  .cancelButton:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    transform: translateY(-1px);
+  }
+  
+  .confirmButton {
+    padding: var(--onity-space-s) var(--onity-space-l);
+    background: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    border: none;
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    font-family: var(--onity-font-family-sans);
+    cursor: pointer;
+    transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    min-width: 100px;
+  }
+  
+  .confirmButton:hover:not(.disabled) {
+    background: var(--onity-color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .confirmButton.disabled {
+    background: var(--onity-color-border);
+    color: var(--onity-color-text);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  .confirmButton:active:not(.disabled) {
+    transform: translateY(0);
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .modal {
+      min-width: auto;
+      margin: var(--onity-space-m);
+      max-height: 95vh;
+    }
+    
+    .dateGrid {
+      grid-template-columns: 1fr;
+      gap: var(--onity-space-m);
+    }
+    
+    .form {
+      padding: var(--onity-space-l);
+    }
+    
+    .header, .footer {
+      padding: var(--onity-space-l);
+    }
+    
+    .title {
+      font-size: var(--onity-type-h3-size);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .form {
+      padding: var(--onity-space-m);
+    }
+    
+    .header, .footer {
+      padding: var(--onity-space-m);
+    }
+    
+    .footer {
+      flex-direction: column;
+    }
+    
+    .cancelButton, .confirmButton {
+      width: 100%;
+    }
+  }
+  
