@@ -1,0 +1,36 @@
+/* LocalTabs.module.css - ONETY TOKENS */
+
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--onity-space-l);
+  border-bottom: 2px solid var(--onity-color-border);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--onity-radius-m) var(--onity-radius-m) 0 0;
+  position: relative;
+}
+
+.tab {
+  padding: var(--onity-space-s) var(--onity-space-l);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-color-text);
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  cursor: pointer;
+  transition: all 120ms ease;
+  position: relative;
+  font-weight: 400;
+  border-bottom: 2px solid transparent;
+  z-index: 1;
+  user-select: none;
+}
+
+.tabActive {
+  color: var(--onity-color-text);
+  background: var(--onity-color-surface);
+  font-weight: 600;
+  border-bottom: 3px solid var(--onity-color-primary);
+  z-index: 2;
+}
+
+

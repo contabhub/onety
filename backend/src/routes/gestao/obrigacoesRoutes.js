@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const autenticarToken = require("../../middlewares/auth");
+const verifyToken = require("../../middlewares/auth");
 const db = require("../../config/database");
 const jwt = require("jsonwebtoken");
 const { addDays, subDays, parseISO, isEqual, isBefore, addBusinessDays } = require('date-fns');
 const { consultarDCTFWeb } = require("../../services/gestao/dctfwebService"); // Importa a função que já existe
-const { verificarPermissao } = require("../../middlewares/permissao");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const fs = require("fs");
@@ -49,7 +48,7 @@ function subtrairDias(dataBase, qtd, tipo) {
 // ================= AÇÕES EM LOTE =================
 
 // 🔶 GET /api/obrigacoes/setores - Listar setores únicos das obrigações
-router.get("/setores", autenticarToken, async (req, res) => {
+router.get("/setores", verifyToken, async (req, res) => {
   try {
     const empresaId = req.usuario?.empresaId;
     if (!empresaId) {
@@ -74,7 +73,7 @@ router.get("/setores", autenticarToken, async (req, res) => {
 
 // 🔶 ROTA EM LOTE: Buscar obrigações base (tabela 'obrigacoes') para todos os clientes de um grupo
 // Exemplo: GET /api/obrigacoes/cliente/lote?grupoId=123
-  router.get('/cliente/lote', autenticarToken, async (req, res) => {
+  router.get('/cliente/lote', verifyToken, async (req, res) => {
     try {
       const { grupoId, apenasSemlResponsavel = 'false' } = req.query;
       if (!grupoId) {
@@ -216,7 +215,7 @@ router.get("/setores", autenticarToken, async (req, res) => {
 });
 
 // 🔶 GET /api/obrigacoes?empresaId=X&grupoId=Y - Buscar obrigações por grupo
-router.get("/", autenticarToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
     const { empresaId, grupoId } = req.query;
     
@@ -231,24 +230,24 @@ router.get("/", autenticarToken, async (req, res) => {
         oc.status,
         d.nome as setor,
         u.nome as responsavel_nome,
-        oc.clienteId,
+        oc.cliente_id AS clienteId,
         c.nome as cliente_nome
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      LEFT JOIN departamentos d ON o.departamentoId = d.id
-      LEFT JOIN usuarios u ON oc.responsavelId = u.id
-      LEFT JOIN clientes c ON oc.clienteId = c.id
-      WHERE o.empresaId = ?
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      LEFT JOIN departamentos d ON o.departamento_id = d.id
+      LEFT JOIN usuarios u ON oc.responsavel_id = u.id
+      LEFT JOIN clientes c ON oc.cliente_id = c.id
+      WHERE o.empresa_id = ?
     `;
     
     const params = [empresaId];
 
     // Se grupoId for fornecido, filtrar por grupo
     if (grupoId) {
-      query += ` AND oc.clienteId IN (
-        SELECT cgv.clienteId 
+      query += ` AND oc.cliente_id IN (
+        SELECT cgv.cliente_id 
         FROM clientes_grupos_vinculo cgv 
-        WHERE cgv.grupoId = ?
+        WHERE cgv.grupo_id = ?
       )`;
       params.push(grupoId);
     }
@@ -265,7 +264,7 @@ router.get("/", autenticarToken, async (req, res) => {
 });
 
 // 🔶 POST /api/obrigacoes/definir-responsavel-lote - Aplicar responsável em lote
-router.post("/definir-responsavel-lote", autenticarToken, async (req, res) => {
+router.post("/definir-responsavel-lote", verifyToken, async (req, res) => {
   try {
     const { empresaId, grupoId, setor, responsavelId, selectedClients, selectedPairs } = req.body;
     
@@ -389,9 +388,9 @@ router.post("/definir-responsavel-lote", autenticarToken, async (req, res) => {
     }
 
     await db.query(`
-      INSERT INTO obrigacoes_responsaveis_cliente (obrigacaoId, clienteId, usuarioId)
+      INSERT INTO obrigacoes_responsaveis_cliente (obrigacao_id, cliente_id, usuario_id)
       VALUES ${valuesPlaceholders}
-      ON DUPLICATE KEY UPDATE usuarioId = VALUES(usuarioId)
+      ON DUPLICATE KEY UPDATE usuario_id = VALUES(usuario_id)
     `, values);
 
     res.json({ 
@@ -412,7 +411,7 @@ router.post("/definir-responsavel-lote", autenticarToken, async (req, res) => {
 });
 
 // 🔶 Buscar obrigações para gerar tarefas por cliente
-router.get("/para-gerar-tarefas", autenticarToken, async (req, res) => {
+router.get("/para-gerar-tarefas", verifyToken, async (req, res) => {
   const { clienteId, ano, apenasAptas, departamentoId } = req.query;
 
 
@@ -498,7 +497,7 @@ router.get("/para-gerar-tarefas", autenticarToken, async (req, res) => {
         // Verificar se já existe obrigação gerada para este cliente/ano
         const [existentes] = await db.query(`
           SELECT id FROM obrigacoes_clientes 
-          WHERE clienteId = ? AND obrigacaoId = ? AND ano_referencia = ?
+          WHERE cliente_id = ? AND obrigacao_id = ? AND ano_referencia = ?
         `, [clienteId, obrigacao.id, ano]);
         
         if (existentes.length === 0) {
@@ -522,7 +521,7 @@ router.get("/para-gerar-tarefas", autenticarToken, async (req, res) => {
  * GET /api/obrigacoes/buscar-avancada
  * Busca avançada para ações em lote
  */
-router.get("/buscar-avancada", autenticarToken, async (req, res) => {
+router.get("/buscar-avancada", verifyToken, async (req, res) => {
   try {
     const {
       empresaId,
@@ -676,7 +675,7 @@ router.get("/buscar-avancada", autenticarToken, async (req, res) => {
       console.log(`🔍 Aplicando filtro por grupo: ${grupo}`);
       whereClause += ` AND EXISTS (
         SELECT 1 FROM clientes_grupos_vinculo cgv 
-        WHERE cgv.clienteId = c.id AND cgv.grupoId = ?
+        WHERE cgv.cliente_id = c.id AND cgv.grupo_id = ?
       )`;
       params.push(parseInt(grupo));
     }
@@ -687,7 +686,7 @@ router.get("/buscar-avancada", autenticarToken, async (req, res) => {
     }
 
     if (comAtividades === "true") {
-      whereClause += " AND EXISTS (SELECT 1 FROM obrigacoes_atividades_clientes oac WHERE oac.obrigacaoClienteId = oc.id)";
+      whereClause += " AND EXISTS (SELECT 1 FROM obrigacoes_atividades_clientes oac WHERE oac.obrigacao_cliente_id = oc.id)";
     }
 
     if (comResponsaveis === "true") {
@@ -695,7 +694,7 @@ router.get("/buscar-avancada", autenticarToken, async (req, res) => {
     }
 
     if (comConvidados === "true") {
-      whereClause += " AND EXISTS (SELECT 1 FROM convidados_obrigacao co WHERE co.obrigacaoClienteId = oc.id)";
+      whereClause += " AND EXISTS (SELECT 1 FROM convidados_obrigacao co WHERE co.obrigacao_cliente_id = oc.id)";
     }
 
     const query = `
@@ -716,10 +715,10 @@ router.get("/buscar-avancada", autenticarToken, async (req, res) => {
         c.cnpjCpf AS clienteCnpj,
         u.nome AS responsavelNome
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON o.id = oc.obrigacaoId
-      JOIN departamentos d ON d.id = o.departamentoId
-      JOIN clientes c ON c.id = oc.clienteId
-      LEFT JOIN usuarios u ON u.id = oc.responsavelId
+      JOIN obrigacoes o ON o.id = oc.obrigacao_id
+      JOIN departamentos d ON d.id = o.departamento_id
+      JOIN clientes c ON c.id = oc.cliente_id
+      LEFT JOIN usuarios u ON u.id = oc.responsavel_id
       ${whereClause}
       ORDER BY oc.vencimento ASC
     `;
@@ -743,7 +742,7 @@ router.get("/buscar-avancada", autenticarToken, async (req, res) => {
  * - competenciaInicial: { ano: number, mes: number } - Ex: { ano: 2024, mes: 1 }
  * - competenciaFinal: { ano: number, mes: number } - Ex: { ano: 2024, mes: 12 }
  */
-router.post("/buscar-por-filtros", autenticarToken, async (req, res) => {
+router.post("/buscar-por-filtros", verifyToken, async (req, res) => {
   try {
           const {
         empresaId,
@@ -853,7 +852,7 @@ router.post("/buscar-por-filtros", autenticarToken, async (req, res) => {
  * GET /api/obrigacoes/variaveis-disponiveis
  * Retorna lista de variáveis disponíveis para templates
  */
-router.get('/variaveis-disponiveis', autenticarToken, async (req, res) => {
+router.get('/variaveis-disponiveis', verifyToken, async (req, res) => {
   const variaveis = {
     // Variáveis para o assunto (dropdown simples)
     assunto: {
@@ -916,7 +915,7 @@ router.get('/variaveis-disponiveis', autenticarToken, async (req, res) => {
  * POST /api/obrigacoes/processar-template/:obrigacaoClienteId/:atividadeId
  * Processa template de e-mail com variáveis reais
  */
-router.post('/processar-template/:obrigacaoClienteId/:atividadeId', autenticarToken, async (req, res) => {
+router.post('/processar-template/:obrigacaoClienteId/:atividadeId', verifyToken, async (req, res) => {
   const { obrigacaoClienteId, atividadeId } = req.params;
   
   try {
@@ -937,11 +936,11 @@ router.post('/processar-template/:obrigacaoClienteId/:atividadeId', autenticarTo
         d.nome as departamentoNome, u.nome as responsavelNome, u.email as responsavelEmail,
         e.razaoSocial as empresaNome, e.cnpj as empresaCnpj
       FROM obrigacoes_clientes oc
-      JOIN clientes c ON oc.clienteId = c.id
-      JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      JOIN departamentos d ON o.departamentoId = d.id
-      JOIN empresas e ON c.empresaId = e.id
-      LEFT JOIN usuarios u ON oc.responsavelId = u.id
+      JOIN clientes c ON oc.cliente_id = c.id
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      JOIN departamentos d ON o.departamento_id = d.id
+      JOIN empresas e ON c.empresa_id = e.id
+      LEFT JOIN usuarios u ON oc.responsavel_id = u.id
       WHERE oc.id = ?
     `, [obrigacaoClienteId]);
     
@@ -1166,16 +1165,16 @@ router.post("/criar", async (req, res) => {
     const fatoGeradorValue = fatoGerador === "" || fatoGerador === "0" ? null : fatoGerador;
 
     // Inserir no banco com o valor ajustado de fatoGerador
-    const [resultado] = await db.query(`
+    const [resultado] =     await db.query(`
       INSERT INTO obrigacoes (
-        empresaId, departamentoId, nome, frequencia, diaSemana, acaoQtdDias, acaoTipoDias,
-        metaQtdDias, metaTipoDias, vencimentoTipo, vencimentoDia, fatoGerador,
-        orgao, aliasValidacao, geraMulta, usarRelatorio, reenviarEmail
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        empresa_id, departamento_id, nome, frequencia, dia_semana, acao_qtd_dias,
+        meta_qtd_dias, meta_tipo_dias, vencimento_tipo, vencimento_dia, fato_gerador,
+        orgao, gera_multa, usar_relatorio, reenviar_email
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        empresaId, departamentoId, nome, frequencia, diaSemana, acaoQtdDias, acaoTipoDias,
-        metaQtdDias, metaTipoDias, vencimentoTipo, vencimentoDia, fatoGeradorValue,  // Use o valor ajustado de fatoGerador
-        orgao, aliasValidacao, geraMulta, usarRelatorio, reenviarEmail
+        empresaId, departamentoId, nome, frequencia, diaSemana, acaoQtdDias,
+        metaQtdDias, metaTipoDias, vencimentoTipo, vencimentoDia, fatoGeradorValue,
+        orgao, geraMulta, usarRelatorio, reenviarEmail
       ]
     );
 
@@ -1188,8 +1187,7 @@ router.post("/criar", async (req, res) => {
 
 // ✅ Importar obrigações por planilha
 router.post('/importar-planilha',
-  autenticarToken,
-  verificarPermissao('obrigacoes.criar'),
+  verifyToken,
   upload.single('file'),
   async (req, res) => {
     try {
@@ -1402,14 +1400,14 @@ router.post('/importar-planilha',
           // Inserir obrigação
           await db.query(`
             INSERT INTO obrigacoes (
-              empresaId, departamentoId, nome, frequencia, diaSemana, acaoQtdDias, acaoTipoDias,
-              metaQtdDias, metaTipoDias, vencimentoTipo, vencimentoDia, fatoGerador,
-              orgao, aliasValidacao, geraMulta, usarRelatorio, reenviarEmail
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              empresa_id, departamento_id, nome, frequencia, dia_semana, acao_qtd_dias,
+              meta_qtd_dias, meta_tipo_dias, vencimento_tipo, vencimento_dia, fato_gerador,
+              orgao, gera_multa, usar_relatorio, reenviar_email
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-              empresaId, departamentoId, nome, frequencia, diaSemana, acaoQtdDiasNum, acaoTipoDias,
+              empresaId, departamentoId, nome, frequencia, diaSemana, acaoQtdDiasNum,
               metaQtdDiasNum, metaTipoDias, vencimentoTipo, vencimentoDiaNum, fatoGerador,
-              orgao, aliasValidacao, geraMulta, usarRelatorio, reenviarEmail
+              orgao, geraMulta, usarRelatorio, reenviarEmail
             ]
           );
           
@@ -1444,7 +1442,7 @@ router.post('/importar-planilha',
 
 
 // 📋 Listar obrigações - todas ou filtradas por empresa
-+ router.get("/empresa/:empresaId", autenticarToken, async (req, res) => {
++ router.get("/empresa/:empresaId", verifyToken, async (req, res) => {
   try {
     const { empresaId } = req.params; // Agora a empresaId vem dos parâmetros da URL
     const { clienteId } = req.query; // Se necessário filtrar por clienteId também
@@ -1452,9 +1450,9 @@ router.post('/importar-planilha',
     let query = `
       SELECT o.*, d.nome as departamentoNome, e.razaoSocial as empresaNome
       FROM obrigacoes o
-      JOIN departamentos d ON o.departamentoId = d.id
-      JOIN empresas e ON o.empresaId = e.id
-      WHERE o.empresaId = ?
+      JOIN departamentos d ON o.departamento_id = d.id
+      JOIN empresas e ON o.empresa_id = e.id
+      WHERE o.empresa_id = ?
     `;
 
     const params = [empresaId]; // A empresaId vem diretamente de req.params
@@ -1480,8 +1478,8 @@ router.get("/:id", async (req, res) => {
     const [dados] = await db.query(`
         SELECT o.*, d.nome as departamentoNome, e.razaoSocial as empresaNome
         FROM obrigacoes o
-        JOIN departamentos d ON o.departamentoId = d.id
-        JOIN empresas e ON o.empresaId = e.id
+        JOIN departamentos d ON o.departamento_id = d.id
+        JOIN empresas e ON o.empresa_id = e.id
         WHERE o.id = ?`, [id]);
 
     if (dados.length === 0) {
@@ -1509,7 +1507,29 @@ router.put("/:id", async (req, res) => {
     delete campos.empresaNome;
     delete campos.dataCriacao;
 
-    await db.query(`UPDATE obrigacoes SET ? WHERE id = ?`, [campos, id]);
+    // Converter camelCase para snake_case nos campos do banco
+    const camposAtualizados = {};
+    const mapeamento = {
+      empresaId: 'empresa_id',
+      departamentoId: 'departamento_id',
+      diaSemana: 'dia_semana',
+      acaoQtdDias: 'acao_qtd_dias',
+      metaQtdDias: 'meta_qtd_dias',
+      metaTipoDias: 'meta_tipo_dias',
+      vencimentoTipo: 'vencimento_tipo',
+      vencimentoDia: 'vencimento_dia',
+      fatoGerador: 'fato_gerador',
+      geraMulta: 'gera_multa',
+      usarRelatorio: 'usar_relatorio',
+      reenviarEmail: 'reenviar_email'
+    };
+
+    for (const [key, value] of Object.entries(campos)) {
+      const nomeCorreto = mapeamento[key] || key;
+      camposAtualizados[nomeCorreto] = value;
+    }
+
+    await db.query(`UPDATE obrigacoes SET ? WHERE id = ?`, [camposAtualizados, id]);
     res.json({ success: true });
   } catch (error) {
     console.error("Erro ao atualizar:", error);
@@ -1519,7 +1539,7 @@ router.put("/:id", async (req, res) => {
 
 
 // ❌ Deletar
-router.delete("/:id", autenticarToken, verificarPermissao('obrigacoes.excluir'), async (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     await db.query(`DELETE FROM obrigacoes WHERE id = ?`, [id]);
@@ -1539,7 +1559,7 @@ router.post('/:obrigacaoId/particularidades', async (req, res) => {
 
   try {
     await db.query(`
-            INSERT INTO obrigacoes_particularidades (obrigacaoId, tipo, particularidadeId) 
+            INSERT INTO obrigacoes_particularidades (obrigacao_id, tipo, particularidade_id) 
             VALUES (?, ?, ?)`,
       [obrigacaoId, tipo, particularidadeId]
     );
@@ -1559,7 +1579,7 @@ router.get('/:obrigacaoId/particularidades', async (req, res) => {
             SELECT op.id, op.tipo, op.particularidadeId, p.nome, p.descricao, p.categoria 
             FROM obrigacoes_particularidades op
             JOIN particularidades p ON op.particularidadeId = p.id
-            WHERE op.obrigacaoId = ?`,
+            WHERE op.obrigacao_id = ?`,
       [obrigacaoId]
     );
     res.json(dados);
@@ -1570,7 +1590,7 @@ router.get('/:obrigacaoId/particularidades', async (req, res) => {
 });
 
 // ✅ Remover vínculo de particularidade
-router.delete('/particularidades/:id', autenticarToken, verificarPermissao('obrigacoes.excluir'), async (req, res) => {
+router.delete('/particularidades/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -1748,7 +1768,7 @@ router.get("/cliente/:clienteId/com-departamentos", async (req, res) => {
 
 
 
-router.get('/:id/clientes', autenticarToken, async (req, res) => {
+router.get('/:id/clientes', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -1756,7 +1776,7 @@ router.get('/:id/clientes', autenticarToken, async (req, res) => {
     const [particularidades] = await db.query(`
       SELECT tipo, particularidadeId
       FROM obrigacoes_particularidades
-      WHERE obrigacaoId = ?
+      WHERE obrigacao_id = ?
     `, [id]);
 
     if (particularidades.length === 0) {
@@ -1813,7 +1833,7 @@ router.get('/:id/clientes', autenticarToken, async (req, res) => {
 
 
 // 📌 Criar nova atividade para obrigação
-router.post("/:obrigacaoId/atividades", autenticarToken, async (req, res) => {
+router.post("/:obrigacaoId/atividades", verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   const { tipo, texto, descricao, tipoCancelamento, ordem, pdf_layout_id, titulo_documento } = req.body;
 
@@ -1841,13 +1861,13 @@ router.post("/:obrigacaoId/atividades", autenticarToken, async (req, res) => {
 });
 
 // 📌 Listar atividades por obrigação
-router.get("/:obrigacaoId/atividades", autenticarToken, async (req, res) => {
+router.get("/:obrigacaoId/atividades", verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
     const [atividades] = await db.query(
       `SELECT * FROM atividades_obrigacao 
-       WHERE obrigacaoId = ? 
+       WHERE obrigacao_id = ? 
        ORDER BY ordem`,
       [obrigacaoId]
     );
@@ -1859,7 +1879,7 @@ router.get("/:obrigacaoId/atividades", autenticarToken, async (req, res) => {
 });
 
 // 📌 Atualizar ordem
-router.put("/atividades/:id/ordem", autenticarToken, async (req, res) => {
+router.put("/atividades/:id/ordem", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { novaOrdem } = req.body;
 
@@ -1876,7 +1896,7 @@ router.put("/atividades/:id/ordem", autenticarToken, async (req, res) => {
 });
 
 // 📌 Deletar atividade
-router.delete("/atividades/:id", autenticarToken, verificarPermissao('obrigacoes.excluir'), async (req, res) => {
+router.delete("/atividades/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     await db.query(`DELETE FROM atividades_obrigacao WHERE id = ?`, [id]);
@@ -1942,7 +1962,7 @@ function calcularVencimento(ano, mes, tipo, dia, fatoGerador) {
 }
 
 // 📌 Atualizar uma atividade da obrigação
-router.put("/atividades/:id", autenticarToken, async (req, res) => {
+router.put("/atividades/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const {
     tipo,
@@ -2022,7 +2042,7 @@ exports.gerarAtividades = async (req, res) => {
 };
 
 // 📌 Gerar tarefas (atividades) para uma obrigação com base nos filtros de ano e mês
-router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
+router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
   const obrigacaoId = Number(req.params.id);
   const { ano, mesInicio, mesFim, clienteIds } = req.body;
 
@@ -2033,7 +2053,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
     // Verificar se já existem atividades para esta obrigação do cliente
     const [atividadesExistentes] = await db.query(`
       SELECT id FROM obrigacoes_atividades_clientes 
-      WHERE clienteId = ? AND obrigacaoClienteId = ?
+      WHERE cliente_id = ? AND obrigacao_cliente_id = ?
     `, [clienteId, obrigacaoClienteId]);
     
     // Se já existem atividades, não inserir novamente
@@ -2055,7 +2075,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
     const flatValues = values.flat();
     await db.query(`
       INSERT INTO obrigacoes_atividades_clientes
-      (clienteId, obrigacaoClienteId, tipo, texto, descricao, tipoCancelamento, ordem)
+      (cliente_id, obrigacao_cliente_id, tipo, texto, descricao, tipo_cancelamento, ordem)
       VALUES ${placeholders}
     `, flatValues);
     
@@ -2096,7 +2116,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
           try {
             const [existentes] = await db.query(`
               SELECT id FROM obrigacoes_clientes
-              WHERE clienteId = ? AND obrigacaoId = ? AND ano_referencia = ? AND mes_referencia = ?
+              WHERE cliente_id = ? AND obrigacao_id = ? AND ano_referencia = ? AND mes_referencia = ?
             `, [clienteId, obrigacao.id, anoCalc, mesReferencia]);
             if (existentes.length > 0) {
               return;
@@ -2128,12 +2148,12 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
         
         // Buscar responsáveis individuais do cliente
         const [multiResponsaveisIndividuais] = await db.query(`
-          SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?
+          SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id = ?
         `, [obrigacao.id, clienteId]);
         
         // Buscar responsáveis globais (clienteId = null)
         const [multiResponsaveisGlobais] = await db.query(`
-          SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+          SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
         `, [obrigacao.id]);
         
         console.log(`🔍 Responsáveis individuais encontrados:`, multiResponsaveisIndividuais);
@@ -2314,7 +2334,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
         const [existentesDiario] = await db.query(`
           SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
           FROM obrigacoes_clientes
-          WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
+          WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
             AND clienteId IN (${clientes.map(() => '?').join(',')})
         `, [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
         const existeSetDiario = new Set(existentesDiario.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
@@ -2356,7 +2376,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
           const flat = novasDiario.flat();
           const [result] = await db.query(`
             INSERT INTO obrigacoes_clientes
-            (clienteId, obrigacaoId, nome, descricao, status, ano_referencia, mes_referencia, vencimento, dataCriacao, responsavelId, acao, meta)
+            (cliente_id, obrigacao_id, nome, descricao, status, ano_referencia, mes_referencia, vencimento, data_criacao, responsavel_id, acao, meta)
             VALUES ${placeholders}
           `, flat);
           // Buscar os IDs inseridos
@@ -2371,12 +2391,12 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
             
             // Buscar responsáveis individuais do cliente
             const [multiResponsaveisIndividuais] = await db.query(`
-              SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?
+              SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id = ?
             `, [obrigacaoId, clienteId]);
             
             // Buscar responsáveis globais (clienteId = null)
             const [multiResponsaveisGlobais] = await db.query(`
-              SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+              SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
             `, [obrigacaoId]);
             
             console.log(`🔍 Responsáveis individuais encontrados para cliente ${clienteId}:`, multiResponsaveisIndividuais);
@@ -2393,7 +2413,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
               for (const resp of responsaveisParaInserir) {
                 console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
                 await db.query(`
-                  INSERT INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+                  INSERT INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
                   VALUES (?, ?)
                 `, [obrigacaoClienteId, resp.usuarioId]);
               }
@@ -2420,7 +2440,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
         const [existentesSemanal] = await db.query(`
           SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
           FROM obrigacoes_clientes
-          WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
+          WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
             AND clienteId IN (${clientes.map(() => '?').join(',')})
         `, [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
         const existeSetSemanal = new Set(existentesSemanal.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
@@ -2461,7 +2481,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
           const flat = novasSemanal.flat();
           const [result] = await db.query(`
             INSERT INTO obrigacoes_clientes
-            (clienteId, obrigacaoId, nome, descricao, status, ano_referencia, mes_referencia, vencimento, dataCriacao, responsavelId, acao, meta)
+            (cliente_id, obrigacao_id, nome, descricao, status, ano_referencia, mes_referencia, vencimento, data_criacao, responsavel_id, acao, meta)
             VALUES ${placeholders}
           `, flat);
           // Buscar os IDs inseridos
@@ -2476,12 +2496,12 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
             
             // Buscar responsáveis individuais do cliente
             const [multiResponsaveisIndividuais] = await db.query(`
-              SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?
+              SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id = ?
             `, [obrigacaoId, clienteId]);
             
             // Buscar responsáveis globais (clienteId = null)
             const [multiResponsaveisGlobais] = await db.query(`
-              SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+              SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
             `, [obrigacaoId]);
             
             console.log(`🔍 Responsáveis individuais encontrados para cliente ${clienteId}:`, multiResponsaveisIndividuais);
@@ -2498,7 +2518,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
               for (const resp of responsaveisParaInserir) {
                 console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
                 await db.query(`
-                  INSERT INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+                  INSERT INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
                   VALUES (?, ?)
                 `, [obrigacaoClienteId, resp.usuarioId]);
               }
@@ -2586,7 +2606,7 @@ router.post("/:id/gerar-atividades", autenticarToken, async (req, res) => {
 
 
 
-router.get("/empresa/:empresaId/com-atividades", autenticarToken, async (req, res) => {
+router.get("/empresa/:empresaId/com-atividades", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
 
   try {
@@ -2603,7 +2623,7 @@ router.get("/empresa/:empresaId/com-atividades", autenticarToken, async (req, re
         const [atividades] = await db.query(
           `SELECT id, tipo, texto, descricao, tipoCancelamento, ordem 
            FROM atividades_obrigacao 
-           WHERE obrigacaoId = ?
+           WHERE obrigacao_id = ?
            ORDER BY ordem`,
           [ob.id]
         );
@@ -2618,7 +2638,7 @@ router.get("/empresa/:empresaId/com-atividades", autenticarToken, async (req, re
   }
 });
 
-router.get("/cliente/:clienteId/atividades", autenticarToken, async (req, res) => {
+router.get("/cliente/:clienteId/atividades", verifyToken, async (req, res) => {
   const { clienteId } = req.params;
 
   try {
@@ -2638,7 +2658,7 @@ router.get("/cliente/:clienteId/atividades", autenticarToken, async (req, res) =
   }
 });
 
-router.get("/empresa/:empresaId/geradas", autenticarToken, async (req, res) => {
+router.get("/empresa/:empresaId/geradas", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { mes, ano } = req.query;
 
@@ -2669,7 +2689,7 @@ WHERE c.empresaId = ? AND oc.status != 'cancelada' AND (
 
 
 
-router.get("/empresa/:empresaId/geradas/painel", autenticarToken, async (req, res) => {
+router.get("/empresa/:empresaId/geradas/painel", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { usuarioId, filtrosAtivos, mes, ano } = req.query; // ✅ Parâmetros para filtrar por responsabilidade e mês/ano
   
@@ -2941,7 +2961,7 @@ function subtrairDiasUteisAteData(dataBase, qtd, cacheDiasUteis) {
 
 // ROTAS NOVAS PARA PAINEL [ID] OBRIGAÇÕES!!
 
-router.get("/cliente-obrigacao/:id", autenticarToken, async (req, res) => {
+router.get("/cliente-obrigacao/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -2991,7 +3011,7 @@ router.get("/cliente-obrigacao/:id", autenticarToken, async (req, res) => {
 });
 
 // ✅ NOVO: Buscar competências adjacentes para navegação
-router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", autenticarToken, async (req, res) => {
+router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToken, async (req, res) => {
   const { clienteId, obrigacaoId } = req.params;
 
   try {
@@ -3017,7 +3037,7 @@ router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", autenticar
 });
 
 
-router.get("/atividades-cliente/:obrigacaoClienteId", autenticarToken, async (req, res) => {
+router.get("/atividades-cliente/:obrigacaoClienteId", verifyToken, async (req, res) => {
   const { obrigacaoClienteId } = req.params;
 
   try {
@@ -3047,7 +3067,7 @@ router.get("/atividades-cliente/:obrigacaoClienteId", autenticarToken, async (re
 
 
 // 📌 Concluir obrigação GERADA (obrigacoes_clientes)
-router.patch("/:id/concluir", autenticarToken, async (req, res) => {
+router.patch("/:id/concluir", verifyToken, async (req, res) => {
   const { id } = req.params;
   const userId = req.usuario?.id; // ID do usuário que está concluindo
 
@@ -3089,7 +3109,7 @@ router.patch("/:id/concluir", autenticarToken, async (req, res) => {
 
 
 
-router.patch("/atividade/:atividadeId/concluir", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeId/concluir", verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   const userId = req.usuario?.id; // vem do middleware de autenticação
 
@@ -3134,7 +3154,7 @@ router.patch("/:id/datas", async (req, res) => {
 
 
 
-router.post("/:obrigacaoId/comentario", autenticarToken, async (req, res) => {
+router.post("/:obrigacaoId/comentario", verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   const { comentario, anexos, tipo } = req.body;
   const usuarioId = req.usuario?.id;
@@ -3170,7 +3190,7 @@ router.post("/:obrigacaoId/comentario", autenticarToken, async (req, res) => {
 });
 
 
-router.get("/:obrigacaoId/comentarios", autenticarToken, async (req, res) => {
+router.get("/:obrigacaoId/comentarios", verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
@@ -3210,7 +3230,7 @@ router.get("/:obrigacaoId/comentarios", autenticarToken, async (req, res) => {
 });
 
 
-router.patch("/atividade/:atividadeId/cancelar", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeId/cancelar", verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   const { justificativa } = req.body;
   const userId = req.usuario?.id;
@@ -3244,7 +3264,7 @@ router.patch("/atividade/:atividadeId/cancelar", autenticarToken, async (req, re
   }
 });
 
-router.get("/empresa/:empresaId/todas", autenticarToken, async (req, res) => {
+router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { usuarioId, filtrosAtivos } = req.query; // ✅ Parâmetros para filtrar por responsabilidade
   
@@ -3483,7 +3503,7 @@ router.get("/empresa/:empresaId/todas", autenticarToken, async (req, res) => {
 
 
 // 📌 DESCANCELAR atividade
-router.patch("/atividade/:atividadeId/descancelar", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeId/descancelar", verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   const userId = req.usuario?.id;
 
@@ -3507,7 +3527,7 @@ router.patch("/atividade/:atividadeId/descancelar", autenticarToken, async (req,
 });
 
 
-router.patch("/:id/desconcluir", autenticarToken, async (req, res) => {
+router.patch("/:id/desconcluir", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -3524,7 +3544,7 @@ router.patch("/:id/desconcluir", autenticarToken, async (req, res) => {
   }
 });
 
-router.patch("/atividade/:atividadeId/anexo", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeId/anexo", verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   const { base64, nomeArquivo } = req.body;
 
@@ -3546,7 +3566,7 @@ router.patch("/atividade/:atividadeId/anexo", autenticarToken, async (req, res) 
   }
 });
 
-router.get("/empresa/:empresaId/esporadicas", autenticarToken, async (req, res) => {
+router.get("/empresa/:empresaId/esporadicas", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
 
   try {
@@ -3564,7 +3584,7 @@ router.get("/empresa/:empresaId/esporadicas", autenticarToken, async (req, res) 
   }
 });
 
-router.post("/esporadica/criar-tarefa", autenticarToken, async (req, res) => {
+router.post("/esporadica/criar-tarefa", verifyToken, async (req, res) => {
   const {
     obrigacaoId,
     clienteId,
@@ -3609,8 +3629,8 @@ router.post("/esporadica/criar-tarefa", autenticarToken, async (req, res) => {
 
       const [resInsert] = await db.query(
         `INSERT INTO obrigacoes_clientes 
-  (clienteId, obrigacaoId, nome, descricao, status, ano_referencia, mes_referencia, 
-   vencimento, responsavelId, acao, meta)
+  (cliente_id, obrigacao_id, nome, descricao, status, ano_referencia, mes_referencia, 
+   vencimento, responsavel_id, acao, meta)
    VALUES (?, ?, ?, ?, 'pendente', ?, ?, ?, ?, ?, ?)`,
         [
           clienteId,
@@ -3638,7 +3658,7 @@ router.post("/esporadica/criar-tarefa", autenticarToken, async (req, res) => {
       // Verificar se já existem atividades para esta obrigação do cliente
       const [atividadesExistentes] = await db.query(`
         SELECT id FROM obrigacoes_atividades_clientes 
-        WHERE clienteId = ? AND obrigacaoClienteId = ?
+        WHERE cliente_id = ? AND obrigacao_cliente_id = ?
       `, [clienteId, obrigacaoClienteId]);
       
       // Se já existem atividades, não inserir novamente
@@ -3648,7 +3668,7 @@ router.post("/esporadica/criar-tarefa", autenticarToken, async (req, res) => {
         for (const atv of atividadesBase) {
           await db.query(
             `INSERT INTO obrigacoes_atividades_clientes 
-            (clienteId, obrigacaoClienteId, tipo, texto, descricao, tipoCancelamento, ordem)
+            (cliente_id, obrigacao_cliente_id, tipo, texto, descricao, tipo_cancelamento, ordem)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
               clienteId,
@@ -3703,7 +3723,7 @@ router.post("/esporadica/criar-tarefa", autenticarToken, async (req, res) => {
 
 
 // Rota para disparar a baixa automática da DCTFWeb para um cliente e empresa específicos
-router.post("/baixar/dctfweb", autenticarToken, async (req, res) => {
+router.post("/baixar/dctfweb", verifyToken, async (req, res) => {
   const { empresaId, clienteId, ano, mes } = req.body;
 
   if (!empresaId || !clienteId || !ano || !mes) {
@@ -3745,7 +3765,7 @@ router.post("/baixar/dctfweb", autenticarToken, async (req, res) => {
 });
 
 
-router.post("/:id/gerar-atividades-cliente", autenticarToken, async (req, res) => {
+router.post("/:id/gerar-atividades-cliente", verifyToken, async (req, res) => {
   const obrigacaoId = Number(req.params.id);
   const { ano, mesInicio, mesFim, clienteId } = req.body;
   if (!clienteId) return res.status(400).json({ error: "clienteId é obrigatório" });
@@ -3771,7 +3791,7 @@ router.post("/:id/gerar-atividades-cliente", autenticarToken, async (req, res) =
         // Checa se já existe, se quiser evitar duplicidade
         const [existe] = await db.query(`
           SELECT id FROM obrigacoes_clientes
-          WHERE clienteId = ? AND obrigacaoId = ? AND ano_referencia = ? AND mes_referencia = ? AND vencimento = ?
+          WHERE cliente_id = ? AND obrigacao_id = ? AND ano_referencia = ? AND mes_referencia = ? AND vencimento = ?
         `, [clienteId, obrigacaoId, ano, mes, data.toISOString().split("T")[0]]);
         if (existe.length) continue;
 
@@ -3809,7 +3829,7 @@ router.post("/:id/gerar-atividades-cliente", autenticarToken, async (req, res) =
           // Verificar se já existem atividades para esta obrigação do cliente
           const [atividadesExistentes] = await db.query(`
             SELECT id FROM obrigacoes_atividades_clientes 
-            WHERE clienteId = ? AND obrigacaoClienteId = ?
+            WHERE cliente_id = ? AND obrigacao_cliente_id = ?
           `, [clienteId, res.insertId]);
           
           // Se já existem atividades, não inserir novamente
@@ -3854,7 +3874,7 @@ router.post("/:id/gerar-atividades-cliente", autenticarToken, async (req, res) =
  * GET responsável fixo global de uma obrigação
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/responsavel-fixo
  */
-router.get('/:obrigacaoId/responsavel-fixo', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/responsavel-fixo', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   try {
     const [[resp]] = await db.query(
@@ -3875,7 +3895,7 @@ router.get('/:obrigacaoId/responsavel-fixo', autenticarToken, async (req, res) =
  * POST responsável fixo global de uma obrigação
  * Exemplo: POST /api/obrigacoes/:obrigacaoId/responsavel-fixo { usuarioId }
  */
-router.post('/:obrigacaoId/responsavel-fixo', autenticarToken, async (req, res) => {
+router.post('/:obrigacaoId/responsavel-fixo', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   const { usuarioId } = req.body;
   if (!usuarioId) return res.status(400).json({ error: 'usuarioId é obrigatório.' });
@@ -3894,7 +3914,7 @@ router.post('/:obrigacaoId/responsavel-fixo', autenticarToken, async (req, res) 
  * DELETE responsável fixo global de uma obrigação
  * Exemplo: DELETE /api/obrigacoes/:obrigacaoId/responsavel-fixo
  */
-router.delete('/:obrigacaoId/responsavel-fixo', autenticarToken, verificarPermissao('obrigacoes.excluir'), async (req, res) => {
+router.delete('/:obrigacaoId/responsavel-fixo', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   try {
     await db.query('DELETE FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL', [obrigacaoId]);
@@ -3911,7 +3931,7 @@ router.delete('/:obrigacaoId/responsavel-fixo', autenticarToken, verificarPermis
  * GET responsável fixo de um cliente para uma obrigação
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/clientes/:clienteId/responsavel-fixo
  */
-router.get('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', verifyToken, async (req, res) => {
   const { obrigacaoId, clienteId } = req.params;
   try {
     const [[resp]] = await db.query(
@@ -3932,7 +3952,7 @@ router.get('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', autenticarToken
  * POST responsável fixo de um cliente para uma obrigação
  * Exemplo: POST /api/obrigacoes/:obrigacaoId/clientes/:clienteId/responsavel-fixo { usuarioId }
  */
-router.post('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', autenticarToken, async (req, res) => {
+router.post('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', verifyToken, async (req, res) => {
   const { obrigacaoId, clienteId } = req.params;
   const { usuarioId } = req.body;
   if (!usuarioId) return res.status(400).json({ error: 'usuarioId é obrigatório.' });
@@ -3955,7 +3975,7 @@ router.post('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', autenticarToke
  * DELETE responsável fixo de um cliente para uma obrigação
  * Exemplo: DELETE /api/obrigacoes/:obrigacaoId/clientes/:clienteId/responsavel-fixo
  */
-router.delete('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', autenticarToken, verificarPermissao('obrigacoes.excluir'), async (req, res) => {
+router.delete('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', verifyToken, async (req, res) => {
   const { obrigacaoId, clienteId } = req.params;
   try {
     await db.query('DELETE FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?', [obrigacaoId, clienteId]);
@@ -3972,7 +3992,7 @@ router.delete('/:obrigacaoId/clientes/:clienteId/responsavel-fixo', autenticarTo
  * GET /api/obrigacoes/:obrigacaoId/clientes-com-responsavel
  * Retorna todos os clientes vinculados à obrigação, com responsável resolvido (individual > global > null)
  */
-router.get('/:obrigacaoId/clientes-com-responsavel', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/clientes-com-responsavel', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   try {
     // Buscar particularidades da obrigação
@@ -4072,7 +4092,7 @@ router.get('/:obrigacaoId/clientes-com-responsavel', autenticarToken, async (req
 });
 
 // Cancelar obrigação principal
-router.patch('/:id/cancelar', autenticarToken, async (req, res) => {
+router.patch('/:id/cancelar', verifyToken, async (req, res) => {
   const { id } = req.params;
   const { justificativa } = req.body;
 
@@ -4118,7 +4138,7 @@ router.patch('/:id/cancelar', autenticarToken, async (req, res) => {
 });
 
 // Reabrir obrigação cancelada
-router.patch('/:id/reabrir', autenticarToken, async (req, res) => {
+router.patch('/:id/reabrir', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -4151,7 +4171,7 @@ router.patch('/:id/reabrir', autenticarToken, async (req, res) => {
 });
 
 // 📌 DISCONCLUIR atividade (desfazer conclusão)
-router.patch("/atividade/:atividadeId/disconcluir", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeId/disconcluir", verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   const userId = req.usuario?.id;
 
@@ -4180,7 +4200,7 @@ router.patch("/atividade/:atividadeId/disconcluir", autenticarToken, async (req,
  * GET /api/obrigacoes/atividades/:atividadeId/email-template
  * Busca template de e-mail de uma atividade
  */
-router.get('/atividades/:atividadeId/email-template', autenticarToken, async (req, res) => {
+router.get('/atividades/:atividadeId/email-template', verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   
   console.log("🔍 [BACKEND] Buscando template para atividadeId:", atividadeId);
@@ -4234,7 +4254,7 @@ router.get('/atividades/:atividadeId/email-template', autenticarToken, async (re
       // Buscar todas as atividades base que correspondem e verificar qual é a correta
       const [atividadesBase] = await db.query(`
         SELECT id, ordem FROM atividades_obrigacao 
-        WHERE obrigacaoId = ? AND tipo = ? AND texto = ?
+        WHERE obrigacao_id = ? AND tipo = ? AND texto = ?
         ORDER BY ordem
       `, [obrigacaoCliente.obrigacaoId, atividadeCliente.tipo, atividadeCliente.texto]);
       
@@ -4297,7 +4317,7 @@ router.get('/atividades/:atividadeId/email-template', autenticarToken, async (re
  * POST /api/obrigacoes/atividades/:atividadeId/email-template
  * Cria/atualiza template de e-mail de uma atividade
  */
-router.post('/atividades/:atividadeId/email-template', autenticarToken, async (req, res) => {
+router.post('/atividades/:atividadeId/email-template', verifyToken, async (req, res) => {
   const { atividadeId } = req.params;
   const { nome, assunto, corpo, destinatario, cc, co, variaveis } = req.body;
   
@@ -4350,7 +4370,7 @@ router.post('/atividades/:atividadeId/email-template', autenticarToken, async (r
       // Buscar diretamente o ID da atividade base usando obrigacaoId + tipo + texto
       const [[atividadeBase]] = await db.query(`
         SELECT id FROM atividades_obrigacao 
-        WHERE obrigacaoId = ? AND tipo = ? AND texto = ?
+        WHERE obrigacao_id = ? AND tipo = ? AND texto = ?
       `, [obrigacaoCliente.obrigacaoId, atividadeCliente.tipo, atividadeCliente.texto]);
       
       console.log("🔍 [BACKEND POST] Atividade base encontrada:", atividadeBase);
@@ -4438,7 +4458,7 @@ router.post('/atividades/:atividadeId/email-template', autenticarToken, async (r
  * POST /api/obrigacoes/excluir-em-lote
  * Exclusão em lote de obrigações
  */
-router.post("/excluir-em-lote", autenticarToken, verificarPermissao('obrigacoes.excluir'), async (req, res) => {
+router.post("/excluir-em-lote", verifyToken, async (req, res) => {
   try {
     const { ids } = req.body;
 
@@ -4470,7 +4490,7 @@ router.post("/excluir-em-lote", autenticarToken, verificarPermissao('obrigacoes.
  * POST /api/obrigacoes/atualizar-responsavel-em-lote
  * Atualizar responsável exclusivo em lote
  */
-router.post("/atualizar-responsavel-em-lote", autenticarToken, verificarPermissao('obrigacoes.editar'), async (req, res) => {
+router.post("/atualizar-responsavel-em-lote", verifyToken, async (req, res) => {
   const { ids, responsavelId } = req.body;
   
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -4539,7 +4559,7 @@ router.post("/atualizar-responsavel-em-lote", autenticarToken, verificarPermissa
 });
 
 // Listar modelo PDF Layout vinculado à atividade
-router.get("/atividades/:id/pdf-layouts", autenticarToken, async (req, res) => {
+router.get("/atividades/:id/pdf-layouts", verifyToken, async (req, res) => {
   const { id } = req.params;
   console.log("[BACK PDF Vincular][GET] atividadeId:", id);
   try {
@@ -4564,7 +4584,7 @@ router.get("/atividades/:id/pdf-layouts", autenticarToken, async (req, res) => {
 });
 
 // POST vincular modelo
-router.post("/atividades/:id/pdf-layouts", autenticarToken, async (req, res) => {
+router.post("/atividades/:id/pdf-layouts", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { pdf_layout_id } = req.body;
   console.log("[BACK PDF Vincular][POST] atividadeId:", id, "layoutId:", pdf_layout_id);
@@ -4588,7 +4608,7 @@ router.post("/atividades/:id/pdf-layouts", autenticarToken, async (req, res) => 
 });
 
 // DELETE desvincular modelo
-router.delete("/atividades/:id/pdf-layouts/:layoutId", autenticarToken, async (req, res) => {
+router.delete("/atividades/:id/pdf-layouts/:layoutId", verifyToken, async (req, res) => {
   const { id, layoutId } = req.params;
   console.log("[BACK PDF Vincular][DELETE] atividadeId:", id, "layoutId:", layoutId);
   try {
@@ -4618,7 +4638,7 @@ router.delete("/atividades/:id/pdf-layouts/:layoutId", autenticarToken, async (r
  * GET múltiplos responsáveis de uma obrigação para um cliente
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/clientes/:clienteId/responsaveis
  */
-router.get('/:obrigacaoId/clientes/:clienteId/responsaveis', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/clientes/:clienteId/responsaveis', verifyToken, async (req, res) => {
   const { obrigacaoId, clienteId } = req.params;
   try {
     const [responsaveis] = await db.query(`
@@ -4642,7 +4662,7 @@ router.get('/:obrigacaoId/clientes/:clienteId/responsaveis', autenticarToken, as
  * POST adicionar responsável múltiplo
  * Exemplo: POST /api/obrigacoes/:obrigacaoId/clientes/:clienteId/responsaveis { usuarioId }
  */
-router.post('/:obrigacaoId/clientes/:clienteId/responsaveis', autenticarToken, async (req, res) => {
+router.post('/:obrigacaoId/clientes/:clienteId/responsaveis', verifyToken, async (req, res) => {
   const { obrigacaoId, clienteId } = req.params;
   const { usuarioId } = req.body;
   
@@ -4654,7 +4674,7 @@ router.post('/:obrigacaoId/clientes/:clienteId/responsaveis', autenticarToken, a
     // Verificar se já existe
     const [existe] = await db.query(`
       SELECT obrigacaoId FROM obrigacoes_responsaveis_cliente 
-      WHERE obrigacaoId = ? AND clienteId = ? AND usuarioId = ?
+      WHERE obrigacao_id = ? AND clienteId = ? AND usuarioId = ?
     `, [obrigacaoId, clienteId, usuarioId]);
     
     if (existe.length > 0) {
@@ -4678,13 +4698,13 @@ router.post('/:obrigacaoId/clientes/:clienteId/responsaveis', autenticarToken, a
  * DELETE remover responsável múltiplo
  * Exemplo: DELETE /api/obrigacoes/:obrigacaoId/clientes/:clienteId/responsaveis/:responsavelId
  */
-router.delete('/:obrigacaoId/clientes/:clienteId/responsaveis/:responsavelId', autenticarToken, async (req, res) => {
+router.delete('/:obrigacaoId/clientes/:clienteId/responsaveis/:responsavelId', verifyToken, async (req, res) => {
   const { obrigacaoId, clienteId, responsavelId } = req.params;
   
   try {
     await db.query(`
       DELETE FROM obrigacoes_responsaveis_cliente 
-      WHERE obrigacaoId = ? AND clienteId = ? AND usuarioId = ?
+      WHERE obrigacao_id = ? AND clienteId = ? AND usuarioId = ?
     `, [obrigacaoId, clienteId, responsavelId]);
     
     res.json({ success: true, message: 'Responsável removido com sucesso.' });
@@ -4698,7 +4718,7 @@ router.delete('/:obrigacaoId/clientes/:clienteId/responsaveis/:responsavelId', a
  * GET responsáveis múltiplos para uma obrigação (todos os clientes)
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/responsaveis-multiplos
  */
-router.get('/:obrigacaoId/responsaveis-multiplos', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/responsaveis-multiplos', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   
   try {
@@ -4729,7 +4749,7 @@ router.get('/:obrigacaoId/responsaveis-multiplos', autenticarToken, async (req, 
 });
 
 // Endpoint para buscar responsáveis de uma tarefa específica
-router.get("/obrigacoes-clientes/:obrigacaoClienteId/responsaveis", autenticarToken, async (req, res) => {
+router.get("/obrigacoes-clientes/:obrigacaoClienteId/responsaveis", verifyToken, async (req, res) => {
   const { obrigacaoClienteId } = req.params;
   
   try {
@@ -4795,7 +4815,7 @@ router.get("/obrigacoes-clientes/:obrigacaoClienteId/responsaveis", autenticarTo
  * POST criar comentário para obrigação
  * Exemplo: POST /api/obrigacoes/comentario
  */
-router.post("/comentario", autenticarToken, async (req, res) => {
+router.post("/comentario", verifyToken, async (req, res) => {
   const { obrigacaoId, comentario, tipo = "usuario" } = req.body;
   const userId = req.usuario?.id;
 
@@ -4836,7 +4856,7 @@ router.post("/comentario", autenticarToken, async (req, res) => {
  * GET buscar comentários de uma obrigação
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/comentarios
  */
-router.get("/:obrigacaoId/comentarios", autenticarToken, async (req, res) => {
+router.get("/:obrigacaoId/comentarios", verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
@@ -4865,7 +4885,7 @@ router.get("/:obrigacaoId/comentarios", autenticarToken, async (req, res) => {
  * POST buscar comentários em lote para múltiplas obrigações
  * Exemplo: POST /api/obrigacoes/comentarios/lote
  */
-router.post("/comentarios/lote", autenticarToken, async (req, res) => {
+router.post("/comentarios/lote", verifyToken, async (req, res) => {
   const { obrigacaoIds } = req.body;
   
   if (!obrigacaoIds || !Array.isArray(obrigacaoIds) || obrigacaoIds.length === 0) {
@@ -4914,7 +4934,7 @@ router.post("/comentarios/lote", autenticarToken, async (req, res) => {
  * GET buscar responsáveis fixos globais de uma obrigação
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/responsaveis-fixos-globais
  */
-router.get('/:obrigacaoId/responsaveis-fixos-globais', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/responsaveis-fixos-globais', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
@@ -4954,7 +4974,7 @@ router.get('/:obrigacaoId/responsaveis-fixos-globais', autenticarToken, async (r
  * POST adicionar responsável fixo global
  * Exemplo: POST /api/obrigacoes/:obrigacaoId/responsaveis-fixos-globais { usuarioId }
  */
-router.post('/:obrigacaoId/responsaveis-fixos-globais', autenticarToken, async (req, res) => {
+router.post('/:obrigacaoId/responsaveis-fixos-globais', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
   const { usuarioId } = req.body;
 
@@ -5013,7 +5033,7 @@ router.post('/:obrigacaoId/responsaveis-fixos-globais', autenticarToken, async (
  * DELETE remover responsável fixo global
  * Exemplo: DELETE /api/obrigacoes/:obrigacaoId/responsaveis-fixos-globais/:usuarioId
  */
-router.delete('/:obrigacaoId/responsaveis-fixos-globais/:usuarioId', autenticarToken, async (req, res) => {
+router.delete('/:obrigacaoId/responsaveis-fixos-globais/:usuarioId', verifyToken, async (req, res) => {
   const { obrigacaoId, usuarioId } = req.params;
 
   try {
@@ -5057,7 +5077,7 @@ router.delete('/:obrigacaoId/responsaveis-fixos-globais/:usuarioId', autenticarT
  * GET buscar todos os responsáveis de uma obrigação (individuais e globais)
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/responsaveis-todos
  */
-router.get('/:obrigacaoId/responsaveis-todos', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/responsaveis-todos', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
@@ -5135,7 +5155,7 @@ router.get('/:obrigacaoId/responsaveis-todos', autenticarToken, async (req, res)
 });
 
 // 📌 Gerar tarefas individualmente por cliente
-router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
+router.post("/gerar-tarefas", verifyToken, async (req, res) => {
   const { clienteId, obrigacaoIds, ano, vencimentoAPartir, mesReferenciaAte } = req.body;
 
   console.log("🔍 Dados recebidos:", { clienteId, obrigacaoIds, ano, vencimentoAPartir, mesReferenciaAte });
@@ -5158,7 +5178,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
     // Verificar se já existem atividades para esta obrigação do cliente
     const [atividadesExistentes] = await db.query(`
       SELECT id FROM obrigacoes_atividades_clientes 
-      WHERE clienteId = ? AND obrigacaoClienteId = ?
+      WHERE cliente_id = ? AND obrigacao_cliente_id = ?
     `, [clienteId, obrigacaoClienteId]);
     
     // Se já existem atividades, não inserir novamente
@@ -5180,7 +5200,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
     const flatValues = values.flat();
     await db.query(`
       INSERT INTO obrigacoes_atividades_clientes
-      (clienteId, obrigacaoClienteId, tipo, texto, descricao, tipoCancelamento, ordem)
+      (cliente_id, obrigacao_cliente_id, tipo, texto, descricao, tipo_cancelamento, ordem)
       VALUES ${placeholders}
     `, flatValues);
     
@@ -5222,7 +5242,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
         // ✅ NOVO: Verificar se já existe tarefa para este cliente, obrigação, ano e mês
         const [existentes] = await db.query(`
           SELECT id FROM obrigacoes_clientes
-          WHERE clienteId = ? AND obrigacaoId = ? AND ano_referencia = ? AND mes_referencia = ?
+          WHERE cliente_id = ? AND obrigacao_id = ? AND ano_referencia = ? AND mes_referencia = ?
         `, [clienteId, obrigacao.id, anoCalc, mesReferencia]);
         
         if (existentes.length > 0) {
@@ -5259,12 +5279,12 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
         
         // Buscar responsáveis individuais do cliente
         const [multiResponsaveisIndividuais] = await db.query(`
-          SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?
+          SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id = ?
         `, [obrigacao.id, clienteId]);
         
         // Buscar responsáveis globais (clienteId = null)
         const [multiResponsaveisGlobais] = await db.query(`
-          SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+          SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
         `, [obrigacao.id]);
         
         console.log(`🔍 Responsáveis individuais encontrados:`, multiResponsaveisIndividuais);
@@ -5336,7 +5356,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
       // Buscar responsáveis globais (clienteId = null) para cada obrigação
       for (const obrigacaoId of obrigacaoIds) {
         const [[globalResp]] = await db.query(`
-          SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+          SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
         `, [obrigacaoId]);
         if (globalResp) {
           responsaveisGlobaisMap.set(obrigacaoId, globalResp.usuarioId);
@@ -5443,7 +5463,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
           const [existentesDiario] = await db.query(`
             SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
             FROM obrigacoes_clientes
-            WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId = ?
+            WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId = ?
           `, [obrigacaoId, ano, mesInicio, mesFim, clienteId]);
           const existeSetDiario = new Set(existentesDiario.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
           const novasDiario = [];
@@ -5497,12 +5517,12 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
               
               // Buscar responsáveis individuais do cliente
               const [multiResponsaveisIndividuais] = await db.query(`
-                SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?
+                SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id = ?
               `, [obrigacaoId, clienteId]);
               
               // Buscar responsáveis globais (clienteId = null)
               const [multiResponsaveisGlobais] = await db.query(`
-                SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+                SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
               `, [obrigacaoId]);
               
               console.log(`🔍 Responsáveis individuais encontrados para cliente ${clienteId}:`, multiResponsaveisIndividuais);
@@ -5549,7 +5569,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
           const [existentesSemanal] = await db.query(`
             SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
             FROM obrigacoes_clientes
-            WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId = ?
+            WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId = ?
           `, [obrigacaoId, ano, mesInicio, mesFim, clienteId]);
           const existeSetSemanal = new Set(existentesSemanal.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
           const novasSemanal = [];
@@ -5602,12 +5622,12 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
               
               // Buscar responsáveis individuais do cliente
               const [multiResponsaveisIndividuais] = await db.query(`
-                SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId = ?
+                SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id = ?
               `, [obrigacaoId, clienteId]);
               
               // Buscar responsáveis globais (clienteId = null)
               const [multiResponsaveisGlobais] = await db.query(`
-                SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+                SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
               `, [obrigacaoId]);
               
               console.log(`🔍 Responsáveis individuais encontrados para cliente ${clienteId}:`, multiResponsaveisIndividuais);
@@ -5710,7 +5730,7 @@ router.post("/gerar-tarefas", autenticarToken, async (req, res) => {
  * GET verificar se há tarefas que podem ser atualizadas
  * Exemplo: GET /api/obrigacoes/:obrigacaoId/verificar-atualizacao-tarefas
  */
-router.get('/:obrigacaoId/verificar-atualizacao-tarefas', autenticarToken, async (req, res) => {
+router.get('/:obrigacaoId/verificar-atualizacao-tarefas', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
@@ -5728,7 +5748,7 @@ router.get('/:obrigacaoId/verificar-atualizacao-tarefas', autenticarToken, async
     const [atividadesBase] = await db.query(`
       SELECT id, tipo, texto, descricao, tipoCancelamento, ordem, pdf_layout_id, titulo_documento
       FROM atividades_obrigacao 
-      WHERE obrigacaoId = ? 
+      WHERE obrigacao_id = ? 
       ORDER BY ordem
     `, [obrigacaoId]);
 
@@ -5827,7 +5847,7 @@ router.get('/:obrigacaoId/verificar-atualizacao-tarefas', autenticarToken, async
  * POST executar atualização das tarefas dos clientes
  * Exemplo: POST /api/obrigacoes/:obrigacaoId/atualizar-tarefas
  */
-router.post('/:obrigacaoId/atualizar-tarefas', autenticarToken, async (req, res) => {
+router.post('/:obrigacaoId/atualizar-tarefas', verifyToken, async (req, res) => {
   const { obrigacaoId } = req.params;
 
   try {
@@ -5845,7 +5865,7 @@ router.post('/:obrigacaoId/atualizar-tarefas', autenticarToken, async (req, res)
     const [atividadesBase] = await db.query(`
       SELECT id, tipo, texto, descricao, tipoCancelamento, ordem, pdf_layout_id, titulo_documento
       FROM atividades_obrigacao 
-      WHERE obrigacaoId = ? 
+      WHERE obrigacao_id = ? 
       ORDER BY ordem
     `, [obrigacaoId]);
 
@@ -5952,7 +5972,7 @@ router.post('/:obrigacaoId/atualizar-tarefas', autenticarToken, async (req, res)
 });
 
 // Rota para prorrogar tarefas
-router.post("/prorrogar-tarefas", autenticarToken, async (req, res) => {
+router.post("/prorrogar-tarefas", verifyToken, async (req, res) => {
   try {
     const {
       empresaId,
@@ -6058,7 +6078,7 @@ router.post("/prorrogar-tarefas", autenticarToken, async (req, res) => {
 });
 
 // 🔶 POST /api/obrigacoes/gerar-tarefas-lote-grupo - Gerar tarefas em lote para grupo
-router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
+router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
   const { grupoId, ano, mesInicio, mesFim, selectedPairs } = req.body;
 
   // Função otimizada para inserir atividades base em batch
@@ -6101,7 +6121,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
     const flatValues = values.flat();
     await db.query(`
       INSERT INTO obrigacoes_atividades_clientes
-      (clienteId, obrigacaoClienteId, tipo, texto, descricao, tipoCancelamento, ordem)
+      (cliente_id, obrigacao_cliente_id, tipo, texto, descricao, tipo_cancelamento, ordem)
       VALUES ${placeholders}
     `, flatValues);
       console.log(`✅ Inseridas ${values.length} atividades em batch`);
@@ -6148,7 +6168,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
     const clientesIds = [...new Set(obrigacaoClienteIds.map(item => item.clienteId))];
     const [responsaveisIndividuais] = await db.query(`
       SELECT clienteId, usuarioId FROM obrigacoes_responsaveis_cliente 
-      WHERE obrigacaoId = ? AND clienteId IN (${clientesIds.map(() => '?').join(',')})
+      WHERE obrigacao_id = ? AND clienteId IN (${clientesIds.map(() => '?').join(',')})
     `, [obrigacaoId, ...clientesIds]);
     
     const responsaveisIndividuaisMapBatch = new Map();
@@ -6227,7 +6247,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
     // Buscar IDs inseridos
     const [inseridos] = await db.query(`
       SELECT id, clienteId FROM obrigacoes_clientes 
-      WHERE obrigacaoId = ? AND clienteId IN (${loteFiltrado.map(() => '?').join(',')})
+      WHERE obrigacao_id = ? AND clienteId IN (${loteFiltrado.map(() => '?').join(',')})
       ORDER BY id DESC LIMIT ?
     `, [obrigacao.id, ...loteFiltrado.map(item => item.clienteId), loteFiltrado.length]);
     
@@ -6286,7 +6306,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
     const [responsaveis] = await db.query(`
       SELECT clienteId, usuarioId
       FROM obrigacoes_responsaveis_cliente
-      WHERE obrigacaoId = ? AND (clienteId IN (${clientesIds.map(() => '?').join(',')}) OR clienteId IS NULL)
+      WHERE obrigacao_id = ? AND (clienteId IN (${clientesIds.map(() => '?').join(',')}) OR clienteId IS NULL)
       `, [obrigacaoId, ...clientesIds]);
       
       const responsaveisIndividuaisMap = new Map();
@@ -6481,7 +6501,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
           const [existentesDiario] = await db.query(`
             SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
             FROM obrigacoes_clientes
-            WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
+            WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
               AND clienteId IN (${clientesValidos.map(() => '?').join(',')})
           `, [obrigacaoId, ano, mesInicio, mesFim, ...clientesValidos]);
           const existeSetDiario = new Set(existentesDiario.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
@@ -6531,7 +6551,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
             // Buscar os IDs inseridos para todos os clientes válidos
             const [ultimos] = await db.query(`
               SELECT id, clienteId FROM obrigacoes_clientes 
-              WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? 
+              WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? 
               AND clienteId IN (${clientesValidos.map(() => '?').join(',')})
             `, [obrigacaoId, ano, mesInicio, mesFim, ...clientesValidos]);
             
@@ -6555,7 +6575,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
           const [existentesSemanal] = await db.query(`
             SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
             FROM obrigacoes_clientes
-            WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
+            WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
               AND clienteId IN (${clientesValidos.map(() => '?').join(',')})
           `, [obrigacaoId, ano, mesInicio, mesFim, ...clientesValidos]);
           const existeSetSemanal = new Set(existentesSemanal.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
@@ -6604,7 +6624,7 @@ router.post("/gerar-tarefas-lote-grupo", autenticarToken, async (req, res) => {
             // Buscar os IDs inseridos para todos os clientes válidos
             const [ultimos] = await db.query(`
               SELECT id, clienteId FROM obrigacoes_clientes 
-              WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? 
+              WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? 
               AND clienteId IN (${clientesValidos.map(() => '?').join(',')})
             `, [obrigacaoId, ano, mesInicio, mesFim, ...clientesValidos]);
             

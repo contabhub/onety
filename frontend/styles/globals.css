@@ -214,6 +214,22 @@ body {
   scrollbar-color: var(--onity-dark-border) var(--onity-dark-bg);
 }
 
+/* Select option styling (migrado de inline) */
+select option {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  padding: 8px;
+}
+
+select option:hover {
+  background-color: var(--onity-color-bg);
+}
+
+select option:checked {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
 /* ===== REACT SELECT STYLES ===== */
 .react-select-container {
   font-family: var(--onity-font-family-sans);
