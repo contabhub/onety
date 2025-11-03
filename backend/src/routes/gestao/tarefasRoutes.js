@@ -502,11 +502,11 @@ router.get("/:id/comentarios", autenticarToken, async (req, res) => {
   const { id } = req.params;
   try {
     const [comentarios] = await db.query(
-      `SELECT c.id, c.comentario, c.criadoEm, c.nomeArquivo, c.base64, u.nome, u.imagem, u.id as usuarioId
+      `SELECT c.id, c.comentario, c.criado_em AS criadoEm, c.nome_arquivo AS nomeArquivo, c.arquivo AS base64, u.nome, u.avatar_url, u.id as usuarioId
        FROM comentarios_tarefa c
-       JOIN usuarios u ON c.usuarioId = u.id
-       WHERE c.tarefaId = ?
-       ORDER BY c.criadoEm ASC`,
+       JOIN usuarios u ON c.usuario_id = u.id
+       WHERE c.tarefa_id = ?
+       ORDER BY c.criado_em ASC`,
       [id]
     );
     res.json(comentarios);
@@ -529,22 +529,23 @@ router.post("/comentarios/lote", autenticarToken, async (req, res) => {
     const placeholders = tarefaIds.map(() => '?').join(',');
     const [comentarios] = await db.query(
       `SELECT 
-        c.tarefaId,
+        c.tarefa_id AS tarefaId,
         c.id as comentarioId,
         c.comentario,
-        c.criadoEm,
-        c.nomeArquivo,
+        c.criado_em AS criadoEm,
+        c.nome_arquivo AS nomeArquivo,
         u.nome as autorNome,
-        u.id as autorId
+        u.id as autorId,
+        u.avatar_url
        FROM comentarios_tarefa c
-       JOIN usuarios u ON c.usuarioId = u.id
-       WHERE c.tarefaId IN (${placeholders})
+       JOIN usuarios u ON c.usuario_id = u.id
+       WHERE c.tarefa_id IN (${placeholders})
        AND c.id = (
          SELECT MAX(c2.id) 
          FROM comentarios_tarefa c2 
-         WHERE c2.tarefaId = c.tarefaId
+         WHERE c2.tarefa_id = c.tarefa_id
        )
-       ORDER BY c.criadoEm DESC`,
+       ORDER BY c.criado_em DESC`,
       tarefaIds
     );
 
@@ -586,7 +587,7 @@ router.post("/:id/comentarios", autenticarToken, async (req, res) => {
       pad(agora.getSeconds());
 
     await db.query(
-      `INSERT INTO comentarios_tarefa (tarefaId, usuarioId, comentario, base64, nomeArquivo, criadoEm) VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO comentarios_tarefa (tarefa_id, usuario_id, comentario, arquivo, nome_arquivo, criado_em) VALUES (?, ?, ?, ?, ?, ?)`,
       [id, usuarioId, comentario || null, base64 || null, nomeArquivo || null, criadoEm]
     );
     res.status(201).json({ mensagem: "Comentário adicionado." });
