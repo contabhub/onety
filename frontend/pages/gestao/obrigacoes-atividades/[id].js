@@ -8,7 +8,7 @@ import api from "@/app/utils/api";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Mail, Paperclip, ClipboardList, Check, X } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "@/styles/obrigacoesatividade.module.css";
 import Head from "next/head";
@@ -996,18 +996,7 @@ export default function AtividadesObrigacao() {
 
     return (
         <DashboardLayout>
-            <ToastContainer 
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                limit={3}
-            />
+            {/* ToastContainer global em _app.js */}
             <Head>
                 <title>Atividades da Obrigação</title>
                 <style jsx>{`

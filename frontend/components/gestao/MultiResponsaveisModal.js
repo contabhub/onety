@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 // Cliente HTTP local (igual ao usado em pages/gestao/clientes.js)
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const getToken = () => {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+};
 const api = {
   get: async (url, config = {}) => {
     const params = config.params ? `?${new URLSearchParams(config.params).toString()}` : "";
     const res = await fetch(`${API_BASE}${url}${params}`, {
       method: "GET",
-      headers: config.headers || {}
+      headers: { Authorization: `Bearer ${getToken()}`, ...(config.headers || {}) }
     });
     if (config.responseType === "blob") {
       return { data: await res.blob(), headers: { 'content-type': res.headers.get('content-type') || '' } };
@@ -15,7 +19,7 @@ const api = {
   },
   post: async (url, body, config = {}) => {
     const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
-    const headers = config.headers || {};
+    const headers = { Authorization: `Bearer ${getToken()}`, ...(config.headers || {}) };
     if (!isFormData) headers['Content-Type'] = 'application/json';
     const res = await fetch(`${API_BASE}${url}`, {
       method: "POST",
@@ -27,12 +31,13 @@ const api = {
   delete: async (url, config = {}) => {
     const res = await fetch(`${API_BASE}${url}`, {
       method: "DELETE",
-      headers: config.headers || {}
+      headers: { Authorization: `Bearer ${getToken()}`, ...(config.headers || {}) }
     });
     return { data: await res.json() };
   }
 };
 import { X, Plus, Trash2, User } from "lucide-react";
+import styles from "./MultiResponsaveisModal.module.css";
 
 export default function MultiResponsaveisModal({
   isOpen,
@@ -92,17 +97,23 @@ export default function MultiResponsaveisModal({
     try {
       // Carregar responsáveis atuais
       const [responsaveisRes, usuariosRes] = await Promise.all([
-        api.get(`/api/obrigacoes/${obrigacaoId}/clientes/${clienteId}/responsaveis`),
-        api.get("/api/usuarios")
+        api.get(`/gestao/obrigacoes/${obrigacaoId}/clientes/${clienteId}/responsaveis`),
+        api.get("/usuarios")
       ]);
       
+      const listaResp = Array.isArray(responsaveisRes.data)
+        ? responsaveisRes.data
+        : (Array.isArray(responsaveisRes.data?.responsaveis) ? responsaveisRes.data.responsaveis : (Array.isArray(responsaveisRes.data?.data) ? responsaveisRes.data.data : []));
       // ✅ NOVO: Remover duplicatas dos responsáveis baseado em usuarioId
-      const responsaveisUnicos = responsaveisRes.data.filter((resp, index, array) => {
+      const responsaveisUnicos = listaResp.filter((resp, index, array) => {
         return array.findIndex(r => r.usuarioId === resp.usuarioId) === index;
       });
       
       setResponsaveis(responsaveisUnicos);
-      setUsuarios(usuariosRes.data);
+      const listaUsuarios = Array.isArray(usuariosRes.data)
+        ? usuariosRes.data
+        : (Array.isArray(usuariosRes.data?.usuarios) ? usuariosRes.data.usuarios : (Array.isArray(usuariosRes.data?.data) ? usuariosRes.data.data : []));
+      setUsuarios(listaUsuarios);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       setMessage("Erro ao carregar dados");
@@ -126,7 +137,7 @@ export default function MultiResponsaveisModal({
     
     setLoading(true);
     try {
-      await api.post(`/api/obrigacoes/${obrigacaoId}/clientes/${clienteId}/responsaveis`, {
+      await api.post(`/gestao/obrigacoes/${obrigacaoId}/clientes/${clienteId}/responsaveis`, {
         usuarioId: selectedUsuarioId
       });
       
@@ -167,7 +178,7 @@ export default function MultiResponsaveisModal({
     
     setLoading(true);
     try {
-      await api.delete(`/api/obrigacoes/${obrigacaoId}/clientes/${clienteId}/responsaveis/${responsavelId}`);
+      await api.delete(`/gestao/obrigacoes/${obrigacaoId}/clientes/${clienteId}/responsaveis/${responsavelId}`);
       
       setMessage("Responsável removido com sucesso!");
       setMessageType("success");
@@ -201,127 +212,39 @@ export default function MultiResponsaveisModal({
   if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: isLight ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.5)",
-      zIndex: 9999,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backdropFilter: "blur(4px)",
-      WebkitBackdropFilter: "blur(4px)",
-    }}>
-      <div style={{
-        background: isLight ? "rgba(255,255,255,0.98)" : "rgba(11, 11, 17, 0.6)",
-        borderRadius: "var(--titan-radius-lg)",
-        maxWidth: "600px",
-        width: "90%",
-        padding: "var(--titan-spacing-lg)",
-        boxShadow: "var(--titan-shadow-lg)",
-        maxHeight: "90vh",
-        overflowY: "auto",
-        border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid rgba(255, 255, 255, 0.1)",
-      }}>
+    <div className={`${styles.overlay} ${isLight ? styles.overlayLight : ''}`}>
+      <div className={`${styles.box} ${!isLight ? styles.boxDark : ''}`}>
         {/* Header */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "var(--titan-spacing-lg)"
-        }}>
+        <div className={styles.header}>
           <div>
-            <h2 style={{
-              margin: 0,
-              fontSize: "var(--titan-font-size-xl)",
-              fontWeight: "var(--titan-font-weight-semibold)",
-              color: "var(--titan-text-high)"
-            }}>
+            <h2 className={styles.title}>
               Múltiplos Responsáveis
             </h2>
-            <p style={{
-              margin: "4px 0 0 0",
-              fontSize: "var(--titan-font-size-sm)",
-              color: "var(--titan-text-med)"
-            }}>
+            <p className={styles.subtitle}>
               {obrigacaoNome} - {clienteNome}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: "24px",
-              cursor: "pointer",
-              color: "var(--titan-text-med)",
-              padding: "4px",
-              borderRadius: "var(--titan-radius-sm)",
-              transition: "all var(--titan-transition-fast)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--titan-input-bg)";
-              e.currentTarget.style.color = "var(--titan-text-high)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "none";
-              e.currentTarget.style.color = "var(--titan-text-med)";
-            }}
-          >
+          <button onClick={onClose} className={styles.closeBtn}>
             ×
           </button>
         </div>
 
         {/* Mensagem */}
         {message && (
-          <div style={{
-            padding: "var(--titan-spacing-md) var(--titan-spacing-lg)",
-            borderRadius: "var(--titan-radius-sm)",
-            marginBottom: "var(--titan-spacing-lg)",
-            background: messageType === "success" ? "var(--titan-success)" : "var(--titan-error)",
-            color: "white",
-            border: `1px solid ${messageType === "success" ? "var(--titan-success)" : "var(--titan-error)"}`,
-            fontSize: "var(--titan-font-size-sm)",
-            fontWeight: "var(--titan-font-weight-medium)"
-          }}>
+          <div className={`${styles.alert} ${messageType === 'success' ? styles.alertSuccess : styles.alertError}`}>
             {message}
           </div>
         )}
 
         {/* Adicionar Responsável */}
-        <div style={{
-          background: isLight ? "rgba(0,0,0,0.02)" : "var(--titan-base-10)",
-          padding: "var(--titan-spacing-lg)",
-          borderRadius: "var(--titan-radius-md)",
-          marginBottom: "var(--titan-spacing-xl)",
-          border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid var(--titan-stroke)"
-        }}>
-          <h3 style={{
-            margin: "0 0 var(--titan-spacing-md) 0",
-            fontSize: "var(--titan-font-size-base)",
-            fontWeight: "var(--titan-font-weight-semibold)",
-            color: "var(--titan-text-high)"
-          }}>
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>
             Adicionar Responsável
           </h3>
           
-          <div style={{
-            display: "flex",
-            gap: "var(--titan-spacing-md)",
-            alignItems: "flex-end",
-            justifyContent: "space-between"
-          }}>
-            <div style={{ flex: 0.95, position: "relative" }}>
-              <label style={{
-                display: "block",
-                marginBottom: "var(--titan-spacing-xs)",
-                fontSize: "var(--titan-font-size-sm)",
-                fontWeight: "var(--titan-font-weight-medium)",
-                color: "var(--titan-text-high)"
-              }}>
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <label className={styles.label}>
                 Selecionar Usuário
               </label>
               <input
@@ -329,34 +252,11 @@ export default function MultiResponsaveisModal({
                 placeholder="Digite para pesquisar usuários..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "var(--titan-spacing-sm) var(--titan-spacing-md)",
-                  border: "1px solid var(--titan-stroke)",
-                  borderRadius: "var(--titan-radius-sm)",
-                  fontSize: "var(--titan-font-size-sm)",
-                  backgroundColor: "var(--titan-input-bg)",
-                  color: "var(--titan-text-high)",
-                  outline: "none",
-                  transition: "border-color var(--titan-transition-fast)"
-                }}
+                className={styles.input}
                 disabled={loading}
               />
               {searchTerm && (
-                <div style={{
-                  position: "absolute",
-                  top: "100%",
-                  left: 0,
-                  right: 0,
-                  background: isLight ? "#fff" : "var(--titan-base-00)", // ✅ NOVO: Fundo sólido branco
-                  border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid var(--titan-stroke)",
-                  borderRadius: "var(--titan-radius-sm)",
-                  maxHeight: "200px",
-                  overflow: "auto",
-                  zIndex: 10,
-                  boxShadow: "var(--titan-shadow-lg)",
-                  backdropFilter: "none" // ✅ NOVO: Remover transparência
-                }}>
+                <div className={styles.dropdown}>
                   {usuariosFiltrados.map(usuario => (
                     <div
                       key={usuario.id}
@@ -373,17 +273,7 @@ export default function MultiResponsaveisModal({
                         // Prevenir comportamento padrão para evitar problemas de foco
                         e.preventDefault();
                       }}
-                      style={{
-                        padding: "var(--titan-spacing-sm) var(--titan-spacing-md)",
-                        cursor: "pointer",
-                        borderBottom: "1px solid var(--titan-stroke)",
-                        fontSize: "var(--titan-font-size-sm)",
-                        color: "var(--titan-text-high)",
-                        transition: "background-color var(--titan-transition-fast)",
-                        background: isLight ? "#fff" : "var(--titan-base-00)" // ✅ NOVO: Fundo sólido
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = isLight ? "rgba(0,0,0,0.04)" : "var(--titan-base-10)"}
-                      onMouseLeave={(e) => e.currentTarget.style.background = isLight ? "#fff" : "var(--titan-base-00)"} // ✅ NOVO: Voltar ao fundo sólido
+                      className={styles.dropdownItem}
                     >
                       {usuario.nome} ({usuario.email}){usuario.departamentoNome ? ` - ${usuario.departamentoNome}` : ""}
                     </div>
@@ -395,29 +285,7 @@ export default function MultiResponsaveisModal({
             <button
               onClick={adicionarResponsavel}
               disabled={!selectedUsuarioId || loading}
-              style={{
-                padding: "var(--titan-spacing-sm) var(--titan-spacing-md)",
-                background: selectedUsuarioId && !loading ? "var(--titan-success)" : "var(--titan-text-low)",
-                color: "white",
-                border: "none",
-                borderRadius: "var(--titan-radius-sm)",
-                fontSize: "var(--titan-font-size-sm)",
-                fontWeight: "var(--titan-font-weight-medium)",
-                cursor: selectedUsuarioId && !loading ? "pointer" : "not-allowed",
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--titan-spacing-sm)",
-                transition: "all var(--titan-transition-fast)",
-                opacity: selectedUsuarioId && !loading ? 1 : 0.7
-              }}
-              onMouseEnter={(e) => {
-                if (selectedUsuarioId && !loading) {
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
+              className={styles.addBtn}
             >
               <Plus size={16} />
               {loading ? "Adicionando..." : "Adicionar"}
@@ -427,88 +295,37 @@ export default function MultiResponsaveisModal({
 
         {/* Lista de Responsáveis */}
         <div>
-          <h3 style={{
-            margin: "0 0 var(--titan-spacing-md) 0",
-            fontSize: "var(--titan-font-size-base)",
-            fontWeight: "var(--titan-font-weight-semibold)",
-            color: "var(--titan-text-high)"
-          }}>
+          <h3 className={styles.listTitle}>
             Responsáveis Atuais ({responsaveis.length})
           </h3>
           
           {loading ? (
-            <div style={{
-              textAlign: "center",
-              padding: "var(--titan-spacing-xl)",
-              color: "var(--titan-text-med)"
-            }}>
-              <div style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                border: "2px solid var(--titan-primary)",
-                borderTop: "2px solid transparent",
-                animation: "spin 1s linear infinite",
-                margin: "0 auto var(--titan-spacing-md)"
-              }} />
+            <div className={styles.emptyState}>
+              <div className={styles.spinner} />
               Carregando...
             </div>
           ) : responsaveis.length === 0 ? (
-            <div style={{
-              textAlign: "center",
-              padding: "var(--titan-spacing-xl)",
-              color: "var(--titan-text-low)",
-              background: isLight ? "rgba(0,0,0,0.02)" : "var(--titan-base-10)",
-              borderRadius: "var(--titan-radius-md)",
-              border: isLight ? "1px dashed rgba(0,0,0,0.08)" : "1px dashed var(--titan-stroke)"
-            }}>
-              <User size={48} style={{ marginBottom: "var(--titan-spacing-md)", opacity: 0.5 }} />
-              <p style={{ margin: 0, fontSize: "var(--titan-font-size-sm)" }}>
+            <div className={styles.emptyState}>
+              <User size={48} className={styles.emptyIcon} />
+              <p style={{ margin: 0 }}>
                 Nenhum responsável vinculado
               </p>
-              <p style={{ margin: "4px 0 0 0", fontSize: "var(--titan-font-size-xs)", opacity: 0.7 }}>
+              <p style={{ margin: "4px 0 0 0", fontSize: 12, opacity: 0.7 }}>
                 Adicione responsáveis usando o formulário acima
               </p>
             </div>
           ) : (
-            <div style={{
-              display: "grid",
-              gap: "var(--titan-spacing-sm)"
-            }}>
+            <div className={styles.list}>
               {responsaveis.map((responsavel) => (
                 <div
                   key={responsavel.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "var(--titan-spacing-md) var(--titan-spacing-lg)",
-                    background: isLight ? "#fff" : "var(--titan-card-bg)",
-                    border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid var(--titan-stroke)",
-                    borderRadius: "var(--titan-radius-md)",
-                    transition: "all var(--titan-transition-fast)"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = isLight ? "rgba(0,0,0,0.04)" : "var(--titan-base-10)";
-                    e.currentTarget.style.borderColor = "var(--titan-primary)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = isLight ? "#fff" : "var(--titan-card-bg)";
-                    e.currentTarget.style.borderColor = isLight ? "rgba(0,0,0,0.08)" : "var(--titan-stroke)";
-                  }}
+                  className={styles.item}
                 >
                   <div>
-                    <div style={{
-                      fontWeight: "var(--titan-font-weight-medium)",
-                      color: "var(--titan-text-high)",
-                      fontSize: "var(--titan-font-size-sm)"
-                    }}>
+                    <div className={styles.itemName}>
                       {responsavel.nome}
                     </div>
-                    <div style={{
-                      fontSize: "var(--titan-font-size-xs)",
-                      color: "var(--titan-text-med)"
-                    }}>
+                    <div className={styles.itemSub}>
                       {responsavel.email}
                       {responsavel.departamentoNome && ` • ${responsavel.departamentoNome}`}
                     </div>
@@ -517,28 +334,7 @@ export default function MultiResponsaveisModal({
                   <button
                     onClick={() => removerResponsavel(responsavel.usuarioId)}
                     disabled={loading}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--titan-error)",
-                      cursor: loading ? "not-allowed" : "pointer",
-                      padding: "var(--titan-spacing-xs)",
-                      borderRadius: "var(--titan-radius-sm)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all var(--titan-transition-fast)"
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.background = "var(--titan-error)";
-                        e.currentTarget.style.color = "white";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "none";
-                      e.currentTarget.style.color = "var(--titan-error)";
-                    }}
+                    className={styles.removeBtn}
                     title="Remover responsável"
                   >
                     <Trash2 size={16} />
@@ -550,35 +346,8 @@ export default function MultiResponsaveisModal({
         </div>
 
         {/* Footer */}
-        <div style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "var(--titan-spacing-xl)",
-          paddingTop: "var(--titan-spacing-lg)",
-          borderTop: "1px solid var(--titan-stroke)"
-        }}>
-          <button
-            onClick={onClose}
-            style={{
-              padding: "var(--titan-spacing-sm) var(--titan-spacing-md)",
-              background: isLight ? "rgba(0,0,0,0.04)" : "rgba(255, 255, 255, 0.15)",
-              color: "var(--titan-text-high)",
-              border: isLight ? "1px solid rgba(0,0,0,0.08)" : "1px solid rgba(255, 255, 255, 0.2)",
-              borderRadius: "var(--titan-radius-sm)",
-              fontSize: "var(--titan-font-size-sm)",
-              fontWeight: "var(--titan-font-weight-medium)",
-              cursor: "pointer",
-              transition: "all var(--titan-transition-fast)"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = isLight ? "rgba(0,0,0,0.08)" : "var(--titan-input-bg)";
-              e.currentTarget.style.borderColor = "var(--titan-primary)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = isLight ? "rgba(0,0,0,0.04)" : "rgba(255, 255, 255, 0.15)";
-              e.currentTarget.style.borderColor = isLight ? "rgba(0,0,0,0.08)" : "rgba(255, 255, 255, 0.2)";
-            }}
-          >
+        <div className={styles.footer}>
+          <button onClick={onClose} className={styles.footerCloseBtn}>
             Fechar
           </button>
         </div>

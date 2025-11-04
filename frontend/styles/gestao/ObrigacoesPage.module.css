@@ -2107,7 +2107,7 @@
 
 .clienteResponsavelBadgeIndividual {
   background: rgba(68, 84, 100, 0.1);
-  color: var(--onity-color-primary);
+  color: var(--onity-color-text);
   border: 1px solid rgba(68, 84, 100, 0.2);
 }
 

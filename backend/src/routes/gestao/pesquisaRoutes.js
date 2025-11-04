@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const db = require("../../config/database");
 const crypto = require('crypto');
-const autenticarToken = require("../../middlewares/auth");
+const verifyToken = require("../../middlewares/auth");
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 
 // Gera pesquisas para todos os clientes ativos de todas as empresas
-router.post('/gerar', autenticarToken, async (req, res) => {
+router.post('/gerar', verifyToken, async (req, res) => {
   try {
     // Busca todas as empresas que optaram por pesquisa de satisfação
     const [empresasAtivas] = await db.query('SELECT id FROM empresas WHERE pesquisaSatisfacaoAtiva = 1');
@@ -15,9 +15,9 @@ router.post('/gerar', autenticarToken, async (req, res) => {
     const empresaIds = empresasAtivas.map(e => e.id);
     // Busca todos os clientes ativos dessas empresas
     const [clientes] = await db.query(`
-      SELECT c.id as clienteId, c.empresaId
+      SELECT c.id as clienteId, c.empresa_id
       FROM clientes c
-      WHERE c.status = 'Ativo' AND c.empresaId IN (${empresaIds.map(() => '?').join(',')})
+      WHERE c.status = 'Ativo' AND c.empresa_id IN (${empresaIds.map(() => '?').join(',')})
     `, empresaIds);
     if (clientes.length === 0) return res.json({ ok: true, mensagem: 'Nenhum cliente ativo elegível.' });
 
@@ -28,7 +28,7 @@ router.post('/gerar', autenticarToken, async (req, res) => {
       // Verifica se já existe pesquisa nos últimos 90 dias
       const [existe] = await db.query(`
         SELECT 1 FROM pesquisas_satisfacao
-        WHERE clienteId = ? AND dataEnvio >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+        WHERE cliente_id = ? AND data_envio >= DATE_SUB(NOW(), INTERVAL 90 DAY)
         LIMIT 1
       `, [c.clienteId]);
       if (existe.length > 0) continue; // já recebeu, pula
@@ -46,20 +46,20 @@ router.post('/gerar', autenticarToken, async (req, res) => {
         now,
         now
       ]);
-      tokens.push({ clienteId: c.clienteId, empresaId: c.empresaId, token });
+      tokens.push({ clienteId: c.clienteId, empresaId: c.empresa_id, token });
     }
     if (values.length === 0) return res.json({ ok: true, mensagem: 'Nenhum cliente elegível para nova pesquisa.' });
     const placeholders = values.map(() => '(?,?,?,?,?,?,?,?,?,?)').join(',');
     await db.query(`
       INSERT INTO pesquisas_satisfacao
-      (empresaId, clienteId, dataEnvio, dataResposta, nota, comentario, status, nps_classificacao, token, criadoEm, atualizadoEm)
+      (empresa_id, cliente_id, data_envio, data_resposta, nota, comentario, status, nps_classificacao, token, criado_em, atualizado_em)
       VALUES ${placeholders}
     `, values.flat());
 
     // Envio do e-mail e webhook para cada cliente
     for (const t of tokens) {
       // Buscar dados do cliente e empresa
-      const [[cliente]] = await db.query('SELECT nome, telefone, email FROM clientes WHERE id = ?', [t.clienteId]);
+    const [[cliente]] = await db.query('SELECT nome, telefone, email FROM clientes WHERE id = ?', [t.clienteId]);
       const [[empresa]] = await db.query('SELECT razaoSocial, logo_url FROM empresas WHERE id = ?', [t.empresaId]);
       const linkPesquisa = `https://app.cftitan.com.br/public/pesquisa/${t.token}`;
       // Mensagem WhatsApp mais respeitável e profissional
@@ -182,7 +182,7 @@ router.post('/responder', async (req, res) => {
 
     const [result] = await db.query(`
       UPDATE pesquisas_satisfacao
-      SET nota = ?, comentario = ?, dataResposta = NOW(), status = 'respondido', nps_classificacao = ?
+      SET nota = ?, comentario = ?, data_resposta = NOW(), status = 'respondido', nps_classificacao = ?
       WHERE token = ?
     `, [nota, comentario || null, nps_classificacao, token]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Token inválido.' });
@@ -194,15 +194,15 @@ router.post('/responder', async (req, res) => {
 });
 
 // Lista pesquisas e resultados por empresa
-router.get('/:empresaId', autenticarToken, async (req, res) => {
+router.get('/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   try {
     const [pesquisas] = await db.query(`
       SELECT p.*, c.nome as clienteNome
       FROM pesquisas_satisfacao p
-      JOIN clientes c ON p.clienteId = c.id
-      WHERE p.empresaId = ?
-      ORDER BY p.dataEnvio DESC
+      JOIN clientes c ON p.cliente_id = c.id
+      WHERE p.empresa_id = ?
+      ORDER BY p.data_envio DESC
     `, [empresaId]);
     res.json(pesquisas);
   } catch (err) {
@@ -212,7 +212,7 @@ router.get('/:empresaId', autenticarToken, async (req, res) => {
 });
 
 // Estatísticas das pesquisas de clientes para empresas não franqueadoras
-router.get('/clientes/estatisticas/:empresaId', autenticarToken, async (req, res) => {
+router.get('/clientes/estatisticas/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
@@ -246,13 +246,13 @@ router.get('/clientes/estatisticas/:empresaId', autenticarToken, async (req, res
     const [[totalEnvios]] = await db.query(`
       SELECT COUNT(*) as total
       FROM pesquisas_satisfacao 
-      WHERE empresaId = ?
+      WHERE empresa_id = ?
     `, [empresaId]);
 
     const [[totalRespostas]] = await db.query(`
       SELECT COUNT(*) as total
       FROM pesquisas_satisfacao 
-      WHERE empresaId = ? AND status = 'respondido'
+      WHERE empresa_id = ? AND status = 'respondido'
     `, [empresaId]);
 
     // Buscar todas as pesquisas respondidas da empresa
@@ -261,7 +261,7 @@ router.get('/clientes/estatisticas/:empresaId', autenticarToken, async (req, res
         nota,
         nps_classificacao
       FROM pesquisas_satisfacao 
-      WHERE empresaId = ? AND status = 'respondido'
+      WHERE empresa_id = ? AND status = 'respondido'
     `, [empresaId]);
 
     if (pesquisas.length === 0) {
@@ -312,7 +312,7 @@ router.get('/clientes/estatisticas/:empresaId', autenticarToken, async (req, res
 });
 
 // Buscar pesquisas detalhadas de clientes
-router.get('/clientes/detalhado/:empresaId', autenticarToken, async (req, res) => {
+router.get('/clientes/detalhado/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
@@ -340,19 +340,19 @@ router.get('/clientes/detalhado/:empresaId', autenticarToken, async (req, res) =
     const [pesquisas] = await db.query(`
       SELECT 
         p.id,
-        p.clienteId,
+        p.cliente_id AS clienteId,
         p.nota,
         p.nps_classificacao,
-        p.dataResposta,
+        p.data_resposta AS dataResposta,
         p.comentario,
-        p.dataEnvio,
+        p.data_envio AS dataEnvio,
         c.nome as cliente_nome,
         c.email as cliente_email,
         c.telefone as cliente_telefone
       FROM pesquisas_satisfacao p
-      JOIN clientes c ON p.clienteId = c.id
-      WHERE p.empresaId = ? AND p.status = 'respondido'
-      ORDER BY p.dataResposta DESC
+      JOIN clientes c ON p.cliente_id = c.id
+      WHERE p.empresa_id = ? AND p.status = 'respondido'
+      ORDER BY p.data_resposta DESC
     `, [empresaId]);
 
     res.json({
@@ -367,7 +367,7 @@ router.get('/clientes/detalhado/:empresaId', autenticarToken, async (req, res) =
 });
 
 // Buscar clientes sem resposta
-router.get('/clientes/sem-resposta/:empresaId', autenticarToken, async (req, res) => {
+router.get('/clientes/sem-resposta/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
@@ -393,14 +393,14 @@ router.get('/clientes/sem-resposta/:empresaId', autenticarToken, async (req, res
         c.nome,
         c.email,
         c.telefone,
-        p.dataEnvio as data_envio
+        p.data_envio as data_envio
       FROM clientes c
-      INNER JOIN pesquisas_satisfacao p ON c.id = p.clienteId
-      WHERE c.empresaId = ? 
-        AND p.empresaId = ?
-        AND p.dataResposta IS NULL
+      INNER JOIN pesquisas_satisfacao p ON c.id = p.cliente_id
+      WHERE c.empresa_id = ? 
+        AND p.empresa_id = ?
+        AND p.data_resposta IS NULL
         AND p.status = 'enviado'
-      ORDER BY p.dataEnvio DESC
+      ORDER BY p.data_envio DESC
     `, [empresaId, empresaId]);
 
     res.json({ clientes: clientesSemResposta });
@@ -411,7 +411,7 @@ router.get('/clientes/sem-resposta/:empresaId', autenticarToken, async (req, res
 });
 
 // Lista pesquisas de satisfação de um cliente específico
-router.get('/cliente/:clienteId', autenticarToken, async (req, res) => {
+router.get('/cliente/:clienteId', verifyToken, async (req, res) => {
   const { clienteId } = req.params;
   const { periodo } = req.query; // opcional: '3m', '6m', '1a', 'todos'
   
@@ -463,16 +463,16 @@ router.get('/cliente/:clienteId', autenticarToken, async (req, res) => {
 });
 
 // Gera pesquisa para um cliente específico (para testes)
-router.post('/gerar-para-cliente', autenticarToken, async (req, res) => {
+router.post('/gerar-para-cliente', verifyToken, async (req, res) => {
   try {
     const { clienteId, empresaId } = req.body;
     if (!clienteId) return res.status(400).json({ error: 'clienteId obrigatório' });
     // Busca empresaId se não informado
     let empId = empresaId;
     if (!empId) {
-      const [cli] = await db.query('SELECT empresaId FROM clientes WHERE id = ?', [clienteId]);
+      const [cli] = await db.query('SELECT empresa_id FROM clientes WHERE id = ?', [clienteId]);
       if (!cli.length) return res.status(404).json({ error: 'Cliente não encontrado' });
-      empId = cli[0].empresaId;
+      empId = cli[0].empresa_id;
     }
     // Verifica se a empresa optou por pesquisa de satisfação
     const [empresaPesquisa] = await db.query('SELECT pesquisaSatisfacaoAtiva FROM empresas WHERE id = ?', [empId]);
@@ -482,7 +482,7 @@ router.post('/gerar-para-cliente', autenticarToken, async (req, res) => {
     // Verifica se já existe pesquisa nos últimos 90 dias
     const [existe] = await db.query(`
       SELECT 1 FROM pesquisas_satisfacao
-      WHERE clienteId = ? AND dataEnvio >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+      WHERE cliente_id = ? AND data_envio >= DATE_SUB(NOW(), INTERVAL 90 DAY)
       LIMIT 1
     `, [clienteId]);
     if (existe.length > 0) return res.status(409).json({ error: 'Já existe pesquisa recente para este cliente.' });
@@ -490,7 +490,7 @@ router.post('/gerar-para-cliente', autenticarToken, async (req, res) => {
     const token = require('crypto').randomBytes(24).toString('hex');
     await db.query(`
       INSERT INTO pesquisas_satisfacao
-      (empresaId, clienteId, dataEnvio, status, nps_classificacao, token, criadoEm, atualizadoEm)
+      (empresa_id, cliente_id, data_envio, status, nps_classificacao, token, criado_em, atualizado_em)
       VALUES (?, ?, ?, 'enviado', 'sem_resposta', ?, ?, ?)
     `, [empId, clienteId, now, token, now, now]);
 
@@ -598,7 +598,7 @@ router.post('/gerar-para-cliente', autenticarToken, async (req, res) => {
 });
 
 // Salva pesquisa manual (preenchimento manual)
-router.post('/manual', autenticarToken, async (req, res) => {
+router.post('/manual', verifyToken, async (req, res) => {
   try {
     const { clienteId, dataEnvio, dataResposta, nota, comentario, status, nps_classificacao } = req.body;
     
@@ -607,9 +607,9 @@ router.post('/manual', autenticarToken, async (req, res) => {
     }
 
     // Busca empresaId do cliente
-    const [cli] = await db.query('SELECT empresaId FROM clientes WHERE id = ?', [clienteId]);
+    const [cli] = await db.query('SELECT empresa_id FROM clientes WHERE id = ?', [clienteId]);
     if (!cli.length) return res.status(404).json({ error: 'Cliente não encontrado' });
-    const empresaId = cli[0].empresaId;
+    const empresaId = cli[0].empresa_id;
 
     // Verifica se a empresa optou por pesquisa de satisfação
     const [empresaPesquisa] = await db.query('SELECT pesquisaSatisfacaoAtiva FROM empresas WHERE id = ?', [empresaId]);
@@ -622,7 +622,7 @@ router.post('/manual', autenticarToken, async (req, res) => {
 
     await db.query(`
       INSERT INTO pesquisas_satisfacao
-      (empresaId, clienteId, dataEnvio, dataResposta, nota, comentario, status, nps_classificacao, token, criadoEm, atualizadoEm)
+      (empresa_id, cliente_id, data_envio, data_resposta, nota, comentario, status, nps_classificacao, token, criado_em, atualizado_em)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       empresaId, 
@@ -651,9 +651,9 @@ router.get('/info/:token', async (req, res) => {
   try {
     // Busca a pesquisa pelo token
     const [[pesquisa]] = await db.query(
-      `SELECT p.empresaId, e.logo_url, e.razaoSocial
+      `SELECT p.empresa_id, e.logo_url, e.razaoSocial
        FROM pesquisas_satisfacao p
-       JOIN empresas e ON p.empresaId = e.id
+       JOIN empresas e ON p.empresa_id = e.id
        WHERE p.token = ?
        LIMIT 1`,
       [token]
@@ -662,7 +662,7 @@ router.get('/info/:token', async (req, res) => {
       return res.status(404).json({ error: 'Pesquisa não encontrada para este token.' });
     }
     res.json({
-      empresaId: pesquisa.empresaId,
+      empresaId: pesquisa.empresa_id,
       logo_url: pesquisa.logo_url,
       razaoSocial: pesquisa.razaoSocial,
       nome: pesquisa.nome
@@ -674,7 +674,7 @@ router.get('/info/:token', async (req, res) => {
 });
 
 // Nova rota: Enviar pesquisas de satisfação para franqueados selecionados
-router.post('/enviar-para-franqueados', autenticarToken, async (req, res) => {
+router.post('/enviar-para-franqueados', verifyToken, async (req, res) => {
   try {
     const { franqueadoIds, enviarParaTodos, empresaId } = req.body;
     
@@ -695,9 +695,11 @@ router.post('/enviar-para-franqueados', autenticarToken, async (req, res) => {
     let franqueadosParaEnviar = [];
 
     if (enviarParaTodos) {
-      // Buscar todos os franqueados ativos da empresa
+      // Buscar todos os franqueados ativos da empresa (empresas com tipo_empresa = 'franqueado')
       const [todosFranqueados] = await db.query(
-        'SELECT id, nome, telefone_principal, email FROM franqueados WHERE franqueadora_id = ? AND situacao = "ativo"',
+        `SELECT id, nome, razaoSocial, logo_url 
+         FROM empresas 
+         WHERE tipo_empresa = 'franqueado' AND franqueadora_id = ?`,
         [empresaId]
       );
       franqueadosParaEnviar = todosFranqueados;
@@ -705,7 +707,8 @@ router.post('/enviar-para-franqueados', autenticarToken, async (req, res) => {
       // Buscar franqueados específicos
       const placeholders = franqueadoIds.map(() => '?').join(',');
       const [franqueadosSelecionados] = await db.query(
-        `SELECT id, nome, telefone_principal, email FROM franqueados WHERE id IN (${placeholders}) AND franqueadora_id = ?`,
+        `SELECT id, nome, razaoSocial, logo_url 
+         FROM empresas WHERE tipo_empresa = 'franqueado' AND id IN (${placeholders}) AND franqueadora_id = ?`,
         [...franqueadoIds, empresaId]
       );
       franqueadosParaEnviar = franqueadosSelecionados;
@@ -819,7 +822,7 @@ router.post('/enviar-para-franqueados', autenticarToken, async (req, res) => {
 
       // Envio via WhatsApp (z-api)
       if (franqueado.telefone_principal) {
-        const numero = franqueado.telefone_principal.replace(/\D/g, "");
+        const numero = String(franqueado.telefone_principal || '').replace(/\D/g, "");
         fetch("https://api.z-api.io/instances/3E49EC6B1CCDE0D5F124026A127A4111/token/A1A276E2FA5A377E1673631F/send-text", {
           method: "POST",
           headers: {
@@ -865,7 +868,7 @@ router.post('/enviar-para-franqueados', autenticarToken, async (req, res) => {
 });
 
 // Nova rota: Enviar pesquisas de satisfação para franqueados com limite de 50
-router.post('/enviar-para-franqueados-limitada', autenticarToken, async (req, res) => {
+router.post('/enviar-para-franqueados-limitada', verifyToken, async (req, res) => {
   try {
     const { franqueadoIds, enviarParaTodos, empresaId } = req.body;
     
@@ -892,15 +895,14 @@ router.post('/enviar-para-franqueados-limitada', autenticarToken, async (req, re
     let franqueadosParaEnviar = [];
 
     if (enviarParaTodos) {
-      // Buscar todos os franqueados ativos com LIMIT 50
+      // Buscar todos os franqueados (empresas com tipo_empresa='franqueado') com LIMIT 50
       const [franqueados] = await db.query(`
-        SELECT id, nome, unidade, telefone_principal, email
-        FROM franqueados 
-        WHERE franqueadora_id = ? AND situacao = 'ativo'
+        SELECT id, razaoSocial AS nome, logo_url
+        FROM empresas 
+        WHERE tipo_empresa = 'franqueado' AND franqueadora_id = ?
         ORDER BY id ASC
         LIMIT 50
       `, [empresaId]);
-      
       franqueadosParaEnviar = franqueados;
     } else if (franqueadoIds && franqueadoIds.length > 0) {
       // Verificar se não excede o limite de 50
@@ -911,10 +913,10 @@ router.post('/enviar-para-franqueados-limitada', autenticarToken, async (req, re
       // Buscar franqueados específicos
       const placeholders = franqueadoIds.map(() => '?').join(',');
       const [franqueados] = await db.query(`
-        SELECT id, nome, unidade, telefone_principal, email
-        FROM franqueados 
-        WHERE franqueadora_id = ? AND id IN (${placeholders}) AND situacao = 'ativo'
-      `, [empresaId, ...franqueadoIds]);
+        SELECT id, razaoSocial AS nome, logo_url
+        FROM empresas 
+        WHERE tipo_empresa = 'franqueado' AND id IN (${placeholders}) AND franqueadora_id = ?
+      `, [...franqueadoIds, empresaId]);
       
       franqueadosParaEnviar = franqueados;
     } else {
@@ -1076,7 +1078,7 @@ router.post('/enviar-para-franqueados-limitada', autenticarToken, async (req, re
 });
 
 // Nova rota: Enviar pesquisas para franqueados de forma inteligente (pula duplicatas e completa 50 envios)
-router.post('/enviar-para-franqueados-inteligente', autenticarToken, async (req, res) => {
+router.post('/enviar-para-franqueados-inteligente', verifyToken, async (req, res) => {
   try {
     const { empresaId, limite = 50, franqueadoId } = req.body;
     
@@ -1116,9 +1118,9 @@ router.post('/enviar-para-franqueados-inteligente', autenticarToken, async (req,
     if (franqueadoId) {
       // Buscar franqueado específico
       const [franqueados] = await db.query(`
-        SELECT id, nome, unidade, telefone_principal, email
-        FROM franqueados 
-        WHERE franqueadora_id = ? AND id = ? AND situacao = 'ativo'
+        SELECT id, razaoSocial AS nome, logo_url 
+        FROM empresas 
+        WHERE tipo_empresa = 'franqueado' AND franqueadora_id = ? AND id = ?
         LIMIT 1
       `, [empresaId, franqueadoId]);
 
@@ -1274,7 +1276,7 @@ router.post('/enviar-para-franqueados-inteligente', autenticarToken, async (req,
 
       // Buscar estatísticas finais
       const [totalFranqueados] = await db.query(
-        'SELECT COUNT(*) as total FROM franqueados WHERE franqueadora_id = ? AND situacao = "ativo"',
+        `SELECT COUNT(*) as total FROM empresas WHERE tipo_empresa = 'franqueado' AND franqueadora_id = ?`,
         [empresaId]
       );
 
@@ -1294,9 +1296,9 @@ router.post('/enviar-para-franqueados-inteligente', autenticarToken, async (req,
         franqueadoTeste: {
           id: franqueado.id,
           nome: franqueado.nome,
-          unidade: franqueado.unidade,
-          email: franqueado.email,
-          telefone: franqueado.telefone_principal,
+          unidade: null,
+          email: null,
+          telefone: null,
           link: linkPesquisa
         }
       });
@@ -1306,9 +1308,9 @@ router.post('/enviar-para-franqueados-inteligente', autenticarToken, async (req,
     while (totalEnviados < limite) {
       // Buscar próximo lote de franqueados ativos
       const [franqueados] = await db.query(`
-        SELECT id, nome, unidade, telefone_principal, email
-        FROM franqueados 
-        WHERE franqueadora_id = ? AND situacao = 'ativo'
+        SELECT id, razaoSocial AS nome, logo_url
+        FROM empresas 
+        WHERE tipo_empresa = 'franqueado' AND franqueadora_id = ?
         ORDER BY id ASC
         LIMIT ? OFFSET ?
       `, [empresaId, batchSize, offset]);
@@ -1360,9 +1362,9 @@ router.post('/enviar-para-franqueados-inteligente', autenticarToken, async (req,
         // Preparar payload para webhook
         const payload = {
           nome: franqueado.nome,
-          unidade: franqueado.unidade,
-          telefone: franqueado.telefone_principal,
-          email: franqueado.email,
+          unidade: null,
+          telefone: null,
+          email: null,
           link: linkPesquisa,
           empresa: empresa.razaoSocial,
           logo_url: empresa.logo_url,
@@ -1509,10 +1511,10 @@ router.get('/franqueado/info/:token', async (req, res) => {
   try {
     // Busca a pesquisa de franqueado pelo token
     const [[pesquisa]] = await db.query(
-      `SELECT psf.empresa_id, e.logo_url, e.razaoSocial, f.nome as nome_franqueado, f.unidade
+      `SELECT psf.empresa_id, e.logo_url, e.razaoSocial, ef.razaoSocial as nome_franqueado, NULL as unidade
        FROM pesquisas_satisfacao_franqueados psf
        JOIN empresas e ON psf.empresa_id = e.id
-       JOIN franqueados f ON psf.franqueado_id = f.id
+       JOIN empresas ef ON psf.franqueado_id = ef.id AND ef.tipo_empresa = 'franqueado'
        WHERE psf.token = ? AND psf.status = 'enviado'
        LIMIT 1`,
       [token]
@@ -1648,7 +1650,8 @@ router.post('/franqueado/responder', async (req, res) => {
     
     // Buscar informações do franqueado
     const [[franqueado]] = await db.query(
-      'SELECT nome, telefone_principal, email FROM franqueados WHERE id = ?',
+      `SELECT razaoSocial AS nome, NULL AS telefone_principal, NULL AS email 
+       FROM empresas WHERE id = ? AND tipo_empresa = 'franqueado'`,
       [pesquisa.franqueado_id]
     );
     
@@ -1714,7 +1717,7 @@ router.post('/franqueado/responder', async (req, res) => {
 });
 
 // Rota para buscar estatísticas das pesquisas de franqueados
-router.get('/franqueado/estatisticas/:empresaId', autenticarToken, async (req, res) => {
+router.get('/franqueado/estatisticas/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
@@ -1831,15 +1834,10 @@ router.get('/franqueado/estatisticas/:empresaId', autenticarToken, async (req, r
 });
 
 // Rota para verificar se a empresa é franqueadora e buscar estatísticas das pesquisas de franqueados
-router.get('/franqueadora/estatisticas/:empresaId', autenticarToken, async (req, res) => {
+router.get('/franqueadora/estatisticas/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
-    // Verificar se o usuário tem permissão para a empresa
-    if (req.usuario.empresaId !== parseInt(empresaId) && req.usuario.tipo !== 'admin') {
-      return res.status(403).json({ error: 'Acesso negado.' });
-    }
-
     // Verificar se a empresa é franqueadora
     const [[empresa]] = await db.query(
       'SELECT tipo_empresa FROM empresas WHERE id = ?',
@@ -1927,7 +1925,7 @@ router.get('/franqueadora/estatisticas/:empresaId', autenticarToken, async (req,
 });
 
 // Rota para buscar dados detalhados das pesquisas de franqueados
-router.get('/franqueadora/detalhado/:empresaId', autenticarToken, async (req, res) => {
+router.get('/franqueadora/detalhado/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
@@ -1974,10 +1972,10 @@ router.get('/franqueadora/detalhado/:empresaId', autenticarToken, async (req, re
         psf.utiliza_backoffice_fiscal,
         psf.utiliza_backoffice_contabil,
         psf.nao_utiliza_backoffice,
-        f.nome as franqueado_nome,
-        f.unidade
+        ef.razaoSocial as franqueado_nome,
+        NULL as unidade
       FROM pesquisas_satisfacao_franqueados psf
-      JOIN franqueados f ON psf.franqueado_id = f.id
+      JOIN empresas ef ON psf.franqueado_id = ef.id AND ef.tipo_empresa = 'franqueado'
       WHERE psf.empresa_id = ? AND psf.status = 'respondido'
       ORDER BY psf.data_resposta DESC
     `, [empresaId]);
@@ -1994,7 +1992,7 @@ router.get('/franqueadora/detalhado/:empresaId', autenticarToken, async (req, re
 });
 
 // Rota para buscar histórico de pesquisas de um franqueado específico
-router.get('/franqueado/:franqueadoId/historico', autenticarToken, async (req, res) => {
+router.get('/franqueado/:franqueadoId/historico', verifyToken, async (req, res) => {
   const { franqueadoId } = req.params;
   const empresaId = req.usuario?.empresaId;
   
@@ -2015,7 +2013,7 @@ router.get('/franqueado/:franqueadoId/historico', autenticarToken, async (req, r
 
     // Verificar se o franqueado pertence à empresa
     const [[franqueado]] = await db.query(
-      'SELECT id FROM franqueados WHERE id = ? AND franqueadora_id = ?',
+      `SELECT id FROM empresas WHERE tipo_empresa = 'franqueado' AND id = ? AND franqueadora_id = ?`,
       [franqueadoId, empresaId]
     );
 
@@ -2054,7 +2052,7 @@ router.get('/franqueado/:franqueadoId/historico', autenticarToken, async (req, r
 });
 
 // Rota para buscar franqueados sem resposta
-router.get('/franqueadora/sem-resposta/:empresaId', autenticarToken, async (req, res) => {
+router.get('/franqueadora/sem-resposta/:empresaId', verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   
   try {
@@ -2077,12 +2075,12 @@ router.get('/franqueadora/sem-resposta/:empresaId', autenticarToken, async (req,
     const [franqueadosSemResposta] = await db.query(`
       SELECT 
         f.id,
-        f.nome,
-        f.unidade,
+        f.razaoSocial AS nome,
+        NULL AS unidade,
         psf.data_envio
-      FROM franqueados f
+      FROM empresas f
       INNER JOIN pesquisas_satisfacao_franqueados psf ON f.id = psf.franqueado_id
-      WHERE f.franqueadora_id = ? 
+      WHERE f.tipo_empresa = 'franqueado' AND f.franqueadora_id = ? 
         AND psf.empresa_id = ?
         AND psf.data_resposta IS NULL
         AND psf.status = 'enviado'
@@ -2097,7 +2095,7 @@ router.get('/franqueadora/sem-resposta/:empresaId', autenticarToken, async (req,
 });
 
 // Rota para reenviar pesquisas para franqueados sem resposta
-router.post('/reenviar-pesquisas-franqueados', autenticarToken, async (req, res) => {
+router.post('/reenviar-pesquisas-franqueados', verifyToken, async (req, res) => {
   try {
     const { empresaId, franqueadoIds, reenviarTodos = false } = req.body;
     
@@ -2128,14 +2126,14 @@ router.post('/reenviar-pesquisas-franqueados', autenticarToken, async (req, res)
       const [franqueados] = await db.query(`
         SELECT 
           f.id,
-          f.nome,
-          f.unidade,
-          f.telefone_principal,
-          f.email,
+          f.razaoSocial AS nome,
+          NULL AS unidade,
+          NULL AS telefone_principal,
+          NULL AS email,
           psf.id as pesquisa_id
-        FROM franqueados f
+        FROM empresas f
         INNER JOIN pesquisas_satisfacao_franqueados psf ON f.id = psf.franqueado_id
-        WHERE f.franqueadora_id = ? 
+        WHERE f.tipo_empresa = 'franqueado' AND f.franqueadora_id = ? 
           AND psf.empresa_id = ?
           AND psf.data_resposta IS NULL
           AND psf.status = 'enviado'
@@ -2149,14 +2147,14 @@ router.post('/reenviar-pesquisas-franqueados', autenticarToken, async (req, res)
       const [franqueados] = await db.query(`
         SELECT 
           f.id,
-          f.nome,
-          f.unidade,
-          f.telefone_principal,
-          f.email,
+          f.razaoSocial AS nome,
+          NULL AS unidade,
+          NULL AS telefone_principal,
+          NULL AS email,
           psf.id as pesquisa_id
-        FROM franqueados f
+        FROM empresas f
         INNER JOIN pesquisas_satisfacao_franqueados psf ON f.id = psf.franqueado_id
-        WHERE f.franqueadora_id = ? 
+        WHERE f.tipo_empresa = 'franqueado' AND f.franqueadora_id = ? 
           AND psf.empresa_id = ?
           AND f.id IN (${placeholders})
           AND psf.data_resposta IS NULL
@@ -2196,9 +2194,9 @@ router.post('/reenviar-pesquisas-franqueados', autenticarToken, async (req, res)
       // Preparar payload para webhook
       const payload = {
         nome: franqueado.nome,
-        unidade: franqueado.unidade,
-        telefone: franqueado.telefone_principal,
-        email: franqueado.email,
+        unidade: null,
+        telefone: null,
+        email: null,
         link: linkPesquisa,
         empresa: empresa.razaoSocial,
         logo_url: empresa.logo_url,
