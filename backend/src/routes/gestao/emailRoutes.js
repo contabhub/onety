@@ -42,6 +42,21 @@ const {
   tarefaId,
   empresaId,
 } = req.body;
+try {
+  console.log('[EMAIL ENVIAR] BODY FIELDS', {
+    para,
+    cc,
+    co,
+    assunto,
+    nomeUsuario,
+    emailUsuario,
+    obrigacaoId,
+    tarefaId,
+    empresaIdRaw: empresaId,
+    empresaIdFromToken: req.usuario?.empresaId,
+    contentType: req.headers['content-type']
+  });
+} catch {}
 
 // Tratar emailUsuario que pode vir como JSON stringificado
 let emailUsuarioProcessado = emailUsuario;
@@ -72,6 +87,9 @@ if (!para || !assunto || !corpo || (!obrigacaoId && !tarefaId)) {
       filename: file.originalname,
       content: file.buffer,
     }));
+    try {
+      console.log('[EMAIL ENVIAR] ATTACHMENTS', (req.files || []).map(f => ({ name: f.originalname, size: f.size })));
+    } catch {}
 
     // Buscar nome da empresa para usar no "from"
     let nomeEmpresa = null;
@@ -147,9 +165,13 @@ if (!para || !assunto || !corpo || (!obrigacaoId && !tarefaId)) {
       };
 
       try {
+        try {
+          console.log('[EMAIL ENVIAR] SENDING', { index, to: destinatario, from: mailOptions.from, replyTo: mailOptions.replyTo, cc: !!cc, bcc: !!co, hasAttachments: attachments.length > 0 });
+        } catch {}
         await transporter.sendMail(mailOptions);
         return { destinatario, sucesso: true };
       } catch (error) {
+        console.error('[EMAIL ENVIAR] SEND ERROR', { destinatario, error: error?.message, code: error?.code, response: error?.response?.toString?.() });
         return { destinatario, sucesso: false, erro: error.message };
       }
     });

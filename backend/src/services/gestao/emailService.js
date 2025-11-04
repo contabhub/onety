@@ -29,7 +29,7 @@ class EmailService {
       
       // Buscar dados do cliente
       const [[cliente]] = await db.query(
-        `SELECT nome, cnpjCpf FROM clientes WHERE id = ?`,
+        `SELECT razao_social AS nome, cpf_cnpj AS cnpjCpf FROM clientes WHERE id = ?`,
         [tarefaPai.clienteId]
       );
 
@@ -119,7 +119,7 @@ class EmailService {
       
       // Buscar dados do cliente
       const [[cliente]] = await db.query(
-        `SELECT nome, cnpjCpf FROM clientes WHERE id = ?`,
+        `SELECT razao_social AS nome, cpf_cnpj AS cnpjCpf FROM clientes WHERE id = ?`,
         [tarefa.clienteId]
       );
 
@@ -182,7 +182,7 @@ class EmailService {
 
       // Buscar dados do cliente
       const [[cliente]] = await db.query(
-        `SELECT nome, cnpjCpf FROM clientes WHERE id = ?`,
+        `SELECT razao_social AS nome, cpf_cnpj AS cnpjCpf FROM clientes WHERE id = ?`,
         [tarefa.clienteId]
       );
 
@@ -519,7 +519,7 @@ class EmailService {
             </div>
             
             <div class="cta-section">
-              <a href="https://app.cftitan.com.br/tarefas/${tarefa.id}/atividades" class="cta-button">
+              <a href="https://app.cftitan.com.br/gestao/${tarefa.id}/atividades" class="cta-button">
                 Visualizar Tarefa
               </a>
             </div>
@@ -581,7 +581,7 @@ A tarefa sob sua responsabilidade foi *concluída com sucesso*.
 • Empresa: ${empresa?.razaoSocial || 'Não informado'}
 
 Para visualizar todos os detalhes:
-https://app.cftitan.com.br/tarefas/${tarefa.id}/atividades
+https://app.cftitan.com.br/gestao/${tarefa.id}/atividades
 
 *Sistema CF Titan - Gestão de Tarefas*`;
 
@@ -1746,7 +1746,7 @@ https://app.cftitan.com.br/tarefas/${tarefa.id}/atividades
             <h3 style="color: #1e293b; margin-bottom: 16px;">Acessar Suas Tarefas</h3>
             ${subtarefas.map(sub => `
               <div style="margin-bottom: 12px;">
-                <a href="${process.env.FRONTEND_URL || 'https://app.cftitan.com.br'}/tarefas/${sub.id}/atividades" 
+              <a href="${process.env.FRONTEND_URL || 'https://app.cftitan.com.br'}/gestao/${sub.id}/atividades" 
                    style="background: #2563eb; color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; display: inline-block; font-size: 14px;">
                   Acessar: ${sub.assunto}
                 </a>
@@ -1847,7 +1847,7 @@ https://app.cftitan.com.br/tarefas/${tarefa.id}/atividades
           
           <div style="margin-top: 32px;">
             <h3 style="color: #1e293b; margin-bottom: 16px;">Acessar Tarefa</h3>
-            <a href="${process.env.FRONTEND_URL || 'https://app.cftitan.com.br'}/tarefas/${tarefa.id}/atividades" 
+            <a href="${process.env.FRONTEND_URL || 'https://app.cftitan.com.br'}/gestao/${tarefa.id}/atividades" 
                style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-size: 16px; font-weight: bold;">
               Acessar Tarefa
             </a>
