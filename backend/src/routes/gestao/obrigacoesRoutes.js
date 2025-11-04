@@ -1979,7 +1979,7 @@ router.put("/atividades/:id", verifyToken, async (req, res) => {
   try {
     await db.query(`
       UPDATE atividades_obrigacao 
-      SET tipo = ?, texto = ?, descricao = ?, tipoCancelamento = ?, ordem = ?, pdf_layout_id = ?, titulo_documento = ?
+      SET tipo = ?, texto = ?, descricao = ?, tipo_cancelamento = COALESCE(?, tipo_cancelamento), ordem = ?, pdf_layout_id = ?, titulo_documento = ?
       WHERE id = ?`,
       [
         tipo, 
