@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
-import { Card } from "@/components/ui/card";
 import { ClienteSelectInline } from "../../components/gestao/ClienteSelectInline";
-import styles from "@/styles/RelatoriosPage.module.css";
+import styles from "../../styles/gestao/RelatoriosPage.module.css";
 import VisaoGeralModal from "../../components/gestao/VisaoGeralModal";
 import * as XLSX from "xlsx";
 import "jspdf-autotable";
@@ -16,22 +15,22 @@ const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
 // Helpers para token e empresa
 const getToken = () => {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("token") || sessionStorage.getItem("token") || "";
 };
 
 const getEmpresaId = () => {
-  if (typeof window === "undefined") return "";
-  try {
-    const raw = localStorage.getItem("userData");
-    if (raw) {
-      const u = JSON.parse(raw);
-      return (
-        u?.EmpresaId || u?.empresaId || u?.empresa_id || u?.companyId || u?.company_id || ""
-      );
-    }
-  } catch {}
-  return sessionStorage.getItem("empresaId") || "";
+    if (typeof window === "undefined") return "";
+    try {
+        const raw = localStorage.getItem("userData");
+        if (raw) {
+            const u = JSON.parse(raw);
+            return (
+                u?.EmpresaId || u?.empresaId || u?.empresa_id || u?.companyId || u?.company_id || ""
+            );
+        }
+    } catch { }
+    return sessionStorage.getItem("empresaId") || "";
 };
 
 
@@ -40,50 +39,50 @@ function ymd(d) {
     if (!d) return null;
     // Garante 'YYYY-MM-DD' mesmo quando vier 'YYYY-MM-DD HH:MM:SS+00'
     return String(d).slice(0, 10);
-  }
-  function lte(a, b) { // a <= b
+}
+function lte(a, b) { // a <= b
     const A = ymd(a), B = ymd(b);
     if (!A || !B) return false;
     return A <= B;
-  }
-  function lt(a, b) { // a < b
+}
+function lt(a, b) { // a < b
     const A = ymd(a), B = ymd(b);
     if (!A || !B) return false;
     return A < B;
-  }
-  function gt(a, b) { // a > b
+}
+function gt(a, b) { // a > b
     const A = ymd(a), B = ymd(b);
     if (!A || !B) return false;
     return A > B;
-  }
-  function gte(a, b) { // a >= b
+}
+function gte(a, b) { // a >= b
     const A = ymd(a), B = ymd(b);
     if (!A || !B) return false;
     return A >= B;
-  }
+}
 
-  // Função para corrigir timezone das datas do backend
-  function corrigirTimezoneData(dataString) {
+// Função para corrigir timezone das datas do backend
+function corrigirTimezoneData(dataString) {
     // Se a data já está no formato YYYY-MM-DD, retorna como está
     if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
-      return dataString;
+        return dataString;
     }
-    
+
     // Se tem T e Z, é formato ISO com timezone
     if (dataString.includes('T') && dataString.includes('Z')) {
-      // O backend já envia no timezone local, só precisamos extrair a data
-      // Remove tudo após o T e retorna só a data
-      return dataString.split('T')[0];
+        // O backend já envia no timezone local, só precisamos extrair a data
+        // Remove tudo após o T e retorna só a data
+        return dataString.split('T')[0];
     }
-    
+
     // Fallback: tenta converter normalmente
     try {
-      const data = new Date(dataString);
-      return data.toISOString().split('T')[0];
+        const data = new Date(dataString);
+        return data.toISOString().split('T')[0];
     } catch {
-      return dataString;
+        return dataString;
     }
-    }
+}
 
 // Estilos personalizados para o Toastify
 const toastStyles = `
@@ -163,9 +162,9 @@ const toastStyles = `
 
 // Injetar os estilos do toast
 if (typeof document !== 'undefined') {
-  const toastStyleElement = document.createElement('style');
-  toastStyleElement.textContent = toastStyles;
-  document.head.appendChild(toastStyleElement);
+    const toastStyleElement = document.createElement('style');
+    toastStyleElement.textContent = toastStyles;
+    document.head.appendChild(toastStyleElement);
 }
 
 export default function RelatoriosPage() {
@@ -180,19 +179,19 @@ export default function RelatoriosPage() {
     const [cliente, setCliente] = useState(null);
     const [usuarios, setUsuarios] = useState([]);
     const [obrigacoes, setObrigacoes] = useState([]);
-    const [obrigacoesList, setObrigacoesList] = useState([]);      
+    const [obrigacoesList, setObrigacoesList] = useState([]);
     const [loadingObrigacoes, setLoadingObrigacoes] = useState(false);
 
     // Novos filtros
     const [colaboradores, setColaboradores] = useState([]);
     const [colaboradoresList, setColaboradoresList] = useState([]);
-    const [loadingColaboradores, setLoadingColaboradores] = useState(false);    
+    const [loadingColaboradores, setLoadingColaboradores] = useState(false);
     const [grupos, setGrupos] = useState([]);
     const [gruposList, setGruposList] = useState([]);
     const [loadingGrupos, setLoadingGrupos] = useState(false);
     const [buscarPor, setBuscarPor] = useState("Departamentos");
     const [tipo, setTipo] = useState("Consolidado");
-    const [resultados, setResultados] = useState([]);        
+    const [resultados, setResultados] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [loadingBusca, setLoadingBusca] = useState(false);
@@ -201,16 +200,16 @@ export default function RelatoriosPage() {
     const [modalAberto, setModalAberto] = useState(false);
     const [tituloModal, setTituloModal] = useState("");
     const [solicitacoesModal, setSolicitacoesModal] = useState([]);
-    
-        // Para modal de detalhes de baixas diárias
+
+    // Para modal de detalhes de baixas diárias
     const [modalBaixasAberto, setModalBaixasAberto] = useState(false);
     const [tituloModalBaixas, setTituloModalBaixas] = useState("");
     const [baixasModal, setBaixasModal] = useState([]);
 
 
     // Estados para "tudo" (mock da API Visão Geral)
-    const [allObrigacoes, setAllObrigacoes] = useState([]);  
-    const [allTarefas, setAllTarefas] = useState([]);        
+    const [allObrigacoes, setAllObrigacoes] = useState([]);
+    const [allTarefas, setAllTarefas] = useState([]);
 
     // Mapeamento de campoData para campo real
     const campoDataMap = {
@@ -243,7 +242,7 @@ export default function RelatoriosPage() {
         { value: "dispensada", label: "Dispensadas/Canceladas" }
     ];
 
-        // Estado para controlar a aba ativa do modal
+    // Estado para controlar a aba ativa do modal
     const [abaAtivaModal, setAbaAtivaModal] = useState("obrigacoes");
 
     const [tipoRelatorio, setTipoRelatorio] = useState("performance");
@@ -253,9 +252,9 @@ export default function RelatoriosPage() {
     const [baixasAgrupadas, setBaixasAgrupadas] = useState([]);
 
     // NOVO: Estado para baixas agrupadas por data (formato ideal)
-    const [baixasPorData, setBaixasPorData] = useState([]);     
+    const [baixasPorData, setBaixasPorData] = useState([]);
     const [loadingBaixas, setLoadingBaixas] = useState(false);
-    const [errorBaixas, setErrorBaixas] = useState(null);        
+    const [errorBaixas, setErrorBaixas] = useState(null);
 
     // ADICIONE ESTES ESTADOS PARA USUÁRIOS
     const [usuariosList, setUsuariosList] = useState([]);
@@ -274,19 +273,19 @@ export default function RelatoriosPage() {
             if (!empresaId || !token) return;
             try {
                 const [obrsRes, tarsRes] = await Promise.all([
-                    fetch(`${BASE_URL}/api/obrigacoes/empresa/${empresaId}/todas`, { 
-                        headers: { 
+                    fetch(`${BASE_URL}/gestao/obrigacoes/empresa/${empresaId}/todas`, {
+                        headers: {
                             Authorization: `Bearer ${token}`,
                             "X-Empresa-Id": empresaId,
                             "empresaid": empresaId
-                        } 
+                        }
                     }),
-                    fetch(`${BASE_URL}/api/tarefas/todas/${empresaId}`, { 
-                        headers: { 
+                    fetch(`${BASE_URL}/gestao/tarefas/todas/${empresaId}`, {
+                        headers: {
                             Authorization: `Bearer ${token}`,
                             "X-Empresa-Id": empresaId,
                             "empresaid": empresaId
-                        } 
+                        }
                     })
                 ]);
                 const obrs = await obrsRes.json();
@@ -310,8 +309,8 @@ export default function RelatoriosPage() {
             const empresaId = getEmpresaId();
             if (!empresaId || !token) return;
             try {
-                const res = await fetch(`${BASE_URL}/api/departamentos/empresa/${empresaId}/nomes`, {
-                    headers: { 
+                const res = await fetch(`${BASE_URL}/gestao/departamentos/empresa/${empresaId}/nomes`, {
+                    headers: {
                         Authorization: `Bearer ${token}`,
                         "X-Empresa-Id": empresaId,
                         "empresaid": empresaId
@@ -332,22 +331,22 @@ export default function RelatoriosPage() {
             const token = getToken();
             const empresaId = getEmpresaId();
             if (!empresaId || !token) return;
-            
+
             setLoadingObrigacoes(true);
             try {
-                const res = await fetch(`${BASE_URL}/api/obrigacoes/empresa/${empresaId}`, {
+                const res = await fetch(`${BASE_URL}/gestao/obrigacoes/empresa/${empresaId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                
-                let obrigacoesFiltradas = res.data || [];
-                
+                const data = await res.json();
+                let obrigacoesFiltradas = data || [];
+
                 // Se há filtro de departamento, filtrar as obrigações
                 if (departamentos.length > 0) {
-                    obrigacoesFiltradas = obrigacoesFiltradas.filter((obrigacao) => 
+                    obrigacoesFiltradas = obrigacoesFiltradas.filter((obrigacao) =>
                         departamentos.includes(obrigacao.departamentoId)
                     );
                 }
-                
+
                 setObrigacoesList(obrigacoesFiltradas);
             } catch (err) {
                 console.error("Erro ao carregar obrigações:", err);
@@ -365,28 +364,31 @@ export default function RelatoriosPage() {
             const token = getToken();
             const empresaId = getEmpresaId();
             if (!empresaId || !token) return;
-            
+
             setLoadingColaboradores(true);
             try {
                 let colaboradoresFiltrados = [];
-                
+
                 // SEMPRE respeitar o filtro de departamento primeiro
                 if (departamentos.length > 0) {
                     // Filtrar por departamento selecionado
-                    const res = await fetch(`${BASE_URL}/api/usuarios/departamento/${departamentos[0]}`, {
+                    const res = await fetch(`${BASE_URL}/gestao/departamentos/${departamentos[0]}/usuarios`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
-                    colaboradoresFiltrados = res.data || [];
+                    const data = await res.json();
+                    colaboradoresFiltrados = data || [];
                 } else {
                     // Se não há filtro de departamento, buscar todos os usuários da empresa
-                    const res = await fetch(`${BASE_URL}/api/usuarios/empresa/${empresaId}`, {
+                    // Nota: A rota /usuarios retorna { data: [...], page, limit, total }
+                    const res = await fetch(`${BASE_URL}/usuarios`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
-                    colaboradoresFiltrados = res.data || [];
+                    const responseData = await res.json();
+                    colaboradoresFiltrados = responseData?.data || [];
                 }
-                
+
                 setColaboradoresList(colaboradoresFiltrados);
-                
+
                 // IMPORTANTE: Limpar colaboradores selecionados se não estiverem mais disponíveis
                 // Isso garante que o filtro de departamento sempre funcione
                 if (colaboradores.length > 0) {
@@ -412,17 +414,18 @@ export default function RelatoriosPage() {
             const token = getToken();
             const empresaId = getEmpresaId();
             if (!empresaId || !token) return;
-            
+
             setLoadingGrupos(true);
             try {
-                const res = await fetch(`${BASE_URL}/api/relatorios/clientes/grupos/empresa/${empresaId}`, {
+                const res = await fetch(`${BASE_URL}/gestao/relatorios/clientes/grupos/empresa/${empresaId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setGruposList(res.data || []);
-                
+                const data = await res.json();
+                setGruposList(data || []);
+
                 // Limpar grupos selecionados se não estiverem mais disponíveis
                 if (grupos.length > 0) {
-                    const gruposDisponiveis = res.data.map((g) => g.id);
+                    const gruposDisponiveis = data.map((g) => g.id);
                     const gruposValidos = grupos.filter(id => gruposDisponiveis.includes(id));
                     if (gruposValidos.length !== grupos.length) {
                         setGrupos(gruposValidos);
@@ -440,10 +443,10 @@ export default function RelatoriosPage() {
 
     // Estado para armazenar clientes filtrados por grupo
     const [clientesPorGrupo, setClientesPorGrupo] = useState({});
-    
+
     // Estado para armazenar obrigações filtradas por usuário
     const [obrigacoesPorUsuario, setObrigacoesPorUsuario] = useState({});
-    
+
     // NOVO: Estado para armazenar dados filtrados por grupo (clientes + obrigações)
     const [dadosPorGrupo, setDadosPorGrupo] = useState([]);
 
@@ -462,14 +465,16 @@ export default function RelatoriosPage() {
 
             try {
                 // ROTA EXISTENTE: Buscar clientes E suas obrigações por grupo
-                const res = await fetch(`${BASE_URL}/api/relatorios/tarefas/por-grupo/${empresaId}`, {
-                    params: { grupos },
+                const gruposQuery = grupos.length > 0 ? `?grupos=${grupos.join(',')}` : '';
+                const res = await fetch(`${BASE_URL}/gestao/relatorios/tarefas/por-grupo/${empresaId}${gruposQuery}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
+                const data = await res.json();
 
                 // Manter compatibilidade com o código existente
                 const clientesMap = {};
-                res.data.forEach((grupo) => {
+                const gruposData = Array.isArray(data) ? data : [];
+                gruposData.forEach((grupo) => {
                     grupo.clientes.forEach((cliente) => {
                         if (!clientesMap[grupo.grupoId]) {
                             clientesMap[grupo.grupoId] = [];
@@ -479,8 +484,8 @@ export default function RelatoriosPage() {
                 });
 
                 setClientesPorGrupo(clientesMap);
-                setDadosPorGrupo(res.data);
-                console.log('[Grupos] Dados completos por grupo:', res.data);
+                setDadosPorGrupo(gruposData);
+                console.log('[Grupos] Dados completos por grupo:', gruposData);
             } catch (err) {
                 console.error("Erro ao carregar dados por grupo:", err);
                 setClientesPorGrupo({});
@@ -502,16 +507,17 @@ export default function RelatoriosPage() {
                 // Se há usuários selecionados, buscar obrigações específicas
                 if (colaboradores.length > 0) {
                     const obrigacoesMap = {};
-                    
+
                     // Buscar obrigações para cada usuário selecionado
                     for (const usuarioId of colaboradores) {
-                        const res = await fetch(`${BASE_URL}/api/relatorios/obrigacoes/por-usuario/${empresaId}`, {
-                            params: { usuarioId },
+                        const res = await fetch(`${BASE_URL}/gestao/relatorios/obrigacoes/por-usuario/${empresaId}?usuarioId=${usuarioId}`, {
                             headers: { Authorization: `Bearer ${token}` },
                         });
+                        const data = await res.json();
 
                         // Mapear obrigações para usuários responsáveis
-                        res.data.forEach((item) => {
+                        const obrigacoesData = Array.isArray(data) ? data : [];
+                        obrigacoesData.forEach((item) => {
                             if (!obrigacoesMap[item.obrigacaoClienteId]) {
                                 obrigacoesMap[item.obrigacaoClienteId] = [];
                             }
@@ -533,8 +539,8 @@ export default function RelatoriosPage() {
         loadObrigacoesPorUsuario();
     }, [colaboradores]); // Executa quando colaboradores mudam
 
-     // ADICIONE ESTE NOVO USEEFFECT
-     useEffect(() => {
+    // ADICIONE ESTE NOVO USEEFFECT
+    useEffect(() => {
         if (tipoRelatorio === "baixas-diarias" && periodoInicioBaixas && periodoFimBaixas) {
             buscarBaixasDiarias();
         }
@@ -547,13 +553,13 @@ export default function RelatoriosPage() {
     }
 
     function abrirModalSolicitacoes(filtro, titulo) {
-        
+
         console.log('[DEBUG] abrirModalSolicitacoes chamada:', { filtro, titulo, tipoTarefa });
-        
+
         // IMPORTANTE: Usar os dados JÁ FILTRADOS pelos filtros globais!
         // Isso garante que os filtros de colaborador e grupo já foram aplicados
         let lista = [];
-        
+
         // Aplicar os mesmos filtros globais que foram aplicados na função filtrarLocal
         if (tipoTarefa === "obrigacoes") {
             lista = [...allObrigacoes];
@@ -562,21 +568,21 @@ export default function RelatoriosPage() {
             lista = [...allTarefas];
             console.log('[DEBUG] Usando allTarefas, quantidade:', allTarefas.length);
         }
-        
-                // IMPORTANTE: DEPARTAMENTO SEMPRE é aplicado primeiro!
+
+        // IMPORTANTE: DEPARTAMENTO SEMPRE é aplicado primeiro!
         // Filtrar por departamento sempre que estiver selecionado
         if (departamentos.length > 0) {
             lista = lista.filter(o => departamentos.includes(Number(o.departamentoId)));
         }
-        
+
         // Depois filtrar por colaborador (se selecionado)
         if (colaboradores.length > 0) {
             if (tipoTarefa === "obrigacoes") {
-            lista = lista.filter(o => {
+                lista = lista.filter(o => {
                     if (!o.id) return false;
                     const obrigacaoClienteId = o.id;
                     if (!obrigacoesPorUsuario[obrigacaoClienteId]) return false;
-                    return obrigacoesPorUsuario[obrigacaoClienteId].some(usuarioId => 
+                    return obrigacoesPorUsuario[obrigacaoClienteId].some(usuarioId =>
                         colaboradores.includes(usuarioId)
                     );
                 });
@@ -584,13 +590,13 @@ export default function RelatoriosPage() {
                 lista = lista.filter(o => colaboradores.includes(Number(o.responsavelId)));
             }
         }
-        
+
         // Filtrar por grupos
         if (grupos.length > 0) {
             lista = lista.filter(o => {
                 if (!o.clienteId) return false;
                 const clienteId = Number(o.clienteId);
-                return Object.values(clientesPorGrupo).some(clientesDoGrupo => 
+                return Object.values(clientesPorGrupo).some(clientesDoGrupo =>
                     clientesDoGrupo.includes(clienteId)
                 );
             });
@@ -598,17 +604,17 @@ export default function RelatoriosPage() {
 
         // IMPORTANTE: Os filtros globais (período, cliente, obrigações) já foram aplicados acima!
         // Agora só aplicamos o filtro específico do modal (departamento + status)
-        
+
         // APLICAR FILTROS GLOBAIS QUE FORAM APLICADOS NA FUNÇÃO filtrarLocal
         console.log('[DEBUG] Aplicando filtros globais:', { cliente, periodoInicial, periodoFinal, obrigacoes });
-        
+
         // Filtro por cliente
         if (cliente) {
             const antes = lista.length;
             lista = lista.filter(o => String(o.clienteId) === cliente);
             console.log('[DEBUG] Filtro cliente:', antes, '->', lista.length);
         }
-        
+
         // Filtro por período
         if (periodoInicial) {
             const antes = lista.length;
@@ -660,14 +666,14 @@ export default function RelatoriosPage() {
             }
             console.log('[DEBUG] Filtro período final:', antes, '->', lista.length);
         }
-        
+
         // Filtro por obrigações
         if (obrigacoes.length > 0) {
             const antes = lista.length;
             lista = lista.filter(o => obrigacoes.includes(Number(o.obrigacaoId)));
             console.log('[DEBUG] Filtro obrigações:', antes, '->', lista.length);
         }
-        
+
         // Sempre filtra pelo departamento, se houver
         if (filtro.departamentoId !== undefined) {
             const antes = lista.length;
@@ -711,12 +717,12 @@ export default function RelatoriosPage() {
                         if (!t.dataConclusao && !t.dataBaixa) return false;
                         const dataConclusao = t.dataConclusao ?? t.dataBaixa;
                         if (!dataConclusao || !t.dataMeta) return false;
-                        
+
                         // CORREÇÃO: Usar ymd() para comparar apenas a data (ignorar horário)
                         const conclusao = ymd(dataConclusao);
                         const meta = ymd(t.dataMeta);
                         const resultado = lte(conclusao, meta);
-                        
+
                         console.log('[DEBUG] abrirModalSolicitacoes - concluida_na_meta:', {
                             id: t.id,
                             dataConclusao: dataConclusao,
@@ -726,7 +732,7 @@ export default function RelatoriosPage() {
                             resultado: resultado,
                             explicacao: resultado ? 'ATÉ A META' : 'FORA DA META'
                         });
-                        
+
                         return resultado;
                     });
                 } else if (filtro.status === "concluida_fora_meta") {
@@ -735,14 +741,14 @@ export default function RelatoriosPage() {
                         if (!t.dataConclusao && !t.dataBaixa) return false;
                         const dataConclusao = t.dataConclusao ?? t.dataBaixa;
                         if (!dataConclusao || !t.dataMeta || !t.dataPrazo) return false;
-                        
+
                         // CORREÇÃO: Usar a mesma lógica da função agruparPorDepartamento
                         // Concluída fora da meta = passou da meta MAS não passou do prazo
                         const conclusao = ymd(dataConclusao);
                         const meta = ymd(t.dataMeta);
                         const prazo = ymd(t.dataPrazo);
                         const resultado = gt(conclusao, meta) && lt(conclusao, prazo);
-                        
+
                         console.log('[DEBUG] abrirModalSolicitacoes - concluida_fora_meta:', {
                             id: t.id,
                             dataConclusao: dataConclusao,
@@ -754,7 +760,7 @@ export default function RelatoriosPage() {
                             resultado: resultado,
                             explicacao: resultado ? 'FORA DA META MAS DENTRO DO PRAZO' : 'NÃO SE APLICA'
                         });
-                        
+
                         return resultado;
                     });
                 } else if (filtro.status === "concluida_fora_prazo") {
@@ -763,12 +769,12 @@ export default function RelatoriosPage() {
                         if (!t.dataConclusao && !t.dataBaixa) return false;
                         const dataConclusao = t.dataConclusao ?? t.dataBaixa;
                         if (!dataConclusao || !t.dataPrazo) return false;
-                        
+
                         // CORREÇÃO: Usar ymd() para comparar apenas a data (ignorar horário)
                         const conclusao = ymd(dataConclusao);
                         const prazo = ymd(t.dataPrazo);
                         const resultado = gt(conclusao, prazo); // Usar a função gt que já normaliza as datas
-                        
+
                         console.log('[DEBUG] abrirModalSolicitacoes - concluida_fora_prazo:', {
                             id: t.id,
                             dataConclusao: dataConclusao,
@@ -778,7 +784,7 @@ export default function RelatoriosPage() {
                             resultado: resultado,
                             explicacao: resultado ? 'APÓS PRAZO' : 'DENTRO DO PRAZO'
                         });
-                        
+
                         // Após prazo = estritamente maior que o prazo (igualdade NÃO é atraso)
                         return resultado;
                     });
@@ -816,7 +822,7 @@ export default function RelatoriosPage() {
                 }
             }
         }
-        
+
         console.log('[DEBUG] Modal - Tarefas após classificação por status:', lista.length);
 
         const listaPadronizada = lista.map(t => ({
@@ -826,7 +832,7 @@ export default function RelatoriosPage() {
             tipo: t.tipo ?? (tipoTarefa === "obrigacoes" ? "obrigacao" : "tarefa"),
             departamento: t.departamento ?? t.departamentoNome ?? "",
         }));
-        
+
         console.log('[DEBUG] Tipo definido para os itens:', tipoTarefa === "obrigacoes" ? "obrigacao" : "tarefa");
         console.log('[DEBUG] Primeiro item da lista:', listaPadronizada[0]);
 
@@ -834,7 +840,7 @@ export default function RelatoriosPage() {
         console.log('[DEBUG] Lista padronizada final:', listaPadronizada.length, 'itens');
         console.log('[DEBUG] Dados do modal - quantidade:', listaPadronizada.length);
         console.log('[DEBUG] Primeiros 3 itens:', listaPadronizada.slice(0, 3));
-        
+
         if (listaPadronizada.length > 0) {
             setSolicitacoesModal(listaPadronizada);
             setTituloModal(titulo);
@@ -866,27 +872,27 @@ export default function RelatoriosPage() {
         if ((t.status || "").toLowerCase() !== "concluída") return false;
         const dataConclusao = t.dataConclusao ?? t.dataBaixa;
         if (!dataConclusao) return false;
-        
+
         // CORREÇÃO: Usar ymd() e lte() para ser consistente com o modal
         const conclusao = ymd(dataConclusao);
-        
+
         // Realizada = concluída dentro de todos os prazos
         if (t.dataAcao && gt(conclusao, ymd(t.dataAcao))) return false;
         if (t.dataMeta && gt(conclusao, ymd(t.dataMeta))) return false;
         if (t.dataPrazo && gt(conclusao, ymd(t.dataPrazo))) return false;
-        
+
         return true;
     }
     function isConcluidaNaMetaSolic(t) {
         if ((t.status || "").toLowerCase() !== "concluída") return false;
         const dataConclusao = t.dataConclusao ?? t.dataBaixa;
         if (!dataConclusao || !t.dataMeta) return false;
-        
+
         // CORREÇÃO: Usar ymd() e lte() para ser consistente com o modal
         const conclusao = ymd(dataConclusao);
         const meta = ymd(t.dataMeta);
         const resultado = lte(conclusao, meta);
-        
+
         console.log('[DEBUG] isConcluidaNaMetaSolic:', {
             id: t.id,
             dataConclusao: dataConclusao,
@@ -896,7 +902,7 @@ export default function RelatoriosPage() {
             resultado: resultado,
             explicacao: resultado ? 'ATÉ A META' : 'FORA DA META'
         });
-        
+
         return resultado;
     }
     function isConcluidaForaMetaSolic(t) {
@@ -1051,46 +1057,46 @@ export default function RelatoriosPage() {
     // Funções ESPECÍFICAS para obrigações
     function todayYMD() {
         return ymd(new Date().toISOString());
-      }
-      
+    }
+
     function isAbertaObr(item, campoDataBase) {
         if ((item.status || "").toLowerCase() !== "pendente") return false;
-          const now = todayYMD();
-          const base = item[campoDataBase] ?? null;
-          if (base) return gte(base, now);
-          // Fallback
-          const acao = item.dataAcao ?? null;
-          const meta = item.dataMeta ?? null;
-          const venc = item.vencimento ?? null;
-          return (!acao || gte(acao, now)) || (!meta || gte(meta, now)) || (!venc || gte(venc, now));
+        const now = todayYMD();
+        const base = item[campoDataBase] ?? null;
+        if (base) return gte(base, now);
+        // Fallback
+        const acao = item.dataAcao ?? null;
+        const meta = item.dataMeta ?? null;
+        const venc = item.vencimento ?? null;
+        return (!acao || gte(acao, now)) || (!meta || gte(meta, now)) || (!venc || gte(venc, now));
     }
 
     function isAtrasadaObr(item, campoDataBase) {
         if ((item.status || "").toLowerCase() !== "pendente") return false;
-          const now = todayYMD();
-          const base = item[campoDataBase] ?? null;
-          if (base) return lt(base, now);
-          const acao = item.dataAcao ?? null;
-          const meta = item.dataMeta ?? null;
-          const venc = item.vencimento ?? null;
-          // "Alguma delas já passou" → atrasou
-          return (acao && lt(acao, now)) || (meta && lt(meta, now)) || (venc && lt(venc, now));
+        const now = todayYMD();
+        const base = item[campoDataBase] ?? null;
+        if (base) return lt(base, now);
+        const acao = item.dataAcao ?? null;
+        const meta = item.dataMeta ?? null;
+        const venc = item.vencimento ?? null;
+        // "Alguma delas já passou" → atrasou
+        return (acao && lt(acao, now)) || (meta && lt(meta, now)) || (venc && lt(venc, now));
     }
 
     function isRealizadaObr(item, campoDataBase) {
         if (!statusConcluidaObr(item.status)) return false;
-    
+
         const dtEnt = item.dataEntregaFinal ?? item.dataBaixa ?? null;
         if (!dtEnt) return false;
-    
-        const base  = item[campoDataBase] ?? null; // pode ser meta ou vencimento
-        const acao  = item.dataAcao ?? null;
-        const meta  = item.dataMeta ?? null;
-        const venc  = item.vencimento ?? null;
-    
+
+        const base = item[campoDataBase] ?? null; // pode ser meta ou vencimento
+        const acao = item.dataAcao ?? null;
+        const meta = item.dataMeta ?? null;
+        const venc = item.vencimento ?? null;
+
         // Se houve escolha de base (ex.: "dataMeta" ou "vencimento"), respeite-a
         if (base) return lte(dtEnt, base);
-    
+
         // Caso padrão: "realizada" significa concluída até TODAS as datas existentes
         // (igualdade conta como dentro do prazo/meta)
         const okAcao = !acao || lte(dtEnt, acao);
@@ -1101,11 +1107,11 @@ export default function RelatoriosPage() {
 
     function isConcluidaNaMetaObr(item, campoDataBase) {
         if (!statusConcluidaObr(item.status)) return false;
-    
+
         const dtEnt = item.dataEntregaFinal ?? item.dataBaixa ?? null;
-        const meta  = item.dataMeta ?? null;
+        const meta = item.dataMeta ?? null;
         if (!dtEnt || !meta) return false;
-    
+
         // Se a base for "dataMeta", use-a explicitamente
         if (campoDataBase === "dataMeta" && item[campoDataBase]) {
             return lte(dtEnt, item[campoDataBase]);
@@ -1115,12 +1121,12 @@ export default function RelatoriosPage() {
 
     function isConcluidaForaMetaObr(item, campoDataBase) {
         if (!statusConcluidaObr(item.status)) return false;
-    
+
         const dtEnt = item.dataEntregaFinal ?? item.dataBaixa ?? null;
-        const meta  = item.dataMeta ?? null;
-        const venc  = item.vencimento ?? null;
+        const meta = item.dataMeta ?? null;
+        const venc = item.vencimento ?? null;
         if (!dtEnt || !meta || !venc) return false;
-    
+
         // Fora da meta = passou da meta, mas NÃO passou do prazo.
         // Igual ao prazo conta como fora da meta (e não atraso).
         if (campoDataBase === "dataMeta" && item[campoDataBase]) {
@@ -1131,11 +1137,11 @@ export default function RelatoriosPage() {
 
     function isConcluidaAposPrazoObr(item, campoDataBase) {
         if (!statusConcluidaObr(item.status)) return false;
-    
+
         const dtEnt = item.dataEntregaFinal ?? item.dataBaixa ?? null;
-        const venc  = item.vencimento ?? null;
+        const venc = item.vencimento ?? null;
         if (!dtEnt || !venc) return false; // <<< nunca considerar "após prazo" sem os 2 lados
-    
+
         // DEBUG: Log para verificar a lógica de obrigações
         const resultado = gt(dtEnt, venc);
         console.log('[DEBUG] isConcluidaAposPrazoObr:', {
@@ -1146,7 +1152,7 @@ export default function RelatoriosPage() {
             resultado: resultado,
             explicacao: resultado ? 'APÓS PRAZO' : 'DENTRO DO PRAZO'
         });
-    
+
         // Após prazo = estritamente maior que o prazo (igualdade NÃO é atraso)
         if (campoDataBase === "dataMeta" && item[campoDataBase]) {
             // A base não muda o critério de atraso; só garante que "igual" não jogue para cá
@@ -1154,174 +1160,174 @@ export default function RelatoriosPage() {
         }
         return resultado;
     }
-    
 
-        // ADICIONE ESTA NOVA FUNÇÃO
-        async function buscarBaixasDiarias() {
-            if (!periodoInicioBaixas || !periodoFimBaixas) return;
-            
-            setLoadingBaixas(true);
-            setErrorBaixas(null);
-            
-            const token = getToken();
-            const empresaId = getEmpresaId();
-            
-            if (!empresaId || !token) {
-                setErrorBaixas("Token ou empresa não encontrados");
-                setLoadingBaixas(false);
-                return;
-            }
-    
-            try {
-                        // Buscar baixas diárias (formato ideal: agrupadas por data)
-        console.log('[DEBUG] Estado atual:', { 
-            empresaId, 
-            periodoInicio: periodoInicioBaixas, 
-            periodoFim: periodoFimBaixas, 
-            departamentos, 
-            usuariosSelecionados,
-            colaboradoresList: colaboradoresList.map(c => ({ id: c.id, nome: c.nome }))
-        });
-        
-                const resBaixas = await fetch(`${BASE_URL}/api/relatorios/baixas-diarias`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                        "X-Empresa-Id": empresaId,
-                        "empresaid": empresaId
-                    },
-                    body: JSON.stringify({
-                        empresaId,
-                        periodoInicio: periodoInicioBaixas,
-                        periodoFim: periodoFimBaixas,
-                        departamentos: departamentos,
-                        usuarios: usuariosSelecionados
-                    })
-                });
-                
-                const baixasData = await resBaixas.json();
-    
-        console.log('[DEBUG] Resposta do backend:', baixasData);
 
-        // NOVO: Se o backend retornar no formato ideal (agrupado por data)
-        if (baixasData.baixasPorData) {
-            setBaixasPorData(baixasData.baixasPorData);
-            setUniversoResumo(baixasData.universoResumo || []);
-            setBaixasAgrupadas([]); // Limpar formato legado
+    // ADICIONE ESTA NOVA FUNÇÃO
+    async function buscarBaixasDiarias() {
+        if (!periodoInicioBaixas || !periodoFimBaixas) return;
+
+        setLoadingBaixas(true);
+        setErrorBaixas(null);
+
+        const token = getToken();
+        const empresaId = getEmpresaId();
+
+        if (!empresaId || !token) {
+            setErrorBaixas("Token ou empresa não encontrados");
             setLoadingBaixas(false);
             return;
         }
 
-        // LEGADO: Processar formato antigo se necessário
-                setBaixasDiarias(baixasData.baixasAgrupadas || []);
-                
-                // Buscar tarefas restantes (pendentes) até o período fim
-                const resRestantes = await fetch(`${BASE_URL}/api/relatorios/empresa/${empresaId}/pendentes-mes?periodoFim=${periodoFimBaixas}&departamentos=${departamentos.join(',')}&usuarios=${usuariosSelecionados.join(',')}`, {
-                    headers: { 
-                        Authorization: `Bearer ${token}`,
-                        "X-Empresa-Id": empresaId,
-                        "empresaid": empresaId
-                    }
-                });
-                
-                const restantesData = await resRestantes.json();
-    
-                // Processar e agrupar as baixas para o relatório
-                const agrupadas = processarBaixasAgrupadas(
-                    baixasData.baixasAgrupadas || [], 
-                    restantesData.pendentesAgrupados || []
-                );
-                setBaixasAgrupadas(agrupadas);
-            } catch (err) {
-                console.error("Erro ao buscar baixas diárias:", err);
-                setErrorBaixas(err.response?.data?.error || "Erro ao buscar baixas diárias");
-            } finally {
-                setLoadingBaixas(false);
-            }
-        }
+        try {
+            // Buscar baixas diárias (formato ideal: agrupadas por data)
+            console.log('[DEBUG] Estado atual:', {
+                empresaId,
+                periodoInicio: periodoInicioBaixas,
+                periodoFim: periodoFimBaixas,
+                departamentos,
+                usuariosSelecionados,
+                colaboradoresList: colaboradoresList.map(c => ({ id: c.id, nome: c.nome }))
+            });
 
-        // ADICIONE ESTA FUNÇÃO PARA PROCESSAR E AGRUPAR AS BAIXAS
-        function processarBaixasAgrupadas(dados, tarefasRestantes = []) {
-            const agrupadas = [];
-            
-            dados.forEach(dept => {
-                dept.usuarios.forEach(user => {
-                    // APLICAR FILTRO DE USUÁRIOS SE HOUVER SELEÇÃO
-                    if (usuariosSelecionados.length > 0 && !usuariosSelecionados.includes(user.usuarioId)) {
-                        return; // Pular este usuário se não estiver selecionado
+            const resBaixas = await fetch(`${BASE_URL}/gestao/relatorios/baixas-diarias`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                    "X-Empresa-Id": empresaId,
+                    "empresaid": empresaId
+                },
+                body: JSON.stringify({
+                    empresaId,
+                    periodoInicio: periodoInicioBaixas,
+                    periodoFim: periodoFimBaixas,
+                    departamentos: departamentos,
+                    usuarios: usuariosSelecionados
+                })
+            });
+
+            const baixasData = await resBaixas.json();
+
+            console.log('[DEBUG] Resposta do backend:', baixasData);
+
+            // NOVO: Se o backend retornar no formato ideal (agrupado por data)
+            if (baixasData.baixasPorData) {
+                setBaixasPorData(baixasData.baixasPorData);
+                setUniversoResumo(baixasData.universoResumo || []);
+                setBaixasAgrupadas([]); // Limpar formato legado
+                setLoadingBaixas(false);
+                return;
+            }
+
+            // LEGADO: Processar formato antigo se necessário
+            setBaixasDiarias(baixasData.baixasAgrupadas || []);
+
+            // Buscar tarefas restantes (pendentes) até o período fim
+            const resRestantes = await fetch(`${BASE_URL}/gestao/relatorios/empresa/${empresaId}/pendentes-mes?periodoFim=${periodoFimBaixas}&departamentos=${departamentos.join(',')}&usuarios=${usuariosSelecionados.join(',')}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "X-Empresa-Id": empresaId,
+                    "empresaid": empresaId
+                }
+            });
+
+            const restantesData = await resRestantes.json();
+
+            // Processar e agrupar as baixas para o relatório
+            const agrupadas = processarBaixasAgrupadas(
+                baixasData.baixasAgrupadas || [],
+                restantesData.pendentesAgrupados || []
+            );
+            setBaixasAgrupadas(agrupadas);
+        } catch (err) {
+            console.error("Erro ao buscar baixas diárias:", err);
+            setErrorBaixas(err.response?.data?.error || "Erro ao buscar baixas diárias");
+        } finally {
+            setLoadingBaixas(false);
+        }
+    }
+
+    // ADICIONE ESTA FUNÇÃO PARA PROCESSAR E AGRUPAR AS BAIXAS
+    function processarBaixasAgrupadas(dados, tarefasRestantes = []) {
+        const agrupadas = [];
+
+        dados.forEach(dept => {
+            dept.usuarios.forEach(user => {
+                // APLICAR FILTRO DE USUÁRIOS SE HOUVER SELEÇÃO
+                if (usuariosSelecionados.length > 0 && !usuariosSelecionados.includes(user.usuarioId)) {
+                    return; // Pular este usuário se não estiver selecionado
+                }
+                // Agrupar por obrigação E POR DIA
+                const obrigacoesPorDiaMap = new Map();
+
+                user.baixas.forEach(baixa => {
+                    const obrigacaoId = baixa.obrigacaoId;
+                    const clienteNome = baixa.clienteNome || 'Cliente não identificado';
+
+                    const dataConclusao = baixa.dataConclusao.split('T')[0]; // Pega só a data (YYYY-MM-DD)
+
+                    // Chave única: obrigacaoId + data
+                    const chave = `${obrigacaoId}-${dataConclusao}`;
+
+                    if (!obrigacoesPorDiaMap.has(chave)) {
+                        obrigacoesPorDiaMap.set(chave, {
+                            obrigacaoNome: baixa.obrigacaoNome || 'Obrigação não identificada',
+                            quantidade: 0,
+                            clientes: new Set(),
+                            dataConclusao: dataConclusao
+                        });
                     }
-                                        // Agrupar por obrigação E POR DIA
-                    const obrigacoesPorDiaMap = new Map();
-                    
-                    user.baixas.forEach(baixa => {
-                        const obrigacaoId = baixa.obrigacaoId;
-                        const clienteNome = baixa.clienteNome || 'Cliente não identificado';
-                        
-                        const dataConclusao = baixa.dataConclusao.split('T')[0]; // Pega só a data (YYYY-MM-DD)
-                        
-                        // Chave única: obrigacaoId + data
-                        const chave = `${obrigacaoId}-${dataConclusao}`;
-                        
-                        if (!obrigacoesPorDiaMap.has(chave)) {
-                            obrigacoesPorDiaMap.set(chave, {
-                                obrigacaoNome: baixa.obrigacaoNome || 'Obrigação não identificada',
-                                quantidade: 0,
-                                clientes: new Set(),
-                                dataConclusao: dataConclusao
-                            });
+
+                    const obrigacao = obrigacoesPorDiaMap.get(chave);
+                    obrigacao.quantidade += 1;
+                    obrigacao.clientes.add(clienteNome);
+                });
+
+                // Converter para o formato final
+                obrigacoesPorDiaMap.forEach((obrigacao, chave) => {
+                    const [obrigacaoId, dataConclusao] = chave.split('-');
+
+                    // Calcular tarefas restantes para este usuário e obrigação
+                    let tarefasRestantesCount = 0;
+
+                    // Procurar nas tarefas restantes agrupadas por departamento
+                    const deptRestantes = tarefasRestantes.find((d) => d.departamentoId === dept.departamentoId);
+                    if (deptRestantes) {
+                        // Procurar pelo usuário neste departamento
+                        const userRestantes = deptRestantes.usuarios.find((u) => u.usuarioId === user.usuarioId);
+                        if (userRestantes) {
+                            // Contar obrigações pendentes para esta obrigação específica
+                            tarefasRestantesCount = userRestantes.obrigacoes.filter((obr) =>
+                                obr.obrigacaoId === parseInt(obrigacaoId)
+                            ).length;
                         }
-                        
-                        const obrigacao = obrigacoesPorDiaMap.get(chave);
-                        obrigacao.quantidade += 1;
-                        obrigacao.clientes.add(clienteNome);
+                    }
+
+                    agrupadas.push({
+                        departamentoId: dept.departamentoId,
+                        departamentoNome: dept.departamentoNome,
+                        usuarioId: user.usuarioId,
+                        usuarioNome: user.usuarioNome,
+                        obrigacaoId: parseInt(obrigacaoId),
+                        obrigacaoNome: obrigacao.obrigacaoNome,
+                        quantidade: obrigacao.quantidade,
+                        tarefasRestantes: tarefasRestantesCount,
+                        clientes: Array.from(obrigacao.clientes).sort(),
+                        datasConclusao: [obrigacao.dataConclusao] // Array com apenas uma data
                     });
-                    
-                                         // Converter para o formato final
-                    obrigacoesPorDiaMap.forEach((obrigacao, chave) => {
-                        const [obrigacaoId, dataConclusao] = chave.split('-');
-                         
-                         // Calcular tarefas restantes para este usuário e obrigação
-                         let tarefasRestantesCount = 0;
-                         
-                         // Procurar nas tarefas restantes agrupadas por departamento
-                         const deptRestantes = tarefasRestantes.find((d) => d.departamentoId === dept.departamentoId);
-                         if (deptRestantes) {
-                             // Procurar pelo usuário neste departamento
-                             const userRestantes = deptRestantes.usuarios.find((u) => u.usuarioId === user.usuarioId);
-                             if (userRestantes) {
-                                 // Contar obrigações pendentes para esta obrigação específica
-                                 tarefasRestantesCount = userRestantes.obrigacoes.filter((obr) => 
-                                    obr.obrigacaoId === parseInt(obrigacaoId)
-                                 ).length;
-                             }
-                         }
-                         
-                         agrupadas.push({
-                             departamentoId: dept.departamentoId,
-                             departamentoNome: dept.departamentoNome,
-                             usuarioId: user.usuarioId,
-                             usuarioNome: user.usuarioNome,
-                            obrigacaoId: parseInt(obrigacaoId),
-                             obrigacaoNome: obrigacao.obrigacaoNome,
-                             quantidade: obrigacao.quantidade,
-                             tarefasRestantes: tarefasRestantesCount,
-                             clientes: Array.from(obrigacao.clientes).sort(),
-                            datasConclusao: [obrigacao.dataConclusao] // Array com apenas uma data
-                         });
-                     });
                 });
             });
-            
-            // ORDENAR POR DATA DE CONCLUSÃO (mais antiga primeiro)
-            agrupadas.sort((a, b) => {
-                const dataA = new Date(a.datasConclusao[0]).getTime();
-                const dataB = new Date(b.datasConclusao[0]).getTime();
-                return dataA - dataB;
-            });
-            
-            return agrupadas;
-        }
+        });
+
+        // ORDENAR POR DATA DE CONCLUSÃO (mais antiga primeiro)
+        agrupadas.sort((a, b) => {
+            const dataA = new Date(a.datasConclusao[0]).getTime();
+            const dataB = new Date(b.datasConclusao[0]).getTime();
+            return dataA - dataB;
+        });
+
+        return agrupadas;
+    }
 
     function agruparPorDepartamento(dados, departamentosList, campoDataBase, campoData) {
         const mapIdNome = Object.fromEntries(departamentosList.map(dep => [dep.id, dep.nome]));
@@ -1377,7 +1383,7 @@ export default function RelatoriosPage() {
                     dataMeta: item.dataMeta,
                     dataPrazo: item.dataPrazo
                 });
-                
+
                 if (isAtrasadaSolic(item)) {
                     console.log('[DEBUG] ✅ Classificado como ATRAÇADA');
                     resumo[depId].qtdAtrasadas += 1;
@@ -1418,7 +1424,7 @@ export default function RelatoriosPage() {
             .find(dept => dept.departamentoId === item.departamentoId)
             ?.usuarios.find(user => user.usuarioId === item.usuarioId)
             ?.baixas.filter(baixa => baixa.obrigacaoId === item.obrigacaoId) || [];
-        
+
         // Converter para o formato esperado pelo modal
         const baixasParaModal = baixasDetalhadas.map(baixa => ({
             id: baixa.obrigacaoClienteId,
@@ -1439,7 +1445,7 @@ export default function RelatoriosPage() {
             baixadaAutomaticamente: 0,
             categoria: "Concluída"
         }));
-        
+
         setBaixasModal(baixasParaModal);
         setTituloModalBaixas(`Baixas de ${item.obrigacaoNome} - ${(item.concluidoPorNome || item.usuarioNome)} (${item.departamentoNome})`);
         setModalBaixasAberto(true);
@@ -1449,16 +1455,16 @@ export default function RelatoriosPage() {
     function abrirModalBaixasPorData(data, baixa) {
         // Buscar todas as baixas que correspondem aos critérios
         const baixasParaModal = [];
-        
+
         // Procurar em baixasPorData por todas as baixas que correspondem
         baixasPorData.forEach(grupoData => {
             if (grupoData.data === data) {
                 grupoData.itens.forEach(b => {
                     // Se é o mesmo usuário, obrigação e departamento
-                    if (b.usuarioId === baixa.usuarioId && 
-                        b.obrigacaoId === baixa.obrigacaoId && 
+                    if (b.usuarioId === baixa.usuarioId &&
+                        b.obrigacaoId === baixa.obrigacaoId &&
                         b.departamentoId === baixa.departamentoId) {
-                        
+
                         // Se tem quantidade > 0, criar um item para cada cliente
                         if (b.quantidade > 0) {
                             // Se tem tarefasRestantesDetalhes, usar os dados reais
@@ -1511,7 +1517,7 @@ export default function RelatoriosPage() {
                 });
             }
         });
-        
+
         setBaixasModal(baixasParaModal);
         setTituloModalBaixas(`Baixas de ${baixa.obrigacaoNome} - ${baixa.usuarioNome} (${baixa.departamentoNome}) - ${new Date(data).toLocaleDateString('pt-BR')} - ${baixasParaModal.length} itens`);
         setModalBaixasAberto(true);
@@ -1568,7 +1574,7 @@ export default function RelatoriosPage() {
         // Aguarda o React mostrar o "Buscando..." ANTES de travar com o filtro pesado!
         setTimeout(() => {
             let dados = [...(tipoTarefa === "obrigacoes" ? allObrigacoes : allTarefas)];
-            
+
             console.log('[DEBUG] filtrarLocal - Início:', {
                 tipoTarefa,
                 campoData,
@@ -1578,7 +1584,7 @@ export default function RelatoriosPage() {
                 allTarefas: allTarefas.length,
                 allObrigacoes: allObrigacoes.length
             });
-            
+
             // IMPORTANTE: DEPARTAMENTO SEMPRE é aplicado primeiro!
             // Filtrar por departamento sempre que estiver selecionado
             if (departamentos.length > 0) {
@@ -1586,7 +1592,7 @@ export default function RelatoriosPage() {
                 dados = dados.filter(o => departamentos.includes(Number(o.departamentoId)));
                 console.log('[DEBUG] Filtro departamento:', antes, '->', dados.length);
             }
-            
+
             // Depois filtrar por colaborador (se selecionado)
             if (colaboradores.length > 0) {
                 if (tipoTarefa === "obrigacoes") {
@@ -1594,13 +1600,13 @@ export default function RelatoriosPage() {
                     dados = dados.filter(o => {
                         // Se não tem id (obrigacaoClienteId), não pode ser filtrado por usuário
                         if (!o.id) return false;
-                        
+
                         // Verificar se esta obrigação tem algum dos usuários selecionados como responsável
                         const obrigacaoClienteId = o.id;
                         if (!obrigacoesPorUsuario[obrigacaoClienteId]) return false;
-                        
+
                         // Verificar se algum dos usuários selecionados está na lista de responsáveis
-                        return obrigacoesPorUsuario[obrigacaoClienteId].some(usuarioId => 
+                        return obrigacoesPorUsuario[obrigacaoClienteId].some(usuarioId =>
                             colaboradores.includes(usuarioId)
                         );
                     });
@@ -1609,7 +1615,7 @@ export default function RelatoriosPage() {
                     dados = dados.filter(o => colaboradores.includes(Number(o.responsavelId)));
                 }
             }
-            
+
             if (cliente) {
                 dados = dados.filter(o => String(o.clienteId) === cliente);
             }
@@ -1676,7 +1682,7 @@ export default function RelatoriosPage() {
                 // IMPORTANTE: Se há grupos selecionados, usar os dados já filtrados pelo backend!
                 // O backend já retorna apenas as obrigações dos clientes dos grupos selecionados
                 console.log('[Grupos] Usando dados filtrados por grupo do backend');
-                
+
                 // Se temos dados filtrados por grupo, usar eles diretamente
                 if (dadosPorGrupo.length > 0) {
                     // Extrair todas as obrigações dos grupos selecionados
@@ -1694,7 +1700,7 @@ export default function RelatoriosPage() {
                             });
                         });
                     });
-                    
+
                     // Substituir os dados pelos dados filtrados por grupo
                     dados = obrigacoesDosGrupos;
                     console.log(`[Grupos] Dados filtrados por grupo: ${dados.length} obrigações`);
@@ -1705,14 +1711,14 @@ export default function RelatoriosPage() {
                 }
             }
             console.log('[DEBUG] Dados antes de filtrarResultados:', dados.length);
-            
+
             const campoDataBase = campoDataMap[campoData];
             const dadosFiltrados = filtrarResultados(dados, status, tipoTarefa, campoDataBase, campoData);
             console.log('[DEBUG] Dados após filtrarResultados:', dadosFiltrados.length);
-            
+
             const agrupados = agruparPorDepartamento(dadosFiltrados, departamentosList, campoDataBase, campoData);
             console.log('[DEBUG] Dados agrupados:', agrupados.length);
-            
+
             setResultados(agrupados);
             setLoadingBusca(false);
         }, 0);
@@ -1791,19 +1797,19 @@ export default function RelatoriosPage() {
     async function getExportDataDetalhado() {
         // Usar os dados originais filtrados (não os agrupados)
         let dadosOriginais = [...(tipoTarefa === "obrigacoes" ? allObrigacoes : allTarefas)];
-        
+
         // Aplicar os mesmos filtros que foram aplicados na busca
         if (departamentos.length > 0) {
             dadosOriginais = dadosOriginais.filter(o => departamentos.includes(Number(o.departamentoId)));
         }
-        
+
         if (colaboradores.length > 0) {
             if (tipoTarefa === "obrigacoes") {
                 dadosOriginais = dadosOriginais.filter(o => {
                     if (!o.id) return false;
                     const obrigacaoClienteId = o.id;
                     if (!obrigacoesPorUsuario[obrigacaoClienteId]) return false;
-                    return obrigacoesPorUsuario[obrigacaoClienteId].some(usuarioId => 
+                    return obrigacoesPorUsuario[obrigacaoClienteId].some(usuarioId =>
                         colaboradores.includes(usuarioId)
                     );
                 });
@@ -1811,11 +1817,11 @@ export default function RelatoriosPage() {
                 dadosOriginais = dadosOriginais.filter(o => colaboradores.includes(Number(o.responsavelId)));
             }
         }
-        
+
         if (cliente) {
             dadosOriginais = dadosOriginais.filter(o => String(o.clienteId) === cliente);
         }
-        
+
         if (periodoInicial) {
             if (campoData === "dataConclusao") {
                 dadosOriginais = dadosOriginais.filter(o => {
@@ -1836,7 +1842,7 @@ export default function RelatoriosPage() {
                 });
             }
         }
-        
+
         if (periodoFinal) {
             if (campoData === "dataConclusao") {
                 dadosOriginais = dadosOriginais.filter(o => {
@@ -1857,11 +1863,11 @@ export default function RelatoriosPage() {
                 });
             }
         }
-        
+
         if (obrigacoes.length > 0) {
             dadosOriginais = dadosOriginais.filter(o => obrigacoes.includes(Number(o.obrigacaoId)));
         }
-        
+
         if (grupos.length > 0) {
             if (dadosPorGrupo.length > 0) {
                 const obrigacoesDosGrupos = [];
@@ -1896,11 +1902,11 @@ export default function RelatoriosPage() {
                 if (token) {
                     const ids = dadosOriginais.map(item => item.id).filter(id => id);
                     if (ids.length > 0) {
-                        const endpoint = tipoTarefa === "obrigacoes" 
-                            ? "/api/obrigacoes/comentarios/lote"
-                            : "/api/tarefas/comentarios/lote";
+                        const endpoint = tipoTarefa === "obrigacoes"
+                            ? `${BASE_URL}/gestao/obrigacoes/comentarios/lote`
+                            : `${BASE_URL}/gestao/tarefas/comentarios/lote`;
                         const bodyKey = tipoTarefa === "obrigacoes" ? "obrigacaoIds" : "tarefaIds";
-                        
+
                         const response = await fetch(endpoint, {
                             method: 'POST',
                             headers: {
@@ -1922,7 +1928,7 @@ export default function RelatoriosPage() {
             // Determinar status detalhado
             let statusDetalhado = item.status || 'N/A';
             let categoria = 'N/A';
-            
+
             if (tipoTarefa === "obrigacoes") {
                 if (isAbertaObr(item, campoDataBase)) {
                     statusDetalhado = 'Aberta';
@@ -1989,7 +1995,7 @@ export default function RelatoriosPage() {
             };
         });
     }
-    
+
 
 
     // FUNÇÕES: Exportação com dados detalhados
@@ -1997,7 +2003,7 @@ export default function RelatoriosPage() {
         try {
             const exportData = await getExportDataDetalhado();
             const ws = XLSX.utils.json_to_sheet(exportData);
-            
+
             // Ajustar larguras das colunas
             ws['!cols'] = [
                 { wch: 8 },   // ID
@@ -2018,11 +2024,11 @@ export default function RelatoriosPage() {
                 { wch: 12 },  // Data do Comentário
                 { wch: 30 }   // Arquivo Anexo
             ];
-            
+
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Relatório");
             XLSX.writeFile(wb, `relatorio-${new Date().toISOString().split('T')[0]}.xlsx`);
-            
+
             toast.success("Exportação concluída com sucesso!");
         } catch (error) {
             console.error("Erro na exportação:", error);
@@ -2037,7 +2043,7 @@ export default function RelatoriosPage() {
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Relatório");
             XLSX.writeFile(wb, `relatorio-${new Date().toISOString().split('T')[0]}.csv`);
-            
+
             toast.success("Exportação concluída com sucesso!");
         } catch (error) {
             console.error("Erro na exportação:", error);
@@ -2060,127 +2066,127 @@ export default function RelatoriosPage() {
         window.print();
     }
 
-       // ADICIONE ESTAS NOVAS FUNÇÕES
-       function getExportDataBaixas(data) {
+    // ADICIONE ESTAS NOVAS FUNÇÕES
+    function getExportDataBaixas(data) {
         const exportData = [];
-        
+
         data.forEach(dept => {
-          dept.usuarios.forEach(user => {
-            user.baixas.forEach(baixa => {
-              exportData.push({
-                Departamento: dept.departamentoNome,
-                Usuário: user.usuarioNome,
-                'Obrigação Cliente': baixa.obrigacaoClienteNome,
-                Cliente: baixa.clienteNome || '-',
-                'Obrigação Base': baixa.obrigacaoNome || '-',
-                'Data Conclusão': new Date(baixa.dataConclusao).toLocaleDateString('pt-BR'),
-                'Data Prazo': baixa.dataPrazo ? new Date(baixa.dataPrazo).toLocaleDateString('pt-BR') : '-',
-                'Data Meta': baixa.dataMeta ? new Date(baixa.dataMeta).toLocaleDateString('pt-BR') : '-'
-              });
+            dept.usuarios.forEach(user => {
+                user.baixas.forEach(baixa => {
+                    exportData.push({
+                        Departamento: dept.departamentoNome,
+                        Usuário: user.usuarioNome,
+                        'Obrigação Cliente': baixa.obrigacaoClienteNome,
+                        Cliente: baixa.clienteNome || '-',
+                        'Obrigação Base': baixa.obrigacaoNome || '-',
+                        'Data Conclusão': new Date(baixa.dataConclusao).toLocaleDateString('pt-BR'),
+                        'Data Prazo': baixa.dataPrazo ? new Date(baixa.dataPrazo).toLocaleDateString('pt-BR') : '-',
+                        'Data Meta': baixa.dataMeta ? new Date(baixa.dataMeta).toLocaleDateString('pt-BR') : '-'
+                    });
+                });
             });
-          });
         });
-        
+
         return exportData;
-      }
+    }
 
-             // ADICIONE ESTA NOVA FUNÇÃO PARA EXPORTAR O RELATÓRIO AGRUPADO
-       function getExportDataBaixasAgrupadas(data) {
-         return data.map(item => ({
-           Departamento: item.departamentoNome,
-           'Concluído por': item.concluidoPorNome || item.usuarioNome,
-           'Obrigação': item.obrigacaoNome,
-           'Quantidade': item.quantidade,
-           'Tarefas Restantes': item.tarefasRestantes
-         }));
-       }
+    // ADICIONE ESTA NOVA FUNÇÃO PARA EXPORTAR O RELATÓRIO AGRUPADO
+    function getExportDataBaixasAgrupadas(data) {
+        return data.map(item => ({
+            Departamento: item.departamentoNome,
+            'Concluído por': item.concluidoPorNome || item.usuarioNome,
+            'Obrigação': item.obrigacaoNome,
+            'Quantidade': item.quantidade,
+            'Tarefas Restantes': item.tarefasRestantes
+        }));
+    }
 
-       // NOVA FUNÇÃO: Para exportar o formato agrupado por data
-       function getExportDataBaixasPorData(data) {
-         const exportData = [];
-         data.forEach((grupo) => {
-           grupo.itens
-             .filter((item) => item.escopo === 'usuario_obrigacao' && item.concluidasNoDia > 0)
-             .forEach((item) => {
-               // Para cada item, expandir com os detalhes individuais (se existirem)
-               if (item.concluidasNoDiaDetalhes && item.concluidasNoDiaDetalhes.length > 0) {
-                 item.concluidasNoDiaDetalhes.forEach((detalhe) => {
-                   let horaBaixa = '-';
-                   if (detalhe.dataBaixa) {
-                     const dataBaixa = new Date(detalhe.dataBaixa);
-                     // Adicionar 3 horas ao horário
-                     dataBaixa.setHours(dataBaixa.getHours() + 3);
-                     horaBaixa = dataBaixa.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                   }
-                   exportData.push({
-                     'Data': corrigirTimezoneData(grupo.data).split('-').reverse().join('/'),
-                     'Hora da Baixa': horaBaixa,
-                     'Departamento': item.departamentoNome,
-                     'Obrigação': item.obrigacaoNome,
-                     'Cliente': detalhe.clienteNome || '-',
-                     'Concluído por': detalhe.concluidoPorNome || item.usuarioNome,
-                     'Status': detalhe.categoria || 'Concluída'
-                   });
-                 });
-               } else {
-                 // Fallback caso não tenha detalhes
-                 exportData.push({
-                   'Data': corrigirTimezoneData(grupo.data).split('-').reverse().join('/'),
-                   'Hora da Baixa': '-',
-                   'Departamento': item.departamentoNome,
-                   'Obrigação': item.obrigacaoNome,
-                   'Cliente': '-',
-                   'Concluído por': item.concluidoPorNome || item.usuarioNome,
-                   'Status': 'Concluída'
-                 });
-               }
-             });
-         });
-         return exportData;
-       }
+    // NOVA FUNÇÃO: Para exportar o formato agrupado por data
+    function getExportDataBaixasPorData(data) {
+        const exportData = [];
+        data.forEach((grupo) => {
+            grupo.itens
+                .filter((item) => item.escopo === 'usuario_obrigacao' && item.concluidasNoDia > 0)
+                .forEach((item) => {
+                    // Para cada item, expandir com os detalhes individuais (se existirem)
+                    if (item.concluidasNoDiaDetalhes && item.concluidasNoDiaDetalhes.length > 0) {
+                        item.concluidasNoDiaDetalhes.forEach((detalhe) => {
+                            let horaBaixa = '-';
+                            if (detalhe.dataBaixa) {
+                                const dataBaixa = new Date(detalhe.dataBaixa);
+                                // Adicionar 3 horas ao horário
+                                dataBaixa.setHours(dataBaixa.getHours() + 3);
+                                horaBaixa = dataBaixa.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            }
+                            exportData.push({
+                                'Data': corrigirTimezoneData(grupo.data).split('-').reverse().join('/'),
+                                'Hora da Baixa': horaBaixa,
+                                'Departamento': item.departamentoNome,
+                                'Obrigação': item.obrigacaoNome,
+                                'Cliente': detalhe.clienteNome || '-',
+                                'Concluído por': detalhe.concluidoPorNome || item.usuarioNome,
+                                'Status': detalhe.categoria || 'Concluída'
+                            });
+                        });
+                    } else {
+                        // Fallback caso não tenha detalhes
+                        exportData.push({
+                            'Data': corrigirTimezoneData(grupo.data).split('-').reverse().join('/'),
+                            'Hora da Baixa': '-',
+                            'Departamento': item.departamentoNome,
+                            'Obrigação': item.obrigacaoNome,
+                            'Cliente': '-',
+                            'Concluído por': item.concluidoPorNome || item.usuarioNome,
+                            'Status': 'Concluída'
+                        });
+                    }
+                });
+        });
+        return exportData;
+    }
 
-       // NOVAS FUNÇÕES: Para exportar o formato agrupado por data
-       function exportBaixasPorDataToExcel(data) {
-         const exportData = getExportDataBaixasPorData(data);
-         const ws = XLSX.utils.json_to_sheet(exportData);
-         
-         // Ajustar larguras das colunas para melhor espaçamento
-         const colWidths = [
-           { wch: 12 }, // Data
-           { wch: 15 }, // Hora da Baixa
-           { wch: 20 }, // Departamento
-           { wch: 30 }, // Obrigação
-           { wch: 25 }, // Cliente
-           { wch: 25 }, // Concluído por
-           { wch: 15 }  // Status
-         ];
-         ws['!cols'] = colWidths;
-         
-         const wb = XLSX.utils.book_new();
-         XLSX.utils.book_append_sheet(wb, ws, "Baixas Diárias");
-         XLSX.writeFile(wb, `baixas-diarias-${periodoInicioBaixas}-${periodoFimBaixas}.xlsx`);
-       }
+    // NOVAS FUNÇÕES: Para exportar o formato agrupado por data
+    function exportBaixasPorDataToExcel(data) {
+        const exportData = getExportDataBaixasPorData(data);
+        const ws = XLSX.utils.json_to_sheet(exportData);
 
-       function exportBaixasPorDataToCSV(data) {
-         const exportData = getExportDataBaixasPorData(data);
-         const ws = XLSX.utils.json_to_sheet(exportData);
-         
-         // Ajustar larguras das colunas para melhor espaçamento
-         const colWidths = [
-           { wch: 12 }, // Data
-           { wch: 15 }, // Hora da Baixa
-           { wch: 20 }, // Departamento
-           { wch: 30 }, // Obrigação
-           { wch: 25 }, // Cliente
-           { wch: 25 }, // Concluído por
-           { wch: 15 }  // Status
-         ];
-         ws['!cols'] = colWidths;
-         
-         const wb = XLSX.utils.book_new();
-         XLSX.utils.book_append_sheet(wb, ws, "Baixas Diárias");
-         XLSX.writeFile(wb, `baixas-diarias-${periodoInicioBaixas}-${periodoFimBaixas}.csv`);
-       }
+        // Ajustar larguras das colunas para melhor espaçamento
+        const colWidths = [
+            { wch: 12 }, // Data
+            { wch: 15 }, // Hora da Baixa
+            { wch: 20 }, // Departamento
+            { wch: 30 }, // Obrigação
+            { wch: 25 }, // Cliente
+            { wch: 25 }, // Concluído por
+            { wch: 15 }  // Status
+        ];
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Baixas Diárias");
+        XLSX.writeFile(wb, `baixas-diarias-${periodoInicioBaixas}-${periodoFimBaixas}.xlsx`);
+    }
+
+    function exportBaixasPorDataToCSV(data) {
+        const exportData = getExportDataBaixasPorData(data);
+        const ws = XLSX.utils.json_to_sheet(exportData);
+
+        // Ajustar larguras das colunas para melhor espaçamento
+        const colWidths = [
+            { wch: 12 }, // Data
+            { wch: 15 }, // Hora da Baixa
+            { wch: 20 }, // Departamento
+            { wch: 30 }, // Obrigação
+            { wch: 25 }, // Cliente
+            { wch: 25 }, // Concluído por
+            { wch: 15 }  // Status
+        ];
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Baixas Diárias");
+        XLSX.writeFile(wb, `baixas-diarias-${periodoInicioBaixas}-${periodoFimBaixas}.csv`);
+    }
 
     function exportBaixasToExcel(data) {
         const exportData = getExportDataBaixas(data);
@@ -2223,105 +2229,108 @@ export default function RelatoriosPage() {
     });
     const mostrarConclusao = todosConcluidos;
 
-         // ADICIONE ESTE NOVO USEEFFECT PARA CARREGAR USUÁRIOS
-     useEffect(() => {
-         async function loadUsuarios() {
-             const token = getToken();
-             const empresaId = getEmpresaId();
-             if (!empresaId || !token) return;
-             
-             setLoadingUsuarios(true);
-             try {
-                 let usuariosFiltrados = [];
-                 
-                 // Se há filtro de departamento, buscar apenas usuários daquele departamento
-                 if (departamentos.length > 0) {
-                     const res = await fetch(`${BASE_URL}/api/usuarios/departamento/${departamentos[0]}`, {
-                         headers: { Authorization: `Bearer ${token}` },
-                     });
-                     usuariosFiltrados = res.data || [];
-                 } else {
-                     // Se não há filtro de departamento, buscar todos os usuários da empresa
-                     const res = await fetch(`${BASE_URL}/api/usuarios/empresa/${empresaId}`, {
-                         headers: { Authorization: `Bearer ${token}` },
-                     });
-                     usuariosFiltrados = res.data || [];
-                 }
-                 
-                 setUsuariosList(usuariosFiltrados);
-                 
-                 // Limpar usuários selecionados se não estiverem mais disponíveis
-                 if (usuariosSelecionados.length > 0) {
-                     const usuariosDisponiveis = usuariosFiltrados.map((u) => u.id);
-                     const usuariosValidos = usuariosSelecionados.filter(id => usuariosDisponiveis.includes(id));
-                     if (usuariosValidos.length !== usuariosSelecionados.length) {
-                         setUsuariosSelecionados(usuariosValidos);
-                     }
-                 }
-             } catch (err) {
-                 console.error("Erro ao carregar usuários:", err);
-                 setUsuariosList([]);
-             } finally {
-                 setLoadingUsuarios(false);
-             }
-         }
-         loadUsuarios();
-     }, [departamentos, usuariosSelecionados]);
+    // ADICIONE ESTE NOVO USEEFFECT PARA CARREGAR USUÁRIOS
+    useEffect(() => {
+        async function loadUsuarios() {
+            const token = getToken();
+            const empresaId = getEmpresaId();
+            if (!empresaId || !token) return;
+
+            setLoadingUsuarios(true);
+            try {
+                let usuariosFiltrados = [];
+
+                // Se há filtro de departamento, buscar apenas usuários daquele departamento
+                if (departamentos.length > 0) {
+                    const res = await fetch(`${BASE_URL}/gestao/departamentos/${departamentos[0]}/usuarios`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const data = await res.json();
+                    usuariosFiltrados = data || [];
+                } else {
+                    // Se não há filtro de departamento, buscar todos os usuários da empresa
+                    // Nota: A rota /usuarios retorna { data: [...], page, limit, total }
+                    const res = await fetch(`${BASE_URL}/usuarios`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const responseData = await res.json();
+                    usuariosFiltrados = responseData?.data || [];
+                }
+
+                setUsuariosList(usuariosFiltrados);
+
+                // Limpar usuários selecionados se não estiverem mais disponíveis
+                if (usuariosSelecionados.length > 0) {
+                    const usuariosDisponiveis = usuariosFiltrados.map((u) => u.id);
+                    const usuariosValidos = usuariosSelecionados.filter(id => usuariosDisponiveis.includes(id));
+                    if (usuariosValidos.length !== usuariosSelecionados.length) {
+                        setUsuariosSelecionados(usuariosValidos);
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao carregar usuários:", err);
+                setUsuariosList([]);
+            } finally {
+                setLoadingUsuarios(false);
+            }
+        }
+        loadUsuarios();
+    }, [departamentos, usuariosSelecionados]);
 
     // [1] Funções para abrir modal de baixadas e de restantes
 
     function abrirModalBaixadas(item, data) {
-      // Mapear os dados para o formato esperado pelo VisaoGeralModal
-      const tarefasMapeadas = (item.concluidasNoDiaDetalhes || []).map((tarefa) => ({
-        id: tarefa.id,
-        status: tarefa.status,
-        departamento: tarefa.departamentoNome,
-        departamentoNome: tarefa.departamentoNome,
-        nome: tarefa.nome,
-        cliente_nome: tarefa.clienteNome,
-        status_cliente: "Ativo",
-        vencimento: tarefa.vencimento,
-        dataBaixa: tarefa.dataBaixa,
-        dataConclusao: tarefa.dataBaixa,
-        dataAcao: tarefa.acao,
-        dataMeta: tarefa.meta,
-        responsavel: tarefa.concluidoPorNome || tarefa.usuarioNome,
-        atividades: [],
-        tipo: "obrigacao",
-        baixadaAutomaticamente: 0,
-        categoria: tarefa.categoria
-      }));
+        // Mapear os dados para o formato esperado pelo VisaoGeralModal
+        const tarefasMapeadas = (item.concluidasNoDiaDetalhes || []).map((tarefa) => ({
+            id: tarefa.id,
+            status: tarefa.status,
+            departamento: tarefa.departamentoNome,
+            departamentoNome: tarefa.departamentoNome,
+            nome: tarefa.nome,
+            cliente_nome: tarefa.clienteNome,
+            status_cliente: "Ativo",
+            vencimento: tarefa.vencimento,
+            dataBaixa: tarefa.dataBaixa,
+            dataConclusao: tarefa.dataBaixa,
+            dataAcao: tarefa.acao,
+            dataMeta: tarefa.meta,
+            responsavel: tarefa.concluidoPorNome || tarefa.usuarioNome,
+            atividades: [],
+            tipo: "obrigacao",
+            baixadaAutomaticamente: 0,
+            categoria: tarefa.categoria
+        }));
 
-      setTituloModal(`Baixadas em ${item.obrigacaoNome} - ${(item.concluidoPorNome || item.usuarioNome)} (${item.departamentoNome}) em ${corrigirTimezoneData(data).split('-').reverse().join('/')}`);
-      setSolicitacoesModal(tarefasMapeadas);
-      setModalAberto(true);
+        setTituloModal(`Baixadas em ${item.obrigacaoNome} - ${(item.concluidoPorNome || item.usuarioNome)} (${item.departamentoNome}) em ${corrigirTimezoneData(data).split('-').reverse().join('/')}`);
+        setSolicitacoesModal(tarefasMapeadas);
+        setModalAberto(true);
     }
 
     function abrirModalRestantes(item, data) {
-      // Mapear os dados para o formato esperado pelo VisaoGeralModal
-      const tarefasMapeadas = (item.restantesNoDiaDetalhes || []).map((tarefa) => ({
-        id: tarefa.id,
-        status: tarefa.status,
-        departamento: tarefa.departamentoNome,
-        departamentoNome: tarefa.departamentoNome,
-        nome: tarefa.nome,
-        cliente_nome: tarefa.clienteNome,
-        status_cliente: "Ativo",
-        vencimento: tarefa.vencimento,
-        dataBaixa: null,
-        dataConclusao: null,
-        dataAcao: tarefa.acao,
-        dataMeta: tarefa.meta,
-        responsavel: tarefa.usuarioNome,
-        atividades: [],
-        tipo: "obrigacao",
-        baixadaAutomaticamente: 0,
-        categoria: tarefa.categoria
-      }));
+        // Mapear os dados para o formato esperado pelo VisaoGeralModal
+        const tarefasMapeadas = (item.restantesNoDiaDetalhes || []).map((tarefa) => ({
+            id: tarefa.id,
+            status: tarefa.status,
+            departamento: tarefa.departamentoNome,
+            departamentoNome: tarefa.departamentoNome,
+            nome: tarefa.nome,
+            cliente_nome: tarefa.clienteNome,
+            status_cliente: "Ativo",
+            vencimento: tarefa.vencimento,
+            dataBaixa: null,
+            dataConclusao: null,
+            dataAcao: tarefa.acao,
+            dataMeta: tarefa.meta,
+            responsavel: tarefa.usuarioNome,
+            atividades: [],
+            tipo: "obrigacao",
+            baixadaAutomaticamente: 0,
+            categoria: tarefa.categoria
+        }));
 
-      setTituloModal(`Restantes em ${item.obrigacaoNome} - ${(item.concluidoPorNome || item.usuarioNome)} (${item.departamentoNome}) em ${corrigirTimezoneData(data).split('-').reverse().join('/')}`);
-      setSolicitacoesModal(tarefasMapeadas);
-      setModalAberto(true);
+        setTituloModal(`Restantes em ${item.obrigacaoNome} - ${(item.concluidoPorNome || item.usuarioNome)} (${item.departamentoNome}) em ${corrigirTimezoneData(data).split('-').reverse().join('/')}`);
+        setSolicitacoesModal(tarefasMapeadas);
+        setModalAberto(true);
     }
 
     return (
@@ -2349,446 +2358,356 @@ export default function RelatoriosPage() {
                     {tipoRelatorio === "performance" && (
                         <>
                             {/* Filtros */}
-                            <Card className={styles.filtrosCard}>
-                        <form className={styles.filtrosGridRelatorio} onSubmit={filtrarLocal}>
-                            {/* 1ª linha */}
-                            <div>
-                                <label className={styles.label}>Por Data:</label>
-                                <select
-                                    className={styles.input}
-                                    value={campoData}
-                                    onChange={e => setCampoData(e.target.value)}
-                                >
-                                    <option value="dataPrazo">Vencimento/Prazo</option>
-                                    <option value="dataMeta">Meta</option>
-                                    <option value="dataConclusao">Conclusão</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className={styles.label}>Por Período Inicial:</label>
-                                <input
-                                    type="date"
-                                    className={styles.input}
-                                    value={periodoInicial}
-                                    onChange={e => setPeriodoInicial(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className={styles.label}>Por Período Final:</label>
-                                <input
-                                    type="date"
-                                    className={styles.input}
-                                    value={periodoFinal}
-                                    onChange={e => setPeriodoFinal(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className={styles.label}>Por Cliente:</label>
-                                <div className={styles.clienteSelectContainer}>
-                                    <ClienteSelectInline
-                                        value={cliente}
-                                        onChange={e => setCliente(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                          
+                            <div className={styles.filtrosCard}>
+                                <form className={styles.filtrosGridRelatorio} onSubmit={filtrarLocal}>
+                                    {/* 1ª linha */}
+                                    <div>
+                                        <label className={styles.label}>Por Data:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={campoData}
+                                            onChange={e => setCampoData(e.target.value)}
+                                        >
+                                            <option value="dataPrazo">Vencimento/Prazo</option>
+                                            <option value="dataMeta">Meta</option>
+                                            <option value="dataConclusao">Conclusão</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Período Inicial:</label>
+                                        <input
+                                            type="date"
+                                            className={styles.input}
+                                            value={periodoInicial}
+                                            onChange={e => setPeriodoInicial(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Período Final:</label>
+                                        <input
+                                            type="date"
+                                            className={styles.input}
+                                            value={periodoFinal}
+                                            onChange={e => setPeriodoFinal(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Cliente:</label>
+                                        <div className={styles.clienteSelectContainer}>
+                                            <ClienteSelectInline
+                                                value={cliente}
+                                                onChange={e => setCliente(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
 
-                            {/* 2ª linha */}
-                            <div>
-                                <label className={styles.label}>Por Tipo Tarefa:</label>
-                                <select
-                                    className={styles.input}
-                                    value={tipoTarefa}
-                                    onChange={e => {
-                                        console.log('[DEBUG] Mudando tipoTarefa para:', e.target.value);
-                                        setTipoTarefa(e.target.value);
-                                    }}
-                                >
-                                    <option value="solicitacoes">Processos</option>
-                                    <option value="obrigacoes">Obrigações</option>
-                                </select>
-                                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                                </div>
+
+                                    {/* 2ª linha */}
+                                    <div>
+                                        <label className={styles.label}>Por Tipo Tarefa:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={tipoTarefa}
+                                            onChange={e => {
+                                                console.log('[DEBUG] Mudando tipoTarefa para:', e.target.value);
+                                                setTipoTarefa(e.target.value);
+                                            }}
+                                        >
+                                            <option value="solicitacoes">Processos</option>
+                                            <option value="obrigacoes">Obrigações</option>
+                                        </select>
+                                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Departamento:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={departamentos.length > 0 ? departamentos[0] : ""}
+                                            onChange={e => setDepartamentos([Number(e.target.value)])}
+                                        >
+                                            <option value="">Selecione</option>
+                                            {departamentosList.map(dep => (
+                                                <option key={dep.id} value={dep.id}>{dep.nome}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Status:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={status[0] || ""}
+                                            onChange={e => setStatus([e.target.value])}
+                                        >
+                                            {(tipoTarefa === "obrigacoes" ? statusOptionsObr : statusOptionsTar).map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* 3ª linha */}
+                                    <div>
+                                        <label className={styles.label}>Por Obrigações:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={obrigacoes.length > 0 ? obrigacoes[0] : ""}
+                                            onChange={e => setObrigacoes([Number(e.target.value)])}
+                                            disabled={loadingObrigacoes}
+                                        >
+                                            <option value="">
+                                                {loadingObrigacoes ? "Carregando..." : "Selecione"}
+                                            </option>
+                                            {obrigacoesList.map(obrigacao => (
+                                                <option key={obrigacao.id} value={obrigacao.id}>
+                                                    {obrigacao.nome} - {obrigacao.departamentoNome}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Colaborador:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={colaboradores.length > 0 ? colaboradores[0] : ""}
+                                            onChange={e => setColaboradores([Number(e.target.value)])}
+                                            disabled={loadingColaboradores}
+                                        >
+                                            <option value="">
+                                                {loadingColaboradores ? "Carregando..." : "Selecione"}
+                                            </option>
+                                            {colaboradoresList.map(colaborador => (
+                                                <option key={colaborador.id} value={colaborador.id}>
+                                                    {colaborador.nome}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className={styles.label}>Por Grupo:</label>
+                                        <select
+                                            className={styles.input}
+                                            value={grupos.length > 0 ? grupos[0] : ""}
+                                            onChange={e => setGrupos([Number(e.target.value)])}
+                                            disabled={loadingGrupos}
+                                        >
+                                            <option value="">
+                                                {loadingGrupos ? "Carregando..." : "Selecione"}
+                                            </option>
+                                            {gruposList.map(grupo => (
+                                                <option key={grupo.id} value={grupo.id}>
+                                                    {grupo.nome}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div style={{ display: "flex", alignItems: "flex-end" }}>
+                                        <button
+                                            type="submit"
+                                            className={`${styles.input} ${styles.button}`}
+                                            disabled={loadingBusca || loading || allTarefas.length === 0 && tipoTarefa === "solicitacoes" || allObrigacoes.length === 0 && tipoTarefa === "obrigacoes"}
+                                        >
+                                            {loadingBusca ? "Buscando..." : "Buscar"}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            <div>
-                                <label className={styles.label}>Por Departamento:</label>
-                                <select
-                                    className={styles.input}
-                                    value={departamentos.length > 0 ? departamentos[0] : ""}
-                                    onChange={e => setDepartamentos([Number(e.target.value)])}
-                                >
-                                    <option value="">Selecione</option>
-                                    {departamentosList.map(dep => (
-                                        <option key={dep.id} value={dep.id}>{dep.nome}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className={styles.label}>Por Status:</label>
-                                <select
-                                    className={styles.input}
-                                    value={status[0] || ""}
-                                    onChange={e => setStatus([e.target.value])}
-                                >
-                                    {(tipoTarefa === "obrigacoes" ? statusOptionsObr : statusOptionsTar).map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
 
-                            {/* 3ª linha */}
-                            <div>
-                                <label className={styles.label}>Por Obrigações:</label>
-                                <select
-                                    className={styles.input}
-                                    value={obrigacoes.length > 0 ? obrigacoes[0] : ""}
-                                    onChange={e => setObrigacoes([Number(e.target.value)])}
-                                    disabled={loadingObrigacoes}
-                                >
-                                    <option value="">
-                                        {loadingObrigacoes ? "Carregando..." : "Selecione"}
-                                    </option>
-                                    {obrigacoesList.map(obrigacao => (
-                                        <option key={obrigacao.id} value={obrigacao.id}>
-                                            {obrigacao.nome} - {obrigacao.departamentoNome}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className={styles.label}>Por Colaborador:</label>
-                                <select
-                                    className={styles.input}
-                                    value={colaboradores.length > 0 ? colaboradores[0] : ""}
-                                    onChange={e => setColaboradores([Number(e.target.value)])}
-                                    disabled={loadingColaboradores}
-                                >
-                                    <option value="">
-                                        {loadingColaboradores ? "Carregando..." : "Selecione"}
-                                    </option>
-                                    {colaboradoresList.map(colaborador => (
-                                        <option key={colaborador.id} value={colaborador.id}>
-                                            {colaborador.nome}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className={styles.label}>Por Grupo:</label>
-                                <select
-                                    className={styles.input}
-                                    value={grupos.length > 0 ? grupos[0] : ""}
-                                    onChange={e => setGrupos([Number(e.target.value)])}
-                                    disabled={loadingGrupos}
-                                >
-                                    <option value="">
-                                        {loadingGrupos ? "Carregando..." : "Selecione"}
-                                    </option>
-                                    {gruposList.map(grupo => (
-                                        <option key={grupo.id} value={grupo.id}>
-                                            {grupo.nome}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "flex-end" }}>
-                                <button
-                                    type="submit"
-                                    className={`${styles.input} ${styles.button}`}
-                                    disabled={loadingBusca || loading || allTarefas.length === 0 && tipoTarefa === "solicitacoes" || allObrigacoes.length === 0 && tipoTarefa === "obrigacoes"}
-                                >
-                                    {loadingBusca ? "Buscando..." : "Buscar"}
-                                </button>
-                            </div>
-                        </form>
-                    </Card>
-
-                    {/* Resultado */}
-                    <Card className={styles.resultCard}>
-                        <div className={styles.tableWrapper}>
-                            <div
-                                style={{
-                                    display: "flex",
-                                    gap: 12,
-                                    margin: "16px auto 16px auto",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    width: "100%",
-                                    flexWrap: "wrap"
-                                }}
-                            >
-                                <button
-                                    className={styles.button}
-                                    style={{
-                                        fontSize: "var(--titan-font-size-base)",
-                                        padding: "var(--titan-spacing-sm) var(--titan-spacing-lg)",
-                                        borderRadius: "var(--titan-radius-sm)",
-                                        fontWeight: "var(--titan-font-weight-semibold)",
-                                        minWidth: 80,
-                                        boxShadow: "var(--titan-shadow-sm)",
-                                        background: "var(--titan-card-bg)",
-                                        color: "var(--titan-text-high)",
-                                        border: "1px solid var(--titan-stroke)",
-                                        transition: "all var(--titan-transition-fast)"
-                                    }}
-                                    onClick={() => copyToClipboard(resultados)}
-                                >
-                                    Copy
-                                </button>
-                                <button
-                                    className={styles.button}
-                                    style={{
-                                        fontSize: "var(--titan-font-size-base)",
-                                        padding: "var(--titan-spacing-sm) var(--titan-spacing-lg)",
-                                        borderRadius: "var(--titan-radius-sm)",
-                                        fontWeight: "var(--titan-font-weight-semibold)",
-                                        minWidth: 80,
-                                        boxShadow: "var(--titan-shadow-sm)",
-                                        background: "var(--titan-primary)",
-                                        color: "white",
-                                        border: "1px solid var(--titan-primary)",
-                                        transition: "all var(--titan-transition-fast)"
-                                    }}
-                                    onClick={() => exportToExcel()}
-                                    title="Exporta dados detalhados de cada item individual"
-                                >
-                                    Excel
-                                </button>
-                                <button
-                                    className={styles.button}
-                                    style={{
-                                        fontSize: "var(--titan-font-size-base)",
-                                        padding: "var(--titan-spacing-sm) var(--titan-spacing-lg)",
-                                        borderRadius: "var(--titan-radius-sm)",
-                                        fontWeight: "var(--titan-font-weight-semibold)",
-                                        minWidth: 80,
-                                        boxShadow: "var(--titan-shadow-sm)",
-                                        background: "var(--titan-primary)",
-                                        color: "white",
-                                        border: "1px solid var(--titan-primary)",
-                                        transition: "all var(--titan-transition-fast)"
-                                    }}
-                                    onClick={() => exportToCSV()}
-                                    title="Exporta dados detalhados de cada item individual"
-                                >
-                                    CSV
-                                </button>
-                                <button
-                                    className={styles.button}
-                                    style={{
-                                        fontSize: "var(--titan-font-size-base)",
-                                        padding: "var(--titan-spacing-sm) var(--titan-spacing-lg)",
-                                        borderRadius: "var(--titan-radius-sm)",
-                                        fontWeight: "var(--titan-font-weight-semibold)",
-                                        minWidth: 80,
-                                        boxShadow: "var(--titan-shadow-sm)",
-                                        background: "var(--titan-card-bg)",
-                                        color: "var(--titan-text-high)",
-                                        border: "1px solid var(--titan-stroke)",
-                                        transition: "all var(--titan-transition-fast)"
-                                    }}
-                                    onClick={printTable}
-                                >
-                                    Print
-                                </button>
-                            </div>
-                            <table className={styles.resultTable}>
-                                <thead>
-                                    <tr>
-                                        <th>Departamento</th>
-                                        <th>Total</th>
-                                        <th>Abertas</th>
-                                        <th>Atrasadas</th>
-                                        <th>Realizadas</th>
-                                        {mostrarConclusao && <th>Conclusão</th>}
-                                        <th>Concluídas até a Meta</th>
-                                        <th>Concluídas fora da Meta</th>
-                                        <th>Concluídas após Prazo</th>
-                                        <th>% em Aberto</th>
-                                        <th>% em Atraso</th>
-                                        <th>% na Programação</th>
-                                        <th>% Concluídas até a Meta</th>
-                                        <th>% Concluídas fora da Meta</th>
-                                        <th>% Concluídas após o Prazo</th>
-                                        <th>% Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {resultados.length > 0 ? (
-                                        <>
-                                            {resultados.map((item, idx) => {
-                                                // Cálculo das porcentagens
-                                                const percAberto = item.qtdTotal > 0 ? (item.qtdAbertas / item.qtdTotal) * 100 : 0;
-                                                const percAtraso = item.qtdTotal > 0 ? (item.qtdAtrasadas / item.qtdTotal) * 100 : 0;
-                                                const percRealizadas = item.qtdTotal > 0 ? (item.qtdRealizadas / item.qtdTotal) * 100 : 0;
-                                                const percConcluidasNaMeta = item.qtdTotal > 0 ? (item.qtdConcluidasNaMeta / item.qtdTotal) * 100 : 0;
-                                                const percConcluidasForaMeta = item.qtdTotal > 0 ? (item.qtdConcluidasForaMeta / item.qtdTotal) * 100 : 0;
-                                                const percConcluidasAposPrazo = item.qtdTotal > 0 ? (item.qtdConcluidasAposPrazo / item.qtdTotal) * 100 : 0;
-                                                const percTotal = (percAberto + percAtraso + percRealizadas + percConcluidasNaMeta + percConcluidasForaMeta + percConcluidasAposPrazo).toFixed(2).replace('.', ',');
-
-                                                const percAbertoStr = percAberto.toFixed(2).replace('.', ',');
-                                                const percAtrasoStr = percAtraso.toFixed(2).replace('.', ',');
-                                                const percRealizadasStr = percRealizadas.toFixed(2).replace('.', ',');
-                                                const percConcluidasNaMetaStr = percConcluidasNaMeta.toFixed(2).replace('.', ',');
-                                                const percConcluidasForaMetaStr = percConcluidasForaMeta.toFixed(2).replace('.', ',');
-                                                const percConcluidasAposPrazoStr = percConcluidasAposPrazo.toFixed(2).replace('.', ',');
-
-                                                return (
-                                                    <tr key={item.departamentoId + "-" + idx}>
-                                                        {/* Departamento com clique */}
-                                                        <td>{item.departamentoNome || "-"}</td>
-                                                        {/* Total */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdTotal > 0 ? "pointer" : undefined,
-                                                                color: item.qtdTotal > 0 ? "#2563eb" : undefined
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdTotal > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId }, `Total de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdTotal}
-                                                        </td>
-                                                        {/* Abertas */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdAbertas > 0 ? "pointer" : undefined,
-                                                                color: item.qtdAbertas > 0 ? "#2563eb" : undefined
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdAbertas > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "aberta" }, `Abertas de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdAbertas}
-                                                        </td>
-
-                                                        {/* Atrasadas */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdAtrasadas > 0 ? "pointer" : undefined,
-                                                                color: item.qtdAtrasadas > 0 ? "#2563eb" : undefined // <-- azul igual ao resto!
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdAtrasadas > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "atrasada" }, `Atrasadas de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdAtrasadas}
-                                                        </td>
-
-                                                        {/* Realizadas */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdRealizadas > 0 ? "pointer" : undefined,
-                                                                color: item.qtdRealizadas > 0 ? "#059669" : undefined
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdRealizadas > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "realizada" }, `Realizadas de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdRealizadas}
-                                                        </td>
-
-                                                        {/* Concluídas até a Meta */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdConcluidasNaMeta > 0 ? "pointer" : undefined,
-                                                                color: item.qtdConcluidasNaMeta > 0 ? "#2563eb" : undefined
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdConcluidasNaMeta > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "concluida_na_meta" }, `Concluídas até a Meta de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdConcluidasNaMeta}
-                                                        </td>
-
-                                                        {/* Concluídas fora da Meta */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdConcluidasForaMeta > 0 ? "pointer" : undefined,
-                                                                color: item.qtdConcluidasForaMeta > 0 ? "#2563eb" : undefined
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdConcluidasForaMeta > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "concluida_fora_meta" }, `Concluídas fora da Meta de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdConcluidasForaMeta}
-                                                        </td>
-
-                                                        {/* Concluídas após Prazo */}
-                                                        <td
-                                                            className={styles.cellCenter}
-                                                            style={{
-                                                                cursor: item.qtdConcluidasAposPrazo > 0 ? "pointer" : undefined,
-                                                                color: item.qtdConcluidasAposPrazo > 0 ? "#2563eb" : undefined
-                                                            }}
-                                                            onClick={() =>
-                                                                item.qtdConcluidasAposPrazo > 0 &&
-                                                                abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "concluida_fora_prazo" }, `Concluídas após Prazo de ${item.departamentoNome}`)
-                                                            }
-                                                        >
-                                                            {item.qtdConcluidasAposPrazo}
-                                                        </td>
-
-                                                        {/* Conclusão */}
-                                                        {mostrarConclusao && <td>{item.dataBaixa || item.dataConclusao || '-'}</td>}
-
-                                                        {/* As outras colunas permanecem normais, sem clique */}
-                                                        <td className={styles.cellCenter}>{percAbertoStr}%</td>
-                                                        <td className={styles.cellCenter}>{percAtrasoStr}%</td>
-                                                        <td className={styles.cellCenter}>{percRealizadasStr}%</td>
-                                                        <td className={styles.cellCenter}>{percConcluidasNaMetaStr}%</td>
-                                                        <td className={styles.cellCenter}>{percConcluidasForaMetaStr}%</td>
-                                                        <td className={styles.cellCenter}>{percConcluidasAposPrazoStr}%</td>
-                                                        <td className={styles.cellCenter}>{percTotal}%</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                            {/* Linha de totais */}
-                                            <tr style={{ 
-                                                fontWeight: "var(--titan-font-weight-bold)", 
-                                                background: "var(--titan-base-00)",
-                                                color: "var(--titan-text-high)"
-                                            }}>
-                                                <td>Total</td>
-                                                <td className={styles.cellCenter}>{totais.qtdTotal}</td>
-                                                <td className={styles.cellCenter}>{totais.qtdAbertas}</td>
-                                                <td className={styles.cellCenter}>{totais.qtdAtrasadas}</td>
-                                                <td className={styles.cellCenter}>{totais.qtdRealizadas}</td>
-                                                {mostrarConclusao && <td className={styles.cellCenter}>{totais.qtdConcluidasAposPrazo}</td>}
-                                                <td className={styles.cellCenter}>{totais.qtdConcluidasNaMeta}</td>
-                                                <td className={styles.cellCenter}>{totais.qtdConcluidasForaMeta}</td>
-                                                <td className={styles.cellCenter}>{totais.qtdConcluidasAposPrazo}</td>
-                                                <td colSpan={7}></td>
+                            {/* Resultado */}
+                            <div className={styles.resultCard}>
+                                <div className={styles.tableWrapper}>
+                                    <div className={styles.exportButtonsContainer}>
+                                        <button
+                                            className={`${styles.button} ${styles.exportButtonBase} ${styles.exportButtonSecondary}`}
+                                            onClick={() => copyToClipboard(resultados)}
+                                        >
+                                            Copy
+                                        </button>
+                                        <button
+                                            className={`${styles.button} ${styles.exportButtonBase} ${styles.exportButtonPrimary}`}
+                                            onClick={() => exportToExcel()}
+                                            title="Exporta dados detalhados de cada item individual"
+                                        >
+                                            Excel
+                                        </button>
+                                        <button
+                                            className={`${styles.button} ${styles.exportButtonBase} ${styles.exportButtonPrimary}`}
+                                            onClick={() => exportToCSV()}
+                                            title="Exporta dados detalhados de cada item individual"
+                                        >
+                                            CSV
+                                        </button>
+                                        <button
+                                            className={`${styles.button} ${styles.exportButtonBase} ${styles.exportButtonSecondary}`}
+                                            onClick={printTable}
+                                        >
+                                            Print
+                                        </button>
+                                    </div>
+                                    <table className={styles.resultTable}>
+                                        <thead>
+                                            <tr>
+                                                <th>Departamento</th>
+                                                <th>Total</th>
+                                                <th>Abertas</th>
+                                                <th>Atrasadas</th>
+                                                <th>Realizadas</th>
+                                                {mostrarConclusao && <th>Conclusão</th>}
+                                                <th>Concluídas até a Meta</th>
+                                                <th>Concluídas fora da Meta</th>
+                                                <th>Concluídas após Prazo</th>
+                                                <th>% em Aberto</th>
+                                                <th>% em Atraso</th>
+                                                <th>% na Programação</th>
+                                                <th>% Concluídas até a Meta</th>
+                                                <th>% Concluídas fora da Meta</th>
+                                                <th>% Concluídas após o Prazo</th>
+                                                <th>% Total</th>
                                             </tr>
-                                        </>
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={14} style={{ textAlign: "center" }}>
-                                                {loadingBusca
-                                                    ? "Buscando..."
-                                                    : jaBuscou
-                                                        ? "Nenhum resultado encontrado."
-                                                        : "Use o filtro acima para buscar resultados."
-                                                }
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </Card>
+                                        </thead>
+                                        <tbody>
+                                            {resultados.length > 0 ? (
+                                                <>
+                                                    {resultados.map((item, idx) => {
+                                                        // Cálculo das porcentagens
+                                                        const percAberto = item.qtdTotal > 0 ? (item.qtdAbertas / item.qtdTotal) * 100 : 0;
+                                                        const percAtraso = item.qtdTotal > 0 ? (item.qtdAtrasadas / item.qtdTotal) * 100 : 0;
+                                                        const percRealizadas = item.qtdTotal > 0 ? (item.qtdRealizadas / item.qtdTotal) * 100 : 0;
+                                                        const percConcluidasNaMeta = item.qtdTotal > 0 ? (item.qtdConcluidasNaMeta / item.qtdTotal) * 100 : 0;
+                                                        const percConcluidasForaMeta = item.qtdTotal > 0 ? (item.qtdConcluidasForaMeta / item.qtdTotal) * 100 : 0;
+                                                        const percConcluidasAposPrazo = item.qtdTotal > 0 ? (item.qtdConcluidasAposPrazo / item.qtdTotal) * 100 : 0;
+                                                        const percTotal = (percAberto + percAtraso + percRealizadas + percConcluidasNaMeta + percConcluidasForaMeta + percConcluidasAposPrazo).toFixed(2).replace('.', ',');
+
+                                                        const percAbertoStr = percAberto.toFixed(2).replace('.', ',');
+                                                        const percAtrasoStr = percAtraso.toFixed(2).replace('.', ',');
+                                                        const percRealizadasStr = percRealizadas.toFixed(2).replace('.', ',');
+                                                        const percConcluidasNaMetaStr = percConcluidasNaMeta.toFixed(2).replace('.', ',');
+                                                        const percConcluidasForaMetaStr = percConcluidasForaMeta.toFixed(2).replace('.', ',');
+                                                        const percConcluidasAposPrazoStr = percConcluidasAposPrazo.toFixed(2).replace('.', ',');
+
+                                                        return (
+                                                            <tr key={item.departamentoId + "-" + idx}>
+                                                                {/* Departamento com clique */}
+                                                                <td>{item.departamentoNome || "-"}</td>
+                                                                {/* Total */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdTotal > 0 ? styles.cellClickable : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdTotal > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId }, `Total de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdTotal}
+                                                                </td>
+                                                                {/* Abertas */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdAbertas > 0 ? styles.cellClickable : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdAbertas > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "aberta" }, `Abertas de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdAbertas}
+                                                                </td>
+
+                                                                {/* Atrasadas */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdAtrasadas > 0 ? styles.cellClickable : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdAtrasadas > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "atrasada" }, `Atrasadas de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdAtrasadas}
+                                                                </td>
+
+                                                                {/* Realizadas */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdRealizadas > 0 ? styles.cellClickableGreen : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdRealizadas > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "realizada" }, `Realizadas de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdRealizadas}
+                                                                </td>
+
+                                                                {/* Concluídas até a Meta */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdConcluidasNaMeta > 0 ? styles.cellClickable : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdConcluidasNaMeta > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "concluida_na_meta" }, `Concluídas até a Meta de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdConcluidasNaMeta}
+                                                                </td>
+
+                                                                {/* Concluídas fora da Meta */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdConcluidasForaMeta > 0 ? styles.cellClickable : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdConcluidasForaMeta > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "concluida_fora_meta" }, `Concluídas fora da Meta de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdConcluidasForaMeta}
+                                                                </td>
+
+                                                                {/* Concluídas após Prazo */}
+                                                                <td
+                                                                    className={`${styles.cellCenter} ${item.qtdConcluidasAposPrazo > 0 ? styles.cellClickable : ''}`}
+                                                                    onClick={() =>
+                                                                        item.qtdConcluidasAposPrazo > 0 &&
+                                                                        abrirModalSolicitacoes({ departamentoId: item.departamentoId, status: "concluida_fora_prazo" }, `Concluídas após Prazo de ${item.departamentoNome}`)
+                                                                    }
+                                                                >
+                                                                    {item.qtdConcluidasAposPrazo}
+                                                                </td>
+
+                                                                {/* Conclusão */}
+                                                                {mostrarConclusao && <td>{item.dataBaixa || item.dataConclusao || '-'}</td>}
+
+                                                                {/* As outras colunas permanecem normais, sem clique */}
+                                                                <td className={styles.cellCenter}>{percAbertoStr}%</td>
+                                                                <td className={styles.cellCenter}>{percAtrasoStr}%</td>
+                                                                <td className={styles.cellCenter}>{percRealizadasStr}%</td>
+                                                                <td className={styles.cellCenter}>{percConcluidasNaMetaStr}%</td>
+                                                                <td className={styles.cellCenter}>{percConcluidasForaMetaStr}%</td>
+                                                                <td className={styles.cellCenter}>{percConcluidasAposPrazoStr}%</td>
+                                                                <td className={styles.cellCenter}>{percTotal}%</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                    {/* Linha de totais */}
+                                                    <tr className={styles.totalRow}>
+                                                        <td>Total</td>
+                                                        <td className={styles.cellCenter}>{totais.qtdTotal}</td>
+                                                        <td className={styles.cellCenter}>{totais.qtdAbertas}</td>
+                                                        <td className={styles.cellCenter}>{totais.qtdAtrasadas}</td>
+                                                        <td className={styles.cellCenter}>{totais.qtdRealizadas}</td>
+                                                        {mostrarConclusao && <td className={styles.cellCenter}>{totais.qtdConcluidasAposPrazo}</td>}
+                                                        <td className={styles.cellCenter}>{totais.qtdConcluidasNaMeta}</td>
+                                                        <td className={styles.cellCenter}>{totais.qtdConcluidasForaMeta}</td>
+                                                        <td className={styles.cellCenter}>{totais.qtdConcluidasAposPrazo}</td>
+                                                        <td colSpan={7}></td>
+                                                    </tr>
+                                                </>
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={14} className={styles.textCenter}>
+                                                        {loadingBusca
+                                                            ? "Buscando..."
+                                                            : jaBuscou
+                                                                ? "Nenhum resultado encontrado."
+                                                                : "Use o filtro acima para buscar resultados."
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </>
                     )}
 
@@ -2796,10 +2715,10 @@ export default function RelatoriosPage() {
                     {tipoRelatorio === "baixas-diarias" && (
                         <>
                             {/* Filtros para Baixas Diárias */}
-                            <Card className={styles.filtrosCard}>
-                                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                            <div className={styles.filtrosCard}>
+                                <div className={styles.baixasFiltrosContainer}>
                                     {/* Primeira linha */}
-                                    <div style={{ display: "flex", gap: "16px", alignItems: "flex-end" }}>
+                                    <div className={styles.baixasFiltrosRow}>
                                         <div>
                                             <label className={styles.label}>Período Início:</label>
                                             <input
@@ -2855,7 +2774,7 @@ export default function RelatoriosPage() {
                                         </div>
                                     </div>
                                     {/* Segunda linha */}
-                                    <div style={{ display: "flex", justifyContent: "center" }}>
+                                    <div className={styles.baixasFiltrosButtonContainer}>
                                         <button
                                             className={`${styles.input} ${styles.button}`}
                                             onClick={buscarBaixasDiarias}
@@ -2865,57 +2784,21 @@ export default function RelatoriosPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </Card>
+                            </div>
 
                             {/* Resultado das Baixas Diárias */}
-                            <Card className={styles.resultCard}>
+                            <div className={styles.resultCard}>
                                 <div className={styles.tableWrapper}>
-                                    <div style={{
-                                        display: "flex",
-                                        gap: "var(--titan-spacing-sm)",
-                                        margin: "var(--titan-spacing-md) auto var(--titan-spacing-md) auto",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        width: "100%",
-                                        padding: "var(--titan-spacing-md)",
-                                        background: "var(--titan-card-bg)",
-                                        border: "1px solid var(--titan-stroke)",
-                                        borderRadius: "var(--titan-radius-md)",
-                                        boxShadow: "var(--titan-shadow-md)"
-                                    }}>
+                                    <div className={styles.baixasButtonsContainer}>
                                         <button
-                                            className={styles.button}
-                                            style={{
-                                                fontSize: "var(--titan-font-size-base)",
-                                                padding: "var(--titan-spacing-sm) var(--titan-spacing-lg)",
-                                                borderRadius: "var(--titan-radius-sm)",
-                                                fontWeight: "var(--titan-font-weight-semibold)",
-                                                minWidth: 80,
-                                                boxShadow: "var(--titan-shadow-sm)",
-                                                background: "var(--titan-card-bg)",
-                                                color: "var(--titan-text-high)",
-                                                border: "1px solid var(--titan-stroke)",
-                                                transition: "all var(--titan-transition-fast)"
-                                            }}
+                                            className={`${styles.button} ${styles.exportButtonBase} ${styles.exportButtonSecondary}`}
                                             onClick={() => exportBaixasPorDataToExcel(baixasPorData)}
                                             disabled={baixasPorData.length === 0}
                                         >
                                             Excel
                                         </button>
                                         <button
-                                            className={styles.button}
-                                            style={{
-                                                fontSize: "var(--titan-font-size-base)",
-                                                padding: "var(--titan-spacing-sm) var(--titan-spacing-lg)",
-                                                borderRadius: "var(--titan-radius-sm)",
-                                                fontWeight: "var(--titan-font-weight-semibold)",
-                                                minWidth: 80,
-                                                boxShadow: "var(--titan-shadow-sm)",
-                                                background: "var(--titan-card-bg)",
-                                                color: "var(--titan-text-high)",
-                                                border: "1px solid var(--titan-stroke)",
-                                                transition: "all var(--titan-transition-fast)"
-                                            }}
+                                            className={`${styles.button} ${styles.exportButtonBase} ${styles.exportButtonSecondary}`}
                                             onClick={() => exportBaixasPorDataToCSV(baixasPorData)}
                                             disabled={baixasPorData.length === 0}
                                         >
@@ -2924,7 +2807,7 @@ export default function RelatoriosPage() {
                                     </div>
 
                                     {errorBaixas && (
-                                        <div style={{ color: "red", textAlign: "center", margin: "16px" }}>
+                                        <div className={styles.errorMessage}>
                                             {errorBaixas}
                                         </div>
                                     )}
@@ -2932,7 +2815,7 @@ export default function RelatoriosPage() {
                                     {/* NOVO: Tabela usando formato agrupado por data */}
                                     {baixasPorData.length > 0 ? (
                                         <div>
-                                            <table className={styles.resultTable} style={{ borderSpacing: '0 8px' }}>
+                                            <table className={`${styles.resultTable} ${styles.baixasTable}`}>
                                                 <thead>
                                                     <tr>
                                                         <th>Data</th>
@@ -2947,43 +2830,43 @@ export default function RelatoriosPage() {
                                                     {(() => {
                                                         // PRIMEIRO: Agrupar por data (consolidar objetos com mesma data)
                                                         const dadosConsolidados = new Map();
-                                                        
+
                                                         baixasPorData.forEach(grupoData => {
                                                             const dataKey = grupoData.data;
-                                                            
+
                                                             if (!dadosConsolidados.has(dataKey)) {
                                                                 dadosConsolidados.set(dataKey, {
                                                                     data: dataKey,
                                                                     itens: []
                                                                 });
                                                             }
-                                                            
-                                                          
+
+
                                                             // Adicionar apenas itens de escopo 'usuario_obrigacao' com concluidasNoDia > 0
                                                             const itensComConclusao = grupoData.itens.filter(i => i.escopo === 'usuario_obrigacao' && i.concluidasNoDia > 0);
                                                             if (itensComConclusao.length > 0) {
                                                                 dadosConsolidados.get(dataKey).itens.push(...itensComConclusao);
                                                             }
                                                         });
-                                                        
+
                                                         // SEGUNDO: Para cada data consolidada, renderizar as linhas
                                                         return Array.from(dadosConsolidados.values())
                                                             .filter((grupoData) => grupoData.itens.length > 0)
                                                             .map((grupoData, idx) => (
                                                                 grupoData.itens.map((item, itemIdx) => (
-                                                                    <tr key={`${grupoData.data}-${item.usuarioId}-${item.obrigacaoId}-${itemIdx}`}>
-                                                                        <td style={{ fontWeight: 'var(--titan-font-weight-bold)', color: 'var(--titan-success)', textAlign: 'center' }}>
+                                                                                                                                        <tr key={`${grupoData.data}-${item.usuarioId}-${item.obrigacaoId}-${itemIdx}`}>
+                                                                        <td className={styles.cellData}>
                                                                             {corrigirTimezoneData(grupoData.data).split('-').reverse().join('/')}
                                                                         </td>
                                                                         <td>{item.departamentoNome}</td>
                                                                         <td>{item.obrigacaoNome}</td>
                                                                         <td>{item.concluidoPorNome || item.usuarioNome}</td>
-                                                                        <td className={styles.cellCenter} style={{ fontWeight: 'bold', color: '#059669', cursor: 'pointer', textDecoration: 'underline' }}
+                                                                        <td className={`${styles.cellCenter} ${styles.cellBaixadas}`}
                                                                             onClick={() => abrirModalBaixadas(item, grupoData.data)}
                                                                             title="Clique para ver detalhes das baixadas">
                                                                           {item.concluidasNoDia}
                                                                         </td>
-                                                                        <td className={styles.cellCenter} style={{ fontWeight: 'bold', color: 'var(--titan-error)', cursor: 'pointer', textDecoration: 'underline' }}
+                                                                        <td className={`${styles.cellCenter} ${styles.cellRestantes}`}
                                                                             onClick={() => abrirModalRestantes(item, grupoData.data)}
                                                                             title="Clique para ver detalhes das restantes">
                                                                           {item.restantesNoDia}
@@ -2992,15 +2875,15 @@ export default function RelatoriosPage() {
                                                                 ))
                                                             ));
                                                     })()}
-                                                    {/* Linha de totais */}
-                                                    <tr style={{ fontWeight: "var(--titan-font-weight-bold)", background: "var(--titan-base-00)", color: "var(--titan-text-high)" }}>
-                                                        <td colSpan={4} style={{ textAlign: 'right' }}>Total</td>
-                                                        <td className={styles.cellCenter} style={{ fontWeight: 'bold', color: '#059669' }}>
+                                                                                                        {/* Linha de totais */}
+                                                    <tr className={styles.totalRow}>
+                                                        <td colSpan={4} className={styles.textRight}>Total</td>
+                                                        <td className={`${styles.cellCenter} ${styles.cellBaixadas}`}>
                                                           {baixasPorData.reduce((total, grupo) =>
                                                             total + (grupo.itens ? grupo.itens.filter((i) => i.escopo === 'usuario_obrigacao' && i.concluidasNoDia > 0).reduce((subTotal, item) => subTotal + (item.concluidasNoDia || 0), 0) : 0), 0
                                                           )}
                                                         </td>
-                                                        <td className={styles.cellCenter} style={{ fontWeight: 'bold', color: 'var(--titan-error)' }}>
+                                                        <td className={`${styles.cellCenter} ${styles.cellRestantes}`}>
                                                           {baixasPorData.reduce((total, grupo) =>
                                                             total + (grupo.itens ? grupo.itens.filter((i) => i.escopo === 'usuario_obrigacao' && i.concluidasNoDia > 0).reduce((subTotal, item) => subTotal + (item.restantesNoDia || 0), 0) : 0), 0
                                                           )}
@@ -3012,61 +2895,45 @@ export default function RelatoriosPage() {
                                     ) : baixasAgrupadas.length > 0 ? (
                                         /* LEGADO: Tabela usando formato antigo */
                                         <div>
-                                                                                         <table className={styles.resultTable}>
-                                                 <thead>
-                                                     <tr>
+                                            <table className={styles.resultTable}>
+                                                <thead>
+                                                    <tr>
                                                         <th>Data</th>
-                                                         <th>Departamento</th>
-                                                         <th>Usuário</th>
-                                                         {/* <th>Obrigação</th> */}
-                                                         <th>Quantidade</th>
-                                                         <th>Tarefas Restantes</th>
-                                                     </tr>
-                                                 </thead>
+                                                        <th>Departamento</th>
+                                                        <th>Usuário</th>
+                                                        {/* <th>Obrigação</th> */}
+                                                        <th>Quantidade</th>
+                                                        <th>Tarefas Restantes</th>
+                                                    </tr>
+                                                </thead>
                                                 <tbody>
                                                                                                         {baixasAgrupadas.map((item, idx) => (
                                                         <tr key={`${item.departamentoId}-${item.usuarioId}-${item.obrigacaoId}-${idx}`}>
-                                                            <td style={{ 
-                                                                fontWeight: 'var(--titan-font-weight-bold)', 
-                                                                color: 'var(--titan-success)', 
-                                                                textAlign: 'center' 
-                                                            }}>
+                                                            <td className={styles.cellData}>
                                                                 {corrigirTimezoneData(item.datasConclusao[0]).split('-').reverse().join('/')}
                                                             </td>
                                                             <td>{item.departamentoNome}</td>
                                                             <td>{item.usuarioNome}</td>
                                                             {/* <td>{item.obrigacaoNome}</td> */}
                                                             <td 
-                                                                className={styles.cellCenter} 
-                                                                style={{ 
-                                                                    fontWeight: 'var(--titan-font-weight-bold)', 
-                                                                    color: 'var(--titan-primary)',
-                                                                    cursor: 'pointer',
-                                                                }}
+                                                                className={`${styles.cellCenter} ${styles.cellQuantidade}`}
                                                                 onClick={() => abrirModalBaixas(item)}
                                                                 title="Clique para ver detalhes"
                                                             >
                                                                 {item.quantidade}
                                                             </td>
-                                                            <td className={styles.cellCenter} style={{ 
-                                                                fontWeight: 'var(--titan-font-weight-bold)', 
-                                                                color: 'var(--titan-error)' 
-                                                            }}>
+                                                            <td className={`${styles.cellCenter} ${styles.cellRestantes}`}>
                                                                 {item.tarefasRestantes}
                                                             </td>
                                                         </tr>
                                                     ))}
                                                     {/* Linha de totais */}
-                                                    <tr style={{ 
-                                                        fontWeight: "var(--titan-font-weight-bold)", 
-                                                        background: "var(--titan-base-00)",
-                                                        color: "var(--titan-text-high)"
-                                                    }}>
+                                                    <tr className={styles.totalRow}>
                                                         <td colSpan={4}>Total</td>
-                                                        <td className={styles.cellCenter} style={{ fontWeight: 'bold', color: 'var(--titan-primary)' }}>
+                                                        <td className={`${styles.cellCenter} ${styles.cellQuantidade}`}>
                                                             {baixasAgrupadas.reduce((total, item) => total + item.quantidade, 0)}
                                                         </td>
-                                                        <td className={styles.cellCenter} style={{ fontWeight: 'bold', color: 'var(--titan-error)' }}>
+                                                        <td className={`${styles.cellCenter} ${styles.cellRestantes}`}>
                                                             {baixasAgrupadas.reduce((total, item) => total + item.tarefasRestantes, 0)}
                                                         </td>
                                                     </tr>
@@ -3074,15 +2941,15 @@ export default function RelatoriosPage() {
                                             </table>
                                         </div>
                                     ) : (
-                                        <div style={{ textAlign: "center", padding: "32px", color: "#6b7280" }}>
-                                            {loadingBaixas 
-                                                ? "Buscando baixas..." 
+                                        <div className={styles.emptyMessage}>
+                                            {loadingBaixas
+                                                ? "Buscando baixas..."
                                                 : "Nenhuma baixa encontrada para a data selecionada."
                                             }
                                         </div>
                                     )}
                                 </div>
-                            </Card>
+                            </div>
                         </>
                     )}
                 </div>
@@ -3094,10 +2961,10 @@ export default function RelatoriosPage() {
                     visible={modalAberto}
                     onClose={() => setModalAberto(false)}
                     abaAtiva={tipoTarefa === "solicitacoes" ? "solicitacoes" : "obrigacoes"}
-                    setAbaAtiva={() => {}}
+                    setAbaAtiva={() => { }}
                 />
             )}
-            
+
             {/* Modal para detalhes de baixas diárias */}
             {modalBaixasAberto && (
                 <VisaoGeralModal
@@ -3106,7 +2973,7 @@ export default function RelatoriosPage() {
                     visible={modalBaixasAberto}
                     onClose={() => setModalBaixasAberto(false)}
                     abaAtiva="obrigacoes"
-                    setAbaAtiva={() => {}} // Não precisa alterar a aba no modal de baixas
+                    setAbaAtiva={() => { }} // Não precisa alterar a aba no modal de baixas
                 />
             )}
         </>

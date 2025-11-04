@@ -58,8 +58,8 @@ router.get("/setores", verifyToken, async (req, res) => {
     const [setores] = await db.query(`
       SELECT DISTINCT d.nome as setor
       FROM obrigacoes o
-      LEFT JOIN departamentos d ON o.departamentoId = d.id
-      WHERE o.empresaId = ? AND d.nome IS NOT NULL
+      LEFT JOIN departamentos d ON o.departamento_id = d.id
+      WHERE o.empresa_id = ? AND d.nome IS NOT NULL
       ORDER BY d.nome ASC
     `, [empresaId]);
 
@@ -290,8 +290,8 @@ router.post("/definir-responsavel-lote", verifyToken, async (req, res) => {
     let query = `
       SELECT o.id as obrigacaoId, o.nome as obrigacaoNome, d.nome as departamentoNome
       FROM obrigacoes o
-      LEFT JOIN departamentos d ON o.departamentoId = d.id
-      WHERE o.empresaId = ?
+      LEFT JOIN departamentos d ON o.departamento_id = d.id
+      WHERE o.empresa_id = ?
     `;
     const params = [empresaId];
 
@@ -3179,9 +3179,9 @@ router.post("/:obrigacaoId/comentario", verifyToken, async (req, res) => {
       pad(agora.getSeconds());
 
     await db.query(`
-  INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, anexos, tipo, criadoEm)
-  VALUES (?, ?, ?, ?, ?, ?)
-`, [obrigacaoId, usuarioId, comentario || null, JSON.stringify(anexos || []), tipo || "usuario", criadoEm]);
+  INSERT INTO comentarios_obrigacao (obrigacao_id, usuario_id, comentario, anexos, tipo)
+  VALUES (?, ?, ?, ?, ?)
+`, [obrigacaoId, usuarioId, comentario || null, JSON.stringify(anexos || []), tipo || "usuario"]);
 
 
     res.json({ success: true });
@@ -3200,15 +3200,15 @@ router.get("/:obrigacaoId/comentarios", verifyToken, async (req, res) => {
      SELECT 
   co.id,
   co.comentario,
-  co.criadoEm,
+  co.criado_em AS criadoEm,
   co.anexos,
   co.tipo,
   u.nome AS autor,
-  u.imagem AS avatar
+  u.avatar_url AS avatar
       FROM comentarios_obrigacao co
-      JOIN usuarios u ON co.usuarioId = u.id
-      WHERE co.obrigacaoId = ?
-      ORDER BY co.criadoEm DESC
+      JOIN usuarios u ON co.usuario_id = u.id
+      WHERE co.obrigacao_id = ?
+      ORDER BY co.criado_em DESC
     `, [obrigacaoId]);
 
     // Parse do campo JSON
@@ -3284,46 +3284,46 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
     let query = `
       SELECT 
         oc.*, 
-        c.nome AS cliente_nome, 
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS cliente_nome, 
         c.status AS status_cliente,
         o.nome AS nomeObrigacao,
-        o.departamentoId,
+        o.departamento_id,
         d.nome AS departamento_nome,
-        o.metaQtdDias, o.metaTipoDias, o.acaoQtdDias, o.acaoTipoDias
+        o.meta_qtd_dias, o.meta_tipo_dias, o.acao_qtd_dias
       FROM obrigacoes_clientes oc
-      JOIN clientes c ON oc.clienteId = c.id
-      JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      LEFT JOIN departamentos d ON o.departamentoId = d.id`;
+      JOIN clientes c ON oc.cliente_id = c.id
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      LEFT JOIN departamentos d ON o.departamento_id = d.id`;
     
     let params = [empresaId];
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ LEFT JOIN para incluir obrigações sem responsáveis + filtro por usuário
       query += `
-      LEFT JOIN obrigacoes_clientes_responsaveis ocr ON ocr.obrigacaoClienteId = oc.id`;
+      LEFT JOIN obrigacoes_clientes_responsaveis ocr ON ocr.obrigacao_cliente_id = oc.id`;
     }
     
     query += `
-      WHERE c.empresaId = ? AND oc.status != 'cancelada'`;
+      WHERE c.empresa_id = ? AND oc.status != 'cancelada'`;
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ Buscar departamento do usuário logado
       const [usuarioDept] = await db.query(`
-        SELECT re.departamentoId 
-        FROM relacao_empresas re 
-        WHERE re.usuarioId = ? AND re.empresaId = ?
+        SELECT ue.departamento_id 
+        FROM usuarios_empresas ue 
+        WHERE ue.usuario_id = ? AND ue.empresa_id = ?
       `, [usuarioId, empresaId]);
       
-      const departamentoUsuario = usuarioDept[0]?.departamentoId;
+      const departamentoUsuario = usuarioDept[0]?.departamento_id;
       
       if (departamentoUsuario) {
         // ✅ Filtro: responsabilidade do usuário OU obrigações sem responsáveis do mesmo departamento OU obrigações esporádicas com responsável direto
-        query += ` AND (ocr.usuarioId = ? OR (ocr.usuarioId IS NULL AND o.departamentoId = ?) OR (o.frequencia = 'Esporádica' AND oc.responsavelId = ?))`;
+        query += ` AND (ocr.usuario_id = ? OR (ocr.usuario_id IS NULL AND o.departamento_id = ?) OR (o.frequencia = 'Esporádica' AND oc.responsavel_id = ?))`;
         params.push(usuarioId, departamentoUsuario, usuarioId);
         console.log(`👥 [Obrigações Todas] Usuário departamento: ${departamentoUsuario}, incluindo obrigações órfãs do mesmo dept e esporádicas`);
       } else {
         // ✅ Usuário sem departamento: suas responsabilidades OU obrigações esporádicas com responsável direto
-        query += ` AND (ocr.usuarioId = ? OR (o.frequencia = 'Esporádica' AND oc.responsavelId = ?))`;
+        query += ` AND (ocr.usuario_id = ? OR (o.frequencia = 'Esporádica' AND oc.responsavel_id = ?))`;
         params.push(usuarioId, usuarioId);
         console.log(`👤 [Obrigações Todas] Usuário sem departamento, responsabilidades diretas e esporádicas`);
       }
@@ -3346,9 +3346,9 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
       const idsLote = idsObrigacao.slice(i, i + lote);
       lotes.push(
         db.query(`
-          SELECT id, concluida, cancelada, dataConclusao, obrigacaoClienteId
+          SELECT id, concluida, cancelada, data_conclusao, obrigacao_cliente_id AS obrigacaoClienteId
           FROM obrigacoes_atividades_clientes
-          WHERE obrigacaoClienteId IN (?)
+          WHERE obrigacao_cliente_id IN (?)
         `, [idsLote])
       );
     }
@@ -3359,21 +3359,21 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
     // Primeiro busca da tabela obrigacoes_clientes_responsaveis
     const [responsaveisTabelaRelacao] = await db.query(`
       SELECT 
-        ocr.obrigacaoClienteId,
-        ocr.usuarioId,
+        ocr.obrigacao_cliente_id AS obrigacaoClienteId,
+        ocr.usuario_id AS usuarioId,
         u.nome AS responsavelNome,
         u.email AS responsavelEmail
       FROM obrigacoes_clientes_responsaveis ocr
-      JOIN usuarios u ON u.id = ocr.usuarioId
-      WHERE ocr.obrigacaoClienteId IN (?)
+      JOIN usuarios u ON u.id = ocr.usuario_id
+      WHERE ocr.obrigacao_cliente_id IN (?)
     `, [idsObrigacao]);
 
     // Buscar obrigações com frequência "Esporádica" que não têm responsáveis na tabela de relação
     const [obrigacoesEsporadicas] = await db.query(`
       SELECT oc.id as obrigacaoClienteId
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON o.id = oc.obrigacaoId
-      WHERE oc.id IN (?) AND o.frequencia = 'Esporádica' AND oc.responsavelId IS NOT NULL
+      JOIN obrigacoes o ON o.id = oc.obrigacao_id
+      WHERE oc.id IN (?) AND o.frequencia = 'Esporádica' AND oc.responsavel_id IS NOT NULL
     `, [idsObrigacao]);
 
     // Buscar responsáveis diretos das obrigações esporádicas
@@ -3383,11 +3383,11 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
       const [responsaveisDiretos] = await db.query(`
         SELECT 
           oc.id as obrigacaoClienteId,
-          oc.responsavelId as usuarioId,
+          oc.responsavel_id as usuarioId,
           u.nome AS responsavelNome,
           u.email AS responsavelEmail
         FROM obrigacoes_clientes oc
-        JOIN usuarios u ON u.id = oc.responsavelId
+        JOIN usuarios u ON u.id = oc.responsavel_id
         WHERE oc.id IN (?)
       `, [idsEsporadicas]);
       responsaveisEsporadicos = responsaveisDiretos;
@@ -3700,7 +3700,7 @@ router.post("/esporadica/criar-tarefa", verifyToken, async (req, res) => {
       if (andamento && andamento.trim()) {
         await db.query(
           `INSERT INTO comentarios_obrigacao 
-           (obrigacaoId, usuarioId, comentario, tipo)
+           (obrigacao_id, usuario_id, comentario, tipo)
            VALUES (?, ?, ?, 'usuario')`,
           [obrigacaoClienteId, userId, andamento.trim()]
         );
@@ -4838,7 +4838,7 @@ router.post("/comentario", verifyToken, async (req, res) => {
 
     // Inserir comentário
     const [result] = await db.query(
-      `INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, tipo) 
+      `INSERT INTO comentarios_obrigacao (obrigacao_id, usuario_id, comentario, tipo) 
        VALUES (?, ?, ?, ?)`,
       [obrigacaoId, userId, comentario, tipo]
     );
@@ -4867,13 +4867,13 @@ router.get("/:obrigacaoId/comentarios", verifyToken, async (req, res) => {
         co.id,
         co.comentario,
         co.tipo,
-        co.criadoEm,
+        co.criado_em AS criadoEm,
         u.nome as usuarioNome,
         u.email as usuarioEmail
       FROM comentarios_obrigacao co
-      JOIN usuarios u ON u.id = co.usuarioId
-      WHERE co.obrigacaoId = ?
-      ORDER BY co.criadoEm DESC
+      JOIN usuarios u ON u.id = co.usuario_id
+      WHERE co.obrigacao_id = ?
+      ORDER BY co.criado_em DESC
     `, [obrigacaoId]);
 
     res.json(comentarios);
@@ -4899,22 +4899,22 @@ router.post("/comentarios/lote", verifyToken, async (req, res) => {
     const placeholders = obrigacaoIds.map(() => '?').join(',');
     const [comentarios] = await db.query(`
       SELECT 
-        co.obrigacaoId,
+        co.obrigacao_id AS obrigacaoId,
         co.id as comentarioId,
         co.comentario,
         co.tipo,
-        co.criadoEm,
+        co.criado_em AS criadoEm,
         u.nome as autorNome,
         u.id as autorId
       FROM comentarios_obrigacao co
-      JOIN usuarios u ON co.usuarioId = u.id
-      WHERE co.obrigacaoId IN (${placeholders})
+      JOIN usuarios u ON co.usuario_id = u.id
+      WHERE co.obrigacao_id IN (${placeholders})
       AND co.id = (
         SELECT MAX(co2.id) 
         FROM comentarios_obrigacao co2 
-        WHERE co2.obrigacaoId = co.obrigacaoId
+        WHERE co2.obrigacao_id = co.obrigacao_id
       )
-      ORDER BY co.criadoEm DESC
+      ORDER BY co.criado_em DESC
     `, obrigacaoIds);
 
     // Organizar por obrigacaoId para facilitar o acesso
@@ -6048,8 +6048,8 @@ router.post("/prorrogar-tarefas", verifyToken, async (req, res) => {
         // Adicionar comentário na tabela comentarios_obrigacao
         const comentarioQuery = `
           INSERT INTO comentarios_obrigacao 
-          (obrigacaoid, comentario, tipo, usuarioId, criadoEm)
-          VALUES (?, ?, 'usuario', ?, NOW())
+          (obrigacao_id, comentario, tipo, usuario_id)
+          VALUES (?, ?, 'usuario', ?)
         `;
         
         await connection.execute(comentarioQuery, [

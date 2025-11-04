@@ -65,7 +65,7 @@ export function ClienteSelectInline({
       const token = getToken();
       if (!empresaId || !token) return [];
       try {
-        const res = await fetch(`${BASE_URL}/api/clientes?empresaId=${empresaId}&page=${pageNum}&limit=30&search=${nome}`, {
+        const res = await fetch(`${BASE_URL}/gestao/clientes?empresaId=${empresaId}&page=${pageNum}&limit=30&search=${nome}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const result = await res.json();

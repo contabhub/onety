@@ -306,6 +306,12 @@ const MODULE_REGISTRY = {
         icon: <FileText size={18} />,
         route: '/gestao/pdf-layout'
       },
+      {
+        id: 'relatorios',
+        label: 'Relatórios',
+        icon: <FileBarChart size={18} />,
+        route: '/gestao/relatorios'
+      },
 
     ]
   },

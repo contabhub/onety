@@ -22,28 +22,12 @@ function compareConclusao(a, b) {
   return new Date(dA).getTime() - new Date(dB).getTime();
 }
 
-
-
-
-
-export default function VisaoGeralModal({
-  titulo,
-  tarefas,
-  visible,
-  onClose,
-  abaAtiva,
-  setAbaAtiva,
-}) {
-  if (!visible) return null;
-
+export default function VisaoGeralModal({ titulo, tarefas, onClose, abaAtiva }) {
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [itensPorPagina, setItensPorPagina] = useState(25);
+  const [abaAtivaLocal, setAbaAtiva] = useState(abaAtiva || "solicitacoes");
   const [searchTerm, setSearchTerm] = useState("");
-  const [itensPorPagina, setItensPorPagina] = useState(10);
-  const [sortConfig, setSortConfig] = useState(
-    { key: "vencimento", direction: "asc" }
-  );
-
-
 
   function requestSort(key) {
     let direction = "asc";
@@ -60,8 +44,6 @@ export default function VisaoGeralModal({
     const [ano, mes, dia] = dataVencimento.split("-");
     return `${dia}/${mes}/${ano}`;
   }
-
-
 
   const filtroTexto = (t) => {
     const termo = searchTerm.toLowerCase();
@@ -96,20 +78,14 @@ export default function VisaoGeralModal({
     );
   };
 
-
-
   const solicitacoes = tarefas.filter((t) => t.tipo === "tarefa");
   const obrigacoesListadas = tarefas.filter((t) => t.tipo === "obrigacao");
 
-
-  const tarefasFiltradasBase = abaAtiva === "solicitacoes" ? solicitacoes : obrigacoesListadas;
+  const tarefasFiltradasBase = abaAtivaLocal === "solicitacoes" ? solicitacoes : obrigacoesListadas;
   const tarefasFiltradas = tarefasFiltradasBase.filter(filtroTexto);
 
-
-
-
   const totalPaginas = Math.ceil(tarefasFiltradas.length / itensPorPagina);
-  let tarefasOrdenadas = [...tarefasFiltradas];
+  const tarefasOrdenadas = [...tarefasFiltradas];
   if (sortConfig.key) {
     tarefasOrdenadas.sort((a, b) => {
       let result = 0;
@@ -133,10 +109,9 @@ export default function VisaoGeralModal({
     paginaAtual * itensPorPagina
   );
 
-
   useEffect(() => {
     setPaginaAtual(1);
-  }, [searchTerm, abaAtiva]);
+  }, [searchTerm, abaAtivaLocal]);
 
   useEffect(() => {
     setPaginaAtual(1);
@@ -198,14 +173,14 @@ export default function VisaoGeralModal({
         <div className={styles.tabsContainer}>
           <button
             onClick={() => setAbaAtiva("solicitacoes")}
-            className={`${styles.tabButton} ${abaAtiva === "solicitacoes" ? styles.active : ""}`}
+            className={`${styles.tabButton} ${abaAtivaLocal === "solicitacoes" ? styles.active : ""}`}
           >
             Processos
           </button>
 
           <button
             onClick={() => setAbaAtiva("obrigacoes")}
-            className={`${styles.tabButton} ${abaAtiva === "obrigacoes" ? styles.active : ""}`}
+            className={`${styles.tabButton} ${abaAtivaLocal === "obrigacoes" ? styles.active : ""}`}
           >
             Obrigações
           </button>
@@ -213,7 +188,7 @@ export default function VisaoGeralModal({
 
         <input
           type="text"
-          placeholder={`Buscar ${abaAtiva === "solicitacoes" ? "solicitações" : "obrigações"}...`}
+          placeholder={`Buscar ${abaAtivaLocal === "solicitacoes" ? "solicitações" : "obrigações"}...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={styles.searchInput}
@@ -293,51 +268,78 @@ export default function VisaoGeralModal({
                 </div>
               </th>
 
-              <th style={{ minWidth: 90, maxWidth: 130, wordBreak: "break-word" }}>Datas</th>
-              {mostrarConclusao && <th
-                className={styles.sortable}
-                style={{ minWidth: 110, maxWidth: 120, whiteSpace: "nowrap", wordBreak: "break-word", textAlign: "center" }}
-                onClick={() => requestSort("conclusao")}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
-                  Conclusão
-                  {sortConfig.key === "conclusao" && (
+              <th className={styles.sortable} onClick={() => requestSort("vencimento")}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  Datas
+                  {sortConfig.key === "vencimento" && (
                     <span className={styles.sortIndicator}>
                       {sortConfig.direction === "asc" ? "▲" : "▼"}
                     </span>
                   )}
                 </div>
-              </th>}
+              </th>
 
+              {mostrarConclusao && (
+                <th className={styles.sortable} onClick={() => requestSort("conclusao")}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    Conclusão
+                    {sortConfig.key === "conclusao" && (
+                      <span className={styles.sortIndicator}>
+                        {sortConfig.direction === "asc" ? "▲" : "▼"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              )}
 
-              {abaAtiva === "solicitacoes" && <th>Responsável</th>}
+              {abaAtivaLocal === "solicitacoes" && (
+                <th className={styles.sortable} onClick={() => requestSort("responsavel")}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    Responsável
+                    {sortConfig.key === "responsavel" && (
+                      <span className={styles.sortIndicator}>
+                        {sortConfig.direction === "asc" ? "▲" : "▼"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              )}
+
               <th>Atividades</th>
             </tr>
           </thead>
-          <tbody className={styles.tableBody}>
+          <tbody>
             {tarefasVisiveis.length === 0 ? (
               <tr>
-                <td colSpan={mostrarConclusao ? 11 : 10} className={styles.noResults}>
-                  Nenhuma {abaAtiva === "solicitacoes" ? "solicitação" : "obrigação"} encontrada.
+                <td colSpan={mostrarConclusao ? 11 : 10} style={{ textAlign: "center", padding: "20px" }}>
+                  Nenhuma {abaAtivaLocal === "solicitacoes" ? "solicitação" : "obrigação"} encontrada
                 </td>
               </tr>
             ) : (
               tarefasVisiveis.map((t, i) => (
                 <tr key={i}>
-                  <td className={styles.tableBody}>{i + 1}</td>
-                  <td className={styles.tableBody}>
-                    {capitalize(t.status)}
-                    {t.baixadaAutomaticamente === 1 && (
-                      <span
-                        className={styles.badgeAuto}
-                        title="Baixada Automaticamente"
-                      >
-                        Auto
-                      </span>
-                    )}
+                  <td className={`${styles.tableBody} ${styles.cellAtividades}`}>
+                    {(t.categoria === "Finalizada" ||
+                      t.categoria === "Na Programação" ||
+                      t.categoria === "Concluída Após Meta/Prazo" ||
+                      t.status?.toLowerCase() === "concluída" ||
+                      t.baixadaAutomaticamente === 1) ? (
+                        "100%"
+                      ) : (
+                        Array.isArray(t.atividades) && t.atividades.length > 0
+                          ? `${Math.round(
+                              (
+                                t.atividades.filter((a) => a.concluida === 1 || a.cancelada === 1).length /
+                                t.atividades.length
+                              ) * 100
+                            )}%`
+                          : "0%"
+                      )
+                    }
                   </td>
-                  <td className={styles.tableBody}>{t.departamento || t.departamentoNome || t.departamento_nome || '-'}</td>
-                  <td className={`${styles.tableBody} ${styles.cellId}`}>{t.id}</td>
+                  <td className={`${styles.tableBody}`}>{t.status || "-"}</td>
+                  <td className={`${styles.tableBody}`}>{t.departamento || "-"}</td>
+                  <td className={`${styles.tableBody}`}>{t.id}</td>
                   <td
                     className={`${styles.tableBody} ${styles.cellAssunto}`}
                     onClick={() => {
@@ -350,7 +352,6 @@ export default function VisaoGeralModal({
                   >
                     {t.assunto || t.nome}
                   </td>
-
                   <td className={`${styles.tableBody} ${styles.cellCliente}`}>{t.cliente_nome || "-"}
                     {t.cliente_cnpj && (
                       <div className={styles.cellClienteCnpj}>{t.cliente_cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")}</div>
@@ -375,30 +376,7 @@ export default function VisaoGeralModal({
                       {getDataConclusao(t)}
                     </td>
                   )}
-
-
-
-                  {abaAtiva === "solicitacoes" && <td className={`${styles.tableBody} ${styles.cellResponsavel}`}>{t.responsavel || "-"}</td>}
-
-                  <td className={`${styles.tableBody} ${styles.cellAtividades}`}>
-                    {(t.categoria === "Finalizada" ||
-                      t.categoria === "Na Programação" ||
-                      t.categoria === "Concluída Após Meta/Prazo" ||
-                      t.status?.toLowerCase() === "concluída" ||
-                      t.baixadaAutomaticamente === 1) ? (
-                      "100%"
-                    ) : (
-                      Array.isArray(t.atividades) && t.atividades.length > 0
-                        ? `${Math.round(
-                          (
-                            t.atividades.filter((a) => a.concluida === 1 || a.cancelada === 1).length /
-                            t.atividades.length
-                          ) * 100
-                        )}%`
-                        : "0%"
-                    )
-                    }
-                  </td>
+                  {abaAtivaLocal === "solicitacoes" && <td className={`${styles.tableBody} ${styles.cellResponsavel}`}>{t.responsavel || "-"}</td>}
                 </tr>
               ))
             )}
@@ -407,17 +385,17 @@ export default function VisaoGeralModal({
         {/* Paginação */}
         <div className={styles.paginationContainer}>
           <div className={styles.paginationInfo}>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
               gap: "12px",
               padding: "8px 12px",
               backgroundColor: "rgba(255, 255, 255, 0.05)",
               borderRadius: "8px",
               border: "1px solid rgba(255, 255, 255, 0.1)"
             }}>
-              <span style={{
-                fontSize: "14px",
+              <span style={{ 
+                fontSize: "14px", 
                 color: "rgba(255, 255, 255, 0.8)",
                 fontWeight: "500"
               }}>

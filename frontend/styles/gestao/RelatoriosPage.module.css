@@ -301,3 +301,146 @@
     justify-self: end;
     margin-left: auto;
   }
+
+/* Estilos para botões de exportação */
+.exportButtonsContainer {
+  display: flex;
+  gap: 12px;
+  margin: 16px auto;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.exportButtonBase {
+  font-size: var(--onity-type-body-size);
+  padding: var(--onity-space-s) var(--onity-space-l);
+  border-radius: var(--onity-radius-xs);
+  font-weight: 600;
+  min-width: 80px;
+  box-shadow: var(--onity-elev-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.exportButtonSecondary {
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.exportButtonPrimary {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border: 1px solid var(--onity-color-primary);
+}
+
+/* Estilos para células clicáveis */
+.cellClickable {
+  cursor: pointer;
+  color: #2563eb;
+}
+
+.cellClickableGreen {
+  cursor: pointer;
+  color: #059669;
+}
+
+/* Estilos para linha de totais */
+.totalRow {
+  font-weight: 700;
+  background: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+
+/* Estilos para filtros de baixas diárias */
+.baixasFiltrosContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.baixasFiltrosRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.baixasFiltrosButtonContainer {
+  display: flex;
+  justify-content: center;
+}
+
+/* Estilos para container de botões de baixas */
+.baixasButtonsContainer {
+  display: flex;
+  gap: var(--onity-space-s);
+  margin: var(--onity-space-m) auto;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: var(--onity-space-m);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-med);
+}
+
+/* Estilos para mensagem de erro */
+.errorMessage {
+  color: var(--onity-color-error);
+  text-align: center;
+  margin: 16px;
+}
+
+/* Estilos para tabela de baixas */
+.baixasTable {
+  border-spacing: 0 8px;
+}
+
+/* Estilos para células de data nas tabelas de baixas */
+.cellData {
+  font-weight: 700;
+  color: var(--onity-color-success);
+  text-align: center;
+}
+
+.cellBaixadas {
+  font-weight: 700;
+  color: #059669;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.cellRestantes {
+  font-weight: 700;
+  color: var(--onity-color-error);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.cellQuantidade {
+  font-weight: 700;
+  color: var(--onity-color-primary);
+  cursor: pointer;
+}
+
+/* Estilos para mensagem vazia */
+.emptyMessage {
+  text-align: center;
+  padding: 32px;
+  color: var(--onity-color-text);
+  opacity: 0.7;
+}
+
+/* Estilos para coluna de texto centralizado */
+.textCenter {
+  text-align: center;
+}
+
+/* Estilos para coluna de texto à direita */
+.textRight {
+  text-align: right;
+}
