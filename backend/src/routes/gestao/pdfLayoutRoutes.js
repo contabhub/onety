@@ -433,7 +433,7 @@ router.get("/", autenticarToken, async (req, res) => {
     query = `SELECT pl.*, d.nome AS departamento 
              FROM pdf_layouts pl 
              JOIN departamentos d ON pl.departamento_id = d.id
-             WHERE d.empresaId = ?`;
+             WHERE d.empresa_id = ?`;
     params.push(empresaId);
   }
 
@@ -471,7 +471,7 @@ router.post("/", autenticarToken, async (req, res) => {
 
     // Verificar se o departamento pertence à empresa do usuário
     const [[departamento]] = await db.query(
-      `SELECT id FROM departamentos WHERE id = ? AND empresaId = ?`,
+      `SELECT id FROM departamentos WHERE id = ? AND empresa_id = ?`,
       [departamento_id, empresaId]
     );
 
@@ -1199,7 +1199,7 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
 
     // Buscar cliente pelo CNPJ
     const [clientes] = await db.query(
-      "SELECT id, nome FROM clientes WHERE cnpjCpf = ? AND empresaId = ?",
+      "SELECT id, nome_fantasia, razao_social FROM clientes WHERE cpf_cnpj = ? AND empresa_id = ?",
       [cnpjExtraido, empresaId]
     );
 
@@ -1211,6 +1211,7 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
     }
 
     const cliente = clientes[0];
+    const clienteNome = cliente.nome_fantasia || cliente.razao_social;
 
     // Determinar qual layout foi usado para extrair os dados
     let layoutUsado = null;
@@ -1244,9 +1245,9 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
 
     // Buscar atividades base que estão vinculadas a este layout
     const [atividadesBaseVinculadas] = await db.query(
-      `SELECT ao.id as atividadeBaseId, ao.obrigacaoId, ao.texto as textoBase, ao.descricao as descricaoBase, o.nome as obrigacao_nome
+      `SELECT ao.id as atividadeBaseId, ao.obrigacao_id, ao.texto as textoBase, ao.descricao as descricaoBase, o.nome as obrigacao_nome
        FROM atividades_obrigacao ao
-       JOIN obrigacoes o ON ao.obrigacaoId = o.id
+       JOIN obrigacoes o ON ao.obrigacao_id = o.id
        WHERE ao.pdf_layout_id = ?`,
       [layoutUsado.id]
     );
@@ -1261,15 +1262,15 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
     console.log(`🔍 Atividades base vinculadas ao layout:`, atividadesBaseVinculadas);
 
     // Buscar atividades do cliente que correspondem às atividades base vinculadas
-    const obrigacaoIds = atividadesBaseVinculadas.map(a => a.obrigacaoId);
+    const obrigacaoIds = atividadesBaseVinculadas.map(a => a.obrigacao_id);
     const [atividadesCliente] = await db.query(
-      `SELECT oac.id, oac.concluida, oac.obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome as cliente_nome
+      `SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome_fantasia, c.razao_social
        FROM obrigacoes_atividades_clientes oac
-       JOIN obrigacoes_clientes oc ON oac.obrigacaoClienteId = oc.id
-       JOIN obrigacoes o ON oc.obrigacaoId = o.id
-       JOIN clientes c ON oc.clienteId = c.id
-       WHERE oc.clienteId = ? 
-       AND oc.obrigacaoId IN (${obrigacaoIds.map(() => "?").join(",")})
+       JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+       JOIN obrigacoes o ON oc.obrigacao_id = o.id
+       JOIN clientes c ON oc.cliente_id = c.id
+       WHERE oc.cliente_id = ? 
+       AND oc.obrigacao_id IN (${obrigacaoIds.map(() => "?").join(",")})
        AND oc.ano_referencia = ?
        AND oc.mes_referencia = ?
        AND oac.concluida = 0
@@ -1280,7 +1281,7 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
     if (atividadesCliente.length === 0) {
       return res.status(400).json({
         sucesso: false,
-        mensagem: `Nenhuma atividade pendente encontrada para ${cliente.nome} - ${competenciaExtraida} usando layout ${layoutUsado.nome}`
+        mensagem: `Nenhuma atividade pendente encontrada para ${clienteNome} - ${competenciaExtraida} usando layout ${layoutUsado.nome}`
       });
     }
 
@@ -1302,19 +1303,19 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
       
       // Buscar atividade do cliente que corresponde a esta atividade base específica
       const [atividadeCliente] = await db.query(
-        `SELECT oac.id, oac.concluida, oac.obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome as cliente_nome
+        `SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome_fantasia, c.razao_social
          FROM obrigacoes_atividades_clientes oac
-         JOIN obrigacoes_clientes oc ON oac.obrigacaoClienteId = oc.id
-         JOIN obrigacoes o ON oc.obrigacaoId = o.id
-         JOIN clientes c ON oc.clienteId = c.id
-         WHERE oc.clienteId = ? 
-         AND oc.obrigacaoId = ?
+         JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+         JOIN obrigacoes o ON oc.obrigacao_id = o.id
+         JOIN clientes c ON oc.cliente_id = c.id
+         WHERE oc.cliente_id = ? 
+         AND oc.obrigacao_id = ?
          AND oc.ano_referencia = ?
          AND oc.mes_referencia = ?
          AND oac.concluida = 0
          AND oac.texto = ?
          AND oac.tipo = 'PDF Layout'`,
-        [cliente.id, atividadeBase.obrigacaoId, parseInt(ano), parseInt(mesConvertido), atividadeBase.textoBase]
+        [cliente.id, atividadeBase.obrigacao_id, parseInt(ano), parseInt(mesConvertido), atividadeBase.textoBase]
       );
 
       if (atividadeCliente.length > 0) {
@@ -1348,7 +1349,7 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
 
     await db.query(
       `UPDATE obrigacoes_atividades_clientes 
-       SET concluida = 1, dataConclusao = ? 
+       SET concluida = 1, data_conclusao = ? 
        WHERE id = ?`,
       [dataHora, atividadeEspecifica.id]
     );
@@ -1362,9 +1363,9 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
     const usuarioId = req.usuario?.id || 1; // Fallback para ID 1 se não houver usuário autenticado
     
     await db.query(
-      `INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, criadoEm) 
+      `INSERT INTO comentarios_obrigacao (obrigacao_id, usuario_id, comentario, criado_em) 
        VALUES (?, ?, ?, ?)`,
-      [atividadeEspecifica.obrigacaoClienteId, usuarioId, comentario, dataHora]
+      [atividadeEspecifica.obrigacao_cliente_id, usuarioId, comentario, dataHora]
     );
 
     // Após marcar a atividade como concluída, armazenar o arquivo
@@ -1387,7 +1388,7 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
           empresaId, 
           cliente.id, 
           obrigacaoDetectada, 
-          cliente.nome, 
+          clienteNome, 
           usuarioId
         );
         
@@ -1400,9 +1401,9 @@ router.post("/processar-pdf", autenticarToken, upload.single("pdf"), async (req,
 
     return res.json({
       sucesso: true,
-      mensagem: `Atividade "${atividadeEspecifica.texto || atividadeEspecifica.descricao}" marcada como concluída para ${cliente.nome} - ${competenciaExtraida} usando layout ${layoutUsado.nome}`,
+      mensagem: `Atividade "${atividadeEspecifica.texto || atividadeEspecifica.descricao}" marcada como concluída para ${clienteNome} - ${competenciaExtraida} usando layout ${layoutUsado.nome}`,
       dados: {
-        cliente: cliente.nome,
+        cliente: clienteNome,
         obrigacao: atividadeEspecifica.obrigacao_nome,
         atividade: atividadeEspecifica.texto || atividadeEspecifica.descricao,
         competencia: competenciaExtraida,
@@ -1428,7 +1429,7 @@ router.get("/:id/atividades-vinculadas", autenticarToken, async (req, res) => {
     const [rows] = await db.query(
       `SELECT ao.*, o.nome as obrigacao_nome
        FROM atividades_obrigacao ao
-       JOIN obrigacoes o ON ao.obrigacaoId = o.id
+       JOIN obrigacoes o ON ao.obrigacao_id = o.id
        WHERE ao.pdf_layout_id = ?`,
       [id]
     );
@@ -1897,7 +1898,7 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
         // Buscar cliente pelo CNPJ
         console.log(`🔍 Buscando cliente com CNPJ: ${cnpjExtraido}`);
         const [clientes] = await db.query(
-          "SELECT id, nome FROM clientes WHERE cnpjCpf = ? AND empresaId = ?",
+          "SELECT id, nome_fantasia, razao_social FROM clientes WHERE cpf_cnpj = ? AND empresa_id = ?",
           [cnpjExtraido, empresaId]
         );
 
@@ -1913,15 +1914,16 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
         }
 
         const cliente = clientes[0];
-        console.log(`✅ Cliente encontrado: ${cliente.nome}`);
+        const clienteNome = cliente.nome_fantasia || cliente.razao_social;
+        console.log(`✅ Cliente encontrado: ${clienteNome}`);
 
         console.log("🎯 Layout usado para extração:", layoutUsado.nome);
 
         // Buscar atividades base que estão vinculadas a este layout
         const [atividadesBaseVinculadas] = await db.query(
-          `SELECT ao.id as atividadeBaseId, ao.obrigacaoId, ao.texto as textoBase, ao.descricao as descricaoBase, o.nome as obrigacao_nome
+          `SELECT ao.id as atividadeBaseId, ao.obrigacao_id, ao.texto as textoBase, ao.descricao as descricaoBase, o.nome as obrigacao_nome
            FROM atividades_obrigacao ao
-           JOIN obrigacoes o ON ao.obrigacaoId = o.id
+           JOIN obrigacoes o ON ao.obrigacao_id = o.id
            WHERE ao.pdf_layout_id = ?`,
           [layoutUsado.id]
         );
@@ -1940,15 +1942,15 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
         console.log(`🔍 Atividades base vinculadas ao layout:`, atividadesBaseVinculadas);
 
         // Buscar atividades do cliente que correspondem às atividades base vinculadas
-        const obrigacaoIds = atividadesBaseVinculadas.map(a => a.obrigacaoId);
+        const obrigacaoIds = atividadesBaseVinculadas.map(a => a.obrigacao_id);
         const [atividadesCliente] = await db.query(
-          `SELECT oac.id, oac.concluida, oac.obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome as cliente_nome
+          `SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome_fantasia, c.razao_social
            FROM obrigacoes_atividades_clientes oac
-           JOIN obrigacoes_clientes oc ON oac.obrigacaoClienteId = oc.id
-           JOIN obrigacoes o ON oc.obrigacaoId = o.id
-           JOIN clientes c ON oc.clienteId = c.id
-           WHERE oc.clienteId = ? 
-           AND oc.obrigacaoId IN (${obrigacaoIds.map(() => "?").join(",")})
+           JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+           JOIN obrigacoes o ON oc.obrigacao_id = o.id
+           JOIN clientes c ON oc.cliente_id = c.id
+           WHERE oc.cliente_id = ? 
+           AND oc.obrigacao_id IN (${obrigacaoIds.map(() => "?").join(",")})
            AND oc.ano_referencia = ?
            AND oc.mes_referencia = ?
            AND oac.concluida = 0
@@ -1959,8 +1961,8 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
         if (atividadesCliente.length === 0) {
           const erro = {
             arquivo: arquivo.originalname,
-            erro: `Nenhuma atividade pendente encontrada para ${cliente.nome} - ${competenciaExtraida} usando layout ${layoutUsado.nome}`,
-            dados: { cliente: cliente.nome, competencia: competenciaExtraida }
+            erro: `Nenhuma atividade pendente encontrada para ${clienteNome} - ${competenciaExtraida} usando layout ${layoutUsado.nome}`,
+            dados: { cliente: clienteNome, competencia: competenciaExtraida }
           };
           erros.push(erro);
           console.log(`❌ Erro no arquivo ${arquivo.originalname}: Nenhuma atividade pendente`);
@@ -1985,19 +1987,19 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
           
           // Buscar atividade do cliente que corresponde a esta atividade base específica
           const [atividadeCliente] = await db.query(
-            `SELECT oac.id, oac.concluida, oac.obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome as cliente_nome
+            `SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id, oac.texto, oac.descricao, oac.tipo, o.nome as obrigacao_nome, c.nome_fantasia, c.razao_social
              FROM obrigacoes_atividades_clientes oac
-             JOIN obrigacoes_clientes oc ON oac.obrigacaoClienteId = oc.id
-             JOIN obrigacoes o ON oc.obrigacaoId = o.id
-             JOIN clientes c ON oc.clienteId = c.id
-             WHERE oc.clienteId = ? 
-             AND oc.obrigacaoId = ?
+             JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+             JOIN obrigacoes o ON oc.obrigacao_id = o.id
+             JOIN clientes c ON oc.cliente_id = c.id
+             WHERE oc.cliente_id = ? 
+             AND oc.obrigacao_id = ?
              AND oc.ano_referencia = ?
              AND oc.mes_referencia = ?
              AND oac.concluida = 0
              AND oac.texto = ?
              AND oac.tipo = 'PDF Layout'`,
-            [cliente.id, atividadeBase.obrigacaoId, parseInt(ano), parseInt(mesConvertido), atividadeBase.textoBase]
+            [cliente.id, atividadeBase.obrigacao_id, parseInt(ano), parseInt(mesConvertido), atividadeBase.textoBase]
           );
 
           if (atividadeCliente.length > 0) {
@@ -2035,7 +2037,7 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
 
         await db.query(
           `UPDATE obrigacoes_atividades_clientes 
-           SET concluida = 1, dataConclusao = ? 
+           SET concluida = 1, data_conclusao = ? 
            WHERE id = ?`,
           [dataHora, atividadeEspecifica.id]
         );
@@ -2049,9 +2051,9 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
         const usuarioId = req.usuario?.id || 1; // Fallback para ID 1 se não houver usuário autenticado
         
         await db.query(
-          `INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, criadoEm) 
+          `INSERT INTO comentarios_obrigacao (obrigacao_id, usuario_id, comentario, criado_em) 
            VALUES (?, ?, ?, ?)`,
-          [atividadeEspecifica.obrigacaoClienteId, usuarioId, comentario, dataHora]
+          [atividadeEspecifica.obrigacao_cliente_id, usuarioId, comentario, dataHora]
         );
 
         // Após marcar a atividade como concluída, armazenar o arquivo
@@ -2074,7 +2076,7 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
               empresaId, 
               cliente.id, 
               obrigacaoDetectada, 
-              cliente.nome, 
+              clienteNome, 
               usuarioId
             );
             
@@ -2089,7 +2091,7 @@ router.post("/processar-pdf-lote", autenticarToken, upload.array("pdfs", 50), as
           arquivo: arquivo.originalname,
           sucesso: true,
           dados: {
-            cliente: cliente.nome,
+            cliente: clienteNome,
             obrigacao: atividadeEspecifica.obrigacao_nome,
             atividade: atividadeEspecifica.texto || atividadeEspecifica.descricao,
             competencia: competenciaExtraida,
@@ -2154,34 +2156,48 @@ async function criarNotificacaoArquivoBaixado(empresaId, clienteId, obrigacaoNom
   try {
     const mensagem = `A atividade da obrigação "${obrigacaoNome}" foi baixada automaticamente via PDF Layout, cliente "${clienteNome}"`;
     
+    // Verificar se a tabela user_notifications existe e usar ela, caso contrário usar notificacoes_sistema
     await db.query(`
-      INSERT INTO notificacoes_sistema 
-      (empresaId, usuarioId, tipo, mensagem, lida, criadoEm) 
-      VALUES (?, ?, ?, ?, 0, NOW())
-    `, [empresaId, usuarioId, 'pdf_baixado_automaticamente', mensagem]);
+      INSERT INTO user_notifications 
+      (user_id, empresa_id, module, type, title, body, created_at) 
+      VALUES (?, ?, 'gestao', 'pdf_baixado_automaticamente', 'PDF Processado', ?, NOW())
+    `, [usuarioId, empresaId, mensagem]);
     
     console.log(`✅ Notificação criada: ${mensagem}`);
   } catch (error) {
     console.error("❌ Erro ao criar notificação:", error);
+    // Se a tabela user_notifications não existir, tentar notificacoes_sistema
+    try {
+      await db.query(`
+        INSERT INTO notificacoes_sistema 
+        (empresa_id, usuario_id, tipo, mensagem, lida, criado_em) 
+        VALUES (?, ?, 'pdf_baixado_automaticamente', ?, 0, NOW())
+      `, [empresaId, usuarioId, mensagem]);
+    } catch (err2) {
+      console.error("❌ Erro ao criar notificação alternativa:", err2);
+    }
   }
 }
 
 // Função para armazenar arquivo baixado automaticamente
 async function armazenarArquivoBaixado(empresaId, clienteId, base64, nomeArquivo, atividadeId) {
   try {
+    // Converter base64 para buffer
+    const pdfBuffer = Buffer.from(base64, 'base64');
+    
     // 1. Armazenar na tabela de arquivos baixados automaticamente
     await db.query(`
       INSERT INTO arquivos_baixados_automaticamente 
-      (empresaId, clienteId, base64, nomeArquivo, atividadeId, criadoEm) 
-      VALUES (?, ?, ?, ?, ?, NOW())
-    `, [empresaId, clienteId, base64, nomeArquivo, atividadeId]);
+      (empresa_id, cliente_id, pdf, nome_arquivo, criado_em) 
+      VALUES (?, ?, ?, ?, NOW())
+    `, [empresaId, clienteId, pdfBuffer, nomeArquivo]);
     
     // 2. Armazenar como anexo na atividade
     await db.query(`
       UPDATE obrigacoes_atividades_clientes 
-      SET anexo = ?, nomeArquivo = ? 
+      SET anexo = ?, nome_arquivo = ? 
       WHERE id = ?
-    `, [base64, nomeArquivo, atividadeId]);
+    `, [pdfBuffer, nomeArquivo, atividadeId]);
     
     console.log(`✅ Arquivo armazenado: ${nomeArquivo} para atividade ${atividadeId}`);
   } catch (error) {
@@ -2193,22 +2209,22 @@ async function armazenarArquivoBaixado(empresaId, clienteId, base64, nomeArquivo
 // Rota para buscar arquivos baixados automaticamente
 router.get("/arquivos-baixados", autenticarToken, async (req, res) => {
   try {
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.usuario.empresaId || req.headers["empresaid"];
     const { clienteId, limit = 50, offset = 0 } = req.query;
 
     let query = `
-      SELECT id, clienteId, atividadeId, nomeArquivo, criadoEm
+      SELECT id, cliente_id, nome_arquivo, criado_em
       FROM arquivos_baixados_automaticamente 
-      WHERE empresaId = ?
+      WHERE empresa_id = ?
     `;
     let params = [empresaId];
 
     if (clienteId) {
-      query += ` AND clienteId = ?`;
+      query += ` AND cliente_id = ?`;
       params.push(clienteId);
     }
 
-    query += ` ORDER BY criadoEm DESC LIMIT ? OFFSET ?`;
+    query += ` ORDER BY criado_em DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), parseInt(offset));
 
     const [arquivos] = await db.query(query, params);
@@ -2224,12 +2240,12 @@ router.get("/arquivos-baixados", autenticarToken, async (req, res) => {
 router.get("/arquivos-baixados/:id/download", autenticarToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const empresaId = req.usuario.empresaId;
+    const empresaId = req.usuario.empresaId || req.headers["empresaid"];
 
     const [arquivos] = await db.query(`
-      SELECT base64, nomeArquivo
+      SELECT pdf, nome_arquivo
       FROM arquivos_baixados_automaticamente 
-      WHERE id = ? AND empresaId = ?
+      WHERE id = ? AND empresa_id = ?
     `, [id, empresaId]);
 
     if (arquivos.length === 0) {
@@ -2237,11 +2253,10 @@ router.get("/arquivos-baixados/:id/download", autenticarToken, async (req, res) 
     }
 
     const arquivo = arquivos[0];
-    const buffer = Buffer.from(arquivo.base64, 'base64');
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${arquivo.nomeArquivo}"`);
-    res.send(buffer);
+    res.setHeader('Content-Disposition', `attachment; filename="${arquivo.nome_arquivo}"`);
+    res.send(arquivo.pdf);
   } catch (error) {
     console.error("❌ Erro ao baixar arquivo:", error);
     res.status(500).json({ error: "Erro ao baixar arquivo" });
