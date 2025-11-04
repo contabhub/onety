@@ -453,11 +453,11 @@ router.patch("/atividade/:atividadeTarefaId/cancelar", autenticarToken, async (r
   const { justificativa } = req.body;
 
   try {
-    // busca de ap.tipoCancelamento ou at.tipoCancelamento (para órfãs)
+    // busca de ap.tipo_cancelamento ou at.tipo_cancelamento (para órfãs)
     const [[atividade]] = await db.query(
-      `SELECT COALESCE(ap.tipoCancelamento, at.tipoCancelamento) AS tipoCancelamento
+      `SELECT COALESCE(ap.tipo_cancelamento, at.tipo_cancelamento) AS tipoCancelamento
    FROM atividades_tarefas at
-   LEFT JOIN atividades_processo ap ON at.atividadeId = ap.id
+   LEFT JOIN atividades_processo ap ON at.atividade_id = ap.id
    WHERE at.id = ?`,
       [atividadeTarefaId]
     );
@@ -485,7 +485,7 @@ router.patch("/atividade/:atividadeTarefaId/cancelar", autenticarToken, async (r
 
     await db.query(
       `UPDATE atividades_tarefas
-       SET cancelada = 1, justificativa = ?, dataCancelamento = ?
+       SET cancelado = 1, justificativa = ?, data_cancelamento = ?
        WHERE id = ?`,
       [justificativa || null, dataCancelamento, atividadeTarefaId]
     );
@@ -605,7 +605,7 @@ router.patch("/atividade/:atividadeTarefaId/descancelar", autenticarToken, async
   try {
     await db.query(
       `UPDATE atividades_tarefas
-       SET cancelada = 0, justificativa = NULL, dataCancelamento = NULL
+       SET cancelado = 0, justificativa = NULL, data_cancelamento = NULL
        WHERE id = ?`,
       [atividadeTarefaId]
     );
@@ -623,7 +623,7 @@ router.get("/atividades/:atividadeTarefaId/tarefa", autenticarToken, async (req,
 
   try {
     const [[row]] = await db.query(
-      `SELECT tarefaId FROM atividades_tarefas WHERE id = ?`,
+      `SELECT tarefa_id AS tarefaId FROM atividades_tarefas WHERE id = ?`,
       [atividadeTarefaId]
     );
 

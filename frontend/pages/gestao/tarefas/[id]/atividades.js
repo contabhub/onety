@@ -5,12 +5,12 @@ import { Download } from "lucide-react";
 import { format, differenceInDays, addHours, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale"; // Importação correta do locale
 import { Paperclip, ClipboardList, Pencil, XCircle, Upload, Mail, Check, X } from "lucide-react";
-import EmailModal from "../../../components/gestao/EmailModal.js";
+import EmailModal from "../../../../components/gestao/EmailModal.js";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Comentarios from "../../../components/gestao/Comentarios.js"; // ajuste o path conforme onde você salvou
-import styles from "../../../styles/gestao/TarefasAtividades.module.css";
-import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar.js";
+import Comentarios from "../../../../components/gestao/Comentarios.js"; // ajuste o path conforme onde você salvou
+import styles from "../../../../styles/gestao/TarefasAtividades.module.css";
+import PrincipalSidebar from "../../../../components/onety/principal/PrincipalSidebar.js";
 
 // Fallback para projetos sem o hook
 const useAuthRedirectWithReturn = () => {};
@@ -184,10 +184,13 @@ export default function AtividadesTarefa() {
 
   useEffect(() => {
     if (tarefasInfo) {
+      const acaoSrc = tarefasInfo.dataAcao || tarefasInfo.data_acao || "";
+      const prazoSrc = tarefasInfo.dataPrazo || tarefasInfo.data_prazo || "";
+      const metaSrc = tarefasInfo.dataMeta || tarefasInfo.data_meta || "";
       setValorData({
-        acao: tarefasInfo.dataAcao ? tarefasInfo.dataAcao.slice(0, 10) : "",
-        prazo: tarefasInfo.dataPrazo ? tarefasInfo.dataPrazo.slice(0, 10) : "",
-        meta: tarefasInfo.dataMeta ? tarefasInfo.dataMeta.slice(0, 10) : ""
+        acao: acaoSrc ? String(acaoSrc).slice(0, 10) : "",
+        prazo: prazoSrc ? String(prazoSrc).slice(0, 10) : "",
+        meta: metaSrc ? String(metaSrc).slice(0, 10) : ""
       });
     }
   }, [tarefasInfo]);
@@ -311,8 +314,9 @@ export default function AtividadesTarefa() {
         setTarefasInfo(tarefa);
         setDescricaoEditada(tarefa.descricao || "");
 
-        if (tarefa.tarefaPaiId) {
-          const { data: tarefaPaiData } = await api.get(`/gestao/tarefas/${tarefa.tarefaPaiId}`, {
+        const tarefaPaiIdValor = tarefa.tarefaPaiId ?? tarefa.tarefa_pai_id;
+        if (tarefaPaiIdValor) {
+          const { data: tarefaPaiData } = await api.get(`/gestao/tarefas/${tarefaPaiIdValor}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setTarefaPai(tarefaPaiData);
@@ -359,16 +363,19 @@ export default function AtividadesTarefa() {
           }
         );
         setSubprocessos(subprocessosData);
-        const { data: departamentosData } = await api.get(`/gestao/departamentos/${tarefa.empresaId}`, {
+        const empresaIdFetch = tarefa.empresaId || tarefa.empresa_id || resolveEmpresaIdFromStorage();
+        const { data: departamentosData } = await api.get(`/gestao/departamentos/${empresaIdFetch}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         console.log("Subprocessos recebidos:", subprocessosData);
 
 
-        // Transforma em map para acesso rápido
+        // Transforma em map para acesso rápido (aceita variações de schema)
         const mapa = {};
         for (const dep of departamentosData) {
-          mapa[dep.id] = dep.nome;
+          const depId = Number(dep.id ?? dep.departamento_id ?? dep.departamentoId);
+          const depNome = dep.nome ?? dep.nome_departamento ?? dep.nomeDepartamento ?? dep.descricao ?? '-';
+          if (!Number.isNaN(depId)) mapa[depId] = depNome;
         }
         setDepartamentos(mapa);
 
@@ -423,7 +430,7 @@ export default function AtividadesTarefa() {
       );
 
       await api.patch(`/gestao/tarefas/atividade/${atividadeTarefaId}/concluir`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
 
       // ✅ Não precisa mais buscar dados do servidor, já atualizamos o estado local
@@ -474,12 +481,15 @@ export default function AtividadesTarefa() {
     } catch (err) {
       // ✅ Tratamento silencioso de erros - sem console.error que causa o erro vermelho
       let mensagem = "Erro ao concluir a tarefa.";
-      
-      // Capturar mensagem específica do backend
+
+      // Capturar mensagem específica do backend (axios-like)
       if (err?.response?.data?.error) {
         mensagem = err.response.data.error;
       } else if (err?.response?.status === 400) {
-        mensagem = "Verifique se todas as atividades foram concluídas ou canceladas.";
+        mensagem = "Existem subtarefas ainda não concluídas.";
+      } else if (typeof err?.message === 'string' && err.message.includes('failed 400')) {
+        // Nosso wrapper de fetch usa Error com status no message
+        mensagem = "Existem subtarefas ainda não concluídas.";
       } else if (err?.response?.status === 401) {
         mensagem = "Sessão expirada. Faça login novamente.";
       } else if (err?.response?.status === 403) {
@@ -487,7 +497,7 @@ export default function AtividadesTarefa() {
       } else if (err?.response?.status >= 500) {
         mensagem = "Erro interno do servidor. Tente novamente.";
       }
-      
+
       toast.error(mensagem);
     }
   };
@@ -697,7 +707,7 @@ export default function AtividadesTarefa() {
                     </>
                   ) : (
                     <>
-                      <span className={styles.dataValor}>{tarefasInfo.dataAcao ? format(new Date(tarefasInfo.dataAcao), "dd/MM/yyyy") : '-'}</span>
+                      <span className={styles.dataValor}>{(() => { const d = parseDate(tarefasInfo.dataAcao || tarefasInfo.data_acao); return d ? format(d, "dd/MM/yyyy") : '-'; })()}</span>
                       <Pencil
                         size={16}
                         color="#64748b"
@@ -749,7 +759,7 @@ export default function AtividadesTarefa() {
                     </>
                   ) : (
                     <>
-                      <span className={styles.dataValor}>{tarefasInfo.dataPrazo ? format(new Date(tarefasInfo.dataPrazo), "dd/MM/yyyy") : '-'}</span>
+                      <span className={styles.dataValor}>{(() => { const d = parseDate(tarefasInfo.dataPrazo || tarefasInfo.data_prazo); return d ? format(d, "dd/MM/yyyy") : '-'; })()}</span>
                       <Pencil
                         size={16}
                         color="#64748b"
@@ -782,7 +792,7 @@ export default function AtividadesTarefa() {
                     </>
                   ) : (
                     <>
-                      <span className={styles.dataValor}>{tarefasInfo.dataMeta ? format(new Date(tarefasInfo.dataMeta), "dd/MM/yyyy") : '-'}</span>
+                      <span className={styles.dataValor}>{(() => { const d = parseDate(tarefasInfo.dataMeta || tarefasInfo.data_meta); return d ? format(d, "dd/MM/yyyy") : '-'; })()}</span>
                       <Pencil
                         size={16}
                         color="#64748b"
@@ -864,9 +874,9 @@ export default function AtividadesTarefa() {
                   </>
                 ) : (
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                    <div
-                      style={{ color: "#334155", marginTop: "4px", whiteSpace: "pre-wrap", flex: 1 }}
-                    >
+                  <div
+                    style={{ color: "var(--onity-color-text)", marginTop: "4px", whiteSpace: "pre-wrap", flex: 1 }}
+                  >
                       {tarefasInfo.descricao || <em style={{ color: "#9ca3af" }}>(Sem descrição)</em>}
                     </div>
                     {!tarefaFechada && (
@@ -894,7 +904,7 @@ export default function AtividadesTarefa() {
                   Atividades para realização do trabalho
                 </button>
 
-                {tarefaPai && (
+                {(tarefaPai || tarefasInfo.tarefaPaiId || tarefasInfo.tarefa_pai_id) && (
                   <button
                     onClick={() => setAbaAtiva("vinculada")}
                     className={`${styles.tabButton} ${abaAtiva === "vinculada" ? styles.tabButtonActive : ""}`}
@@ -903,7 +913,7 @@ export default function AtividadesTarefa() {
                   </button>
                 )}
 
-                {!tarefasInfo.tarefaPaiId && (
+                {!(tarefasInfo.tarefaPaiId || tarefasInfo.tarefa_pai_id) && (
                   <button
                     onClick={() => setAbaAtiva("sub")}
                     className={`${styles.tabButton} ${abaAtiva === "sub" ? styles.tabButtonActive : ""}`}
@@ -1367,7 +1377,7 @@ export default function AtividadesTarefa() {
                         <tr
                           key={sub.id}
                           className={`${statusClass} ${styles.linhaSubprocesso}`}
-                          onClick={() => window.open(`/tarefas/${sub.id}/atividades`, "_blank")}
+                          onClick={() => window.open(`/gestao/${sub.id}/atividades`, "_blank")}
                           style={{
                             cursor: "pointer",
                           }}
@@ -1381,7 +1391,7 @@ export default function AtividadesTarefa() {
                           <td>
                             <span style={{ color: '#64748b', fontSize: '12px', marginRight: 6 }}>{sub.id} -</span> {sub.assunto}
                           </td>
-                          <td>{departamentos[Number(sub.departamentoId)] || "-"}</td>
+                          <td>{(() => { const depId = Number(sub.departamentoId ?? sub.departamento_id); return departamentos[depId] || "-"; })()}</td>
                         </tr>
                       );
                     })}
@@ -1403,20 +1413,20 @@ export default function AtividadesTarefa() {
                   <tbody>
                     <tr>
                       <td style={{ whiteSpace: "pre-line", color: "#64748b", fontSize: "12.5px" }}>
-                        <span style={{ fontWeight: 600 }}>A:</span> {format(new Date(tarefaPai.dataAcao), "dd/MM/yyyy")}{"\n"}
-                        <span style={{ fontWeight: 600 }}>M:</span> {format(new Date(tarefaPai.dataMeta), "dd/MM/yyyy")}{"\n"}
-                        <span style={{ fontWeight: 600 }}>V:</span> {format(new Date(tarefaPai.dataPrazo), "dd/MM/yyyy")}
+                        <span style={{ fontWeight: 600 }}>A:</span> {(() => { const d = parseDate(tarefaPai.dataAcao || tarefaPai.data_acao); return d ? format(d, "dd/MM/yyyy") : '-'; })()}{"\n"}
+                        <span style={{ fontWeight: 600 }}>M:</span> {(() => { const d = parseDate(tarefaPai.dataMeta || tarefaPai.data_meta); return d ? format(d, "dd/MM/yyyy") : '-'; })()}{"\n"}
+                        <span style={{ fontWeight: 600 }}>V:</span> {(() => { const d = parseDate(tarefaPai.dataPrazo || tarefaPai.data_prazo); return d ? format(d, "dd/MM/yyyy") : '-'; })()}
                       </td>
                       <td
                         style={{
                           color: "#23527C",
                           cursor: "pointer"
                         }}
-                        onClick={() => window.open(`/tarefas/${tarefaPai.id}/atividades`, "_blank")}
+                        onClick={() => window.open(`/gestao/${tarefaPai.id}/atividades`, "_blank")}
                       >
                         {tarefaPai.assunto}
                       </td>
-                      <td>{departamentos[Number(tarefaPai.departamentoId)] || "-"}</td>
+                      <td>{(() => { const depId = Number(tarefaPai.departamentoId ?? tarefaPai.departamento_id); return departamentos[depId] || "-"; })()}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -2131,15 +2141,15 @@ export default function AtividadesTarefa() {
             const [emailResponse] = await Promise.all([
               api.post("/gestao/email/enviar", formData, {
                 headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "multipart/form-data",
+                  Authorization: `Bearer ${token}`
+                  // Não definir Content-Type aqui; o navegador define com boundary
                 },
               }),
               // Concluir atividade em paralelo
               atividadeSelecionada ? api.patch(
                 `/gestao/tarefas/atividade/${atividadeSelecionada.atividadeTarefaId}/concluir`,
                 {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
               ) : Promise.resolve()
             ]);
             

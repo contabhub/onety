@@ -58,8 +58,8 @@ router.get("/setores", verifyToken, async (req, res) => {
     const [setores] = await db.query(`
       SELECT DISTINCT d.nome as setor
       FROM obrigacoes o
-      LEFT JOIN departamentos d ON o.departamentoId = d.id
-      WHERE o.empresaId = ? AND d.nome IS NOT NULL
+      LEFT JOIN departamentos d ON o.departamento_id = d.id
+      WHERE o.empresa_id = ? AND d.nome IS NOT NULL
       ORDER BY d.nome ASC
     `, [empresaId]);
 
@@ -2971,32 +2971,30 @@ router.get("/cliente-obrigacao/:id", verifyToken, async (req, res) => {
       SELECT 
         oc.*, 
         o.nome AS nomeObrigacao, 
-        o.departamentoId,
-        o.acaoQtdDias,
-        o.acaoTipoDias,
-        o.metaQtdDias,
-        o.metaTipoDias,
-        o.vencimentoTipo,
-        o.vencimentoDia,
-        o.fatoGerador,
+        o.departamento_id AS departamentoId,
+        o.acao_qtd_dias AS acaoQtdDias,
+        o.meta_qtd_dias AS metaQtdDias,
+        o.meta_tipo_dias AS metaTipoDias,
+        o.vencimento_tipo AS vencimentoTipo,
+        o.vencimento_dia AS vencimentoDia,
+        o.fato_gerador AS fatoGerador,
         o.orgao,
-        o.aliasValidacao,
-        o.geraMulta,
-        o.usarRelatorio,
-        o.reenviarEmail,
+        o.gera_multa AS geraMulta,
+        o.usar_relatorio AS usarRelatorio,
+        o.reenviar_email AS reenviarEmail,
         d.nome AS departamentoNome,
-        c.nome AS clienteNome,
-        c.cnpjCpf AS clienteCnpjCpf,
-        c.email AS clienteEmail,
+        c.razao_social AS clienteNome,
+        c.cpf_cnpj AS clienteCnpjCpf,
+        c.email_principal AS clienteEmail,
         u.nome AS responsavelNome,
         u.email AS responsavelEmail,
         uc.nome AS concluidoPorNome,
         uc.email AS concluidoPorEmail
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      JOIN departamentos d ON o.departamentoId = d.id
-      JOIN clientes c ON oc.clienteId = c.id
-      LEFT JOIN usuarios u ON oc.responsavelId = u.id
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      JOIN departamentos d ON o.departamento_id = d.id
+      JOIN clientes c ON oc.cliente_id = c.id
+      LEFT JOIN usuarios u ON oc.responsavel_id = u.id
       LEFT JOIN usuarios uc ON oc.concluido_por = uc.id
       WHERE oc.id = ?
     `, [id]);
@@ -3053,9 +3051,9 @@ router.get("/atividades-cliente/:obrigacaoClienteId", verifyToken, async (req, r
       ELSE oac.texto 
     END AS texto
   FROM obrigacoes_atividades_clientes oac
-  LEFT JOIN usuarios u1 ON oac.concluidoPor = u1.id
-  LEFT JOIN usuarios u2 ON oac.canceladoPor = u2.id
-  WHERE oac.obrigacaoClienteId = ?
+  LEFT JOIN usuarios u1 ON oac.concluido_por = u1.id
+  LEFT JOIN usuarios u2 ON oac.cancelado_por = u2.id
+  WHERE oac.obrigacao_cliente_id = ?
   ORDER BY oac.ordem
 `, [obrigacaoClienteId]);
 
@@ -3200,15 +3198,15 @@ router.get("/:obrigacaoId/comentarios", verifyToken, async (req, res) => {
      SELECT 
   co.id,
   co.comentario,
-  co.criadoEm,
+  co.criado_em AS criadoEm,
   co.anexos,
   co.tipo,
   u.nome AS autor,
-  u.imagem AS avatar
+  u.avatar_url AS avatar
       FROM comentarios_obrigacao co
-      JOIN usuarios u ON co.usuarioId = u.id
-      WHERE co.obrigacaoId = ?
-      ORDER BY co.criadoEm DESC
+      JOIN usuarios u ON co.usuario_id = u.id
+      WHERE co.obrigacao_id = ?
+      ORDER BY co.criado_em DESC
     `, [obrigacaoId]);
 
     // Parse do campo JSON
@@ -4757,9 +4755,9 @@ router.get("/obrigacoes-clientes/:obrigacaoClienteId/responsaveis", verifyToken,
   try {
     // Primeiro, buscar informações da obrigação para verificar a frequência
     const [obrigacaoInfo] = await db.query(`
-      SELECT oc.obrigacaoId, o.frequencia
+      SELECT oc.obrigacao_id AS obrigacaoId, o.frequencia
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON o.id = oc.obrigacaoId
+      JOIN obrigacoes o ON o.id = oc.obrigacao_id
       WHERE oc.id = ?
     `, [obrigacaoClienteId]);
 

@@ -19,6 +19,10 @@ const resolveToken = () => {
 const api = {
   async get(url, opts = {}) {
     const res = await fetch(normalizeUrl(url), { ...(opts || {}) });
+    if (opts && opts.responseType === 'blob') {
+      const data = await res.blob();
+      return { data };
+    }
     const data = await res.json();
     return { data };
   },
@@ -94,21 +98,43 @@ export default function EmailModal({
     label: `${u.nome} - ${u.email}`,
     nome: u.nome 
   }));
-  const empresaId = typeof window !== "undefined" ? sessionStorage.getItem("empresaId") : null;
+  const empresaId = typeof window !== "undefined"
+    ? (sessionStorage.getItem("empresaId") || (() => {
+        try {
+          const raw = localStorage.getItem('userData') || sessionStorage.getItem('userData') || sessionStorage.getItem('usuario');
+          const user = raw ? JSON.parse(raw) : null;
+          return user?.EmpresaId ? String(user.EmpresaId) : null;
+        } catch { return null; }
+      })())
+    : null;
 
   // Função para converter anexo base64 em File
   const converterAnexoBase64ParaFile = async (anexo) => {
-    const base64Data = anexo.base64;
-    const nomeArquivo = anexo.nome_arquivo || anexo.nomeArquivo || 'arquivo';
-    
-    // Converter base64 para blob
-    const response = await fetch(`data:application/octet-stream;base64,${base64Data}`);
-    const blob = await response.blob();
-    
-    // Criar File object
-    const file = new File([blob], nomeArquivo, { type: blob.type });
-    
-    return file;
+    const base64Data = anexo?.base64;
+    const nomeArquivo = anexo?.nome_arquivo || anexo?.nomeArquivo || 'arquivo';
+
+    try {
+      if (base64Data && typeof base64Data === 'string') {
+        const response = await fetch(`data:application/octet-stream;base64,${base64Data}`);
+        const blob = await response.blob();
+        return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
+      }
+
+      // Fallback: quando o anexo vem como BLOB no backend e temos apenas o id
+      if (anexo?.id) {
+        const token = resolveToken();
+        const { data: blob } = await api.get(`/gestao/tarefas/anexo/${anexo.id}/download`, {
+          responseType: 'blob',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
+      }
+    } catch (e) {
+      console.warn('[EmailModal] Falha ao obter blob/base64 do anexo', { nomeArquivo, id: anexo?.id, error: String(e) });
+    }
+
+    console.warn('[EmailModal] Anexo inválido, ignorando', { nomeArquivo, id: anexo?.id });
+    return null;
   };
 
   // Função para carregar anexos das atividades da tarefa ou obrigação
@@ -163,7 +189,8 @@ export default function EmailModal({
         if (todosAnexos.length > 0) {
           try {
             const filesPromises = todosAnexos.map((anexo) => converterAnexoBase64ParaFile(anexo));
-            const files = await Promise.all(filesPromises);
+            const results = await Promise.all(filesPromises);
+            const files = results.filter(Boolean);
             setAnexo(files);
           } catch (error) {
             console.error("Erro ao converter anexos para File objects:", error);
@@ -545,7 +572,7 @@ export default function EmailModal({
     if (!token) return;
 
     // Carregar dados da tarefa para obter email do cliente
-    api.get(`/api/tarefas/${processoId}`, {
+    api.get(`/gestao/tarefas/${processoId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -568,7 +595,7 @@ export default function EmailModal({
     if (!token) return;
 
     // Carregar dados da obrigação para obter email do cliente
-    api.get(`/api/obrigacoes/atividades-cliente/${processoId}`, {
+    api.get(`/gestao/obrigacoes/atividades-cliente/${processoId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -577,7 +604,7 @@ export default function EmailModal({
 
         if (!obrigacaoClienteId) return;
 
-        return api.get(`/api/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
+        return api.get(`/gestao/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       })

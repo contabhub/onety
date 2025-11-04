@@ -61,7 +61,7 @@ const criarTarefa = async (req, res) => {
 
     for (const atividade of atividades) {
       await conn.query(
-        `INSERT INTO atividades_tarefas (tarefa_id, atividade_id, concluida) VALUES (?, ?, 0)`,
+        `INSERT INTO atividades_tarefas (tarefa_id, atividade_id, concluido, cancelado) VALUES (?, ?, 0, 0)`,
         [id, atividade.id]
       );
     }
@@ -145,7 +145,7 @@ const criarTarefa = async (req, res) => {
 
       for (const at of atividadesSub) {
         await conn.query(
-          `INSERT INTO atividades_tarefas (tarefa_id, atividade_id, concluida) VALUES (?, ?, 0)`,
+          `INSERT INTO atividades_tarefas (tarefa_id, atividade_id, concluido, cancelado) VALUES (?, ?, 0, 0)`,
           [subTarefaId, at.id]
         );
       }
@@ -455,12 +455,15 @@ const concluirTarefaHandler = async (req, res) => {
   console.log("🟡 dataConclusao recebida:", dataConclusao);
 
   try {
-    // Buscar tarefa, incluindo info do processo (se existir)
+    // Buscar tarefa, incluindo flag de finalização (compatível com snake_case)
     const [[tarefa]] = await db.query(
       `
-        SELECT t.*, p.podeFinalizarAntesSubatendimentos 
+        SELECT 
+          t.*, 
+          t.processo_id       AS processoId,
+          t.tarefa_pai_id     AS tarefaPaiId,
+          t.pode_finalizar_antes_subatendimento AS podeFinalizarAntesSubatendimentos
         FROM tarefas t
-        LEFT JOIN processos p ON t.processoId = p.id
         WHERE t.id = ?
       `,
       [id]
@@ -482,7 +485,7 @@ const concluirTarefaHandler = async (req, res) => {
       console.log("🟡 Verificando subtarefas abertas...");
 
       const [subtarefas] = await db.query(
-        `SELECT id, status FROM tarefas WHERE tarefaPaiId = ?`,
+        `SELECT id, status FROM tarefas WHERE tarefa_pai_id = ?`,
         [id]
       );
 
@@ -531,7 +534,7 @@ const concluirTarefaHandler = async (req, res) => {
     console.log("🟠 Data final que será salva no UPDATE:", dataParaSalvar);
 
     await db.query(
-      `UPDATE tarefas SET status = 'concluída', dataConclusao = ? WHERE id = ?`,
+      `UPDATE tarefas SET status = 'concluída', data_conclusao = ? WHERE id = ?`,
       [dataParaSalvar, id]
     );
 
@@ -626,7 +629,7 @@ const cancelarTarefaHandler = async (req, res) => {
       pad(agora.getSeconds());
 
     await db.query(
-      `UPDATE tarefas SET status = 'cancelada', dataCancelamento = ? WHERE id = ?`,
+      `UPDATE tarefas SET status = 'cancelada', data_cancelamento = ? WHERE id = ?`,
       [dataCancelamento, id]
     );
 
@@ -697,12 +700,12 @@ const concluirAtividadeTarefa = async (req, res) => {
     await db.query(
       `
         UPDATE atividades_tarefas
-        SET concluida = 1,
-            dataConclusao = NOW(),
-            concluidoPorNome = ?
+        SET concluido = 1,
+            data_conclusao = NOW(),
+            concluido_por = ?
         WHERE id = ?
       `,
-      [usuario.nome, atividadeTarefaId]
+      [usuario.id || req.usuario?.usuarioId || null, atividadeTarefaId]
     );
 
     res.json({ mensagem: "Atividade marcada como concluída" });
@@ -751,7 +754,7 @@ const excluirAnexoAtividade = async (req, res) => {
   // Reseta status na tabela de atividades_tarefas
   await db.query(
       `UPDATE atividades_tarefas 
-       SET concluida = 0, dataConclusao = NULL, concluidoPorNome = NULL 
+       SET concluido = 0, data_conclusao = NULL, concluido_por = NULL 
        WHERE id = ?`,
       [atividadeTarefaId]
     );
@@ -797,8 +800,8 @@ const cancelarAtividadeTarefa = async (req, res) => {
       pad(agora.getSeconds());
 
     await db.query(
-      `UPDATE atividades_tarefas SET cancelada = 1, justificativa = ?, dataCancelamento = ? WHERE id = ?`,
-      [justificativa || null, dataCancelamento, atividadeTarefaId]
+      `UPDATE atividades_tarefas SET cancelado = 1, justificativa = ? WHERE id = ?`,
+      [justificativa || null, atividadeTarefaId]
     );
     res.json({ mensagem: "Atividade cancelada com sucesso" });
   } catch (error) {
@@ -812,7 +815,7 @@ const descancelarAtividadeTarefa = async (req, res) => {
   const { atividadeTarefaId } = req.params;
   try {
     await db.query(
-      `UPDATE atividades_tarefas SET cancelada = 0, justificativa = NULL, dataCancelamento = NULL WHERE id = ?`,
+      `UPDATE atividades_tarefas SET cancelado = 0, justificativa = NULL WHERE id = ?`,
       [atividadeTarefaId]
     );
     res.json({ mensagem: "Atividade reativada com sucesso" });
@@ -825,11 +828,12 @@ const descancelarAtividadeTarefa = async (req, res) => {
 const downloadAnexo = async (req, res) => {
   const { anexoId } = req.params;
   try {
-    const [[anexo]] = await db.query('SELECT nome_arquivo, base64 FROM anexos_atividade WHERE id = ?', [anexoId]);
+    // Tabela armazena PDF como BLOB na coluna `pdf`
+    const [[anexo]] = await db.query('SELECT nome_arquivo, pdf FROM anexos_atividade WHERE id = ?', [anexoId]);
     if (!anexo) return res.status(404).send('Arquivo não encontrado');
-    const buffer = Buffer.from(anexo.base64, 'base64');
+    const buffer = Buffer.from(anexo.pdf); // já é BLOB
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(anexo.nome_arquivo)}"`);
-    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Type', 'application/pdf');
     res.send(buffer);
   } catch (err) {
     console.error('Erro ao fazer download do anexo:', err);
