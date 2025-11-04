@@ -1,0 +1,303 @@
+/* RelatoriosPage.module.css - SISTEMA ONITY */
+
+.pageBg {
+    min-height: 100vh;
+    background: var(--onity-color-bg);
+  }
+  
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--onity-space-l);
+    font-family: var(--onity-font-family-sans);
+    color: var(--onity-color-text);
+  }
+  
+  /* Estilos para as abas de navegação */
+  .tabsContainer {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--onity-color-border);
+    background: rgba(255, 255, 255, 0.02);
+    margin-bottom: var(--onity-space-l);
+    position: relative;
+    border-radius: var(--onity-radius-m) var(--onity-radius-m) 0 0;
+  }
+  
+  .tab {
+    padding: var(--onity-space-s) var(--onity-space-l);
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-color-text);
+    opacity: 0.7;
+    background: rgba(255, 255, 255, 0.02);
+    border: none;
+    cursor: pointer;
+    transition: all 120ms ease;
+    position: relative;
+    font-weight: 400;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .activeTab {
+    color: var(--onity-color-text);
+    font-weight: 600;
+    background: var(--onity-color-surface);
+    border-bottom: 3px solid var(--onity-color-primary);
+    z-index: 2;
+    opacity: 1;
+  }
+  
+  /* Estilos para o ClienteSelectInline */
+  .clienteSelectContainer {
+    position: relative;
+  }
+  
+  .filtrosCard {
+    padding: var(--onity-space-l) var(--onity-space-m) var(--onity-space-l) var(--onity-space-m) !important;
+    margin-bottom: var(--onity-space-l);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-m);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .filtrosGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: var(--onity-space-l) var(--onity-space-xl);
+    align-items: end;
+  }
+  
+  .filtrosGridRelatorio {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: var(--onity-space-l) var(--onity-space-xl);
+    align-items: end;
+    row-gap: var(--onity-space-xl);
+  }
+  
+  @media (max-width: 900px) {
+    .filtrosGridRelatorio {
+      grid-template-columns: 1fr 1fr;
+      row-gap: var(--onity-space-l);
+    }
+  }
+  @media (max-width: 600px) {
+    .filtrosGridRelatorio {
+      grid-template-columns: 1fr;
+      row-gap: var(--onity-space-l);
+    }
+  }
+  
+  .input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Estilos específicos para campos de data */
+  .input[type="date"] {
+    cursor: pointer;
+    position: relative;
+    /* Garantir que o campo seja reconhecido como data */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  /* Estilos para o ícone de calendário em campos de data - Chrome/Safari */
+  .input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1);
+    opacity: 0.8;
+    transition: opacity 120ms ease;
+    display: block !important;
+    visibility: visible !important;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  
+  /* Estilos para Firefox */
+  .input[type="date"]::-moz-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1);
+    opacity: 0.8;
+    transition: opacity 120ms ease;
+    display: block !important;
+    visibility: visible !important;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .input[type="date"]::-moz-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  
+  .tipoBuscarGroup {
+    display: flex;
+    align-items: end;
+    gap: var(--onity-space-s);
+    width: 100%;
+  }
+  .tipoBuscarGroup select {
+    flex: 1 1 auto;
+  }
+  .tipoBuscarGroup button {
+    margin: 0;
+    min-width: 90px;
+  }
+  
+  .linhaVazia {
+    display: none;
+  }
+  
+  .linha2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1fr;
+    gap: var(--onity-space-l) var(--onity-space-l);
+    margin-bottom: var(--onity-space-s);
+  }
+  .linha2 > *:last-child {
+    grid-column: 3 / span 2;
+  }
+  
+  .linha3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: var(--onity-space-l) var(--onity-space-s);
+    align-items: end;
+  }
+  
+  @media (max-width: 1100px) {
+    .filtrosGrid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .filtrosGrid { grid-template-columns: 1fr; }
+  }
+  
+  .label {
+    display: block;
+    margin-bottom: var(--onity-space-xs);
+    font-size: var(--onity-type-body-size);
+    font-weight: 600;
+    color: var(--onity-color-text);
+    letter-spacing: 0.01em;
+  }
+  
+  .input {
+    width: 100%;
+    border: 1px solid var(--onity-color-border);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) var(--onity-space-s);
+    font-size: var(--onity-type-body-size);
+    font-weight: 500;
+    transition: all 120ms ease;
+    font-family: var(--onity-font-family-sans);
+  }
+  .input:focus {
+    outline: none;
+    border: 1.5px solid var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  }
+  
+  .btnWrapper {
+    grid-column: span 1;
+    display: flex;
+    align-items: end;
+    justify-content: flex-end;
+    margin-top: var(--onity-space-s);
+  }
+  
+  .button {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    padding: var(--onity-space-s) 0;
+    font-size: var(--onity-type-body-size);
+    font-weight: 600;
+    box-shadow: var(--onity-elev-low);
+    cursor: pointer;
+    height: 40px;
+    margin: 0;
+    min-width: 20px;
+    max-width: 70px;
+    transition: all 120ms ease;
+    font-family: var(--onity-font-family-sans);
+  }
+  .button:disabled, .button[disabled] {
+    background: var(--onity-color-text) !important;
+    opacity: 0.3 !important;
+    color: var(--onity-color-text) !important;
+    cursor: not-allowed !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .button:hover {
+    background: var(--onity-color-surface);
+    border-color: var(--onity-color-primary-hover);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .resultCard {
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-m);
+    margin-bottom: var(--onity-space-l);
+    box-shadow: var(--onity-elev-med);
+    padding: var(--onity-space-l) var(--onity-space-s) var(--onity-space-l) var(--onity-space-s) !important;
+    border: 1px solid var(--onity-color-border);
+  }
+  
+  .tableWrapper {
+    overflow-x: auto;
+  }
+  
+  .resultTable {
+    min-width: 650px;
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: var(--onity-elev-med);
+    border-radius: var(--onity-radius-m);
+    overflow: hidden;
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-body-size);
+  }
+  .resultTable th,
+  .resultTable td {
+    padding: var(--onity-space-s);
+    text-align: left;
+  }
+  .resultTable th {
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    font-weight: 700;
+    font-size: var(--onity-type-body-size);
+    border-bottom: 1px solid var(--onity-color-border);
+  }
+  .resultTable tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+  .resultTable tbody tr:nth-child(odd) {
+    background-color: transparent;
+  }
+  .resultTable td {
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    font-weight: 500;
+    border-bottom: 1px solid var(--onity-color-border);
+  }
+  .cellCenter {
+    text-align: center;
+  }
+  
+  .input.button {
+    justify-self: end;
+    margin-left: auto;
+  }

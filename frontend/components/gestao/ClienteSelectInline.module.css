@@ -1,0 +1,23 @@
+/* ClienteSelectInline.module.css - SISTEMA ONITY */
+
+.customOptionLabel {
+  font-size: 13px;
+  color: var(--onity-color-text);
+}
+
+.customOptionCnpj {
+  font-size: 11px;
+  color: var(--onity-color-text);
+  opacity: 0.9;
+}
+
+.customSingleValueLabel {
+  font-size: 13px;
+  color: var(--onity-color-text);
+}
+
+.customSingleValueCnpj {
+  font-size: 11px;
+  color: var(--onity-color-text);
+  opacity: 0.9;
+}
