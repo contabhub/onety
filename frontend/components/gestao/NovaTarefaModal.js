@@ -6,7 +6,7 @@ import { addDays } from "date-fns";
 import ClienteSelectMulti from "./ClienteSelectMulti";
 import CriacaoProgressoModal from "./CriacaoProgressoModal";
 import NovoClienteModal from "./NovoClienteModal";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "../../styles/gestao/NovaTarefaModal.module.css";
 export default function NovaTarefaModal({
@@ -985,23 +985,7 @@ export default function NovaTarefaModal({
         />
       )}
       
-      <ToastContainer 
-        autoClose={1500}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        toastStyle={{
-          backgroundColor: "var(--titan-base-00)",
-          color: "var(--titan-text-high)",
-          border: "1px solid var(--titan-stroke)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
-        }}
-      />
+      {/* ToastContainer global em _app.js */}
     </div>
   );
 }

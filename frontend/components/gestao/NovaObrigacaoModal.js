@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/gestao/ObrigacoesPage.module.css";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
@@ -451,7 +451,6 @@ export default function NovaObrigacaoModal({ onClose }) {
       </div>
       
       {/* Toast de notificação */}
-      <ToastContainer className="toast-custom" />
     </div>
   );
 }

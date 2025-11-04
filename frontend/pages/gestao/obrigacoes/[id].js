@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import PrincipalSidebar from "../../../components/onety/principal/PrincipalSidebar";
 import ReactSelect from "react-select";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "../../../styles/gestao/ObrigacoesPage.module.css";
 import { Settings, Users, X, Plus, Trash2, User } from "lucide-react";
@@ -519,7 +519,7 @@ export default function ObrigacaoDetailPage() {
     // ✅ NOVO: Carregar modelos PDF se a atividade for do tipo PDF Layout
     if (atividade.tipo === "PDF Layout") {
       const token = getToken();
-      fetch(`${BASE_URL}/gestao/pdf-layout/modelos`, {
+      fetch(`${BASE_URL}/gestao/pdf-layouts/modelos`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -571,7 +571,8 @@ export default function ObrigacaoDetailPage() {
 
   const fetchDepartamentos = async () => {
     const token = getToken();
-    const res = await fetch(`${BASE_URL}/gestao/departamentos/${obrigacao.empresaId}`, {
+    const empresaParaDepartamentos = obrigacao?.empresa_id || obrigacao?.empresaId;
+    const res = await fetch(`${BASE_URL}/gestao/departamentos/${empresaParaDepartamentos}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
@@ -947,7 +948,22 @@ export default function ObrigacaoDetailPage() {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await response.json();
-    setObrigacao(data);
+    const normalize = (o) => ({
+      ...o,
+      empresaId: o.empresaId ?? o.empresa_id ?? null,
+      departamentoId: o.departamentoId ?? o.departamento_id ?? null,
+      diaSemana: o.diaSemana ?? o.dia_semana ?? "",
+      fatoGerador: o.fatoGerador ?? o.fato_gerador ?? "",
+      usarRelatorio: o.usarRelatorio ?? o.usar_relatorio ?? false,
+      geraMulta: o.geraMulta ?? o.gera_multa ?? false,
+      reenviarEmail: o.reenviarEmail ?? o.reenviar_email ?? false,
+      acaoQtdDias: o.acaoQtdDias ?? o.acao_qtd_dias ?? null,
+      metaQtdDias: o.metaQtdDias ?? o.meta_qtd_dias ?? null,
+      metaTipoDias: o.metaTipoDias ?? o.meta_tipo_dias ?? null,
+      vencimentoTipo: o.vencimentoTipo ?? o.vencimento_tipo ?? null,
+      vencimentoDia: o.vencimentoDia ?? o.vencimento_dia ?? null,
+    });
+    setObrigacao(normalize(data));
   };
 
   useEffect(() => {
@@ -974,15 +990,16 @@ export default function ObrigacaoDetailPage() {
   }, []);
 
   useEffect(() => {
-    if (obrigacao?.empresaId) {
+    if (obrigacao?.empresa_id || obrigacao?.empresaId) {
       fetchDepartamentos();
     }
   }, [obrigacao]);
 
   const fetchParticularidades = async () => {
     const token = getToken();
-    const response = await fetch(`${BASE_URL}/gestao/enquetes/particularidades`, {
-      headers: { Authorization: `Bearer ${token}` }
+    const empresaId = getEmpresaId();
+    const response = await fetch(`${BASE_URL}/gestao/enquete/particularidades`, {
+      headers: { Authorization: `Bearer ${token}`, 'X-Empresa-Id': String(empresaId || '') }
     });
     const data = await response.json();
     const lista = Array.isArray(data)
@@ -1281,7 +1298,6 @@ export default function ObrigacaoDetailPage() {
   return (
     <>
       <PrincipalSidebar />
-      <ToastContainer theme="dark" className="toast-custom" />
       <div className={styles.containerDetail}>
         {obrigacao ? (
           <>
@@ -1941,7 +1957,7 @@ export default function ObrigacaoDetailPage() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th className={styles.th}>#</th>
+                      <th className={styles.th}>ID</th>
                       <th className={styles.th}>Tipo</th>
                       <th className={styles.th}>Texto</th>
                       <th className={styles.th}>Descrição</th>
@@ -1988,7 +2004,7 @@ export default function ObrigacaoDetailPage() {
                         >
                           {a.descricao}
                         </td>
-                        <td className={styles.td}>{a.tipoCancelamento}</td>
+                        <td className={styles.td}>{a.tipo_cancelamento}</td>
                         <td className={styles.td}>
                           <button
                             onClick={() => trocarOrdem(a.id, "up")}
@@ -2425,36 +2441,6 @@ export default function ObrigacaoDetailPage() {
 
             {activeTab === "responsaveis" && (
               <div className={styles.card}>
-                <h3 className={`${styles.pageTitle} ${styles.datasTitle} ${styles.pageTitleNoMargin}`}>
-                  Responsáveis pela Obrigação
-                </h3>
-                {/* RESPONSÁVEIS FIXOS GLOBAIS */}
-                <div className={styles.responsaveisSection}>
-                  <div className={styles.responsaveisHeader}>
-                    <span className={styles.responsaveisHeaderTitle}>Responsáveis pela Obrigação:</span>
-                    <button
-                      onClick={() => setModalMultiResponsaveisGlobais(true)}
-                      className={`${styles.buttonSalvar} ${styles.responsaveisHeaderButton}`}
-                    >
-                      <Users size={14} />
-                      Gerenciar Responsáveis Fixos
-                    </button>
-                  </div>
-                  <GlobalMultiResponsaveis 
-                    obrigacaoId={obrigacaoId} 
-                    todosResponsaveis={todosResponsaveis}
-                    onUpdateGlobal={novoGlobal => {
-                      setClientes(clientesAntigos => Array.isArray(clientesAntigos)
-                        ? clientesAntigos.map(c => {
-                            if (!c.responsavel || c.responsavel.isGlobal) {
-                              return { ...c, responsavel: novoGlobal ? { id: novoGlobal.usuarioId || novoGlobal.id, nome: novoGlobal.nome, email: novoGlobal.email, isGlobal: true } : null };
-                            }
-                            return c;
-                          })
-                        : []);
-                    }} 
-                  />
-                </div>
                 {/* ✅ NOVO: Filtros e controles */}
                 <div className={styles.responsaveisFiltersContainer}>
                   <div className={styles.responsaveisFiltersLeft}>
@@ -2481,7 +2467,7 @@ export default function ObrigacaoDetailPage() {
                   <table className={styles.table}>
                     <thead className={styles.tableHeaderRow}>
                       <tr>
-                        <th className={styles.th}>#</th>
+                        <th className={styles.th}>ID</th>
                         <th className={styles.th}>Cliente</th>
                         <th className={styles.th}>CNPJ/CPF</th>
                         <th className={styles.th}>Responsáveis</th>
@@ -3507,11 +3493,14 @@ function ClienteResponsavelRow({
   async function fetchUsuarios() {
     try {
       const token = getToken();
-      const res = await fetch(`${BASE_URL}/gestao/usuarios`, {
+      const res = await fetch(`${BASE_URL}/usuarios`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      setUsuarios(data);
+      const lista = Array.isArray(data)
+        ? data
+        : (Array.isArray(data?.usuarios) ? data.usuarios : (Array.isArray(data?.data) ? data.data : []));
+      setUsuarios(lista);
     } catch {
       setUsuarios([]);
     }
@@ -3673,7 +3662,7 @@ const MultiResponsaveisGlobaisModal = ({
         fetch(`${BASE_URL}/gestao/obrigacoes/${obrigacaoId}/responsaveis-fixos-globais`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch(`${BASE_URL}/gestao/usuarios`, {
+        fetch(`${BASE_URL}/usuarios`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -3681,7 +3670,10 @@ const MultiResponsaveisGlobaisModal = ({
       const responsaveisData = await responsaveisRes.json();
       const usuariosData = await usuariosRes.json();
       setResponsaveis(Array.isArray(responsaveisData) ? responsaveisData : []);
-      setUsuarios(usuariosData);
+      const listaUsuarios = Array.isArray(usuariosData)
+        ? usuariosData
+        : (Array.isArray(usuariosData?.usuarios) ? usuariosData.usuarios : (Array.isArray(usuariosData?.data) ? usuariosData.data : []));
+      setUsuarios(listaUsuarios);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       setMessage("Erro ao carregar dados");

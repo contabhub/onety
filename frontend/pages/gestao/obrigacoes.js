@@ -6,7 +6,7 @@ import BatchActionsFilters from "../../components/gestao/BatchActionsFilters";
 import ProrrogarTarefasFilters from "../../components/gestao/ProrrogarTarefasFilters";
 import styles from "../../styles/gestao/ObrigacoesPage.module.css";
 import { hasPermissao, getPermissoes } from "../../utils/gestao/permissoes";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaSearch, FaUpload } from "react-icons/fa";
 import Select from "react-select";
@@ -440,10 +440,6 @@ export default function ObrigacoesPage() {
   return (
     <>
       <PrincipalSidebar />
-      <ToastContainer 
-        theme="dark"
-        className="toast-custom"
-      />
       <div className={styles.container}>
         {/* Tabs de navegação */}
         <LocalTabs 

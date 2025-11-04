@@ -1502,10 +1502,12 @@ router.put("/:id", async (req, res) => {
     const { id } = req.params;
     const campos = req.body;
 
-    // ⚠️ Remove campos que não existem no banco
+    // ⚠️ Remove campos que não devem ser atualizados ou não existem no banco
     delete campos.departamentoNome;
     delete campos.empresaNome;
     delete campos.dataCriacao;
+    delete campos.data_criacao;
+    delete campos.id;
 
     // Converter camelCase para snake_case nos campos do banco
     const camposAtualizados = {};
@@ -1576,9 +1578,9 @@ router.get('/:obrigacaoId/particularidades', async (req, res) => {
 
   try {
     const [dados] = await db.query(`
-            SELECT op.id, op.tipo, op.particularidadeId, p.nome, p.descricao, p.categoria 
+            SELECT op.id, op.tipo, op.particularidade_id AS particularidadeId, p.nome, p.descricao, p.categoria 
             FROM obrigacoes_particularidades op
-            JOIN particularidades p ON op.particularidadeId = p.id
+            JOIN particularidades p ON op.particularidade_id = p.id
             WHERE op.obrigacao_id = ?`,
       [obrigacaoId]
     );
@@ -1774,7 +1776,7 @@ router.get('/:id/clientes', verifyToken, async (req, res) => {
   try {
     // 1. Buscar todas particularidades da obrigação com tipo (E, OU)
     const [particularidades] = await db.query(`
-      SELECT tipo, particularidadeId
+      SELECT tipo, particularidade_id AS particularidadeId
       FROM obrigacoes_particularidades
       WHERE obrigacao_id = ?
     `, [id]);
@@ -1793,15 +1795,15 @@ router.get('/:id/clientes', verifyToken, async (req, res) => {
 
     // 2. Buscar todos os clientes
     const [clientes] = await db.query(`
-      SELECT c.id, c.nome, c.cnpjCpf
+      SELECT c.id, c.razao_social AS nome, c.cpf_cnpj AS cnpjCpf
       FROM clientes c
     `);
 
     // 3. Buscar todas as respostas dos clientes de uma só vez
     const [respostasClientes] = await db.query(`
-      SELECT cr.clienteId, r.particularidadeId
+      SELECT cr.cliente_id AS clienteId, r.particularidade_id AS particularidadeId
       FROM cliente_respostas cr
-      JOIN enquete_respostas r ON cr.respostaId = r.id
+      JOIN enquete_respostas r ON cr.resposta_id = r.id
     `);
 
     // 4. Organizar respostas em um Map: clienteId => Set de particularidades
@@ -1840,7 +1842,7 @@ router.post("/:obrigacaoId/atividades", verifyToken, async (req, res) => {
   try {
     await db.query(
       `INSERT INTO atividades_obrigacao 
-       (obrigacaoId, tipo, texto, descricao, tipoCancelamento, ordem, pdf_layout_id, titulo_documento) 
+       (obrigacao_id, tipo, texto, descricao, tipo_cancelamento, ordem, pdf_layout_id, titulo_documento) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         obrigacaoId, 
@@ -2189,7 +2191,7 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
     const obrigacao = obrigacoes[0];
     if (!obrigacao) return res.status(404).json({ erro: 'Obrigacao nao encontrada' });
 
-    const [atividadesBase] = await db.query(`SELECT * FROM atividades_obrigacao WHERE obrigacaoId = ?`, [obrigacaoId]);
+    const [atividadesBase] = await db.query(`SELECT * FROM atividades_obrigacao WHERE obrigacao_id = ?`, [obrigacaoId]);
 
     // ✅ NOVO: Usar apenas os clientes selecionados pelo usuário
     if (!clienteIds || !Array.isArray(clienteIds) || clienteIds.length === 0) {
@@ -2202,9 +2204,9 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
     let responsaveisIndividuais = [];
     if (clienteIdsValidados.length > 0) {
       const [rows] = await db.query(`
-        SELECT rc.clienteId, rc.usuarioId
+        SELECT rc.cliente_id AS clienteId, rc.usuario_id AS usuarioId
         FROM obrigacoes_responsaveis_cliente rc
-        WHERE rc.obrigacaoId = ? AND rc.clienteId IN (?)
+        WHERE rc.obrigacao_id = ? AND rc.cliente_id IN (?)
       `, [obrigacaoId, clienteIdsValidados]);
       responsaveisIndividuais = rows;
     }
@@ -2214,28 +2216,28 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
     }
     // Buscar responsável global (clienteId = null)
     const [[globalResp]] = await db.query(`
-      SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND clienteId IS NULL
+      SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND cliente_id IS NULL
     `, [obrigacaoId]);
-    const responsavelGlobalId = globalResp ? globalResp.usuarioId : null;
+    const responsavelGlobalId = globalResp ? globalResp.usuario_id : null;
 
     // Particularidades (mantido)
     const [particularidadesE] = await db.query(`
-      SELECT particularidadeId FROM obrigacoes_particularidades WHERE obrigacaoId = ? AND tipo = 'E'
+      SELECT particularidade_id AS particularidadeId FROM obrigacoes_particularidades WHERE obrigacao_id = ? AND tipo = 'E'
     `, [obrigacaoId]);
     const [particularidadesOU] = await db.query(`
-      SELECT particularidadeId FROM obrigacoes_particularidades WHERE obrigacaoId = ? AND tipo = 'OU'
+      SELECT particularidade_id AS particularidadeId FROM obrigacoes_particularidades WHERE obrigacao_id = ? AND tipo = 'OU'
     `, [obrigacaoId]);
     const [particularidadesEXCETO] = await db.query(`
-      SELECT particularidadeId FROM obrigacoes_particularidades WHERE obrigacaoId = ? AND tipo = 'EXCETO'
+      SELECT particularidade_id AS particularidadeId FROM obrigacoes_particularidades WHERE obrigacao_id = ? AND tipo = 'EXCETO'
     `, [obrigacaoId]);
     const partE = particularidadesE.map(p => p.particularidadeId);
     const partOU = particularidadesOU.map(p => p.particularidadeId);
     const partEXCETO = particularidadesEXCETO.map(p => p.particularidadeId);
 
     const [respostasClientes] = await db.query(`
-      SELECT cr.clienteId, er.particularidadeId
+      SELECT cr.cliente_id AS clienteId, er.particularidade_id AS particularidadeId
       FROM cliente_respostas cr
-      JOIN enquete_respostas er ON cr.respostaId = er.id
+      JOIN enquete_respostas er ON cr.resposta_id = er.id
     `);
 
     const respostasMap = new Map();
@@ -2332,12 +2334,12 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
         hoje.setHours(0, 0, 0, 0);
         // Buscar todas as obrigações já existentes para o período, clientes e obrigação
         const [existentesDiario] = await db.query(`
-          SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
+          SELECT cliente_id AS clienteId, obrigacao_id AS obrigacaoId, ano_referencia, mes_referencia, vencimento
           FROM obrigacoes_clientes
           WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
-            AND clienteId IN (${clientes.map(() => '?').join(',')})
+            AND cliente_id IN (${clientes.map(() => '?').join(',')})
         `, [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
-        const existeSetDiario = new Set(existentesDiario.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
+        const existeSetDiario = new Set(existentesDiario.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${new Date(e.vencimento).toISOString().slice(0,10)}`));
         const novasDiario = [];
         for (let mes = mesInicio; mes <= mesFim; mes++) {
           const diasNoMes = new Date(ano, mes, 0).getDate();
@@ -2381,7 +2383,7 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
           `, flat);
           // Buscar os IDs inseridos
           const insertedIds = [];
-          const [ultimos] = await db.query('SELECT id, clienteId FROM obrigacoes_clientes WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId IN (' + clientes.map(() => '?').join(',') + ')', [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
+          const [ultimos] = await db.query('SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND cliente_id IN (' + clientes.map(() => '?').join(',') + ')', [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
           for (const row of ultimos) insertedIds.push({ id: row.id, clienteId: row.clienteId });
           
           // NOVO: Popular obrigacoes_clientes_responsaveis para inserções em lote (Diário)
@@ -2486,7 +2488,7 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
           `, flat);
           // Buscar os IDs inseridos
           const insertedIds = [];
-          const [ultimos] = await db.query('SELECT id, clienteId FROM obrigacoes_clientes WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId IN (' + clientes.map(() => '?').join(',') + ')', [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
+          const [ultimos] = await db.query('SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND cliente_id IN (' + clientes.map(() => '?').join(',') + ')', [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
           for (const row of ultimos) insertedIds.push({ id: row.id, clienteId: row.clienteId });
           
           // NOVO: Popular obrigacoes_clientes_responsaveis para inserções em lote (Semanal)
@@ -2620,8 +2622,8 @@ router.get("/empresa/:empresaId/com-atividades", verifyToken, async (req, res) =
 
     const obrigaçõesComAtividades = await Promise.all(
       obrigações.map(async (ob) => {
-        const [atividades] = await db.query(
-          `SELECT id, tipo, texto, descricao, tipoCancelamento, ordem 
+    const [atividades] = await db.query(
+          `SELECT id, tipo, texto, descricao, tipo_cancelamento AS tipoCancelamento, ordem 
            FROM atividades_obrigacao 
            WHERE obrigacao_id = ?
            ORDER BY ordem`,
@@ -3237,7 +3239,7 @@ router.patch("/atividade/:atividadeId/cancelar", verifyToken, async (req, res) =
 
   try {
     const [[atividade]] = await db.query(`
-      SELECT tipoCancelamento FROM obrigacoes_atividades_clientes WHERE id = ?
+      SELECT tipo_cancelamento AS tipoCancelamento FROM obrigacoes_atividades_clientes WHERE id = ?
     `, [atividadeId]);
 
     if (!atividade) {
@@ -3651,7 +3653,7 @@ router.post("/esporadica/criar-tarefa", verifyToken, async (req, res) => {
 
       // Clonar atividades base
       const [atividadesBase] = await db.query(
-        `SELECT * FROM atividades_obrigacao WHERE obrigacaoId = ? ORDER BY ordem`,
+        `SELECT * FROM atividades_obrigacao WHERE obrigacao_id = ? ORDER BY ordem`,
         [obrigacaoId]
       );
 
@@ -3775,7 +3777,7 @@ router.post("/:id/gerar-atividades-cliente", verifyToken, async (req, res) => {
   if (!obrigacao) return res.status(404).json({ error: "Obrigação não encontrada." });
 
   const [atividadesBase] = await db.query(
-    `SELECT * FROM atividades_obrigacao WHERE obrigacaoId = ?`,
+    `SELECT * FROM atividades_obrigacao WHERE obrigacao_id = ?`,
     [obrigacaoId]
   );
 
@@ -3997,7 +3999,7 @@ router.get('/:obrigacaoId/clientes-com-responsavel', verifyToken, async (req, re
   try {
     // Buscar particularidades da obrigação
     const [partRows] = await db.query(`
-      SELECT particularidadeId, tipo FROM obrigacoes_particularidades WHERE obrigacaoId = ?
+      SELECT particularidade_id AS particularidadeId, tipo FROM obrigacoes_particularidades WHERE obrigacao_id = ?
     `, [obrigacaoId]);
     const partE = partRows.filter(p => p.tipo === 'E').map(p => p.particularidadeId);
     const partOU = partRows.filter(p => p.tipo === 'OU').map(p => p.particularidadeId);
@@ -4012,11 +4014,11 @@ router.get('/:obrigacaoId/clientes-com-responsavel', verifyToken, async (req, re
     }
     
     const [clientes] = await db.query(`
-      SELECT c.id, c.nome, c.cnpjCpf
+      SELECT c.id, c.razao_social AS nome, c.cpf_cnpj AS cnpjCpf
       FROM clientes c
-      JOIN cliente_respostas cr ON cr.clienteId = c.id
-      JOIN enquete_respostas er ON er.id = cr.respostaId
-      WHERE er.particularidadeId IN (?)
+      JOIN cliente_respostas cr ON cr.cliente_id = c.id
+      JOIN enquete_respostas er ON er.id = cr.resposta_id
+      WHERE er.particularidade_id IN (?)
       GROUP BY c.id
     `, [particularidadeIds]);
 
@@ -4025,11 +4027,11 @@ router.get('/:obrigacaoId/clientes-com-responsavel', verifyToken, async (req, re
     // Buscar todas as particularidades respondidas por cada cliente
     const clienteIds = clientes.map(c => c.id);
     const [respostas] = await db.query(`
-      SELECT c.id as clienteId, er.particularidadeId
+      SELECT c.id as clienteId, er.particularidade_id AS particularidadeId
       FROM clientes c
-      JOIN cliente_respostas cr ON cr.clienteId = c.id
-      JOIN enquete_respostas er ON er.id = cr.respostaId
-      WHERE c.id IN (?) AND er.particularidadeId IN (?)
+      JOIN cliente_respostas cr ON cr.cliente_id = c.id
+      JOIN enquete_respostas er ON er.id = cr.resposta_id
+      WHERE c.id IN (?) AND er.particularidade_id IN (?)
     `, [clienteIds, particularidadeIds]);
 
     // Mapear particularidades por cliente
@@ -4642,12 +4644,12 @@ router.get('/:obrigacaoId/clientes/:clienteId/responsaveis', verifyToken, async 
   const { obrigacaoId, clienteId } = req.params;
   try {
     const [responsaveis] = await db.query(`
-      SELECT DISTINCT orc.id, orc.usuarioId, u.nome, u.email, d.nome as departamentoNome
+      SELECT DISTINCT orc.id, orc.usuario_id AS usuarioId, u.nome, u.email, d.nome as departamentoNome
       FROM obrigacoes_responsaveis_cliente orc
-      JOIN usuarios u ON u.id = orc.usuarioId
-      LEFT JOIN relacao_empresas re ON re.usuarioId = u.id
-      LEFT JOIN departamentos d ON d.id = re.departamentoId
-      WHERE orc.obrigacaoId = ? AND orc.clienteId = ?
+      JOIN usuarios u ON u.id = orc.usuario_id
+      LEFT JOIN usuarios_empresas ue ON ue.usuario_id = u.id
+      LEFT JOIN departamentos d ON d.id = ue.departamento_id
+      WHERE orc.obrigacao_id = ? AND orc.cliente_id = ?
       ORDER BY u.nome
     `, [obrigacaoId, clienteId]);
     
@@ -4673,8 +4675,8 @@ router.post('/:obrigacaoId/clientes/:clienteId/responsaveis', verifyToken, async
   try {
     // Verificar se já existe
     const [existe] = await db.query(`
-      SELECT obrigacaoId FROM obrigacoes_responsaveis_cliente 
-      WHERE obrigacao_id = ? AND clienteId = ? AND usuarioId = ?
+      SELECT obrigacao_id FROM obrigacoes_responsaveis_cliente 
+      WHERE obrigacao_id = ? AND cliente_id = ? AND usuario_id = ?
     `, [obrigacaoId, clienteId, usuarioId]);
     
     if (existe.length > 0) {
@@ -4683,7 +4685,7 @@ router.post('/:obrigacaoId/clientes/:clienteId/responsaveis', verifyToken, async
     
     // Inserir novo responsável
     await db.query(`
-      INSERT INTO obrigacoes_responsaveis_cliente (obrigacaoId, clienteId, usuarioId) 
+      INSERT INTO obrigacoes_responsaveis_cliente (obrigacao_id, cliente_id, usuario_id) 
       VALUES (?, ?, ?)
     `, [obrigacaoId, clienteId, usuarioId]);
     
@@ -4704,7 +4706,7 @@ router.delete('/:obrigacaoId/clientes/:clienteId/responsaveis/:responsavelId', v
   try {
     await db.query(`
       DELETE FROM obrigacoes_responsaveis_cliente 
-      WHERE obrigacao_id = ? AND clienteId = ? AND usuarioId = ?
+      WHERE obrigacao_id = ? AND cliente_id = ? AND usuario_id = ?
     `, [obrigacaoId, clienteId, responsavelId]);
     
     res.json({ success: true, message: 'Responsável removido com sucesso.' });
@@ -4725,20 +4727,20 @@ router.get('/:obrigacaoId/responsaveis-multiplos', verifyToken, async (req, res)
     const [responsaveis] = await db.query(`
       SELECT 
         orc.id, 
-        orc.clienteId,
-        orc.usuarioId,
-        c.nome as clienteNome,
-        c.cnpjCpf as clienteCnpj,
+        orc.cliente_id AS clienteId,
+        orc.usuario_id AS usuarioId,
+        c.razao_social as clienteNome,
+        c.cpf_cnpj as clienteCnpj,
         u.nome as responsavelNome,
         u.email as responsavelEmail,
         d.nome as departamentoNome
       FROM obrigacoes_responsaveis_cliente orc
-      JOIN clientes c ON c.id = orc.clienteId
-      JOIN usuarios u ON u.id = orc.usuarioId
-      LEFT JOIN relacao_empresas re ON re.usuarioId = u.id
-      LEFT JOIN departamentos d ON d.id = re.departamentoId
-      WHERE orc.obrigacaoId = ?
-      ORDER BY c.nome, u.nome
+      JOIN clientes c ON c.id = orc.cliente_id
+      JOIN usuarios u ON u.id = orc.usuario_id
+      LEFT JOIN usuarios_empresas ue ON ue.usuario_id = u.id
+      LEFT JOIN departamentos d ON d.id = ue.departamento_id
+      WHERE orc.obrigacao_id = ?
+      ORDER BY c.razao_social, u.nome
     `, [obrigacaoId]);
     
     res.json(responsaveis);
@@ -4951,15 +4953,15 @@ router.get('/:obrigacaoId/responsaveis-fixos-globais', verifyToken, async (req, 
     // Buscar responsáveis fixos globais (clienteId = null)
     const [responsaveis] = await db.query(`
       SELECT 
-        orc.usuarioId,
+        orc.usuario_id AS usuarioId,
         u.nome,
         u.email,
         d.nome as departamentoNome
       FROM obrigacoes_responsaveis_cliente orc
-      JOIN usuarios u ON u.id = orc.usuarioId
-      LEFT JOIN relacao_empresas re ON re.usuarioId = u.id
-      LEFT JOIN departamentos d ON d.id = re.departamentoId
-      WHERE orc.obrigacaoId = ? AND orc.clienteId IS NULL
+      JOIN usuarios u ON u.id = orc.usuario_id
+      LEFT JOIN usuarios_empresas ue ON ue.usuario_id = u.id
+      LEFT JOIN departamentos d ON d.id = ue.departamento_id
+      WHERE orc.obrigacao_id = ? AND orc.cliente_id IS NULL
       ORDER BY u.nome
     `, [obrigacaoId]);
 
@@ -5005,7 +5007,7 @@ router.post('/:obrigacaoId/responsaveis-fixos-globais', verifyToken, async (req,
 
     // Verificar se já existe este responsável para esta obrigação
     const [[existente]] = await db.query(
-      'SELECT usuarioId FROM obrigacoes_responsaveis_cliente WHERE obrigacaoId = ? AND usuarioId = ? AND clienteId IS NULL',
+      'SELECT usuario_id FROM obrigacoes_responsaveis_cliente WHERE obrigacao_id = ? AND usuario_id = ? AND cliente_id IS NULL',
       [obrigacaoId, usuarioId]
     );
 
@@ -5015,7 +5017,7 @@ router.post('/:obrigacaoId/responsaveis-fixos-globais', verifyToken, async (req,
 
     // Adicionar responsável fixo global (clienteId = null)
     await db.query(
-      'INSERT INTO obrigacoes_responsaveis_cliente (obrigacaoId, clienteId, usuarioId) VALUES (?, NULL, ?)',
+      'INSERT INTO obrigacoes_responsaveis_cliente (obrigacao_id, cliente_id, usuario_id) VALUES (?, NULL, ?)',
       [obrigacaoId, usuarioId]
     );
 
@@ -5094,21 +5096,21 @@ router.get('/:obrigacaoId/responsaveis-todos', verifyToken, async (req, res) => 
     // Buscar todos os responsáveis individuais e globais de uma vez
     const [responsaveis] = await db.query(`
       SELECT DISTINCT
-        orc.usuarioId,
-        orc.clienteId,
+        orc.usuario_id AS usuarioId,
+        orc.cliente_id AS clienteId,
         u.nome,
         u.email,
         d.nome as departamentoNome,
         CASE 
-          WHEN orc.clienteId IS NULL THEN 'global'
+          WHEN orc.cliente_id IS NULL THEN 'global'
           ELSE 'individual'
         END as tipo
       FROM obrigacoes_responsaveis_cliente orc
-      JOIN usuarios u ON u.id = orc.usuarioId
-      LEFT JOIN relacao_empresas re ON re.usuarioId = u.id
-      LEFT JOIN departamentos d ON d.id = re.departamentoId
-      WHERE orc.obrigacaoId = ?
-      ORDER BY orc.clienteId ASC, u.nome ASC
+      JOIN usuarios u ON u.id = orc.usuario_id
+      LEFT JOIN usuarios_empresas ue ON ue.usuario_id = u.id
+      LEFT JOIN departamentos d ON d.id = ue.departamento_id
+      WHERE orc.obrigacao_id = ?
+      ORDER BY orc.cliente_id ASC, u.nome ASC
     `, [obrigacaoId]);
 
     // Organizar por cliente
@@ -5378,7 +5380,7 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
         continue;
       }
 
-      const [atividadesBase] = await db.query(`SELECT * FROM atividades_obrigacao WHERE obrigacaoId = ?`, [obrigacaoId]);
+      const [atividadesBase] = await db.query(`SELECT * FROM atividades_obrigacao WHERE obrigacao_id = ?`, [obrigacaoId]);
 
       // Verificar se o cliente atende às particularidades da obrigação
       const [particularidadesE] = await db.query(`
@@ -5507,7 +5509,7 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
             `, flat);
             // Buscar os IDs inseridos
             const insertedIds = [];
-            const [ultimos] = await db.query('SELECT id, clienteId FROM obrigacoes_clientes WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId = ?', [obrigacaoId, ano, mesInicio, mesFim, clienteId]);
+            const [ultimos] = await db.query('SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND cliente_id = ?', [obrigacaoId, ano, mesInicio, mesFim, clienteId]);
             for (const row of ultimos) insertedIds.push({ id: row.id, clienteId: row.clienteId });
             
             // Popular obrigacoes_clientes_responsaveis para inserções em lote (Diário)
@@ -5612,7 +5614,7 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
             `, flat);
             // Buscar os IDs inseridos
             const insertedIds = [];
-            const [ultimos] = await db.query('SELECT id, clienteId FROM obrigacoes_clientes WHERE obrigacaoId = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND clienteId = ?', [obrigacaoId, ano, mesInicio, mesFim, clienteId]);
+            const [ultimos] = await db.query('SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND cliente_id = ?', [obrigacaoId, ano, mesInicio, mesFim, clienteId]);
             for (const row of ultimos) insertedIds.push({ id: row.id, clienteId: row.clienteId });
             
             // Popular obrigacoes_clientes_responsaveis para inserções em lote (Semanal)
@@ -5746,7 +5748,7 @@ router.get('/:obrigacaoId/verificar-atualizacao-tarefas', verifyToken, async (re
 
     // Buscar atividades base atuais da obrigação
     const [atividadesBase] = await db.query(`
-      SELECT id, tipo, texto, descricao, tipoCancelamento, ordem, pdf_layout_id, titulo_documento
+      SELECT id, tipo, texto, descricao, tipo_cancelamento AS tipoCancelamento, ordem, pdf_layout_id, titulo_documento
       FROM atividades_obrigacao 
       WHERE obrigacao_id = ? 
       ORDER BY ordem
@@ -5762,22 +5764,22 @@ router.get('/:obrigacaoId/verificar-atualizacao-tarefas', verifyToken, async (re
     // Buscar obrigações dos clientes onde TODAS as atividades estão intocadas
     // Se qualquer atividade foi mexida, a obrigação inteira é ignorada
     const [obrigacoesIntocadas] = await db.query(`
-      SELECT oc.id as obrigacaoClienteId, oc.clienteId, c.nome as clienteNome,
+      SELECT oc.id as obrigacaoClienteId, oc.cliente_id AS clienteId, c.razao_social as clienteNome,
              COUNT(oac.id) as totalAtividades,
              COUNT(CASE WHEN 
                oac.concluida = 0 
                AND oac.cancelada = 0
-               AND oac.dataConclusao IS NULL
-               AND oac.dataCancelamento IS NULL
+               AND oac.data_conclusao IS NULL
+               AND oac.data_cancelamento IS NULL
                AND (oac.justificativa IS NULL OR oac.justificativa = '')
                AND (oac.anexo IS NULL OR oac.anexo = '')
-               AND oac.concluidoPor IS NULL
+               AND oac.concluido_por IS NULL
              THEN 1 END) as atividadesIntocadas
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes_atividades_clientes oac ON oac.obrigacaoClienteId = oc.id
-      JOIN clientes c ON oac.clienteId = c.id
-      WHERE oc.obrigacaoId = ?
-      GROUP BY oc.id, oc.clienteId, c.nome
+      JOIN obrigacoes_atividades_clientes oac ON oac.obrigacao_cliente_id = oc.id
+      JOIN clientes c ON oac.cliente_id = c.id
+      WHERE oc.obrigacao_id = ?
+      GROUP BY oc.id, oc.cliente_id, c.razao_social
       HAVING totalAtividades = atividadesIntocadas AND totalAtividades > 0
     `, [obrigacaoId]);
 
@@ -5789,8 +5791,8 @@ router.get('/:obrigacaoId/verificar-atualizacao-tarefas', verifyToken, async (re
       const [[result]] = await db.query(`
         SELECT COUNT(DISTINCT oc.id) as total
         FROM obrigacoes_clientes oc
-        JOIN obrigacoes_atividades_clientes oac ON oac.obrigacaoClienteId = oc.id
-        WHERE oc.obrigacaoId = ?
+        JOIN obrigacoes_atividades_clientes oac ON oac.obrigacao_cliente_id = oc.id
+        WHERE oc.obrigacao_id = ?
           AND oc.id NOT IN (${tarefasAtualizaveis.map(() => '?').join(',')})
       `, [obrigacaoId, ...tarefasAtualizaveis.map(t => t.obrigacaoClienteId)]);
       obrigacoesIgnoradas = result;
@@ -5799,8 +5801,8 @@ router.get('/:obrigacaoId/verificar-atualizacao-tarefas', verifyToken, async (re
       const [[result]] = await db.query(`
         SELECT COUNT(DISTINCT oc.id) as total
         FROM obrigacoes_clientes oc
-        JOIN obrigacoes_atividades_clientes oac ON oac.obrigacaoClienteId = oc.id
-        WHERE oc.obrigacaoId = ?
+        JOIN obrigacoes_atividades_clientes oac ON oac.obrigacao_cliente_id = oc.id
+        WHERE oc.obrigacao_id = ?
       `, [obrigacaoId]);
       obrigacoesIgnoradas = result;
     }
@@ -5863,7 +5865,7 @@ router.post('/:obrigacaoId/atualizar-tarefas', verifyToken, async (req, res) => 
 
     // Buscar atividades base atuais
     const [atividadesBase] = await db.query(`
-      SELECT id, tipo, texto, descricao, tipoCancelamento, ordem, pdf_layout_id, titulo_documento
+      SELECT id, tipo, texto, descricao, tipo_cancelamento AS tipoCancelamento, ordem, pdf_layout_id, titulo_documento
       FROM atividades_obrigacao 
       WHERE obrigacao_id = ? 
       ORDER BY ordem
@@ -6246,7 +6248,7 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
     
     // Buscar IDs inseridos
     const [inseridos] = await db.query(`
-      SELECT id, clienteId FROM obrigacoes_clientes 
+      SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes 
       WHERE obrigacao_id = ? AND clienteId IN (${loteFiltrado.map(() => '?').join(',')})
       ORDER BY id DESC LIMIT ?
     `, [obrigacao.id, ...loteFiltrado.map(item => item.clienteId), loteFiltrado.length]);
@@ -6299,7 +6301,7 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
       const obrigacao = obrigacoes[0];
       if (!obrigacao) continue;
 
-      const [atividadesBase] = await db.query(`SELECT * FROM atividades_obrigacao WHERE obrigacaoId = ?`, [obrigacaoId]);
+      const [atividadesBase] = await db.query(`SELECT * FROM atividades_obrigacao WHERE obrigacao_id = ?`, [obrigacaoId]);
       console.log(`🔍 Atividades base encontradas para obrigacaoId ${obrigacaoId}: ${atividadesBase.length}`);
 
           // Buscar responsáveis individuais e globais em uma única query
@@ -6550,7 +6552,7 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
             `, flat);
             // Buscar os IDs inseridos para todos os clientes válidos
             const [ultimos] = await db.query(`
-              SELECT id, clienteId FROM obrigacoes_clientes 
+              SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes 
               WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? 
               AND clienteId IN (${clientesValidos.map(() => '?').join(',')})
             `, [obrigacaoId, ano, mesInicio, mesFim, ...clientesValidos]);
@@ -6623,7 +6625,7 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
             `, flat);
             // Buscar os IDs inseridos para todos os clientes válidos
             const [ultimos] = await db.query(`
-              SELECT id, clienteId FROM obrigacoes_clientes 
+              SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes
               WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? 
               AND clienteId IN (${clientesValidos.map(() => '?').join(',')})
             `, [obrigacaoId, ano, mesInicio, mesFim, ...clientesValidos]);
