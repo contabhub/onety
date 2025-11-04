@@ -256,7 +256,7 @@ export default function AtividadesObrigacao() {
             
             // Buscar obrigações do mesmo cliente e mesma obrigação base
             const { data: obrigacoesAdjacentes } = await api.get(
-                `/api/obrigacoes/cliente/${obrigacaoAtual.clienteId}/obrigacao/${obrigacaoAtual.obrigacaoId}/competencias`,
+                `/gestao/obrigacoes/cliente/${obrigacaoAtual.clienteId}/obrigacao/${obrigacaoAtual.obrigacaoId}/competencias`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -425,14 +425,14 @@ export default function AtividadesObrigacao() {
 
         try {
             // 1. Cancelar a atividade com justificativa
-            await api.patch(`/api/obrigacoes/atividade/${atividadeSelecionada.id}/cancelar`, {
+            await api.patch(`/gestao/obrigacoes/atividade/${atividadeSelecionada.id}/cancelar`, {
                 justificativa: justificativa,
             }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
             // 2. Adicionar justificativa como comentário do tipo "sistema"
-            await api.post(`/api/obrigacoes/${id}/comentario`, {
+            await api.post(`/gestao/obrigacoes/${id}/comentario`, {
                 comentario: `Motivo Cancelamento Atividade ${atividadeSelecionada.id}: ${justificativa}`,
                 tipo: "sistema"
             }, {
@@ -472,7 +472,7 @@ export default function AtividadesObrigacao() {
         
         const token = getToken();
         try {
-            await api.patch(`/api/obrigacoes/${id}/concluir`, {}, {
+            await api.patch(`/gestao/obrigacoes/${id}/concluir`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Obrigação concluída com sucesso.");
@@ -492,7 +492,7 @@ export default function AtividadesObrigacao() {
         if (!token || !id) return;
 
         try {
-            const { data } = await api.get(`/api/obrigacoes/${id}/comentarios`, {
+            const { data } = await api.get(`/gestao/obrigacoes/${id}/comentarios`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setComentarios(data);
@@ -506,7 +506,7 @@ export default function AtividadesObrigacao() {
         if (!token || !id) return;
 
         try {
-            await api.patch(`/api/obrigacoes/${id}/cancelar`, {}, {
+            await api.patch(`/gestao/obrigacoes/${id}/cancelar`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success("Obrigação cancelada com sucesso!");
@@ -523,7 +523,7 @@ export default function AtividadesObrigacao() {
         if (!token || !id) return;
 
         try {
-            await api.patch(`/api/obrigacoes/${id}/reabrir`, {}, {
+            await api.patch(`/gestao/obrigacoes/${id}/reabrir`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success("Obrigação reaberta com sucesso!");
@@ -555,7 +555,7 @@ export default function AtividadesObrigacao() {
             console.log("🔍 Validando PDF Layout para:", clienteInfo);
 
             // Chamar API para validar se o arquivo foi processado
-            const response = await api.post('/api/pdf-layouts/validar-processamento', {
+            const response = await api.post('/gestao/pdf-layouts/validar-processamento', {
                 clienteId: clienteInfo.clienteId,
                 competencia: clienteInfo.competencia,
                 obrigacaoNome: clienteInfo.obrigacaoNome
@@ -569,7 +569,7 @@ export default function AtividadesObrigacao() {
                 toast.success("Arquivo já foi processado no PDF Layout!");
                 
                 // Concluir atividade automaticamente se foi processado
-                await api.patch(`/api/obrigacoes/atividade/${atividade.id}/concluir`, {}, {
+                await api.patch(`/gestao/obrigacoes/atividade/${atividade.id}/concluir`, {}, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -604,10 +604,10 @@ export default function AtividadesObrigacao() {
             let mensagemInicial = '';
             
             if (tipoIntegracao.includes("integração: econtador") || tipoIntegracao.includes("integração: econtador")) {
-                endpoint = '/api/integracao-econtador/buscar-automatico-por-cnpj';
+                endpoint = '/gestao/integracao-econtador/buscar-automatico-por-cnpj';
                 mensagemInicial = "Iniciando busca automática no eContador...";
             } else if (tipoIntegracao.includes("integração: onvio") || tipoIntegracao.includes("integração: onvio")) {
-                endpoint = '/api/onvio/buscar-automatico-por-cnpj';
+                endpoint = '/gestao/onvio/buscar-automatico-por-cnpj';
                 mensagemInicial = "Iniciando busca automática no Onvio...";
             } else {
                 toast.error("Tipo de integração não reconhecido");
@@ -718,12 +718,12 @@ export default function AtividadesObrigacao() {
                                     if (!confirmar) return;
                                     const token = getToken();
                                     try {
-                                        await api.patch(`/api/obrigacoes/atividade/${a.id}/descancelar`, {}, {
+                                        await api.patch(`/gestao/obrigacoes/atividade/${a.id}/descancelar`, {}, {
                                             headers: { Authorization: `Bearer ${token}` }
                                         });
                                         // ✅ Se a obrigação estiver concluída, desconcluí-la
                                         if (obrigacao?.dataBaixa) {
-                                            await api.patch(`/api/obrigacoes/${id}/desconcluir`, {}, {
+                                            await api.patch(`/gestao/obrigacoes/${id}/desconcluir`, {}, {
                                                 headers: { Authorization: `Bearer ${token}` },
                                             });
                                         }
@@ -764,7 +764,7 @@ export default function AtividadesObrigacao() {
                                     if (!confirmar) return;
                                     const token = getToken();
                                     try {
-                                        await api.patch(`/api/obrigacoes/atividade/${a.id}/disconcluir`, {}, {
+                                        await api.patch(`/gestao/obrigacoes/atividade/${a.id}/disconcluir`, {}, {
                                             headers: { Authorization: `Bearer ${token}` }
                                         });
                                         toast.success("Atividade reaberta com sucesso.");
@@ -1569,7 +1569,7 @@ export default function AtividadesObrigacao() {
                                                                 const token = getToken();
                                                                 try {
                                                                     await api.post(
-                                                                        `/api/obrigacoes/${id}/comentario`,
+                                                                        `/gestao/obrigacoes/${id}/comentario`,
                                                                         { comentario: comentarioTexto, tipo: abaAtiva },
                                                                         { headers: { Authorization: `Bearer ${token}` } }
                                                                     );
@@ -1779,13 +1779,13 @@ export default function AtividadesObrigacao() {
                                         try {
                                             // ⬇⬇⬇ Adapte os endpoints para OBRIGAÇÕES
                                             await api.patch(
-                                                `/api/obrigacoes/atividade/${atividadeSelecionada.id}/anexo`,
+                                                `/gestao/obrigacoes/atividade/${atividadeSelecionada.id}/anexo`,
                                                 { base64, nomeArquivo: arquivoSelecionado.name },
                                                 { headers: { Authorization: `Bearer ${token}` } }
                                             );
 
                                             await api.patch(
-                                                `/api/obrigacoes/atividade/${atividadeSelecionada.id}/concluir`,
+                                                `/gestao/obrigacoes/atividade/${atividadeSelecionada.id}/concluir`,
                                                 {},
                                                 { headers: { Authorization: `Bearer ${token}` } }
                                             );
@@ -1909,7 +1909,7 @@ export default function AtividadesObrigacao() {
                             });
                         }
 
-                        await api.post("/api/email/enviar", formData, {
+                        await api.post("/gestao/email/enviar", formData, {
                             headers: {
                                 Authorization: `Bearer ${token}`,
                                 "Content-Type": "multipart/form-data",
@@ -1918,7 +1918,7 @@ export default function AtividadesObrigacao() {
 
                         if (atividadeSelecionada) {
                             await api.patch(
-                                `/api/obrigacoes/atividade/${atividadeSelecionada.id}/concluir`,
+                                `/gestao/obrigacoes/atividade/${atividadeSelecionada.id}/concluir`,
                                 {},
                                 {
                                     headers: { Authorization: `Bearer ${token}` },
