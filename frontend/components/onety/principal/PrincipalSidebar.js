@@ -300,6 +300,12 @@ const MODULE_REGISTRY = {
         icon: <FileText size={18} />,
         route: '/gestao/certificados'
       },
+      {
+        id: 'pdf-layout',
+        label: 'PDF Layout',
+        icon: <FileText size={18} />,
+        route: '/gestao/pdf-layout'
+      },
 
     ]
   },

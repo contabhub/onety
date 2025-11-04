@@ -1,0 +1,612 @@
+/* =====================================================
+   VISÃO GERAL MODAL - SISTEMA ONITY
+   Estilos para o modal de detalhes das tarefas
+   ===================================================== */
+
+   .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Light theme: overlay claro para não escurecer o conteúdo */
+  :root[data-theme="light"] .modalOverlay {
+    background-color: rgba(255, 255, 255, 0.55);
+  }
+  
+  .modalContent {
+    position: relative;
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-l);
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    min-height: unset;
+    height: auto;
+    box-sizing: border-box;
+    padding: var(--onity-space-xl);
+    box-shadow: var(--onity-elev-high);
+    font-family: var(--onity-font-family-sans);
+    border: 1px solid var(--onity-color-border);
+    backdrop-filter: blur(20px);
+  }
+  
+  /* Light theme: reforça aparência clara do card */
+  :root[data-theme="light"] .modalContent {
+    background: #ffffff;
+    box-shadow: var(--onity-elev-med);
+  }
+  
+  .modalHeader {
+    margin-bottom: var(--onity-space-m);
+  }
+  
+  .modalTitle {
+    font-size: var(--onity-type-h2-size);
+    font-weight: 600;
+    margin-bottom: var(--onity-space-xs);
+    color: var(--onity-color-text);
+  }
+  
+  .modalSubtitle {
+    font-size: var(--onity-type-body-size);
+    color: var(--onity-color-text);
+    opacity: 0.9;
+  }
+  
+  /* Abas de navegação */
+  .tabsContainer {
+    display: flex;
+    gap: var(--onity-space-s);
+    margin-bottom: var(--onity-space-m);
+  }
+  
+  .tabButton {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    background: var(--onity-color-surface);
+    border: 1px solid var(--onity-color-border);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-body-size);
+    cursor: pointer;
+    transition: all 120ms ease;
+    color: var(--onity-color-text);
+    opacity: 0.9;
+  }
+  
+  .tabButton:hover {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    color: var(--onity-color-text);
+  }
+  
+  .tabButton.active {
+    background: var(--onity-color-primary);
+    border-color: var(--onity-color-primary);
+    color: var(--onity-color-primary-contrast);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  }
+  
+  /* Campo de busca */
+  .searchInput {
+    width: 95%;
+    padding: var(--onity-space-s) var(--onity-space-m);
+    margin-bottom: var(--onity-space-m);
+    border-radius: var(--onity-radius-xs);
+    border: 1px solid var(--onity-color-border);
+    font-size: var(--onity-type-body-size);
+    font-family: var(--onity-font-family-sans);
+    background: var(--onity-color-surface);
+    color: var(--onity-color-text);
+    transition: all 120ms ease;
+  }
+  
+  .searchInput:focus {
+    outline: none;
+    border-color: var(--onity-color-primary);
+    box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+  }
+  
+  .searchInput::placeholder {
+    color: var(--onity-color-text);
+    opacity: 0.7;
+  }
+  
+  /* Tabela */
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--onity-type-caption-size);
+    table-layout: auto;
+  }
+  
+  .tableHeader {
+    background: var(--onity-color-bg);
+  }
+  
+  .tableHeader th {
+    padding: var(--onity-space-s);
+    font-weight: 500;
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    text-align: left;
+    border-bottom: 1px solid var(--onity-color-border);
+  }
+  
+  .tableHeader th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 120ms ease;
+  }
+  
+  .tableHeader th.sortable:hover {
+    color: var(--onity-color-text);
+  }
+  
+  .sortIndicator {
+    font-size: var(--onity-type-body-size);
+    margin-left: var(--onity-space-xs);
+  }
+  
+  .tableBody tr {
+    border-bottom: 1px solid var(--onity-color-border);
+    transition: background 120ms ease;
+  }
+  
+  .tableBody tr:hover {
+    background: var(--onity-color-bg);
+  }
+  
+  .tableBody td {
+    padding: var(--onity-space-s);
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    font-size: var(--onity-type-caption-size);
+  }
+  
+  /* Células especiais */
+  .cellId {
+    color: var(--onity-color-text);
+    font-weight: 500;
+  }
+  
+  .cellAssunto {
+    color: var(--onity-color-primary);
+    cursor: pointer;
+    min-width: 120px;
+    max-width: 180px;
+    word-break: break-word;
+    transition: color 120ms ease;
+  }
+  
+  .cellAssunto:hover {
+    color: var(--onity-color-primary-hover);
+    text-decoration: underline;
+  }
+  
+  .cellCliente {
+    min-width: 120px;
+    max-width: 180px;
+    word-break: break-word;
+  }
+  
+  .cellClienteCnpj {
+    font-size: var(--onity-type-caption-size);
+    color: var(--onity-color-text);
+    opacity: 0.7;
+    margin-top: -2px;
+    word-break: break-word;
+  }
+  
+  .cellStatusCliente {
+    text-align: center;
+    min-width: 90px;
+    max-width: 120px;
+    word-break: break-word;
+  }
+  
+  .cellDatas {
+    min-width: 90px;
+    max-width: 130px;
+    word-break: break-word;
+  }
+  
+  .cellDatas span {
+    font-weight: 700;
+  }
+  
+  .cellConclusao {
+    min-width: 110px;
+    max-width: 120px;
+    white-space: nowrap;
+    word-break: break-word;
+    text-align: center;
+  }
+  
+  .cellResponsavel {
+    color: var(--onity-color-text);
+    opacity: 0.9;
+  }
+  
+  .cellAtividades {
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  /* Badge de baixa automática */
+  .badgeAuto {
+    margin-left: var(--onity-space-s);
+    padding: 2px var(--onity-space-s);
+    background-color: var(--onity-color-success);
+    color: var(--onity-color-surface);
+    border-radius: var(--onity-radius-xs);
+    font-size: var(--onity-type-caption-size);
+    font-weight: 700;
+    font-family: var(--onity-font-family-sans);
+    user-select: none;
+  }
+  
+  /* Paginação */
+  .paginationContainer {
+    margin-top: var(--onity-space-m);
+    font-size: var(--onity-type-caption-size);
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .paginationInfo {
+    display: flex;
+    gap: var(--onity-space-m);
+  }
+  
+  .paginationButtons {
+    display: flex;
+    gap: var(--onity-space-s);
+  }
+  
+  .paginationButton {
+    padding: var(--onity-space-xs) var(--onity-space-s);
+    border: 1px solid var(--onity-color-border);
+    background: var(--onity-color-surface);
+    cursor: pointer;
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    border-radius: var(--onity-radius-xs);
+    transition: all 120ms ease;
+  }
+  
+  .paginationButton:hover:not(:disabled) {
+    background: var(--onity-color-bg);
+    border-color: var(--onity-color-primary);
+    color: var(--onity-color-text);
+  }
+  
+  .paginationButton:disabled {
+    cursor: not-allowed;
+    color: var(--onity-color-text);
+    opacity: 0.3;
+  }
+  
+  /* Botão fechar */
+  .closeButton {
+    position: absolute;
+    top: var(--onity-space-m);
+    right: var(--onity-space-l);
+    background: none;
+    border: none;
+    font-size: var(--onity-type-h1-size);
+    cursor: pointer;
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    line-height: 1;
+    transition: all 120ms ease;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .closeButton:hover {
+    color: var(--onity-color-text);
+    background: var(--onity-color-bg);
+    transform: scale(1.1);
+  }
+  
+  /* Mensagem de nenhum resultado */
+  .noResults {
+    text-align: center;
+    padding: var(--onity-space-l);
+    color: var(--onity-color-text);
+    opacity: 0.9;
+    font-style: italic;
+  }
+  
+  /* ===== PAINEL DE CONTROLE - ESTILO ONITY ===== */
+  .controlPanel {
+    background: var(--onity-color-surface);
+    border-radius: var(--onity-radius-l);
+    padding: var(--onity-space-xl);
+    margin-bottom: var(--onity-space-xl);
+    border: 1px solid var(--onity-color-border);
+    backdrop-filter: blur(20px);
+  }
+  
+  .controlPanelTitle {
+    font-size: var(--onity-type-h1-size);
+    font-weight: 700;
+    color: var(--onity-color-text);
+    margin-bottom: var(--onity-space-l);
+    text-align: center;
+    background: linear-gradient(135deg, var(--onity-color-primary), var(--onity-color-primary-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .controlPanelTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: var(--onity-space-m);
+    font-size: var(--onity-type-body-size);
+  }
+  
+  .controlPanelHeader th {
+    padding: var(--onity-space-l);
+    font-weight: 600;
+    color: var(--onity-color-text);
+    text-align: center;
+    font-size: var(--onity-type-body-size);
+    position: relative;
+  }
+  
+  .controlPanelHeader th:first-child {
+    text-align: left;
+  }
+  
+  .controlPanelHeader th:not(:first-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, var(--onity-color-border), transparent);
+    transform: translateY(-50%);
+  }
+  
+  .controlPanelRow td {
+    padding: var(--onity-space-s);
+    text-align: center;
+    vertical-align: middle;
+    height: 50px;
+    position: relative;
+  }
+  
+  .controlPanelRow td:first-child {
+    text-align: left;
+    font-weight: 500;
+    color: var(--onity-color-text);
+  }
+  
+  .controlPanelRow td:not(:first-child) {
+    position: relative;
+  }
+  
+  .controlPanelRow td:not(:first-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, var(--onity-color-border), transparent);
+    transform: translateY(-50%);
+  }
+  
+  /* Células de valores com bordas coloridas */
+  .cellValue {
+    display: inline-block;
+    padding: var(--onity-space-m) var(--onity-space-l);
+    border-radius: var(--onity-radius-m);
+    font-weight: 700;
+    font-size: var(--onity-type-h3-size);
+    min-width: 60px;
+    text-align: center;
+    position: relative;
+    background: var(--onity-color-surface);
+    border: 2px solid transparent;
+    transition: all 120ms ease;
+  }
+  
+  .cellValue::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--onity-radius-m);
+    padding: 2px;
+    background: linear-gradient(135deg, var(--onity-color-primary), var(--onity-color-primary));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+  }
+  
+  .cellValue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(68, 84, 100, 0.3);
+  }
+  
+  /* Variantes de cores para as células */
+  .cellValue.action {
+    color: var(--onity-color-primary);
+  }
+  
+  .cellValue.action::before {
+    background: linear-gradient(135deg, var(--onity-color-primary), var(--onity-color-primary-hover));
+  }
+  
+  .cellValue.attention {
+    color: var(--onity-color-warning);
+  }
+  
+  .cellValue.attention::before {
+    background: linear-gradient(135deg, var(--onity-color-warning), var(--onity-color-error));
+  }
+  
+  .cellValue.completed {
+    color: var(--onity-color-success);
+  }
+  
+  .cellValue.completed::before {
+    background: linear-gradient(135deg, var(--onity-color-success), var(--onity-color-primary-hover));
+  }
+  
+  /* Célula inativa (valor 0) */
+  .cellValueInativo {
+    opacity: 0.4;
+    cursor: default !important;
+    color: var(--onity-color-text) !important;
+    opacity: 0.3 !important;
+  }
+  
+  .cellValueInativo::before {
+    background: var(--onity-color-border) !important;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .modalContent {
+      width: 95%;
+      padding: var(--onity-space-l);
+    }
+    
+    .table {
+      font-size: var(--onity-type-caption-size);
+    }
+    
+    .tableHeader th,
+    .tableBody td {
+      padding: var(--onity-space-xs);
+    }
+    
+    .controlPanelTable {
+      border-spacing: var(--onity-space-s);
+    }
+    
+    .controlPanelHeader th,
+    .controlPanelRow td {
+      padding: var(--onity-space-s);
+    }
+    
+      .cellValue {
+    padding: var(--onity-space-s) var(--onity-space-m);
+    font-size: var(--onity-type-body-size);
+    }
+  }
+
+  /* Estilos para headers de ordenação */
+  .sortHeaderWrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sortHeaderWrapperCenter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  /* Estilos para colunas específicas */
+  .thAssunto {
+    min-width: 120px;
+    max-width: 180px;
+    word-break: break-word;
+  }
+
+  .thStatusCliente {
+    min-width: 90px;
+    max-width: 120px;
+    text-align: center;
+    word-break: break-word;
+  }
+
+  .thDatas {
+    min-width: 90px;
+    max-width: 130px;
+    word-break: break-word;
+  }
+
+  .thConclusao {
+    min-width: 110px;
+    max-width: 120px;
+    white-space: nowrap;
+    word-break: break-word;
+    text-align: center;
+  }
+
+  /* Estilos para paginação */
+  .paginationItemsContainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .paginationItemsLabel {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+  }
+
+  .paginationItemsSelect {
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .paginationItemsSelect:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .paginationItemsOption {
+    background-color: #2a2a2a;
+    color: white;
+  }
+
+  .paginationInfoBox {
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+  }
+    
