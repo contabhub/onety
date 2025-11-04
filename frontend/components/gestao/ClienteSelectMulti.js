@@ -68,8 +68,24 @@ export default function ClienteSelectMulti({
   isClearable = false,
   placeholder = "Selecione ou pesquise o cliente..."
 }) {
-  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : "";
-  const empresaId = typeof window !== "undefined" ? sessionStorage.getItem("empresaId") : "";
+  // Token e empresaId resolvidos do storage (prioriza localStorage e userData)
+  const token = typeof window !== "undefined"
+    ? (localStorage.getItem("token") || sessionStorage.getItem("token") || "")
+    : "";
+  let empresaId = "";
+  if (typeof window !== "undefined") {
+    try {
+      const rawUserData = localStorage.getItem("userData") || sessionStorage.getItem("userData") || sessionStorage.getItem("usuario");
+      const userData = rawUserData ? JSON.parse(rawUserData) : null;
+      if (userData?.EmpresaId) {
+        empresaId = String(userData.EmpresaId);
+      } else {
+        empresaId = localStorage.getItem("empresaId") || sessionStorage.getItem("empresaId") || "";
+      }
+    } catch (_) {
+      empresaId = localStorage.getItem("empresaId") || sessionStorage.getItem("empresaId") || "";
+    }
+  }
   const BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
   const [clientes, setClientes] = useState([]);
@@ -83,10 +99,17 @@ export default function ClienteSelectMulti({
     if (!empresaId || !token) return [];
 
     try {
-      const r = await fetch(`${BASE}/api/clientes?empresaId=${empresaId}&page=${pageNum}&limit=30&search=${encodeURIComponent(nome)}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const url = `${BASE}/gestao/clientes?empresaId=${empresaId}&page=${pageNum}&limit=30&search=${encodeURIComponent(nome)}`;
+      console.log('[ClienteSelectMulti] GET clientes URL', { url, empresaId, pageNum, search: nome });
+      const r = await fetch(url, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          ...(empresaId ? { 'X-Empresa-Id': empresaId } : {}),
+        },
       });
+      console.log('[ClienteSelectMulti] GET clientes status', r.status);
       const json = await r.json();
+      console.log('[ClienteSelectMulti] GET clientes payload', json);
       const list = Array.isArray(json) ? json : (json?.clientes || json?.data?.clientes || []);
 
       const data = list.map((c) => ({
@@ -95,19 +118,22 @@ export default function ClienteSelectMulti({
         cnpj: c.cnpjCpf,
       }));
 
+      console.log('[ClienteSelectMulti] GET clientes mapped length', data.length);
       if (data.length < 30) setHasMore(false);
       return data;
     } catch (err) {
-      console.error("Erro ao buscar clientes:", err);
+      console.error('[ClienteSelectMulti] GET clientes error', err);
       return [];
     }
   }, [empresaId, token, BASE]);
 
   const carregarPrimeiraPagina = async (nome) => {
+    console.log('[ClienteSelectMulti] carregarPrimeiraPagina', { nome });
     setLoading(true);
     setPage(1);
     setHasMore(true);
     const data = await fetchClientes(nome, 1);
+    console.log('[ClienteSelectMulti] carregarPrimeiraPagina result length', data.length);
     setClientes(data);
     setLoading(false);
   };
@@ -115,14 +141,17 @@ export default function ClienteSelectMulti({
   const carregarMaisClientes = async () => {
     if (!hasMore || loading) return;
     const nextPage = page + 1;
+    console.log('[ClienteSelectMulti] carregarMaisClientes', { nextPage, inputValue });
     setLoading(true);
     const novos = await fetchClientes(inputValue, nextPage);
+    console.log('[ClienteSelectMulti] carregarMaisClientes novos length', novos.length);
     setClientes((prev) => [...prev, ...novos]);
     setPage(nextPage);
     setLoading(false);
   };
 
   const handleInputChange = (input) => {
+    console.log('[ClienteSelectMulti] handleInputChange', { input });
     setInputValue(input);
     carregarPrimeiraPagina(input);
   };
@@ -152,6 +181,7 @@ export default function ClienteSelectMulti({
   }, [value, clientes, isMulti]);
 
   useEffect(() => {
+    console.log('[ClienteSelectMulti] mount init', { BASE, empresaId, hasToken: !!token });
     carregarPrimeiraPagina("");
   }, []);
 
@@ -162,14 +192,19 @@ export default function ClienteSelectMulti({
       const idsNaoEncontrados = ids.filter(id => !clientes.find(c => c.value === id));
       
       if (idsNaoEncontrados.length > 0) {
+        console.log('[ClienteSelectMulti] buscar por ids faltantes', idsNaoEncontrados);
         setBuscandoClienteId(true);
         Promise.all(
           idsNaoEncontrados.map(id => 
-            fetch(`${BASE}/api/clientes/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
+            fetch(`${BASE}/gestao/clientes/${id}`, {
+              headers: { 
+                Authorization: `Bearer ${token}`,
+                ...(empresaId ? { 'X-Empresa-Id': empresaId } : {}),
+              },
             }).then(r => r.json()).catch(() => null)
           )
         ).then(results => {
+          console.log('[ClienteSelectMulti] resultados por id', results);
           const clientesEncontrados = results
             .filter(Boolean)
             .map((cliente) => ({
@@ -229,14 +264,21 @@ export default function ClienteSelectMulti({
           ...base,
           fontSize: "13px",
           padding: "6px 10px",
-          backgroundColor: state.isFocused ? "var(--titan-primary)" : "var(--titan-input-bg)",
+          // Remove transparência do dropdown: use fundo sólido
+          backgroundColor: state.isFocused ? "var(--titan-primary)" : "#0f172a",
           color: state.isFocused ? "white" : "var(--titan-text-high)",
         }),
         menu: (base) => ({
           ...base,
           zIndex: 9999,
-          background: "var(--titan-base-00)",
+          // Fundo sólido no menu para remover qualquer transparência
+          background: "#0f172a",
           border: "1px solid var(--titan-stroke)",
+        }),
+        menuList: (base) => ({
+          ...base,
+          background: "#0f172a",
+          backdropFilter: "none",
         }),
         singleValue: (base) => ({
           ...base,

@@ -146,6 +146,60 @@
   --onity-icon-secondary: var(--onity-dark-primary-light);
 }
 
+/* Titan -> Onety compatibility layer for legacy tokens used in modules */
+:root {
+  /* colors */
+  --titan-text-high: var(--onity-color-text);
+  --titan-text-med: var(--onity-color-text);
+  --titan-text-low: var(--onity-color-border);
+  --titan-text-ice: var(--onity-color-text);
+  --titan-card-bg: var(--onity-color-surface);
+  --titan-base-00: var(--onity-color-surface);
+  --titan-stroke: var(--onity-color-border);
+  --titan-primary: var(--onity-color-primary);
+  --titan-primary-hover: var(--onity-color-primary-hover);
+  --titan-success: var(--onity-color-success);
+  --titan-success-hover: var(--onity-color-success);
+  --titan-error: var(--onity-color-error);
+  --titan-error-hover: var(--onity-color-error);
+  --titan-input-bg: var(--onity-color-surface);
+
+  /* spacing */
+  --titan-spacing-xs: var(--onity-space-xs);
+  --titan-spacing-sm: var(--onity-space-s);
+  --titan-spacing-md: var(--onity-space-m);
+  --titan-spacing-lg: var(--onity-space-l);
+  --titan-spacing-xl: var(--onity-space-xl);
+  --titan-spacing-2xl: var(--onity-space-xl);
+
+  /* typography */
+  --titan-font-size-xs: var(--onity-type-caption-size);
+  --titan-font-size-sm: var(--onity-type-body-size);
+  --titan-font-size-md: var(--onity-type-body-size);
+  --titan-font-size-lg: var(--onity-type-h3-size);
+  --titan-font-size-xl: var(--onity-type-h3-size);
+  --titan-font-weight-medium: 500;
+  --titan-font-weight-semibold: 600;
+  --titan-font-weight-normal: 400;
+  --titan-font-family: var(--onity-font-family-sans);
+  --titan-line-height-relaxed: 1.5;
+
+  /* radii */
+  --titan-radius-sm: var(--onity-radius-xs);
+  --titan-radius-md: var(--onity-radius-m);
+  --titan-radius-lg: var(--onity-radius-l);
+  --titan-radius-full: 9999px;
+
+  /* shadows */
+  --titan-shadow-sm: var(--onity-elev-low);
+  --titan-shadow-md: var(--onity-elev-med);
+  --titan-shadow-lg: var(--onity-elev-high);
+  --titan-glow-primary: var(--onity-elev-low);
+
+  /* transitions */
+  --titan-transition-fast: 0.2s ease;
+}
+
 /* Base styles */
 html, body {
   padding: 0;

@@ -778,6 +778,14 @@ export default function ObrigacaoDetailPage() {
             mesFim: 12, // Sempre até dezembro para gerar todos os trimestres subsequentes
             clienteIds, // Array de IDs dos clientes selecionados
           }
+        : obrigacao?.frequencia === "Semanal"
+        ? {
+            ano: anoReferencia,
+            mesInicio: mesReferencia,
+            mesFim: mesFim,
+            diaSemana: obrigacao?.diaSemana, // ✅ NOVO: Incluir diaSemana para obrigações semanais
+            clienteIds, // Array de IDs dos clientes selecionados
+          }
         : {
             ano: anoReferencia,
             mesInicio: mesReferencia,

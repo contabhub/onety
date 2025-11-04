@@ -534,7 +534,8 @@ router.post("/comentarios/lote", verifyToken, async (req, res) => {
         c.criado_em AS criadoEm,
         c.nome_arquivo AS nomeArquivo,
         u.nome as autorNome,
-        u.id as autorId
+        u.id as autorId,
+        u.avatar_url
        FROM comentarios_tarefa c
        JOIN usuarios u ON c.usuario_id = u.id
        WHERE c.tarefa_id IN (${placeholders})
@@ -585,8 +586,8 @@ router.post("/:id/comentarios", verifyToken, async (req, res) => {
       pad(agora.getSeconds());
 
     await db.query(
-      `INSERT INTO comentarios_tarefa (tarefa_id, usuario_id, comentario, arquivo, nome_arquivo) VALUES (?, ?, ?, ?, ?)`,
-      [id, usuarioId, comentario || null, base64 || null, nomeArquivo || null]
+      `INSERT INTO comentarios_tarefa (tarefa_id, usuario_id, comentario, arquivo, nome_arquivo, criado_em) VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, usuarioId, comentario || null, base64 || null, nomeArquivo || null, criadoEm]
     );
     res.status(201).json({ mensagem: "Comentário adicionado." });
   } catch (err) {
@@ -621,7 +622,7 @@ router.get("/atividades/:atividadeTarefaId/tarefa", verifyToken, async (req, res
 
   try {
     const [[row]] = await db.query(
-      `SELECT tarefa_id FROM atividades_tarefas WHERE id = ?`,
+      `SELECT tarefa_id AS tarefaId FROM atividades_tarefas WHERE id = ?`,
       [atividadeTarefaId]
     );
 
@@ -629,7 +630,7 @@ router.get("/atividades/:atividadeTarefaId/tarefa", verifyToken, async (req, res
       return res.status(404).json({ error: "Atividade não encontrada." });
     }
 
-    res.json({ tarefaId: row.tarefa_id });
+    res.json({ tarefaId: row.tarefaId || row.tarefa_id });
   } catch (err) {
     console.error("Erro ao obter tarefaId da atividade:", err);
     res.status(500).json({ error: "Erro interno ao buscar tarefa da atividade." });
