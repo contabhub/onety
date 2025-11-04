@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../config/database");
-const autenticarToken = require("../../middlewares/auth");
-const { verificarPermissao } = require("../../middlewares/permissao");
+const verifyToken = require("../../middlewares/auth");
 
 // 🔶 Criar departamento
-router.post("/", autenticarToken, verificarPermissao('departamentos.criar'), async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
   try {
     const { empresaId, nome, responsavelId } = req.body;
 
@@ -38,7 +37,7 @@ router.post("/", autenticarToken, verificarPermissao('departamentos.criar'), asy
 });
 
 // 🔶 Buscar lista simples de departamentos por nome
-router.get("/empresa/:empresaId/nomes", autenticarToken, verificarPermissao('departamentos.visualizar'), async (req, res) => {
+router.get("/empresa/:empresaId/nomes", verifyToken,  async (req, res) => {
   const { empresaId } = req.params;
   try {
     const [dados] = await db.query(
@@ -53,7 +52,7 @@ router.get("/empresa/:empresaId/nomes", autenticarToken, verificarPermissao('dep
 });
 
 // 🔶 Buscar usuários da empresa (relacao_empresas)
-router.get("/empresa/:empresaId", autenticarToken, verificarPermissao('departamentos.visualizar'), async (req, res) => {
+router.get("/empresa/:empresaId", verifyToken,  async (req, res) => {
   const { empresaId } = req.params;
   try {
     const [dados] = await db.query(`
@@ -71,7 +70,7 @@ router.get("/empresa/:empresaId", autenticarToken, verificarPermissao('departame
 });
 
 // 🔶 Buscar usuários de um departamento específico
-router.get("/:departamentoId/usuarios", autenticarToken, verificarPermissao('departamentos.visualizar'), async (req, res) => {
+router.get("/:departamentoId/usuarios", verifyToken, async (req, res) => {
   const { departamentoId } = req.params;
   try {
     const [dados] = await db.query(`
@@ -86,7 +85,6 @@ router.get("/:departamentoId/usuarios", autenticarToken, verificarPermissao('dep
       LEFT JOIN cargos c ON r.cargo_id = c.id
       WHERE r.departamento_id = ?
         AND (LOWER(c.nome) NOT LIKE '%superadmin%' OR c.nome IS NULL)
-        AND (u.nivel IS NULL OR LOWER(u.nivel) NOT LIKE '%superadmin%')
       ORDER BY u.nome
     `, [departamentoId]);
 
@@ -98,7 +96,7 @@ router.get("/:departamentoId/usuarios", autenticarToken, verificarPermissao('dep
 });
 
 // 🔶 Listar departamentos por empresa
-router.get("/:empresaId", autenticarToken, verificarPermissao('departamentos.visualizar'), async (req, res) => {
+router.get("/:empresaId", verifyToken, async (req, res) => {
   try {
     const { empresaId } = req.params;
 
@@ -122,7 +120,7 @@ ORDER BY d.nome
 });
 
 // 🔶 Buscar o departamentoGlobalId
-router.get("/:id/global", autenticarToken, verificarPermissao('departamentos.visualizar'), async (req, res) => {
+router.get("/:id/global", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const [[dep]] = await db.query(
@@ -138,7 +136,7 @@ router.get("/:id/global", autenticarToken, verificarPermissao('departamentos.vis
 });
 
 // 🔶 Atualizar departamento
-router.put("/:id", autenticarToken, verificarPermissao('departamentos.editar'), async (req, res) => {
+router.put("/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { nome, responsavelId } = req.body;
 
@@ -167,7 +165,7 @@ router.put("/:id", autenticarToken, verificarPermissao('departamentos.editar'), 
 });
 
 // Atualizar departamento de um funcionário
-router.patch("/relacao-empresas/:id", autenticarToken, verificarPermissao('departamentos.editar'), async (req, res) => {
+router.patch("/relacao-empresas/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { departamentoId } = req.body;
 
@@ -196,7 +194,7 @@ router.patch("/relacao-empresas/:id", autenticarToken, verificarPermissao('depar
 });
 
 // rota para buscar todas as relações por usuário
-router.get("/relacao-empresas/usuario/:usuarioId", autenticarToken, verificarPermissao('departamentos.visualizar'), async (req, res) => {
+router.get("/relacao-empresas/usuario/:usuarioId", verifyToken, async (req, res) => {
   const { usuarioId } = req.params;
   try {
     const [dados] = await db.query(
@@ -211,7 +209,7 @@ router.get("/relacao-empresas/usuario/:usuarioId", autenticarToken, verificarPer
 });
 
 // 🔴 Remover funcionário da empresa (remover da relacao_empresas)
-router.delete("/relacao-empresas/:id", autenticarToken, verificarPermissao('departamentos.excluir'), async (req, res) => {
+router.delete("/relacao-empresas/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     // Verifica se a relação existe

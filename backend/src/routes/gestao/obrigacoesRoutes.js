@@ -290,8 +290,8 @@ router.post("/definir-responsavel-lote", verifyToken, async (req, res) => {
     let query = `
       SELECT o.id as obrigacaoId, o.nome as obrigacaoNome, d.nome as departamentoNome
       FROM obrigacoes o
-      LEFT JOIN departamentos d ON o.departamentoId = d.id
-      WHERE o.empresaId = ?
+      LEFT JOIN departamentos d ON o.departamento_id = d.id
+      WHERE o.empresa_id = ?
     `;
     const params = [empresaId];
 
@@ -3401,12 +3401,12 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
     let query = `
       SELECT 
         oc.*, 
-        c.nome AS cliente_nome, 
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS cliente_nome, 
         c.status AS status_cliente,
         o.nome AS nomeObrigacao,
         o.departamento_id AS departamentoId,
         d.nome AS departamento_nome,
-        o.metaQtdDias, o.metaTipoDias, o.acaoQtdDias, o.acaoTipoDias
+        o.meta_qtd_dias, o.meta_tipo_dias, o.acao_qtd_dias
       FROM obrigacoes_clientes oc
       JOIN clientes c ON oc.cliente_id = c.id
       JOIN obrigacoes o ON oc.obrigacao_id = o.id
@@ -3421,17 +3421,17 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
     }
     
     query += `
-      WHERE c.empresaId = ? AND oc.status != 'cancelada'`;
+      WHERE c.empresa_id = ? AND oc.status != 'cancelada'`;
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ Buscar departamento do usuário logado
       const [usuarioDept] = await db.query(`
-        SELECT re.departamento_id AS departamentoId
-        FROM usuarios_empresas re 
-        WHERE re.usuario_id = ? AND re.empresa_id = ?
+        SELECT ue.departamento_id AS departamentoId
+        FROM usuarios_empresas ue 
+        WHERE ue.usuario_id = ? AND ue.empresa_id = ?
       `, [usuarioId, empresaId]);
       
-      const departamentoUsuario = usuarioDept[0]?.departamentoId;
+      const departamentoUsuario = usuarioDept[0]?.departamentoId || usuarioDept[0]?.departamento_id;
       
       if (departamentoUsuario) {
         // ✅ Filtro: responsabilidade do usuário OU obrigações sem responsáveis do mesmo departamento OU obrigações esporádicas com responsável direto
@@ -4984,13 +4984,13 @@ router.get("/:obrigacaoId/comentarios", verifyToken, async (req, res) => {
         co.id,
         co.comentario,
         co.tipo,
-        co.criadoEm,
+        co.criado_em AS criadoEm,
         u.nome as usuarioNome,
         u.email as usuarioEmail
       FROM comentarios_obrigacao co
-      JOIN usuarios u ON u.id = co.usuarioId
-      WHERE co.obrigacaoId = ?
-      ORDER BY co.criadoEm DESC
+      JOIN usuarios u ON u.id = co.usuario_id
+      WHERE co.obrigacao_id = ?
+      ORDER BY co.criado_em DESC
     `, [obrigacaoId]);
 
     res.json(comentarios);
@@ -5016,22 +5016,22 @@ router.post("/comentarios/lote", verifyToken, async (req, res) => {
     const placeholders = obrigacaoIds.map(() => '?').join(',');
     const [comentarios] = await db.query(`
       SELECT 
-        co.obrigacaoId,
+        co.obrigacao_id AS obrigacaoId,
         co.id as comentarioId,
         co.comentario,
         co.tipo,
-        co.criadoEm,
+        co.criado_em AS criadoEm,
         u.nome as autorNome,
         u.id as autorId
       FROM comentarios_obrigacao co
-      JOIN usuarios u ON co.usuarioId = u.id
-      WHERE co.obrigacaoId IN (${placeholders})
+      JOIN usuarios u ON co.usuario_id = u.id
+      WHERE co.obrigacao_id IN (${placeholders})
       AND co.id = (
         SELECT MAX(co2.id) 
         FROM comentarios_obrigacao co2 
-        WHERE co2.obrigacaoId = co.obrigacaoId
+        WHERE co2.obrigacao_id = co.obrigacao_id
       )
-      ORDER BY co.criadoEm DESC
+      ORDER BY co.criado_em DESC
     `, obrigacaoIds);
 
     // Organizar por obrigacaoId para facilitar o acesso

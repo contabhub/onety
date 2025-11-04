@@ -38,28 +38,28 @@ router.post("/performance", autenticarToken, verificarPermissao('relatorios.gera
         SELECT 
           d.id as departamentoId,
           d.nome as departamentoNome,
-          t.id, t.status, t.dataMeta, t.dataPrazo, t.dataConclusao,
-          t.clienteId, t.responsavelId, t.processoId
+          t.id, t.status, t.data_meta AS dataMeta, t.data_prazo AS dataPrazo, t.data_conclusao AS dataConclusao,
+          t.cliente_id AS clienteId, t.responsavel_id AS responsavelId, t.processo_id AS processoId
         FROM tarefas t
-        LEFT JOIN departamentos d ON t.departamentoId = d.id
-        WHERE t.empresaId = ?
+        LEFT JOIN departamentos d ON t.departamento_id = d.id
+        WHERE t.empresa_id = ?
       `;
       const params = [empresaId];
 
       if (departamentos.length) {
-        query += ` AND t.departamentoId IN (${departamentos.map(() => "?").join(",")})`;
+        query += ` AND t.departamento_id IN (${departamentos.map(() => "?").join(",")})`;
         params.push(...departamentos);
       }
       if (clientes.length) {
-        query += ` AND t.clienteId IN (${clientes.map(() => "?").join(",")})`;
+        query += ` AND t.cliente_id IN (${clientes.map(() => "?").join(",")})`;
         params.push(...clientes);
       }
       if (usuarios.length) {
-        query += ` AND t.responsavelId IN (${usuarios.map(() => "?").join(",")})`;
+        query += ` AND t.responsavel_id IN (${usuarios.map(() => "?").join(",")})`;
         params.push(...usuarios);
       }
       if (processos.length) {
-        query += ` AND t.processoId IN (${processos.map(() => "?").join(",")})`;
+        query += ` AND t.processo_id IN (${processos.map(() => "?").join(",")})`;
         params.push(...processos);
       }
       if (status.length) {
@@ -67,16 +67,18 @@ router.post("/performance", autenticarToken, verificarPermissao('relatorios.gera
         params.push(...status);
       }
       if (periodoInicial) {
-        query += ` AND t.${campoData} >= ?`;
+        const campoDataSnake = campoData === 'dataMeta' ? 'data_meta' : campoData === 'dataPrazo' ? 'data_prazo' : campoData === 'dataConclusao' ? 'data_conclusao' : campoData;
+        query += ` AND t.${campoDataSnake} >= ?`;
         params.push(periodoInicial);
       }
       if (periodoFinal) {
-        query += ` AND t.${campoData} <= ?`;
+        const campoDataSnake = campoData === 'dataMeta' ? 'data_meta' : campoData === 'dataPrazo' ? 'data_prazo' : campoData === 'dataConclusao' ? 'data_conclusao' : campoData;
+        query += ` AND t.${campoDataSnake} <= ?`;
         params.push(periodoFinal);
       }
 
       // Ordena por departamento
-      query += " ORDER BY d.nome, t.dataPrazo";
+      query += " ORDER BY d.nome, t.data_prazo";
 
       // LOG QUERY
       console.log("[Solicitações] Query:", query);
@@ -148,22 +150,22 @@ router.post("/performance", autenticarToken, verificarPermissao('relatorios.gera
         SELECT 
           d.id as departamentoId,
           d.nome as departamentoNome,
-          oc.id, oc.status, oc.vencimento, oc.meta, oc.acao, oc.dataBaixa,
-          o.metaQtdDias, o.metaTipoDias, o.acaoQtdDias, o.acaoTipoDias, oc.
-          oc.clienteId
+          oc.id, oc.status, oc.vencimento, oc.meta, oc.acao, oc.data_baixa AS dataBaixa,
+          o.meta_qtd_dias AS metaQtdDias, o.meta_tipo_dias AS metaTipoDias, o.acao_qtd_dias AS acaoQtdDias,
+          oc.cliente_id AS clienteId
         FROM obrigacoes_clientes oc
-        JOIN obrigacoes o ON oc.obrigacaoId = o.id
-        LEFT JOIN departamentos d ON o.departamentoId = d.id
-        WHERE o.empresaId = ?
+        JOIN obrigacoes o ON oc.obrigacao_id = o.id
+        LEFT JOIN departamentos d ON o.departamento_id = d.id
+        WHERE o.empresa_id = ?
       `;
       const params = [empresaId];
 
       if (departamentos.length) {
-        query += ` AND o.departamentoId IN (${departamentos.map(() => "?").join(",")})`;
+        query += ` AND o.departamento_id IN (${departamentos.map(() => "?").join(",")})`;
         params.push(...departamentos);
       }
       if (clientes.length) {
-        query += ` AND oc.clienteId IN (${clientes.map(() => "?").join(",")})`;
+        query += ` AND oc.cliente_id IN (${clientes.map(() => "?").join(",")})`;
         params.push(...clientes);
       }
       if (status.length) {
@@ -281,16 +283,16 @@ router.post("/baixas-diarias", autenticarToken, verificarPermissao('relatorios.g
         u.nome AS usuarioNome,
         d.id   AS departamentoId,
         d.nome AS departamentoNome,
-        oc.obrigacaoId,
+        oc.obrigacao_id AS obrigacaoId,
         o.nome AS obrigacaoNome,
         COUNT(oc.id) AS totalDoMes
       FROM obrigacoes_clientes oc
-      INNER JOIN usuarios u           ON oc.responsavelId = u.id
-      INNER JOIN relacao_empresas re  ON u.id = re.usuarioId AND re.empresaId = ?
-      INNER JOIN departamentos d      ON re.departamentoId = d.id
-      INNER JOIN obrigacoes o         ON oc.obrigacaoId = o.id
-      LEFT  JOIN clientes c           ON oc.clienteId = c.id
-      WHERE (c.empresaId = ? OR o.empresaId = ?)
+      INNER JOIN usuarios u           ON oc.responsavel_id = u.id
+      INNER JOIN usuarios_empresas ue  ON u.id = ue.usuario_id AND ue.empresa_id = ?
+      INNER JOIN departamentos d      ON ue.departamento_id = d.id
+      INNER JOIN obrigacoes o         ON oc.obrigacao_id = o.id
+      LEFT  JOIN clientes c           ON oc.cliente_id = c.id
+      WHERE (c.empresa_id = ? OR o.empresa_id = ?)
         AND DATE(oc.vencimento) >= ?
         AND DATE(oc.vencimento) <= ?
     `;
@@ -303,7 +305,7 @@ router.post("/baixas-diarias", autenticarToken, verificarPermissao('relatorios.g
       queryUniversoMes += ` AND u.id IN (${usuarios.map(() => '?').join(',')})`;
       paramsUniverso.push(...usuarios);
     }
-    queryUniversoMes += ` GROUP BY u.id, d.id, oc.obrigacaoId ORDER BY d.nome, u.nome, o.nome`;
+    queryUniversoMes += ` GROUP BY u.id, d.id, oc.obrigacao_id ORDER BY d.nome, u.nome, o.nome`;
 
     const [universoRows] = await db.query(queryUniversoMes, paramsUniverso);
 
@@ -337,31 +339,31 @@ router.post("/baixas-diarias", autenticarToken, verificarPermissao('relatorios.g
         oc.nome AS obrigacaoClienteNome,
         oc.acao AS obrigacaoAcao,
         oc.status,
-        oc.dataBaixa,
+        oc.data_baixa AS dataBaixa,
         oc.vencimento,
         oc.meta,
-        oc.clienteId,
-        c.nome AS clienteNome,
-        oc.obrigacaoId,
+        oc.cliente_id AS clienteId,
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS clienteNome,
+        oc.obrigacao_id AS obrigacaoId,
         o.nome AS obrigacaoNome
       FROM obrigacoes_clientes oc
-      INNER JOIN usuarios u           ON oc.responsavelId = u.id
+      INNER JOIN usuarios u           ON oc.responsavel_id = u.id
       LEFT  JOIN usuarios u2          ON oc.concluido_por = u2.id
-      INNER JOIN relacao_empresas re  ON u.id = re.usuarioId AND re.empresaId = ?
-      INNER JOIN departamentos d      ON re.departamentoId = d.id
-      LEFT  JOIN clientes c           ON oc.clienteId = c.id
-      INNER JOIN obrigacoes o         ON oc.obrigacaoId = o.id
-      WHERE (c.empresaId = ? OR o.empresaId = ?)
-        AND DATE(oc.dataBaixa) >= ?
-        AND DATE(oc.dataBaixa) <= ?
+      INNER JOIN usuarios_empresas ue  ON u.id = ue.usuario_id AND ue.empresa_id = ?
+      INNER JOIN departamentos d      ON ue.departamento_id = d.id
+      LEFT  JOIN clientes c           ON oc.cliente_id = c.id
+      INNER JOIN obrigacoes o         ON oc.obrigacao_id = o.id
+      WHERE (c.empresa_id = ? OR o.empresa_id = ?)
+        AND DATE(oc.data_baixa) >= ?
+        AND DATE(oc.data_baixa) <= ?
         AND oc.status IN ('concluída','realizada','concluida')
-      ORDER BY d.nome, u.nome, oc.dataBaixa
+      ORDER BY d.nome, u.nome, oc.data_baixa
     `;
     const paramsBaixasMes = [empresaId, empresaId, empresaId, inicioDoMesStr, fimDoMesStr];
     if (departamentos.length > 0) {
       queryBaixasMes = queryBaixasMes.replace(
-        'ORDER BY d.nome, u.nome, oc.dataBaixa',
-        ` AND d.id IN (${departamentos.map(() => '?').join(',')}) ORDER BY d.nome, u.nome, oc.dataBaixa`
+        'ORDER BY d.nome, u.nome, oc.data_baixa',
+        ` AND d.id IN (${departamentos.map(() => '?').join(',')}) ORDER BY d.nome, u.nome, oc.data_baixa`
       );
       paramsBaixasMes.push(...departamentos);
     }
@@ -379,15 +381,15 @@ router.post("/baixas-diarias", autenticarToken, verificarPermissao('relatorios.g
       SELECT 
         oc.id as obrigacaoClienteId,
         oc.nome as obrigacaoClienteNome,
-        oc.clienteId,
-        c.nome as clienteNome,
+        oc.cliente_id AS clienteId,
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) as clienteNome,
         oc.vencimento,
         oc.meta,
         oc.acao as obrigacaoAcao,
-        oc.responsavelId,
-        oc.obrigacaoId
+        oc.responsavel_id AS responsavelId,
+        oc.obrigacao_id AS obrigacaoId
       FROM obrigacoes_clientes oc
-      INNER JOIN clientes c ON oc.clienteId = c.id
+      INNER JOIN clientes c ON oc.cliente_id = c.id
       WHERE DATE(oc.vencimento) >= ? AND DATE(oc.vencimento) <= ?
     `, [inicioDoMesStr, fimDoMesStr]);
 
@@ -730,22 +732,22 @@ router.get("/empresa/:empresaId/pendentes-mes", autenticarToken, verificarPermis
         t.id as tarefaId,
         t.assunto as tarefaNome,
         t.status,
-        t.dataPrazo,
-        t.dataMeta,
-        t.clienteId,
-        c.nome as clienteNome,
-        t.processoId,
+        t.data_prazo AS dataPrazo,
+        t.data_meta AS dataMeta,
+        t.cliente_id AS clienteId,
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) as clienteNome,
+        t.processo_id AS processoId,
         p.nome as processoNome,
         'tarefa' as tipo
       FROM tarefas t
-      INNER JOIN usuarios u ON t.responsavelId = u.id
-      INNER JOIN relacao_empresas re ON u.id = re.usuarioId AND re.empresaId = ?
-      INNER JOIN departamentos d ON re.departamentoId = d.id
-      LEFT JOIN clientes c ON t.clienteId = c.id
-      LEFT JOIN processos p ON t.processoId = p.id
-      WHERE t.empresaId = ?
+      INNER JOIN usuarios u ON t.responsavel_id = u.id
+      INNER JOIN usuarios_empresas ue ON u.id = ue.usuario_id AND ue.empresa_id = ?
+      INNER JOIN departamentos d ON ue.departamento_id = d.id
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      LEFT JOIN processos p ON t.processo_id = p.id
+      WHERE t.empresa_id = ?
         AND t.status NOT IN ('concluída', 'concluida', 'cancelada')
-        AND t.dataPrazo <= ?
+        AND t.data_prazo <= ?
     `;
 
     // QUERY PARA OBRIGAÇÕES PENDENTES - TODAS que vencem até o período
@@ -760,18 +762,18 @@ router.get("/empresa/:empresaId/pendentes-mes", autenticarToken, verificarPermis
         oc.status,
         oc.vencimento,
         oc.meta,
-        oc.clienteId,
-        c.nome as clienteNome,
-        oc.obrigacaoId,
+        oc.cliente_id AS clienteId,
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) as clienteNome,
+        oc.obrigacao_id AS obrigacaoId,
         o.nome as obrigacaoNome,
         'obrigacao' as tipo
       FROM obrigacoes_clientes oc
-      INNER JOIN usuarios u ON oc.responsavelId = u.id
-      INNER JOIN relacao_empresas re ON u.id = re.usuarioId AND re.empresaId = ?
-      INNER JOIN departamentos d ON re.departamentoId = d.id
-      INNER JOIN clientes c ON oc.clienteId = c.id
-      INNER JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      WHERE o.empresaId = ?
+      INNER JOIN usuarios u ON oc.responsavel_id = u.id
+      INNER JOIN usuarios_empresas ue ON u.id = ue.usuario_id AND ue.empresa_id = ?
+      INNER JOIN departamentos d ON ue.departamento_id = d.id
+      INNER JOIN clientes c ON oc.cliente_id = c.id
+      INNER JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      WHERE o.empresa_id = ?
         AND oc.status NOT IN ('concluída', 'concluida', 'realizada', 'cancelada')
         AND oc.vencimento <= ?
     `;
@@ -795,7 +797,7 @@ router.get("/empresa/:empresaId/pendentes-mes", autenticarToken, verificarPermis
       paramsObrigacoes.push(...usuarios);
     }
 
-    queryTarefas += ` ORDER BY d.nome, u.nome, t.dataPrazo`;
+    queryTarefas += ` ORDER BY d.nome, u.nome, t.data_prazo`;
     queryObrigacoes += ` ORDER BY d.nome, u.nome, oc.vencimento`;
 
     // EXECUTAR AMBAS AS QUERIES
@@ -913,9 +915,9 @@ router.get("/clientes/grupos/empresa/:empresaId", autenticarToken, verificarPerm
       SELECT 
         cg.id,
         cg.nome,
-        cg.empresaId
+        cg.empresa_id
       FROM clientes_grupos cg
-      WHERE cg.empresaId = ?
+      WHERE cg.empresa_id = ?
       ORDER BY cg.nome
     `;
 
@@ -968,26 +970,26 @@ router.get("/tarefas/por-grupo/:empresaId", autenticarToken, verificarPermissao(
         cg.id as grupoId,
         cg.nome as grupoNome,
         c.id as clienteId,
-        c.nome as clienteNome,
-        c.cnpjCpf as clienteCnpj,
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) as clienteNome,
+        c.cpf_cnpj as clienteCnpj,
         oc.id as obrigacaoClienteId,
         oc.nome as obrigacaoClienteNome,
         oc.status as obrigacaoStatus,
         oc.vencimento,
         oc.meta,
         oc.acao,
-        oc.dataBaixa,
+        oc.data_baixa AS dataBaixa,
         o.nome as obrigacaoBaseNome,
-        o.departamentoId,
+        o.departamento_id AS departamentoId,
         d.nome as departamentoNome
       FROM clientes_grupos cg
-      INNER JOIN clientes_grupos_vinculo cgv ON cg.id = cgv.grupoId
-      INNER JOIN clientes c ON cgv.clienteId = c.id
-      LEFT JOIN obrigacoes_clientes oc ON c.id = oc.clienteId
-      LEFT JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      LEFT JOIN departamentos d ON o.departamentoId = d.id
-      WHERE cg.empresaId = ? AND cg.id IN (${grupos.map(() => '?').join(',')})
-      ORDER BY cg.nome, c.nome, oc.vencimento
+      INNER JOIN clientes_grupos_vinculo cgv ON cg.id = cgv.grupo_id
+      INNER JOIN clientes c ON cgv.cliente_id = c.id
+      LEFT JOIN obrigacoes_clientes oc ON c.id = oc.cliente_id
+      LEFT JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      LEFT JOIN departamentos d ON o.departamento_id = d.id
+      WHERE cg.empresa_id = ? AND cg.id IN (${grupos.map(() => '?').join(',')})
+      ORDER BY cg.nome, COALESCE(c.nome_fantasia, c.razao_social, c.apelido), oc.vencimento
     `;
 
     const params = [empresaId, ...grupos];
@@ -1073,25 +1075,25 @@ router.get("/obrigacoes/por-usuario/:empresaId", autenticarToken, verificarPermi
       SELECT DISTINCT
         oc.id as obrigacaoClienteId,
         oc.nome as obrigacaoClienteNome,
-        oc.clienteId,
-        oc.obrigacaoId,
+        oc.cliente_id AS clienteId,
+        oc.obrigacao_id AS obrigacaoId,
         oc.status,
         oc.vencimento,
         oc.meta,
         oc.acao,
-        oc.dataBaixa,
-        ocr.usuarioId
+        oc.data_baixa AS dataBaixa,
+        ocr.usuario_id AS usuarioId
       FROM obrigacoes_clientes oc
-      INNER JOIN obrigacoes_clientes_responsaveis ocr ON oc.id = ocr.obrigacaoClienteId
-      INNER JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      WHERE o.empresaId = ?
+      INNER JOIN obrigacoes_clientes_responsaveis ocr ON oc.id = ocr.obrigacao_cliente_id
+      INNER JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      WHERE o.empresa_id = ?
     `;
 
     const params = [empresaId];
 
     // Se foi passado usuarioId, filtrar por ele
     if (usuarioId) {
-      query += ` AND ocr.usuarioId = ?`;
+      query += ` AND ocr.usuario_id = ?`;
       params.push(usuarioId);
     }
 

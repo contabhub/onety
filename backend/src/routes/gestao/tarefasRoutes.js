@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const tarefaController = require("../../controllers/gestao/tarefaController");
-const autenticarToken = require("../../middlewares/auth");
+const verifyToken = require("../../middlewares/auth");
 const db = require("../../config/database");
-const { verificarPermissao } = require("../../middlewares/permissao");
 
 // ==== DEBUG LOG MIDDLEWARE (temporário) =====
 router.use((req, res, next) => {
@@ -30,23 +29,23 @@ router.use((req, res, next) => {
 // =================== ROTAS ESPECÍFICAS ===================
 
 // Tarefas abertas (usada em "Progresso Atual")
-router.get("/abertas/:empresaId", autenticarToken, async (req, res) => {
+router.get("/abertas/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
 
   try {
     const [tarefas] = await db.query(
       `SELECT t.*, d.nome as departamento, u.nome as responsavel
        FROM tarefas t
-       LEFT JOIN departamentos d ON t.departamentoId = d.id
-       LEFT JOIN usuarios u ON t.responsavelId = u.id
-       WHERE t.empresaId = ? AND t.status != 'concluida'`,
+       LEFT JOIN departamentos d ON t.departamento_id = d.id
+       LEFT JOIN usuarios u ON t.responsavel_id = u.id
+       WHERE t.empresa_id = ? AND t.status != 'concluida'`,
       [empresaId]
     );
 
     const tarefasComAtividades = await Promise.all(
       tarefas.map(async (tarefa) => {
         const [atividades] = await db.query(
-          `SELECT id, concluida FROM atividades_tarefas WHERE tarefaId = ?`,
+          `SELECT id, concluido FROM atividades_tarefas WHERE tarefa_id = ?`,
           [tarefa.id]
         );
         return { ...tarefa, atividades };
@@ -61,7 +60,7 @@ router.get("/abertas/:empresaId", autenticarToken, async (req, res) => {
 });
 
 // Painel de controle geral (usado na visão geral)
-router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
+router.get("/painel-controle/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { usuarioId, filtrosAtivos, mes, ano } = req.query; // ✅ Parâmetros para filtrar por responsabilidade e mês/ano
   
@@ -77,30 +76,30 @@ router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
   try {
     // 1. Busca todos os departamentos da empresa
     const [departamentos] = await db.query(
-      `SELECT id, nome FROM departamentos WHERE empresaId = ?`, [empresaId]
+      `SELECT id, nome FROM departamentos WHERE empresa_id = ?`, [empresaId]
     );
 
     // 2. ✅ Busca tarefas com filtro opcional por responsabilidade
     let queryTarefas = `
       SELECT 
-        t.id, t.assunto, t.status, t.dataAcao, t.dataMeta, t.dataPrazo, t.dataConclusao,
-        t.departamentoId,
+        t.id, t.assunto, t.status, t.data_acao AS dataAcao, t.data_meta AS dataMeta, t.data_prazo AS dataPrazo, t.data_conclusao AS dataConclusao,
+        t.departamento_id AS departamentoId,
         d.nome AS departamento_nome,
-        c.nome AS cliente_nome, 
-        c.cnpjCpf AS cliente_cnpj,
+        COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS cliente_nome, 
+        c.cpf_cnpj AS cliente_cnpj,
         c.status AS status_cliente,
         u.nome AS responsavel_nome
       FROM tarefas t
-      LEFT JOIN clientes c ON t.clienteId = c.id
-      LEFT JOIN usuarios u ON t.responsavelId = u.id
-      LEFT JOIN departamentos d ON t.departamentoId = d.id
-      WHERE t.empresaId = ? AND t.status != 'cancelada'`;
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      LEFT JOIN usuarios u ON t.responsavel_id = u.id
+      LEFT JOIN departamentos d ON t.departamento_id = d.id
+      WHERE t.empresa_id = ? AND t.status != 'cancelada'`;
     
     let paramsTarefas = [empresaId];
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ Filtro por responsabilidade para tarefas
-      queryTarefas += ` AND t.responsavelId = ?`;
+      queryTarefas += ` AND t.responsavel_id = ?`;
       paramsTarefas.push(usuarioId);
     }
 
@@ -110,7 +109,7 @@ router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
       const anoNum = parseInt(ano);
       queryTarefas += ` AND (
         t.status != 'concluída' OR 
-        (t.status = 'concluída' AND MONTH(t.dataConclusao) = ? AND YEAR(t.dataConclusao) = ?)
+        (t.status = 'concluída' AND MONTH(t.data_conclusao) = ? AND YEAR(t.data_conclusao) = ?)
       )`;
       paramsTarefas.push(mesNum, anoNum);
     }
@@ -123,11 +122,11 @@ router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
     let atividadesPorTarefa = {};
     if (tarefaIds.length) {
       const [atividades] = await db.query(
-        `SELECT tarefaId, concluida, cancelada FROM atividades_tarefas WHERE tarefaId IN (${tarefaIds.join(",")})`
+        `SELECT tarefa_id, concluido, cancelado FROM atividades_tarefas WHERE tarefa_id IN (${tarefaIds.join(",")})`
       );
       for (const a of atividades) {
-        if (!atividadesPorTarefa[a.tarefaId]) atividadesPorTarefa[a.tarefaId] = [];
-        atividadesPorTarefa[a.tarefaId].push(a);
+        if (!atividadesPorTarefa[a.tarefa_id]) atividadesPorTarefa[a.tarefa_id] = [];
+        atividadesPorTarefa[a.tarefa_id].push(a);
       }
     }
 
@@ -177,7 +176,7 @@ router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
       // Atividades dessa tarefa
       const atividades = atividadesPorTarefa[t.id] || [];
       const totalAtividades = atividades.length;
-      const concluidasOuCanceladas = atividades.filter(a => a.concluida === 1 || a.cancelada === 1).length;
+      const concluidasOuCanceladas = atividades.filter(a => a.concluido === 1 || a.cancelado === 1).length;
 
       // Objeto detalhado
       const tarefaDetalhada = {
@@ -277,14 +276,14 @@ router.get("/painel-controle/:empresaId", autenticarToken, async (req, res) => {
 
 
 // Resumo geral por empresa
-router.get("/resumo-geral/:empresaId", autenticarToken, async (req, res) => {
+router.get("/resumo-geral/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
 
   try {
     const [tarefas] = await db.query(
       `SELECT t.*, d.nome as departamento FROM tarefas t
-       LEFT JOIN departamentos d ON t.departamentoId = d.id
-       WHERE t.empresaId = ?`,
+       LEFT JOIN departamentos d ON t.departamento_id = d.id
+       WHERE t.empresa_id = ?`,
       [empresaId]
     );
 
@@ -315,9 +314,9 @@ router.get("/resumo-geral/:empresaId", autenticarToken, async (req, res) => {
 
       if (status !== "concluida") resumo.tarefasRestantes++;
       if (status === "concluida") resumo.tarefasRealizadas++;
-      if (t.dataPrazo === hoje && status !== "concluida") resumo.vencemHoje++;
+      if (t.data_prazo === hoje && status !== "concluida") resumo.vencemHoje++;
       if (status === "pendente") resumo.pendentes++;
-      if (status !== "concluida" && new Date(t.dataPrazo) < new Date()) resumo.porDepartamento[dept].atencao++;
+      if (status !== "concluida" && new Date(t.data_prazo) < new Date()) resumo.porDepartamento[dept].atencao++;
 
       if (status === "em_andamento") resumo.porDepartamento[dept].acao++;
       if (status === "pendente") resumo.porDepartamento[dept].pendentes++;
@@ -335,7 +334,7 @@ router.get("/resumo-geral/:empresaId", autenticarToken, async (req, res) => {
   }
 });
 
-router.get("/todas/:empresaId", autenticarToken, async (req, res) => {
+router.get("/todas/:empresaId", verifyToken, async (req, res) => {
   const { empresaId } = req.params;
   const { usuarioId, filtrosAtivos } = req.query; // ✅ Parâmetros para filtrar por responsabilidade
 
@@ -354,19 +353,19 @@ router.get("/todas/:empresaId", autenticarToken, async (req, res) => {
   t.*, 
   d.nome as departamento, 
   u.nome as responsavel,
-  c.nome as cliente_nome,
+  COALESCE(c.nome_fantasia, c.razao_social, c.apelido) as cliente_nome,
   c.status as status_cliente
 FROM tarefas t
-LEFT JOIN departamentos d ON t.departamentoId = d.id
-LEFT JOIN usuarios u ON t.responsavelId = u.id
-LEFT JOIN clientes c ON t.clienteId = c.id
-WHERE t.empresaId = ? AND t.status != 'cancelada'`;
+LEFT JOIN departamentos d ON t.departamento_id = d.id
+LEFT JOIN usuarios u ON t.responsavel_id = u.id
+LEFT JOIN clientes c ON t.cliente_id = c.id
+WHERE t.empresa_id = ? AND t.status != 'cancelada'`;
 
     let params = [empresaId];
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ Filtro por responsabilidade para tarefas
-      query += ` AND t.responsavelId = ?`;
+      query += ` AND t.responsavel_id = ?`;
       params.push(usuarioId);
     }
 
@@ -379,11 +378,11 @@ WHERE t.empresaId = ? AND t.status != 'cancelada'`;
       tarefas.map(async (tarefa) => {
         const [atividades] = await db.query(
           `SELECT 
-      at.id, at.concluida, at.cancelada, 
-      ap.tipo, ap.texto, ap.descricao, ap.tipoCancelamento
+      at.id, at.concluido, at.cancelado, 
+      ap.tipo, ap.texto, ap.descricao, ap.tipo_cancelamento
     FROM atividades_tarefas at
-    LEFT JOIN atividades_processo ap ON at.atividadeId = ap.id
-    WHERE at.tarefaId = ?`,
+    LEFT JOIN atividades_processo ap ON at.atividade_id = ap.id
+    WHERE at.tarefa_id = ?`,
           [tarefa.id]
         );
         return { ...tarefa, atividades };
@@ -400,26 +399,26 @@ WHERE t.empresaId = ? AND t.status != 'cancelada'`;
 
 // =================== ROTAS COMUNS ===================
 
-router.post("/", autenticarToken, verificarPermissao('tarefas.criar'), tarefaController.criarTarefa);
-router.get("/:id", autenticarToken, tarefaController.buscarTarefaPorId);
-router.get("/:id/atividades", autenticarToken, tarefaController.listarAtividadesDaTarefa);
-router.get("/:id/subprocessos", autenticarToken, tarefaController.buscarSubprocessosComTarefas);
+router.post("/", verifyToken,  tarefaController.criarTarefa);
+router.get("/:id", verifyToken, tarefaController.buscarTarefaPorId);
+router.get("/:id/atividades", verifyToken, tarefaController.listarAtividadesDaTarefa);
+router.get("/:id/subprocessos", verifyToken, tarefaController.buscarSubprocessosComTarefas);
 router.get("/:id/atividades-com-status", tarefaController.listarAtividadesComStatus);
-router.patch("/:id/concluir", autenticarToken, tarefaController.concluirTarefaHandler);
-router.patch("/atividade/:atividadeTarefaId/concluir", autenticarToken, tarefaController.concluirAtividadeTarefa);
-router.patch("/atividade/:atividadeTarefaId/anexo", autenticarToken, tarefaController.salvarAnexoAtividade);
-router.delete("/atividade/:atividadeTarefaId/anexo", autenticarToken, tarefaController.excluirAnexoAtividade);
+router.patch("/:id/concluir", verifyToken, tarefaController.concluirTarefaHandler);
+router.patch("/atividade/:atividadeTarefaId/concluir", verifyToken, tarefaController.concluirAtividadeTarefa);
+router.patch("/atividade/:atividadeTarefaId/anexo", verifyToken, tarefaController.salvarAnexoAtividade);
+router.delete("/atividade/:atividadeTarefaId/anexo", verifyToken, tarefaController.excluirAnexoAtividade);
 
 // Cancelar tarefa principal
-router.patch('/:id/cancelar', autenticarToken, verificarPermissao('tarefas.editar'), tarefaController.cancelarTarefaHandler);
+router.patch('/:id/cancelar', verifyToken,  tarefaController.cancelarTarefaHandler);
 
 // Reabrir tarefa principal
-router.patch('/:id/reabrir', autenticarToken, verificarPermissao('tarefas.editar'), tarefaController.reabrirTarefaHandler);
+router.patch('/:id/reabrir', verifyToken,  tarefaController.reabrirTarefaHandler);
 
 
 // =================== SUBPROCESSOS ===================
 
-router.post("/vincular-subprocesso", autenticarToken, async (req, res) => {
+router.post("/vincular-subprocesso", verifyToken, async (req, res) => {
   const { processoPaiId, processoFilhoId } = req.body;
   try {
     await db.query(
@@ -433,7 +432,7 @@ router.post("/vincular-subprocesso", autenticarToken, async (req, res) => {
   }
 });
 
-router.delete("/vincular-subprocesso/:paiId/:filhoId", autenticarToken, async (req, res) => {
+router.delete("/vincular-subprocesso/:paiId/:filhoId", verifyToken, async (req, res) => {
   const { paiId, filhoId } = req.params;
   try {
     await db.query(
@@ -448,7 +447,7 @@ router.delete("/vincular-subprocesso/:paiId/:filhoId", autenticarToken, async (r
 });
 
 // Cancelar atividade (com ou sem justificativa)
-router.patch("/atividade/:atividadeTarefaId/cancelar", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeTarefaId/cancelar", verifyToken, async (req, res) => {
   const { atividadeTarefaId } = req.params;
   const { justificativa } = req.body;
 
@@ -498,11 +497,11 @@ router.patch("/atividade/:atividadeTarefaId/cancelar", autenticarToken, async (r
 });
 
 // Listar comentários de uma tarefa
-router.get("/:id/comentarios", autenticarToken, async (req, res) => {
+router.get("/:id/comentarios", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const [comentarios] = await db.query(
-      `SELECT c.id, c.comentario, c.criado_em AS criadoEm, c.nome_arquivo AS nomeArquivo, c.arquivo AS base64, u.nome, u.avatar_url, u.id as usuarioId
+      `SELECT c.id, c.comentario, c.criado_em AS criadoEm, c.nome_arquivo AS nomeArquivo, c.arquivo AS base64, u.nome, u.avatar_url AS imagem, u.id as usuarioId
        FROM comentarios_tarefa c
        JOIN usuarios u ON c.usuario_id = u.id
        WHERE c.tarefa_id = ?
@@ -517,7 +516,7 @@ router.get("/:id/comentarios", autenticarToken, async (req, res) => {
 });
 
 // NOVA ROTA: Buscar comentários em lote para múltiplas tarefas
-router.post("/comentarios/lote", autenticarToken, async (req, res) => {
+router.post("/comentarios/lote", verifyToken, async (req, res) => {
   const { tarefaIds } = req.body;
   
   if (!tarefaIds || !Array.isArray(tarefaIds) || tarefaIds.length === 0) {
@@ -564,7 +563,7 @@ router.post("/comentarios/lote", autenticarToken, async (req, res) => {
 
 
 // Adicionar novo comentário
-router.post("/:id/comentarios", autenticarToken, async (req, res) => {
+router.post("/:id/comentarios", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { comentario, base64, nomeArquivo } = req.body;
   const usuarioId = req.user?.id;
@@ -599,7 +598,7 @@ router.post("/:id/comentarios", autenticarToken, async (req, res) => {
 
 
 // 🔁 Rota para descancelar uma atividade
-router.patch("/atividade/:atividadeTarefaId/descancelar", autenticarToken, async (req, res) => {
+router.patch("/atividade/:atividadeTarefaId/descancelar", verifyToken, async (req, res) => {
   const { atividadeTarefaId } = req.params;
 
   try {
@@ -618,7 +617,7 @@ router.patch("/atividade/:atividadeTarefaId/descancelar", autenticarToken, async
 });
 
 // 🔍 Obter o tarefaId a partir de um atividadeTarefaId
-router.get("/atividades/:atividadeTarefaId/tarefa", autenticarToken, async (req, res) => {
+router.get("/atividades/:atividadeTarefaId/tarefa", verifyToken, async (req, res) => {
   const { atividadeTarefaId } = req.params;
 
   try {
@@ -631,14 +630,14 @@ router.get("/atividades/:atividadeTarefaId/tarefa", autenticarToken, async (req,
       return res.status(404).json({ error: "Atividade não encontrada." });
     }
 
-    res.json({ tarefaId: row.tarefaId });
+    res.json({ tarefaId: row.tarefaId || row.tarefa_id });
   } catch (err) {
     console.error("Erro ao obter tarefaId da atividade:", err);
     res.status(500).json({ error: "Erro interno ao buscar tarefa da atividade." });
   }
 });
 
-router.post("/atividade/:atividadeTarefaId/anexos", autenticarToken, async (req, res) => {
+router.post("/atividade/:atividadeTarefaId/anexos", verifyToken, async (req, res) => {
   const { atividadeTarefaId } = req.params;
   const { anexos } = req.body; // [{ nomeArquivo, base64 }]
 
@@ -662,7 +661,7 @@ router.post("/atividade/:atividadeTarefaId/anexos", autenticarToken, async (req,
 });
 
 
-router.get("/atividade/:atividadeTarefaId/anexos", autenticarToken, async (req, res) => {
+router.get("/atividade/:atividadeTarefaId/anexos", verifyToken, async (req, res) => {
   const { atividadeTarefaId } = req.params;
   try {
     const [anexos] = await db.query(
@@ -677,7 +676,7 @@ router.get("/atividade/:atividadeTarefaId/anexos", autenticarToken, async (req, 
 });
 
 // Atualizar descrição da tarefa
-router.patch("/:id/descricao", autenticarToken, async (req, res) => {
+router.patch("/:id/descricao", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { descricao } = req.body;
 
@@ -690,7 +689,7 @@ router.patch("/:id/descricao", autenticarToken, async (req, res) => {
   }
 });
 
-router.post("/unica", autenticarToken, verificarPermissao('tarefas.criar'), async (req, res) => {
+router.post("/unica", verifyToken,  async (req, res) => {
   const {
     empresaId,
     departamentoId,
@@ -711,7 +710,7 @@ router.post("/unica", autenticarToken, verificarPermissao('tarefas.criar'), asyn
     // 1. Inserir a tarefa principal
     const [resultado] = await conexao.query(
       `INSERT INTO tarefas 
-       (empresaId, departamentoId, clienteId, assunto, descricao, dataAcao, dataPrazo, dataMeta, responsavelId, status)
+       (empresa_id, departamento_id, cliente_id, assunto, descricao, data_acao, data_prazo, data_meta, responsavel_id, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         empresaId,
@@ -740,7 +739,7 @@ router.post("/unica", autenticarToken, verificarPermissao('tarefas.criar'), asyn
 
       await conexao.query(
         `INSERT INTO atividades_tarefas 
-         (tarefaId, atividadeId, tipo, texto, descricao, tipoCancelamento, concluida, cancelada)
+         (tarefa_id, atividade_id, tipo, texto, descricao, tipo_cancelamento, concluido, cancelado)
          VALUES (?, NULL, ?, ?, ?, ?, 0, 0)`,
         [tarefaId, tipo, texto, descricao, tipoCancelamento]
       );
@@ -759,7 +758,7 @@ router.post("/unica", autenticarToken, verificarPermissao('tarefas.criar'), asyn
 
 
 // Atualizar comentário
-router.patch("/comentarios/:comentarioId", autenticarToken, async (req, res) => {
+router.patch("/comentarios/:comentarioId", verifyToken, async (req, res) => {
   const { comentarioId } = req.params;
   const { comentario } = req.body;
   const usuarioId = req.usuario.id;
@@ -771,13 +770,13 @@ router.patch("/comentarios/:comentarioId", autenticarToken, async (req, res) => 
   // Só o autor do comentário pode editar
   try {
     const [[row]] = await db.query(
-      `SELECT usuarioId FROM comentarios_tarefa WHERE id = ?`,
+      `SELECT usuario_id FROM comentarios_tarefa WHERE id = ?`,
       [comentarioId]
     );
     if (!row) {
       return res.status(404).json({ erro: "Comentário não encontrado." });
     }
-    if (row.usuarioId !== usuarioId) {
+    if (row.usuario_id !== usuarioId) {
       return res.status(403).json({ erro: "Você não tem permissão para editar este comentário." });
     }
 
@@ -793,7 +792,7 @@ router.patch("/comentarios/:comentarioId", autenticarToken, async (req, res) => 
 });
 
 // Atualizar individualmente datas da tarefa
-router.patch("/:id/datas", autenticarToken, verificarPermissao('tarefas.editar'), async (req, res) => {
+router.patch("/:id/datas", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { dataAcao, dataMeta, dataPrazo } = req.body;
 
@@ -802,15 +801,15 @@ router.patch("/:id/datas", autenticarToken, verificarPermissao('tarefas.editar')
   const valores = [];
 
   if (dataAcao !== undefined) {
-    campos.push("dataAcao = ?");
+    campos.push("data_acao = ?");
     valores.push(dataAcao || null);
   }
   if (dataMeta !== undefined) {
-    campos.push("dataMeta = ?");
+    campos.push("data_meta = ?");
     valores.push(dataMeta || null);
   }
   if (dataPrazo !== undefined) {
-    campos.push("dataPrazo = ?");
+    campos.push("data_prazo = ?");
     valores.push(dataPrazo || null);
   }
 
@@ -833,13 +832,13 @@ router.patch("/:id/datas", autenticarToken, verificarPermissao('tarefas.editar')
 });
 
 // Disconcluir atividade (remover status de concluída)
-router.patch("/atividade/:atividadeTarefaId/disconcluir", autenticarToken, tarefaController.disconcluirAtividadeTarefa);
+router.patch("/atividade/:atividadeTarefaId/disconcluir", verifyToken, tarefaController.disconcluirAtividadeTarefa);
 
 // Adicionar rota de download de anexo real
-router.get('/anexo/:anexoId/download', autenticarToken, tarefaController.downloadAnexo);
+router.get('/anexo/:anexoId/download', verifyToken, tarefaController.downloadAnexo);
 
 // Exclusão em lote de tarefas (com subtarefas)
-router.post("/excluir-em-lote", autenticarToken, verificarPermissao('tarefas.excluir'), async (req, res) => {
+router.post("/excluir-em-lote", verifyToken, async (req, res) => {
   try {
     const { ids } = req.body;
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -848,7 +847,7 @@ router.post("/excluir-em-lote", autenticarToken, verificarPermissao('tarefas.exc
 
     // Buscar todas as subtarefas ligadas às tarefas principais
     const [subtarefas] = await db.query(
-      `SELECT id FROM tarefas WHERE tarefaPaiId IN (${ids.map(() => "?").join(",")})`,
+      `SELECT id FROM tarefas WHERE tarefa_pai_id IN (${ids.map(() => "?").join(",")})`,
       ids
     );
     const subtarefaIds = subtarefas.map(t => t.id);
@@ -882,7 +881,7 @@ router.post("/excluir-em-lote", autenticarToken, verificarPermissao('tarefas.exc
  * POST /api/tarefas/atualizar-responsavel-em-lote
  * Atualizar responsável em lote para tarefas
  */
-router.post("/atualizar-responsavel-em-lote", autenticarToken, verificarPermissao('tarefas.editar'), async (req, res) => {
+router.post("/atualizar-responsavel-em-lote", verifyToken, async (req, res) => {
   const { ids, responsavelId } = req.body;
   
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -902,7 +901,7 @@ router.post("/atualizar-responsavel-em-lote", autenticarToken, verificarPermissa
 
     // Buscar todas as subtarefas ligadas às tarefas principais
     const [subtarefas] = await db.query(
-      `SELECT id FROM tarefas WHERE tarefaPaiId IN (${ids.map(() => "?").join(",")})`,
+      `SELECT id FROM tarefas WHERE tarefa_pai_id IN (${ids.map(() => "?").join(",")})`,
       ids
     );
     const subtarefaIds = subtarefas.map(t => t.id);
@@ -910,7 +909,7 @@ router.post("/atualizar-responsavel-em-lote", autenticarToken, verificarPermissa
     // Atualizar responsável para tarefas principais
     const placeholders = ids.map(() => "?").join(",");
     const [result] = await db.execute(
-      `UPDATE tarefas SET responsavelId = ? WHERE id IN (${placeholders})`,
+      `UPDATE tarefas SET responsavel_id = ? WHERE id IN (${placeholders})`,
       [responsavelId, ...ids]
     );
 
@@ -919,7 +918,7 @@ router.post("/atualizar-responsavel-em-lote", autenticarToken, verificarPermissa
     if (subtarefaIds.length > 0) {
       const subtarefasPlaceholders = subtarefaIds.map(() => "?").join(",");
       const [subtarefasResult] = await db.execute(
-        `UPDATE tarefas SET responsavelId = ? WHERE id IN (${subtarefasPlaceholders})`,
+        `UPDATE tarefas SET responsavel_id = ? WHERE id IN (${subtarefasPlaceholders})`,
         [responsavelId, ...subtarefaIds]
       );
       subtarefasAtualizadas = subtarefasResult.affectedRows;
