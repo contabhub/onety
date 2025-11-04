@@ -278,8 +278,8 @@ router.post("/definir-responsavel-lote", verifyToken, async (req, res) => {
     const [responsavel] = await db.query(`
       SELECT u.id, u.nome 
       FROM usuarios u
-      INNER JOIN relacao_empresas re ON u.id = re.usuarioId
-      WHERE u.id = ? AND re.empresaId = ?
+      INNER JOIN usuarios_empresas re ON u.id = re.usuario_id
+      WHERE u.id = ? AND re.empresa_id = ?
     `, [responsavelId, empresaId]);
 
     if (!responsavel.length) {
@@ -661,12 +661,12 @@ router.get("/buscar-avancada", verifyToken, async (req, res) => {
 
     // Filtros de usuário
     if (usuario) {
-      whereClause += " AND oc.responsavelId = ?";
+      whereClause += " AND oc.responsavel_id = ?";
       params.push(usuario);
     }
 
     if (responsavelExclusivo) {
-      whereClause += " AND oc.responsavelId = ?";
+      whereClause += " AND oc.responsavel_id = ?";
       params.push(responsavelExclusivo);
     }
 
@@ -690,7 +690,7 @@ router.get("/buscar-avancada", verifyToken, async (req, res) => {
     }
 
     if (comResponsaveis === "true") {
-      whereClause += " AND oc.responsavelId IS NOT NULL";
+      whereClause += " AND oc.responsavel_id IS NOT NULL";
     }
 
     if (comConvidados === "true") {
@@ -831,10 +831,10 @@ router.post("/buscar-por-filtros", verifyToken, async (req, res) => {
         u.id as responsavelId,
         u.nome as responsavelNome
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON o.id = oc.obrigacaoId
-      JOIN departamentos d ON d.id = o.departamentoId
-      JOIN clientes c ON c.id = oc.clienteId
-      LEFT JOIN usuarios u ON u.id = oc.responsavelId
+      JOIN obrigacoes o ON o.id = oc.obrigacao_id
+      JOIN departamentos d ON d.id = o.departamento_id
+      JOIN clientes c ON c.id = oc.cliente_id
+      LEFT JOIN usuarios u ON u.id = oc.responsavel_id
       ${whereClause}
       ORDER BY oc.vencimento ASC
     `;
@@ -1943,13 +1943,17 @@ function calcularVencimento(ano, mes, tipo, dia, fatoGerador) {
   }
 
   // Aplicar regras de antecipação/postergação para fins de semana
-  if (tipo === 'Antecipar') {
+  // Só antecipa/posterga se a data cair em fim de semana
+  const diaSemana = data.getDay(); // 0 = domingo, 6 = sábado
+  if (tipo === 'Antecipar' && (diaSemana === 0 || diaSemana === 6)) {
+    // Só antecipa se cair em fim de semana (sábado ou domingo)
     while (data.getDay() === 0 || data.getDay() === 6) {
-      data = subDays(data, 1);
+      data.setDate(data.getDate() - 1);
     }
-  } else if (tipo === 'Postergar') {
+  } else if (tipo === 'Postergar' && (diaSemana === 0 || diaSemana === 6)) {
+    // Só posterga se cair em fim de semana (sábado ou domingo)
     while (data.getDay() === 0 || data.getDay() === 6) {
-      data = addDays(data, 1);
+      data.setDate(data.getDate() + 1);
     }
   }
 
@@ -2046,7 +2050,7 @@ exports.gerarAtividades = async (req, res) => {
 // 📌 Gerar tarefas (atividades) para uma obrigação com base nos filtros de ano e mês
 router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
   const obrigacaoId = Number(req.params.id);
-  const { ano, mesInicio, mesFim, clienteIds } = req.body;
+  const { ano, mesInicio, mesFim, clienteIds, diaSemana } = req.body;
 
   // Função para inserir as atividades base em batch
   async function clonarAtividadesBase(clienteId, obrigacaoClienteId, atividadesBase) {
@@ -2129,7 +2133,7 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
 
         const [res] = await db.query(`
           INSERT INTO obrigacoes_clientes
-          (clienteId, obrigacaoId, nome, descricao, status, ano_referencia, mes_referencia, vencimento, dataCriacao, responsavelId, acao, meta)
+          (cliente_id, obrigacao_id, nome, descricao, status, ano_referencia, mes_referencia, vencimento, data_criacao, responsavel_id, acao, meta)
           VALUES (?, ?, ?, ?, 'pendente', ?, ?, ?, NOW(), ?, ?, ?)
         `, [
           clienteId,
@@ -2170,11 +2174,11 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
         if (responsaveisParaInserir.length > 0) {
           console.log(`🔍 Inserindo ${responsaveisParaInserir.length} responsáveis`);
           for (const resp of responsaveisParaInserir) {
-            console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
+            console.log(`🔍 Inserindo responsável: ${resp.usuario_id}`);
             await db.query(`
-              INSERT IGNORE INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+              INSERT IGNORE INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
               VALUES (?, ?)
-            `, [res.insertId, resp.usuarioId]);
+            `, [res.insertId, resp.usuario_id]);
           }
         } else {
           console.log(`🔍 Nenhum responsável encontrado para inserir`);
@@ -2353,9 +2357,35 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
               const chave = `${clienteId}|${obrigacaoId}|${ano}|${mes}|${data.toISOString().slice(0,10)}`;
               if (existeSetDiario.has(chave)) continue;
               // Calcular acao/meta
-              const vencimento = data.toISOString().split("T")[0];
-              const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-              const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+              // ✅ CORREÇÃO: vencimento é a base, meta = vencimento - metaQtdDias, acao = meta - acaoQtdDias
+              const vencimentoDate = new Date(data);
+              vencimentoDate.setHours(0, 0, 0, 0);
+              const vencimento = vencimentoDate.toISOString().split("T")[0];
+              
+              const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+              const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias ?? "Dias úteis";
+              const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+              const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias ?? "Dias úteis";
+              
+              // Meta = vencimento - metaQtdDias (dias úteis ou corridos)
+              // Se metaQtdDias === 0, meta = vencimento
+              let meta = null;
+              if (metaQtdDias === 0) {
+                meta = vencimento;
+              } else if (metaTipoDias) {
+                meta = subtrairDias(vencimentoDate, metaQtdDias, metaTipoDias).toISOString().split("T")[0];
+              }
+              
+              // Ação = meta - acaoQtdDias (dias úteis ou corridos)
+              // Se acaoQtdDias === 0, acao = meta
+              let acao = null;
+              if (meta) {
+                if (acaoQtdDias === 0) {
+                  acao = meta;
+                } else if (acaoTipoDias) {
+                  acao = subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0];
+                }
+              }
               const responsavelId = responsaveisIndividuaisMap.get(clienteId) || responsavelGlobalId || null;
               novasDiario.push([
                 clienteId,
@@ -2386,7 +2416,7 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
           const [ultimos] = await db.query('SELECT id, cliente_id AS clienteId FROM obrigacoes_clientes WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ? AND cliente_id IN (' + clientes.map(() => '?').join(',') + ')', [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
           for (const row of ultimos) insertedIds.push({ id: row.id, clienteId: row.clienteId });
           
-          // NOVO: Popular obrigacoes_clientes_responsaveis para inserções em lote (Diário)
+            // NOVO: Popular obrigacoes_clientes_responsaveis para inserções em lote (Diário)
           console.log(`🔍 Processando ${insertedIds.length} tarefas inseridas em lote (Diário)`);
           for (const { id: obrigacaoClienteId, clienteId } of insertedIds) {
             console.log(`🔍 Inserindo múltiplos responsáveis para obrigacaoClienteId: ${obrigacaoClienteId}, clienteId: ${clienteId}`);
@@ -2413,11 +2443,16 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
             if (responsaveisParaInserir.length > 0) {
               console.log(`🔍 Inserindo ${responsaveisParaInserir.length} responsáveis`);
               for (const resp of responsaveisParaInserir) {
-                console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
+                const usuarioId = resp.usuario_id ?? resp.usuarioId;
+                if (!usuarioId) {
+                  console.warn(`⚠️ Responsável sem usuario_id, pulando:`, resp);
+                  continue;
+                }
+                console.log(`🔍 Inserindo responsável: ${usuarioId}`);
                 await db.query(`
                   INSERT INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
                   VALUES (?, ?)
-                `, [obrigacaoClienteId, resp.usuarioId]);
+                `, [obrigacaoClienteId, usuarioId]);
               }
             } else {
               console.log(`🔍 Nenhum responsável encontrado para inserir`);
@@ -2436,14 +2471,19 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
         const diaSemanaMap = {
           Domingo: 0, Segunda: 1, Terca: 2, Terça: 2, Quarta: 3, Quinta: 4, Sexta: 5, Sabado: 6,
         };
-        const diaAlvo = diaSemanaMap[obrigacao.diaSemana];
-        if (diaAlvo === undefined) return res.status(400).json({ error: "Dia da semana inválido" });
+        // ✅ NOVO: Usar diaSemana do payload se disponível, senão usar do banco
+        const diaSemanaParaUsar = diaSemana || obrigacao.dia_semana || obrigacao.diaSemana;
+        const diaAlvo = diaSemanaMap[diaSemanaParaUsar];
+        if (diaAlvo === undefined) {
+          console.log(`❌ Dia da semana inválido: ${diaSemanaParaUsar} (payload: ${diaSemana}, banco: ${obrigacao.dia_semana || obrigacao.diaSemana})`);
+          return res.status(400).json({ error: "Dia da semana inválido" });
+        }
         // Buscar todas as obrigações já existentes para o período, clientes e obrigação
         const [existentesSemanal] = await db.query(`
-          SELECT clienteId, obrigacaoId, ano_referencia, mes_referencia, vencimento
+          SELECT cliente_id AS clienteId, obrigacao_id AS obrigacaoId, ano_referencia, mes_referencia, vencimento
           FROM obrigacoes_clientes
           WHERE obrigacao_id = ? AND ano_referencia = ? AND mes_referencia BETWEEN ? AND ?
-            AND clienteId IN (${clientes.map(() => '?').join(',')})
+            AND cliente_id IN (${clientes.map(() => '?').join(',')})
         `, [obrigacaoId, ano, mesInicio, mesFim, ...clientes]);
         const existeSetSemanal = new Set(existentesSemanal.map(e => `${e.clienteId}|${e.obrigacaoId}|${e.ano_referencia}|${e.mes_referencia}|${e.vencimento.toISOString().slice(0,10)}`));
         const novasSemanal = [];
@@ -2458,9 +2498,35 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
               const chave = `${clienteId}|${obrigacaoId}|${ano}|${mes}|${data.toISOString().slice(0,10)}`;
               if (existeSetSemanal.has(chave)) continue;
               // Calcular acao/meta
-              const vencimento = data.toISOString().split("T")[0];
-              const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-              const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+              // ✅ CORREÇÃO: vencimento é a base, meta = vencimento - metaQtdDias, acao = meta - acaoQtdDias
+              const vencimentoDate = new Date(data);
+              vencimentoDate.setHours(0, 0, 0, 0);
+              const vencimento = vencimentoDate.toISOString().split("T")[0];
+              
+              const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+              const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias ?? "Dias úteis";
+              const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+              const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias ?? "Dias úteis";
+              
+              // Meta = vencimento - metaQtdDias (dias úteis ou corridos)
+              // Se metaQtdDias === 0, meta = vencimento
+              let meta = null;
+              if (metaQtdDias === 0) {
+                meta = vencimento;
+              } else if (metaTipoDias) {
+                meta = subtrairDias(vencimentoDate, metaQtdDias, metaTipoDias).toISOString().split("T")[0];
+              }
+              
+              // Ação = meta - acaoQtdDias (dias úteis ou corridos)
+              // Se acaoQtdDias === 0, acao = meta
+              let acao = null;
+              if (meta) {
+                if (acaoQtdDias === 0) {
+                  acao = meta;
+                } else if (acaoTipoDias) {
+                  acao = subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0];
+                }
+              }
               const responsavelId = responsaveisIndividuaisMap.get(clienteId) || responsavelGlobalId || null;
               novasSemanal.push([
                 clienteId,
@@ -2518,11 +2584,16 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
             if (responsaveisParaInserir.length > 0) {
               console.log(`🔍 Inserindo ${responsaveisParaInserir.length} responsáveis`);
               for (const resp of responsaveisParaInserir) {
-                console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
+                const usuarioId = resp.usuario_id ?? resp.usuarioId;
+                if (!usuarioId) {
+                  console.warn(`⚠️ Responsável sem usuario_id, pulando:`, resp);
+                  continue;
+                }
+                console.log(`🔍 Inserindo responsável: ${usuarioId}`);
                 await db.query(`
                   INSERT INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
                   VALUES (?, ?)
-                `, [obrigacaoClienteId, resp.usuarioId]);
+                `, [obrigacaoClienteId, usuarioId]);
               }
             } else {
               console.log(`🔍 Nenhum responsável encontrado para inserir`);
@@ -2539,7 +2610,8 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
     }
 
     // Lógica de fato gerador - define o ano e mês de referência baseado no fato gerador
-    const anoReferencia = calcularAnoReferencia(ano, obrigacao.fatoGerador);
+    const fatoGerador = obrigacao.fato_gerador ?? obrigacao.fatoGerador;
+    const anoReferencia = calcularAnoReferencia(ano, fatoGerador);
     const tarefasParaCriar = [];
     
     console.log(`📌 Total de meses para processar: ${meses.length}`);
@@ -2548,34 +2620,65 @@ router.post("/:id/gerar-atividades", verifyToken, async (req, res) => {
     for (const mesVencimento of meses) {
       console.log(`📌 Processando mês de vencimento: ${mesVencimento}`);
       // Calcular mês de referência baseado no fato gerador
-      let mesCompetencia = calcularMesReferencia(mesVencimento, obrigacao.fatoGerador);
+      let mesCompetencia = calcularMesReferencia(mesVencimento, fatoGerador);
       let anoCompetencia = anoReferencia;
   
       // Ajustar ano se necessário quando o mês muda
-      if (obrigacao.fatoGerador === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
+      if (fatoGerador === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
         anoCompetencia = anoReferencia - 1;
-      } else if (obrigacao.fatoGerador === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
+      } else if (fatoGerador === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
         anoCompetencia = anoReferencia + 1;
       }
       
-      const vencimento = calcularVencimento(
+      const vencimentoTipo = obrigacao.vencimento_tipo ?? obrigacao.vencimentoTipo;
+      const vencimentoDia = obrigacao.vencimento_dia ?? obrigacao.vencimentoDia ?? 0;
+      
+      console.log(`🔍 [DEBUG] vencimentoDia: ${vencimentoDia}, vencimentoTipo: ${vencimentoTipo}, fatoGerador: ${fatoGerador}`);
+      
+      const vencimentoStr = calcularVencimento(
         ano, // ano de vencimento sempre é o ano atual
         mesVencimento,
-        obrigacao.vencimentoTipo,
-        obrigacao.vencimentoDia,
-        obrigacao.fatoGerador
+        vencimentoTipo,
+        vencimentoDia,
+        fatoGerador
       );
       
+      // Converter para Date para cálculos
+      const vencimento = new Date(vencimentoStr);
+      
       // Calcular acao/meta
-      const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-      const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+      // ✅ CORREÇÃO: vencimento é a base, meta = vencimento - metaQtdDias, acao = meta - acaoQtdDias
+      const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+      const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias ?? "Dias úteis";
+      const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+      const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias ?? "Dias úteis";
+      
+      // Meta = vencimento - metaQtdDias (dias úteis ou corridos)
+      // Se metaQtdDias === 0, meta = vencimento
+      let meta = null;
+      if (metaQtdDias === 0) {
+        meta = vencimentoStr;
+      } else if (metaTipoDias) {
+        meta = subtrairDias(vencimento, metaQtdDias, metaTipoDias).toISOString().split("T")[0];
+      }
+      
+      // Ação = meta - acaoQtdDias (dias úteis ou corridos)
+      // Se acaoQtdDias === 0, acao = meta
+      let acao = null;
+      if (meta) {
+        if (acaoQtdDias === 0) {
+          acao = meta;
+        } else if (acaoTipoDias) {
+          acao = subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0];
+        }
+      }
       
       for (const clienteId of clientes) {
         tarefasParaCriar.push({
           clienteId,
           anoCalc: anoCompetencia, // ano de referência baseado no fato gerador
           mesReferencia: mesCompetencia,
-          vencimento,
+          vencimento: vencimentoStr,
           nomeObrigacao: `${obrigacao.nome} de ${String(mesCompetencia).padStart(2, "0")}/${anoCompetencia}`,
           acao,
           meta,
@@ -2647,10 +2750,10 @@ router.get("/cliente/:clienteId/atividades", verifyToken, async (req, res) => {
     const [atividades] = await db.query(`
       SELECT a.*, o.nome AS nomeObrigacao
       FROM obrigacoes_atividades_clientes a
-      JOIN obrigacoes_clientes oc ON a.obrigacaoClienteId = oc.id
-      JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      WHERE a.clienteId = ? AND oc.status != 'cancelada'
-      ORDER BY a.obrigacaoClienteId, a.ordem
+      JOIN obrigacoes_clientes oc ON a.obrigacao_cliente_id = oc.id
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      WHERE a.cliente_id = ? AND oc.status != 'cancelada'
+      ORDER BY a.obrigacao_cliente_id, a.ordem
     `, [clienteId]);
 
     res.json(atividades);
@@ -2674,10 +2777,10 @@ router.get("/empresa/:empresaId/geradas", verifyToken, async (req, res) => {
   c.status AS status_cliente,  -- 👈 Aqui está o novo campo
   d.nome AS departamento_nome
 FROM obrigacoes_clientes oc
-JOIN clientes c ON c.id = oc.clienteId
-JOIN obrigacoes o ON o.id = oc.obrigacaoId
-LEFT JOIN departamentos d ON o.departamentoId = d.id
-WHERE c.empresaId = ? AND oc.status != 'cancelada' AND (
+JOIN clientes c ON c.id = oc.cliente_id
+JOIN obrigacoes o ON o.id = oc.obrigacao_id
+LEFT JOIN departamentos d ON o.departamento_id = d.id
+WHERE c.empresa_id = ? AND oc.status != 'cancelada' AND (
   oc.ano_referencia > ? OR 
   (oc.ano_referencia = ? AND oc.mes_referencia >= ?)
 )`, [empresaId, ano, ano, mes]);
@@ -2734,16 +2837,16 @@ router.get("/empresa/:empresaId/geradas/painel", verifyToken, async (req, res) =
         oc.ano_referencia,
         oc.mes_referencia
       FROM obrigacoes_clientes oc
-      JOIN clientes c ON c.id = oc.clienteId
-      JOIN obrigacoes o ON o.id = oc.obrigacaoId
-      LEFT JOIN departamentos d ON o.departamentoId = d.id`;
+      JOIN clientes c ON c.id = oc.cliente_id
+      JOIN obrigacoes o ON o.id = oc.obrigacao_id
+      LEFT JOIN departamentos d ON o.departamento_id = d.id`;
     
     let params = [empresaId];
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ LEFT JOIN para incluir obrigações sem responsáveis + filtro por usuário
       query += `
-      LEFT JOIN obrigacoes_clientes_responsaveis ocr ON ocr.obrigacaoClienteId = oc.id`;
+      LEFT JOIN obrigacoes_clientes_responsaveis ocr ON ocr.obrigacao_cliente_id = oc.id`;
     }
     
     query += `
@@ -2763,21 +2866,21 @@ router.get("/empresa/:empresaId/geradas/painel", verifyToken, async (req, res) =
     if (aplicarFiltroResponsabilidade) {
       // ✅ Buscar departamento do usuário logado
       const [usuarioDept] = await db.query(`
-        SELECT re.departamentoId 
-        FROM relacao_empresas re 
-        WHERE re.usuarioId = ? AND re.empresaId = ?
+        SELECT re.departamento_id AS departamentoId
+        FROM usuarios_empresas re 
+        WHERE re.usuario_id = ? AND re.empresa_id = ?
       `, [usuarioId, empresaId]);
       
       const departamentoUsuario = usuarioDept[0]?.departamentoId;
       
       if (departamentoUsuario) {
         // ✅ Filtro: responsabilidade do usuário OU obrigações sem responsáveis do mesmo departamento OU obrigações esporádicas com responsável direto
-        query += ` AND (ocr.usuarioId = ? OR (ocr.usuarioId IS NULL AND o.departamentoId = ?) OR (o.frequencia = 'Esporádica' AND oc.responsavelId = ?))`;
+        query += ` AND (ocr.usuario_id = ? OR (ocr.usuario_id IS NULL AND o.departamento_id = ?) OR (o.frequencia = 'Esporádica' AND oc.responsavel_id = ?))`;
         params.push(usuarioId, departamentoUsuario, usuarioId);
         console.log(`👥 [Obrigações Painel] Usuário departamento: ${departamentoUsuario}, incluindo obrigações órfãs do mesmo dept e esporádicas`);
       } else {
         // ✅ Usuário sem departamento: suas responsabilidades OU obrigações esporádicas com responsável direto
-        query += ` AND (ocr.usuarioId = ? OR (o.frequencia = 'Esporádica' AND oc.responsavelId = ?))`;
+        query += ` AND (ocr.usuario_id = ? OR (o.frequencia = 'Esporádica' AND oc.responsavel_id = ?))`;
         params.push(usuarioId, usuarioId);
         console.log(`👤 [Obrigações Painel] Usuário sem departamento, responsabilidades diretas e esporádicas`);
       }
@@ -2969,7 +3072,23 @@ router.get("/cliente-obrigacao/:id", verifyToken, async (req, res) => {
   try {
     const [dados] = await db.query(`
       SELECT 
-        oc.*, 
+        oc.id,
+        oc.cliente_id AS clienteId,
+        oc.obrigacao_id AS obrigacaoId,
+        oc.nome,
+        oc.descricao,
+        oc.status,
+        oc.data_baixa AS dataBaixa,
+        oc.concluido_por AS concluidoPor,
+        oc.baixado_automaticamente AS baixadoAutomaticamente,
+        oc.data_criacao AS dataCriacao,
+        oc.data_cancelamento AS dataCancelamento,
+        oc.ano_referencia AS anoReferencia,
+        oc.mes_referencia AS mesReferencia,
+        oc.vencimento,
+        oc.acao,
+        oc.meta,
+        oc.responsavel_id AS responsavelId,
         o.nome AS nomeObrigacao, 
         o.departamento_id AS departamentoId,
         o.acao_qtd_dias AS acaoQtdDias,
@@ -3018,14 +3137,14 @@ router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke
     const [competencias] = await db.query(`
       SELECT 
         oc.id,
-        oc.ano_referencia,
-        oc.mes_referencia,
+        oc.ano_referencia AS anoReferencia,
+        oc.mes_referencia AS mesReferencia,
         oc.vencimento,
         oc.status,
-        oc.dataBaixa,
+        oc.data_baixa AS dataBaixa,
         CONCAT(oc.mes_referencia, '/', oc.ano_referencia) as competencia
       FROM obrigacoes_clientes oc
-      WHERE oc.clienteId = ? AND oc.obrigacaoId = ?
+      WHERE oc.cliente_id = ? AND oc.obrigacao_id = ?
       ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC
     `, [clienteId, obrigacaoId]);
 
@@ -3082,7 +3201,7 @@ router.patch("/:id/concluir", verifyToken, async (req, res) => {
 
     // Busca as atividades vinculadas a essa obrigação gerada
     const [atividades] = await db.query(
-      `SELECT * FROM obrigacoes_atividades_clientes WHERE obrigacaoClienteId = ?`,
+      `SELECT * FROM obrigacoes_atividades_clientes WHERE obrigacao_cliente_id = ?`,
       [id]
     );
 
@@ -3096,7 +3215,7 @@ router.patch("/:id/concluir", verifyToken, async (req, res) => {
     const { dataHora } = getDataHoraServidor();
 
     await db.query(
-      `UPDATE obrigacoes_clientes SET status = 'concluída', dataBaixa = ?, concluido_por = ? WHERE id = ?`,
+      `UPDATE obrigacoes_clientes SET status = 'concluida', data_baixa = ?, concluido_por = ? WHERE id = ?`,
       [dataHora, userId, id]
     );
 
@@ -3177,7 +3296,7 @@ router.post("/:obrigacaoId/comentario", verifyToken, async (req, res) => {
       pad(agora.getSeconds());
 
     await db.query(`
-  INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, anexos, tipo, criadoEm)
+  INSERT INTO comentarios_obrigacao (obrigacao_id, usuario_id, comentario, anexos, tipo, criado_em)
   VALUES (?, ?, ?, ?, ?, ?)
 `, [obrigacaoId, usuarioId, comentario || null, JSON.stringify(anexos || []), tipo || "usuario", criadoEm]);
 
@@ -3285,20 +3404,20 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
         c.nome AS cliente_nome, 
         c.status AS status_cliente,
         o.nome AS nomeObrigacao,
-        o.departamentoId,
+        o.departamento_id AS departamentoId,
         d.nome AS departamento_nome,
         o.metaQtdDias, o.metaTipoDias, o.acaoQtdDias, o.acaoTipoDias
       FROM obrigacoes_clientes oc
-      JOIN clientes c ON oc.clienteId = c.id
-      JOIN obrigacoes o ON oc.obrigacaoId = o.id
-      LEFT JOIN departamentos d ON o.departamentoId = d.id`;
+      JOIN clientes c ON oc.cliente_id = c.id
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
+      LEFT JOIN departamentos d ON o.departamento_id = d.id`;
     
     let params = [empresaId];
     
     if (aplicarFiltroResponsabilidade) {
       // ✅ LEFT JOIN para incluir obrigações sem responsáveis + filtro por usuário
       query += `
-      LEFT JOIN obrigacoes_clientes_responsaveis ocr ON ocr.obrigacaoClienteId = oc.id`;
+      LEFT JOIN obrigacoes_clientes_responsaveis ocr ON ocr.obrigacao_cliente_id = oc.id`;
     }
     
     query += `
@@ -3307,21 +3426,21 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
     if (aplicarFiltroResponsabilidade) {
       // ✅ Buscar departamento do usuário logado
       const [usuarioDept] = await db.query(`
-        SELECT re.departamentoId 
-        FROM relacao_empresas re 
-        WHERE re.usuarioId = ? AND re.empresaId = ?
+        SELECT re.departamento_id AS departamentoId
+        FROM usuarios_empresas re 
+        WHERE re.usuario_id = ? AND re.empresa_id = ?
       `, [usuarioId, empresaId]);
       
       const departamentoUsuario = usuarioDept[0]?.departamentoId;
       
       if (departamentoUsuario) {
         // ✅ Filtro: responsabilidade do usuário OU obrigações sem responsáveis do mesmo departamento OU obrigações esporádicas com responsável direto
-        query += ` AND (ocr.usuarioId = ? OR (ocr.usuarioId IS NULL AND o.departamentoId = ?) OR (o.frequencia = 'Esporádica' AND oc.responsavelId = ?))`;
+        query += ` AND (ocr.usuario_id = ? OR (ocr.usuario_id IS NULL AND o.departamento_id = ?) OR (o.frequencia = 'Esporádica' AND oc.responsavel_id = ?))`;
         params.push(usuarioId, departamentoUsuario, usuarioId);
         console.log(`👥 [Obrigações Todas] Usuário departamento: ${departamentoUsuario}, incluindo obrigações órfãs do mesmo dept e esporádicas`);
       } else {
         // ✅ Usuário sem departamento: suas responsabilidades OU obrigações esporádicas com responsável direto
-        query += ` AND (ocr.usuarioId = ? OR (o.frequencia = 'Esporádica' AND oc.responsavelId = ?))`;
+        query += ` AND (ocr.usuario_id = ? OR (o.frequencia = 'Esporádica' AND oc.responsavel_id = ?))`;
         params.push(usuarioId, usuarioId);
         console.log(`👤 [Obrigações Todas] Usuário sem departamento, responsabilidades diretas e esporádicas`);
       }
@@ -3344,9 +3463,9 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
       const idsLote = idsObrigacao.slice(i, i + lote);
       lotes.push(
         db.query(`
-          SELECT id, concluida, cancelada, dataConclusao, obrigacaoClienteId
+          SELECT id, concluida, cancelada, data_conclusao AS dataConclusao, obrigacao_cliente_id AS obrigacaoClienteId
           FROM obrigacoes_atividades_clientes
-          WHERE obrigacaoClienteId IN (?)
+          WHERE obrigacao_cliente_id IN (?)
         `, [idsLote])
       );
     }
@@ -3357,21 +3476,21 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
     // Primeiro busca da tabela obrigacoes_clientes_responsaveis
     const [responsaveisTabelaRelacao] = await db.query(`
       SELECT 
-        ocr.obrigacaoClienteId,
-        ocr.usuarioId,
+        ocr.obrigacao_cliente_id AS obrigacaoClienteId,
+        ocr.usuario_id AS usuarioId,
         u.nome AS responsavelNome,
         u.email AS responsavelEmail
       FROM obrigacoes_clientes_responsaveis ocr
-      JOIN usuarios u ON u.id = ocr.usuarioId
-      WHERE ocr.obrigacaoClienteId IN (?)
+      JOIN usuarios u ON u.id = ocr.usuario_id
+      WHERE ocr.obrigacao_cliente_id IN (?)
     `, [idsObrigacao]);
 
     // Buscar obrigações com frequência "Esporádica" que não têm responsáveis na tabela de relação
     const [obrigacoesEsporadicas] = await db.query(`
       SELECT oc.id as obrigacaoClienteId
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes o ON o.id = oc.obrigacaoId
-      WHERE oc.id IN (?) AND o.frequencia = 'Esporádica' AND oc.responsavelId IS NOT NULL
+      JOIN obrigacoes o ON o.id = oc.obrigacao_id
+      WHERE oc.id IN (?) AND o.frequencia = 'Esporádica' AND oc.responsavel_id IS NOT NULL
     `, [idsObrigacao]);
 
     // Buscar responsáveis diretos das obrigações esporádicas
@@ -3381,11 +3500,11 @@ router.get("/empresa/:empresaId/todas", verifyToken, async (req, res) => {
       const [responsaveisDiretos] = await db.query(`
         SELECT 
           oc.id as obrigacaoClienteId,
-          oc.responsavelId as usuarioId,
+          oc.responsavel_id AS usuarioId,
           u.nome AS responsavelNome,
           u.email AS responsavelEmail
         FROM obrigacoes_clientes oc
-        JOIN usuarios u ON u.id = oc.responsavelId
+        JOIN usuarios u ON u.id = oc.responsavel_id
         WHERE oc.id IN (?)
       `, [idsEsporadicas]);
       responsaveisEsporadicos = responsaveisDiretos;
@@ -3533,7 +3652,7 @@ router.patch("/:id/desconcluir", verifyToken, async (req, res) => {
   try {
     const [result] = await db.query(`
   UPDATE obrigacoes_clientes
-  SET dataBaixa = NULL
+  SET data_baixa = NULL
   WHERE id = ?
 `, [id]);
 
@@ -3688,7 +3807,7 @@ router.post("/esporadica/criar-tarefa", verifyToken, async (req, res) => {
       for (const convidadoId of convidados) {
         await db.query(
           `INSERT INTO obrigacoes_clientes_convidados 
-           (obrigacaoClienteId, usuarioId)
+           (obrigacao_cliente_id, usuario_id)
            VALUES (?, ?)`,
           [obrigacaoClienteId, convidadoId]
         );
@@ -3698,7 +3817,7 @@ router.post("/esporadica/criar-tarefa", verifyToken, async (req, res) => {
       if (andamento && andamento.trim()) {
         await db.query(
           `INSERT INTO comentarios_obrigacao 
-           (obrigacaoId, usuarioId, comentario, tipo)
+           (obrigacao_id, usuario_id, comentario, tipo)
            VALUES (?, ?, ?, 'usuario')`,
           [obrigacaoClienteId, userId, andamento.trim()]
         );
@@ -3750,8 +3869,8 @@ router.post("/baixar/dctfweb", verifyToken, async (req, res) => {
       // Atualize no banco a obrigação_clientes para refletir baixa automática
       await db.query(`
         UPDATE obrigacoes_clientes 
-        SET status = 'concluida', baixadaAutomaticamente = 1, dataBaixa = ? 
-        WHERE empresaId = ? AND clienteId = ? AND ano_referencia = ? AND mes_referencia = ?
+        SET status = 'concluida', baixada_automaticamente = 1, data_baixa = ? 
+        WHERE empresa_id = ? AND cliente_id = ? AND ano_referencia = ? AND mes_referencia = ?
       `, [dataBaixa, empresaId, clienteId, ano, mes]);
 
       return res.json({ message: "Baixa automática DCTFWeb realizada com sucesso." });
@@ -3810,7 +3929,7 @@ router.post("/:id/gerar-atividades-cliente", verifyToken, async (req, res) => {
 
         const [res] = await db.query(`
           INSERT INTO obrigacoes_clientes
-          (clienteId, obrigacaoId, nome, descricao, status, ano_referencia, mes_referencia, vencimento, dataCriacao)
+          (cliente_id, obrigacao_id, nome, descricao, status, ano_referencia, mes_referencia, vencimento, data_criacao)
           VALUES (?, ?, ?, ?, 'pendente', ?, ?, ?, ?)`,
           [
             clienteId,
@@ -4125,7 +4244,7 @@ router.patch('/:id/cancelar', verifyToken, async (req, res) => {
 
     await db.query(
       `UPDATE obrigacoes_clientes 
-       SET status = 'cancelada', dataCancelamento = ?
+       SET status = 'cancelada', data_cancelamento = ?
        WHERE id = ?`,
       [dataCancelamento || null, id]
     );
@@ -4158,7 +4277,7 @@ router.patch('/:id/reabrir', verifyToken, async (req, res) => {
 
     await db.query(
       `UPDATE obrigacoes_clientes 
-       SET status = 'pendente', dataCancelamento = NULL
+       SET status = 'pendente', data_cancelamento = NULL
        WHERE id = ?`,
       [id]
     );
@@ -4239,8 +4358,8 @@ router.get('/atividades/:atividadeId/email-template', verifyToken, async (req, r
     if (!atividadeBaseId) {
       // Buscar a obrigação do cliente para obter o obrigacaoId
       const [[obrigacaoCliente]] = await db.query(`
-        SELECT obrigacaoId FROM obrigacoes_clientes oc
-        JOIN obrigacoes_atividades_clientes oac ON oc.id = oac.obrigacaoClienteId
+        SELECT oc.obrigacao_id AS obrigacaoId FROM obrigacoes_clientes oc
+        JOIN obrigacoes_atividades_clientes oac ON oc.id = oac.obrigacao_cliente_id
         WHERE oac.id = ?
       `, [atividadeId]);
       
@@ -4358,8 +4477,8 @@ router.post('/atividades/:atividadeId/email-template', verifyToken, async (req, 
     if (!atividadeBaseId) {
       // Buscar a obrigação do cliente para obter o obrigacaoId
       const [[obrigacaoCliente]] = await db.query(`
-        SELECT obrigacaoId FROM obrigacoes_clientes oc
-        JOIN obrigacoes_atividades_clientes oac ON oc.id = oac.obrigacaoClienteId
+        SELECT oc.obrigacao_id AS obrigacaoId FROM obrigacoes_clientes oc
+        JOIN obrigacoes_atividades_clientes oac ON oc.id = oac.obrigacao_cliente_id
         WHERE oac.id = ?
       `, [atividadeId]);
       
@@ -4518,13 +4637,13 @@ router.post("/atualizar-responsavel-em-lote", verifyToken, async (req, res) => {
       // 1. Atualizar responsável exclusivo em obrigacoes_clientes
       const placeholders = ids.map(() => "?").join(",");
       const [resultObrigacoes] = await connection.execute(
-        `UPDATE obrigacoes_clientes SET responsavelId = ? WHERE id IN (${placeholders})`,
+        `UPDATE obrigacoes_clientes SET responsavel_id = ? WHERE id IN (${placeholders})`,
         [responsavelId, ...ids]
       );
 
       // 2. ATUALIZAR (não inserir) obrigacoes_clientes_responsaveis
       const [resultResponsaveis] = await connection.execute(
-        `UPDATE obrigacoes_clientes_responsaveis SET usuarioId = ? WHERE obrigacaoClienteId IN (${placeholders})`,
+        `UPDATE obrigacoes_clientes_responsaveis SET usuario_id = ? WHERE obrigacao_cliente_id IN (${placeholders})`,
         [responsavelId, ...ids]
       );
 
@@ -4776,10 +4895,10 @@ router.get("/obrigacoes-clientes/:obrigacaoClienteId/responsaveis", verifyToken,
         u.email,
         d.nome as departamentoNome
       FROM obrigacoes_clientes_responsaveis ocr
-      JOIN usuarios u ON u.id = ocr.usuarioId
-      LEFT JOIN relacao_empresas re ON re.usuarioId = u.id
-      LEFT JOIN departamentos d ON d.id = re.departamentoId
-      WHERE ocr.obrigacaoClienteId = ?
+      JOIN usuarios u ON u.id = ocr.usuario_id
+      LEFT JOIN usuarios_empresas re ON re.usuario_id = u.id
+      LEFT JOIN departamentos d ON d.id = re.departamento_id
+      WHERE ocr.obrigacao_cliente_id = ?
       ORDER BY u.nome
     `, [obrigacaoClienteId]);
 
@@ -4794,10 +4913,10 @@ router.get("/obrigacoes-clientes/:obrigacaoClienteId/responsaveis", verifyToken,
           u.email,
           d.nome as departamentoNome
         FROM obrigacoes_clientes oc
-        JOIN usuarios u ON u.id = oc.responsavelId
-        LEFT JOIN relacao_empresas re ON re.usuarioId = u.id
-        LEFT JOIN departamentos d ON d.id = re.departamentoId
-        WHERE oc.id = ? AND oc.responsavelId IS NOT NULL
+        JOIN usuarios u ON u.id = oc.responsavel_id
+        LEFT JOIN usuarios_empresas re ON re.usuario_id = u.id
+        LEFT JOIN departamentos d ON d.id = re.departamento_id
+        WHERE oc.id = ? AND oc.responsavel_id IS NOT NULL
         ORDER BY u.nome
       `, [obrigacaoClienteId]);
 
@@ -4836,7 +4955,7 @@ router.post("/comentario", verifyToken, async (req, res) => {
 
     // Inserir comentário
     const [result] = await db.query(
-      `INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, tipo) 
+      `INSERT INTO comentarios_obrigacao (obrigacao_id, usuario_id, comentario, tipo) 
        VALUES (?, ?, ?, ?)`,
       [obrigacaoId, userId, comentario, tipo]
     );
@@ -5299,11 +5418,11 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
         if (responsaveisParaInserir.length > 0) {
           console.log(`🔍 Inserindo ${responsaveisParaInserir.length} responsáveis`);
           for (const resp of responsaveisParaInserir) {
-            console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
+            console.log(`🔍 Inserindo responsável: ${resp.usuario_id}`);
             await db.query(`
-              INSERT IGNORE INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+              INSERT IGNORE INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
               VALUES (?, ?)
-            `, [res.insertId, resp.usuarioId]);
+            `, [res.insertId, resp.usuario_id]);
           }
         } else {
           console.log(`🔍 Nenhum responsável encontrado para inserir`);
@@ -5479,8 +5598,12 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
               if (existeSetDiario.has(chave)) continue;
               // Calcular acao/meta
               const vencimento = data.toISOString().split("T")[0];
-              const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-              const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+              const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+              const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias;
+              const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+              const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias;
+              const meta = metaQtdDias > 0 && metaTipoDias ? subtrairDias(new Date(vencimento), metaQtdDias, metaTipoDias).toISOString().split("T")[0] : (metaQtdDias === 0 ? vencimento : null);
+              const acao = meta && acaoQtdDias > 0 && acaoTipoDias ? subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0] : (meta && acaoQtdDias === 0 ? meta : null);
               const responsavelId = responsaveisIndividuaisMap.get(obrigacaoId) || responsaveisGlobaisMap.get(obrigacaoId) || null;
               novasDiario.push([
                 clienteId,
@@ -5537,11 +5660,11 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
               if (responsaveisParaInserir.length > 0) {
                 console.log(`🔍 Inserindo ${responsaveisParaInserir.length} responsáveis`);
                 for (const resp of responsaveisParaInserir) {
-                  console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
+                  console.log(`🔍 Inserindo responsável: ${resp.usuario_id}`);
                   await db.query(`
-                    INSERT INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+                    INSERT INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
                     VALUES (?, ?)
-                  `, [obrigacaoClienteId, resp.usuarioId]);
+                  `, [obrigacaoClienteId, resp.usuario_id]);
                 }
               } else {
                 console.log(`🔍 Nenhum responsável encontrado para inserir`);
@@ -5584,8 +5707,12 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
               if (existeSetSemanal.has(chave)) continue;
               // Calcular acao/meta
               const vencimento = data.toISOString().split("T")[0];
-              const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-              const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+              const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+              const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias;
+              const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+              const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias;
+              const meta = metaQtdDias > 0 && metaTipoDias ? subtrairDias(new Date(vencimento), metaQtdDias, metaTipoDias).toISOString().split("T")[0] : (metaQtdDias === 0 ? vencimento : null);
+              const acao = meta && acaoQtdDias > 0 && acaoTipoDias ? subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0] : (meta && acaoQtdDias === 0 ? meta : null);
               const responsavelId = responsaveisIndividuaisMap.get(obrigacaoId) || responsaveisGlobaisMap.get(obrigacaoId) || null;
               novasSemanal.push([
                 clienteId,
@@ -5642,11 +5769,11 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
               if (responsaveisParaInserir.length > 0) {
                 console.log(`🔍 Inserindo ${responsaveisParaInserir.length} responsáveis`);
                 for (const resp of responsaveisParaInserir) {
-                  console.log(`🔍 Inserindo responsável: ${resp.usuarioId}`);
+                  console.log(`🔍 Inserindo responsável: ${resp.usuario_id}`);
                   await db.query(`
-                    INSERT INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+                    INSERT INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
                     VALUES (?, ?)
-                  `, [obrigacaoClienteId, resp.usuarioId]);
+                  `, [obrigacaoClienteId, resp.usuario_id]);
                 }
               } else {
                 console.log(`🔍 Nenhum responsável encontrado para inserir`);
@@ -5665,38 +5792,49 @@ router.post("/gerar-tarefas", verifyToken, async (req, res) => {
       }
 
       // Lógica de fato gerador - define o ano e mês de referência baseado no fato gerador
-      const anoReferencia = calcularAnoReferencia(ano, obrigacao.fatoGerador);
+      const fatoGerador = obrigacao.fato_gerador ?? obrigacao.fatoGerador;
+      const anoReferencia = calcularAnoReferencia(ano, fatoGerador);
       const tarefasParaCriar = [];
       
       for (const mesVencimento of meses) {
         // Calcular mês de referência baseado no fato gerador
-        let mesCompetencia = calcularMesReferencia(mesVencimento, obrigacao.fatoGerador);
+        let mesCompetencia = calcularMesReferencia(mesVencimento, fatoGerador);
         let anoCompetencia = anoReferencia;
 
         // Ajustar ano se necessário quando o mês muda
-        if (obrigacao.fatoGerador === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
+        if (fatoGerador === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
           anoCompetencia = anoReferencia - 1;
-        } else if (obrigacao.fatoGerador === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
+        } else if (fatoGerador === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
           anoCompetencia = anoReferencia + 1;
         }
         
-        const vencimento = calcularVencimento(
+        const vencimentoTipo = obrigacao.vencimento_tipo ?? obrigacao.vencimentoTipo;
+        const vencimentoDia = obrigacao.vencimento_dia ?? obrigacao.vencimentoDia ?? 0;
+        
+        const vencimentoStr = calcularVencimento(
           ano, // ano de vencimento sempre é o ano atual
           mesVencimento,
-          obrigacao.vencimentoTipo,
-          obrigacao.vencimentoDia,
-          obrigacao.fatoGerador
+          vencimentoTipo,
+          vencimentoDia,
+          fatoGerador
         );
         
+        // Converter para Date para cálculos
+        const vencimento = new Date(vencimentoStr);
+        
         // Calcular acao/meta
-        const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-        const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+        const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+        const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias;
+        const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+        const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias;
+        const meta = metaQtdDias > 0 && metaTipoDias ? subtrairDias(vencimento, metaQtdDias, metaTipoDias).toISOString().split("T")[0] : (metaQtdDias === 0 ? vencimento.toISOString().split("T")[0] : null);
+        const acao = meta && acaoQtdDias > 0 && acaoTipoDias ? subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0] : (meta && acaoQtdDias === 0 ? meta : null);
         
         tarefasParaCriar.push({
           clienteId,
           anoCalc: anoCompetencia, // ano de referência baseado no fato gerador
           mesReferencia: mesCompetencia,
-          vencimento,
+          vencimento: vencimentoStr,
           nomeObrigacao: `${obrigacao.nome} de ${String(mesCompetencia).padStart(2, "0")}/${anoCompetencia}`,
           acao,
           meta,
@@ -5876,21 +6014,21 @@ router.post('/:obrigacaoId/atualizar-tarefas', verifyToken, async (req, res) => 
     // Buscar apenas obrigações dos clientes onde TODAS as atividades estão intocadas
     // Se qualquer atividade foi mexida, a obrigação inteira é ignorada
     const [obrigacoesClientes] = await db.query(`
-      SELECT oc.id as obrigacaoClienteId, oc.clienteId,
+      SELECT oc.id as obrigacaoClienteId, oc.cliente_id AS clienteId,
              COUNT(oac.id) as totalAtividades,
              COUNT(CASE WHEN 
                oac.concluida = 0 
                AND oac.cancelada = 0
-               AND oac.dataConclusao IS NULL
-               AND oac.dataCancelamento IS NULL
+               AND oac.data_conclusao IS NULL
+               AND oac.data_cancelamento IS NULL
                AND (oac.justificativa IS NULL OR oac.justificativa = '')
                AND (oac.anexo IS NULL OR oac.anexo = '')
-               AND oac.concluidoPor IS NULL
+               AND oac.concluido_por IS NULL
              THEN 1 END) as atividadesIntocadas
       FROM obrigacoes_clientes oc
-      JOIN obrigacoes_atividades_clientes oac ON oac.obrigacaoClienteId = oc.id
-      WHERE oc.obrigacaoId = ?
-      GROUP BY oc.id, oc.clienteId
+      JOIN obrigacoes_atividades_clientes oac ON oac.obrigacao_cliente_id = oc.id
+      WHERE oc.obrigacao_id = ?
+      GROUP BY oc.id, oc.cliente_id
       HAVING totalAtividades = atividadesIntocadas AND totalAtividades > 0
     `, [obrigacaoId]);
 
@@ -5915,7 +6053,7 @@ router.post('/:obrigacaoId/atualizar-tarefas', verifyToken, async (req, res) => 
         // 1. Remover TODAS as atividades desta obrigação (já sabemos que estão intocadas)
         const [result] = await db.query(`
           DELETE FROM obrigacoes_atividades_clientes 
-          WHERE obrigacaoClienteId = ?
+          WHERE obrigacao_cliente_id = ?
         `, [obrigacaoCliente.obrigacaoClienteId]);
 
         const tarefasRemovidas = result.affectedRows;
@@ -6046,7 +6184,7 @@ router.post("/prorrogar-tarefas", verifyToken, async (req, res) => {
         // Adicionar comentário na tabela comentarios_obrigacao
         const comentarioQuery = `
           INSERT INTO comentarios_obrigacao 
-          (obrigacaoid, comentario, tipo, usuarioId, criadoEm)
+          (obrigacao_id, comentario, tipo, usuario_id, criado_em)
           VALUES (?, ?, 'usuario', ?, NOW())
         `;
         
@@ -6167,8 +6305,8 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
     // Buscar todos os responsáveis individuais de uma vez
     const clientesIds = [...new Set(obrigacaoClienteIds.map(item => item.clienteId))];
     const [responsaveisIndividuais] = await db.query(`
-      SELECT clienteId, usuarioId FROM obrigacoes_responsaveis_cliente 
-      WHERE obrigacao_id = ? AND clienteId IN (${clientesIds.map(() => '?').join(',')})
+      SELECT cliente_id AS clienteId, usuario_id AS usuarioId FROM obrigacoes_responsaveis_cliente 
+      WHERE obrigacao_id = ? AND cliente_id IN (${clientesIds.map(() => '?').join(',')})
     `, [obrigacaoId, ...clientesIds]);
     
     const responsaveisIndividuaisMapBatch = new Map();
@@ -6180,10 +6318,10 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
     const responsaveisValues = [];
     for (const { id: obrigacaoClienteId, clienteId } of obrigacaoClienteIds) {
       const responsavelIndividual = responsaveisIndividuaisMapBatch.get(clienteId);
-      const responsaveisParaInserir = responsavelIndividual ? [{ usuarioId: responsavelIndividual }] : responsaveisGlobais;
+      const responsaveisParaInserir = responsavelIndividual ? [{ usuario_id: responsavelIndividual }] : responsaveisGlobais;
       
       for (const resp of responsaveisParaInserir) {
-        responsaveisValues.push([obrigacaoClienteId, resp.usuarioId]);
+        responsaveisValues.push([obrigacaoClienteId, resp.usuario_id]);
       }
     }
     
@@ -6191,7 +6329,7 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
       const placeholders = responsaveisValues.map(() => "(?, ?)").join(", ");
       const flatValues = responsaveisValues.flat();
       await db.query(`
-        INSERT IGNORE INTO obrigacoes_clientes_responsaveis (obrigacaoClienteId, usuarioId)
+        INSERT IGNORE INTO obrigacoes_clientes_responsaveis (obrigacao_cliente_id, usuario_id)
         VALUES ${placeholders}
       `, flatValues);
     }
@@ -6378,10 +6516,11 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
           console.log(`🔍 PROCESSANDO OBRIGAÇÃO MENSAL ${obrigacaoId}`);
           
           // Lógica específica para obrigações mensais (copiada do gerar-atividades)
-          const anoReferenciaMensal = calcularAnoReferencia(ano, obrigacao.fatoGerador);
+          const fatoGeradorMensal = obrigacao.fato_gerador ?? obrigacao.fatoGerador;
+          const anoReferenciaMensal = calcularAnoReferencia(ano, fatoGeradorMensal);
           const tarefasParaCriarMensal = [];
           
-          console.log(`🔍 Ano de referência: ${anoReferenciaMensal} (fato gerador: ${obrigacao.fatoGerador})`);
+          console.log(`🔍 Ano de referência: ${anoReferenciaMensal} (fato gerador: ${fatoGeradorMensal})`);
           
           // Gerar meses de vencimento
           for (let i = mesInicio; i <= mesFim; i++) meses.push(i);
@@ -6391,38 +6530,48 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
             console.log(`🔍 Processando mês de vencimento: ${mesVencimento}`);
             
             // Calcular mês de referência baseado no fato gerador
-            let mesCompetencia = calcularMesReferencia(mesVencimento, obrigacao.fatoGerador);
+            let mesCompetencia = calcularMesReferencia(mesVencimento, fatoGeradorMensal);
             let anoCompetencia = anoReferenciaMensal;
         
             // Ajustar ano se necessário quando o mês muda
-            if (obrigacao.fatoGerador === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
+            if (fatoGeradorMensal === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
               anoCompetencia = anoReferenciaMensal - 1;
-            } else if (obrigacao.fatoGerador === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
+            } else if (fatoGeradorMensal === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
               anoCompetencia = anoReferenciaMensal + 1;
             }
             
             console.log(`🔍 Mês competência: ${mesCompetencia}, Ano competência: ${anoCompetencia}`);
             
-            const vencimento = calcularVencimento(
+            const vencimentoTipoMensal = obrigacao.vencimento_tipo ?? obrigacao.vencimentoTipo;
+            const vencimentoDiaMensal = obrigacao.vencimento_dia ?? obrigacao.vencimentoDia ?? 0;
+            
+            const vencimentoStr = calcularVencimento(
               ano, // ano de vencimento sempre é o ano atual
               mesVencimento,
-              obrigacao.vencimentoTipo,
-              obrigacao.vencimentoDia,
-              obrigacao.fatoGerador
+              vencimentoTipoMensal,
+              vencimentoDiaMensal,
+              fatoGeradorMensal
             );
             
-            console.log(`🔍 Vencimento: ${vencimento}`);
+            // Converter para Date para cálculos
+            const vencimento = new Date(vencimentoStr);
+            
+            console.log(`🔍 Vencimento: ${vencimentoStr}`);
             
             // Calcular acao/meta
-            const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-            const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+            const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+            const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias;
+            const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+            const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias;
+            const meta = metaQtdDias > 0 && metaTipoDias ? subtrairDias(vencimento, metaQtdDias, metaTipoDias).toISOString().split("T")[0] : (metaQtdDias === 0 ? vencimento.toISOString().split("T")[0] : null);
+            const acao = meta && acaoQtdDias > 0 && acaoTipoDias ? subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0] : (meta && acaoQtdDias === 0 ? meta : null);
             
             for (const clienteId of clientesValidos) {
               const tarefa = {
                 clienteId,
                 anoCalc: anoCompetencia,
                 mesReferencia: mesCompetencia,
-                vencimento,
+                vencimento: vencimentoStr,
                 nomeObrigacao: `${obrigacao.nome} de ${String(mesCompetencia).padStart(2, "0")}/${anoCompetencia}`,
                 acao,
                 meta,
@@ -6648,10 +6797,11 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
           }
 
           // Lógica de fato gerador - define o ano e mês de referência baseado no fato gerador
-          const anoReferencia = calcularAnoReferencia(ano, obrigacao.fatoGerador);
+          const fatoGeradorDefault = obrigacao.fato_gerador ?? obrigacao.fatoGerador;
+          const anoReferencia = calcularAnoReferencia(ano, fatoGeradorDefault);
           const tarefasParaCriar = [];
           
-          console.log(`🔍 Ano de referência calculado: ${anoReferencia} (fato gerador: ${obrigacao.fatoGerador})`);
+          console.log(`🔍 Ano de referência calculado: ${anoReferencia} (fato gerador: ${fatoGeradorDefault})`);
           console.log(`🔍 Processando ${clientesValidos.length} clientes para ${meses.length} meses`);
           
           // Processar cada cliente válido
@@ -6661,37 +6811,47 @@ router.post("/gerar-tarefas-lote-grupo", verifyToken, async (req, res) => {
               console.log(`🔍 Processando mês de vencimento: ${mesVencimento}`);
               
               // Calcular mês de referência baseado no fato gerador
-              let mesCompetencia = calcularMesReferencia(mesVencimento, obrigacao.fatoGerador);
+              let mesCompetencia = calcularMesReferencia(mesVencimento, fatoGeradorDefault);
               let anoCompetencia = anoReferencia;
           
               // Ajustar ano se necessário quando o mês muda
-              if (obrigacao.fatoGerador === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
+              if (fatoGeradorDefault === 'Mês anterior' && mesCompetencia === 12 && mesVencimento === 1) {
                 anoCompetencia = anoReferencia - 1;
-              } else if (obrigacao.fatoGerador === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
+              } else if (fatoGeradorDefault === 'Próximo mês' && mesCompetencia === 1 && mesVencimento === 12) {
                 anoCompetencia = anoReferencia + 1;
               }
               
               console.log(`🔍 Mês de competência: ${mesCompetencia}, Ano de competência: ${anoCompetencia}`);
               
-              const vencimento = calcularVencimento(
+              const vencimentoTipoDefault = obrigacao.vencimento_tipo ?? obrigacao.vencimentoTipo;
+              const vencimentoDiaDefault = obrigacao.vencimento_dia ?? obrigacao.vencimentoDia ?? 0;
+              
+              const vencimentoStr = calcularVencimento(
                 ano, // ano de vencimento sempre é o ano atual
                 mesVencimento,
-                obrigacao.vencimentoTipo,
-                obrigacao.vencimentoDia,
-                obrigacao.fatoGerador
+                vencimentoTipoDefault,
+                vencimentoDiaDefault,
+                fatoGeradorDefault
               );
               
-              console.log(`🔍 Vencimento calculado: ${vencimento}`);
+              // Converter para Date para cálculos
+              const vencimento = new Date(vencimentoStr);
+              
+              console.log(`🔍 Vencimento calculado: ${vencimentoStr}`);
               
               // Calcular acao/meta
-              const meta = obrigacao.metaQtdDias != null && obrigacao.metaTipoDias ? subtrairDias(vencimento, obrigacao.metaQtdDias, obrigacao.metaTipoDias).toISOString().split("T")[0] : null;
-              const acao = obrigacao.acaoQtdDias != null && obrigacao.acaoTipoDias ? subtrairDias(meta, obrigacao.acaoQtdDias, obrigacao.acaoTipoDias).toISOString().split("T")[0] : null;
+              const metaQtdDias = obrigacao.meta_qtd_dias ?? obrigacao.metaQtdDias ?? 0;
+              const metaTipoDias = obrigacao.meta_tipo_dias ?? obrigacao.metaTipoDias;
+              const acaoQtdDias = obrigacao.acao_qtd_dias ?? obrigacao.acaoQtdDias ?? 0;
+              const acaoTipoDias = obrigacao.acao_tipo_dias ?? obrigacao.acaoTipoDias;
+              const meta = metaQtdDias > 0 && metaTipoDias ? subtrairDias(vencimento, metaQtdDias, metaTipoDias).toISOString().split("T")[0] : (metaQtdDias === 0 ? vencimento.toISOString().split("T")[0] : null);
+              const acao = meta && acaoQtdDias > 0 && acaoTipoDias ? subtrairDias(new Date(meta), acaoQtdDias, acaoTipoDias).toISOString().split("T")[0] : (meta && acaoQtdDias === 0 ? meta : null);
               
               const tarefa = {
                 clienteId,
                 anoCalc: anoCompetencia, // ano de referência baseado no fato gerador
                 mesReferencia: mesCompetencia,
-                vencimento,
+                vencimento: vencimentoStr,
                 nomeObrigacao: `${obrigacao.nome} de ${String(mesCompetencia).padStart(2, "0")}/${anoCompetencia}`,
                 acao,
                 meta,
