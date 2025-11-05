@@ -1,0 +1,46 @@
+[1mdiff --git a/backend/src/routes/gestao/obrigacoesRoutes.js b/backend/src/routes/gestao/obrigacoesRoutes.js[m
+[1mindex 17607208..9af1361c 100644[m
+[1m--- a/backend/src/routes/gestao/obrigacoesRoutes.js[m
+[1m+++ b/backend/src/routes/gestao/obrigacoesRoutes.js[m
+[36m@@ -3095,6 +3095,7 @@[m [mrouter.get("/cliente-obrigacao/:id", verifyToken, async (req, res) => {[m
+         o.meta_qtd_dias AS metaQtdDias,[m
+         o.meta_tipo_dias AS metaTipoDias,[m
+         o.vencimento_tipo AS vencimentoTipo,[m
+[32m+[m[32m        o.frequencia,[m
+         o.vencimento_dia AS vencimentoDia,[m
+         o.fato_gerador AS fatoGerador,[m
+         o.orgao,[m
+[36m@@ -3134,6 +3135,19 @@[m [mrouter.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke[m
+   const { clienteId, obrigacaoId } = req.params;[m
+ [m
+   try {[m
+[32m+[m[32m    // ✅ Usar o tipo da obrigação base para decidir a ordenação[m
+[32m+[m[32m    const [obrigacaoBase] = await db.query(`[m
+[32m+[m[32m      SELECT frequencia FROM obrigacoes WHERE id = ? LIMIT 1[m
+[32m+[m[32m    `, [obrigacaoId]);[m
+[32m+[m
+[32m+[m[32m    const frequencia = (obrigacaoBase[0]?.frequencia || '').toLowerCase();[m
+[32m+[m[32m    const isDiariaOuSemanal = frequencia.includes('diário') || frequencia.includes('semanal');[m
+[32m+[m
+[32m+[m[32m    // Diária/Semanal: ordenar por vencimento. Caso contrário: por competência (ano/mês)[m
+[32m+[m[32m    const orderBy = isDiariaOuSemanal[m
+[32m+[m[32m      ? 'ORDER BY oc.vencimento ASC'[m
+[32m+[m[32m      : 'ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC';[m
+[32m+[m
+     const [competencias] = await db.query(`[m
+       SELECT [m
+         oc.id,[m
+[36m@@ -3142,10 +3156,12 @@[m [mrouter.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke[m
+         oc.vencimento,[m
+         oc.status,[m
+         oc.data_baixa AS dataBaixa,[m
+[32m+[m[32m        o.frequencia,[m
+         CONCAT(oc.mes_referencia, '/', oc.ano_referencia) as competencia[m
+       FROM obrigacoes_clientes oc[m
+[32m+[m[32m      JOIN obrigacoes o ON oc.obrigacao_id = o.id[m
+       WHERE oc.cliente_id = ? AND oc.obrigacao_id = ?[m
+[31m-      ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC[m
+[32m+[m[32m      ${orderBy}[m
+     `, [clienteId, obrigacaoId]);[m
+ [m
+     res.json(competencias);[m

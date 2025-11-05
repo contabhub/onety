@@ -3095,6 +3095,7 @@ router.get("/cliente-obrigacao/:id", verifyToken, async (req, res) => {
         o.meta_qtd_dias AS metaQtdDias,
         o.meta_tipo_dias AS metaTipoDias,
         o.vencimento_tipo AS vencimentoTipo,
+        o.frequencia,
         o.vencimento_dia AS vencimentoDia,
         o.fato_gerador AS fatoGerador,
         o.orgao,
@@ -3134,6 +3135,19 @@ router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke
   const { clienteId, obrigacaoId } = req.params;
 
   try {
+    // ✅ Usar o tipo da obrigação base para decidir a ordenação
+    const [obrigacaoBase] = await db.query(`
+      SELECT frequencia FROM obrigacoes WHERE id = ? LIMIT 1
+    `, [obrigacaoId]);
+
+    const frequencia = (obrigacaoBase[0]?.frequencia || '').toLowerCase();
+    const isDiariaOuSemanal = frequencia.includes('diário') || frequencia.includes('semanal');
+
+    // Diária/Semanal: ordenar por vencimento. Caso contrário: por competência (ano/mês)
+    const orderBy = isDiariaOuSemanal
+      ? 'ORDER BY oc.vencimento ASC'
+      : 'ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC';
+
     const [competencias] = await db.query(`
       SELECT 
         oc.id,
@@ -3142,10 +3156,12 @@ router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke
         oc.vencimento,
         oc.status,
         oc.data_baixa AS dataBaixa,
+        o.frequencia,
         CONCAT(oc.mes_referencia, '/', oc.ano_referencia) as competencia
       FROM obrigacoes_clientes oc
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
       WHERE oc.cliente_id = ? AND oc.obrigacao_id = ?
-      ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC
+      ${orderBy}
     `, [clienteId, obrigacaoId]);
 
     res.json(competencias);

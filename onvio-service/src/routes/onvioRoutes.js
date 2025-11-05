@@ -9,52 +9,122 @@ const router = express.Router();
 
 
 /**
+ * 🔐 Verificar se o usuário é superadmin
+ */
+function isSuperAdmin(req) {
+    try {
+        const permissoes = req.user?.permissoes || req.usuario?.permissoes || {};
+        const admList = Array.isArray(permissoes.adm)
+            ? permissoes.adm.map((p) => String(p).toLowerCase())
+            : [];
+        return admList.includes("superadmin");
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
  * 📥 Baixar atividades automaticamente da Onvio
+ * Se for superadmin, processa todas as empresas. Caso contrário, apenas a empresa do usuário.
  */
 router.post('/baixar-atividades', autenticarToken, async (req, res) => {
     try {
-        const empresaId = req.usuario?.empresaId;
+        const isSuperAdminUser = isSuperAdmin(req);
+        let empresaId = req.usuario?.empresaId;
         
-        if (!empresaId) {
+        // Se não for superadmin, exige empresaId
+        if (!isSuperAdminUser && !empresaId) {
             return res.status(400).json({ 
                 success: false, 
                 message: "Empresa ID é obrigatório" 
             });
         }
 
-        console.log(`🚀 Iniciando baixa automática de atividades da Onvio para empresa ID: ${empresaId}`);
+        // Se for superadmin, buscar todas as empresas com atividades Onvio
+        let empresasParaProcessar = [];
         
-        // Verificar se tem credenciais configuradas
-        const credenciais = await obterCredenciaisOnvio(empresaId);
-        if (!credenciais) {
-            return res.status(400).json({
-                success: false,
-                message: "Credenciais da Onvio não configuradas para esta empresa"
-            });
+        if (isSuperAdminUser) {
+            console.log(`🔑 Superadmin detectado! Processando todas as empresas com atividades Onvio...`);
+            
+            // Buscar todas as empresas que têm atividades Onvio pendentes
+            const [empresasComAtividades] = await db.query(`
+                SELECT DISTINCT e.id AS empresaId, e.nome AS empresaNome
+                FROM empresas e
+                JOIN obrigacoes o ON o.empresa_id = e.id
+                JOIN atividades_obrigacao ao ON ao.obrigacao_id = o.id
+                JOIN obrigacoes_clientes oc ON oc.obrigacao_id = o.id
+                JOIN obrigacoes_atividades_clientes oac ON oac.obrigacao_cliente_id = oc.id
+                WHERE ao.tipo = 'Integração: Onvio'
+                AND oac.concluida = 0
+                AND oc.status != 'concluida'
+                AND oc.baixado_automaticamente = 0
+                AND e.onvioLogin IS NOT NULL
+                AND e.onvioSenha IS NOT NULL
+                ORDER BY e.id
+            `);
+            
+            empresasParaProcessar = empresasComAtividades;
+            console.log(`🏢 Encontradas ${empresasParaProcessar.length} empresas com atividades Onvio pendentes`);
+        } else {
+            // Usuário normal: processar apenas sua empresa
+            empresasParaProcessar = [{ empresaId, empresaNome: 'Empresa do usuário' }];
         }
 
-        // Buscar atividades base do tipo "Integração: Onvio"
-        const [atividadesBase] = await db.query(`
-            SELECT
-                ao.id AS atividadeBaseId,
-                ao.texto AS atividadeTexto,
-                ao.titulo_documento AS tituloDocumentoEsperado,
-                ao.pdf_layout_id AS pdfLayoutId,
-                o.id AS obrigacaoBaseId,
-                o.nome AS obrigacaoNome
-            FROM atividades_obrigacao ao
-            JOIN obrigacoes o ON ao.obrigacaoId = o.id
-            WHERE ao.tipo = 'Integração: Onvio'
-            AND o.empresaId = ?
-        `, [empresaId]);
-
-        if (atividadesBase.length === 0) {
+        if (empresasParaProcessar.length === 0) {
             return res.json({
                 success: true,
-                message: "Nenhuma atividade base 'Integração: Onvio' encontrada.",
+                message: "Nenhuma empresa com atividades Onvio pendentes encontrada.",
                 detalhes: []
             });
         }
+
+        // Processar cada empresa
+        const resultadosPorEmpresa = [];
+        
+        for (const empresa of empresasParaProcessar) {
+            empresaId = empresa.empresaId;
+            const empresaNome = empresa.empresaNome || 'N/A';
+            console.log(`🚀 Processando empresa ID: ${empresaId} (${empresaNome})`);
+            
+            try {
+                // Verificar se tem credenciais configuradas
+                const credenciais = await obterCredenciaisOnvio(empresaId);
+                if (!credenciais) {
+                    console.log(`⚠️ Empresa ${empresaId} sem credenciais configuradas, pulando...`);
+                    resultadosPorEmpresa.push({
+                        empresaId,
+                        empresaNome,
+                        sucesso: false,
+                        erro: "Credenciais da Onvio não configuradas"
+                    });
+                    continue;
+                }
+
+                // Buscar atividades base do tipo "Integração: Onvio"
+                const [atividadesBase] = await db.query(`
+                    SELECT
+                        ao.id AS atividadeBaseId,
+                        ao.texto AS atividadeTexto,
+                        ao.titulo_documento AS tituloDocumentoEsperado,
+                        ao.pdf_layout_id AS pdfLayoutId,
+                        o.id AS obrigacaoBaseId,
+                        o.nome AS obrigacaoNome
+                    FROM atividades_obrigacao ao
+                    JOIN obrigacoes o ON ao.obrigacao_id = o.id
+                    WHERE ao.tipo = 'Integração: Onvio'
+                    AND o.empresa_id = ?
+                `, [empresaId]);
+
+                if (atividadesBase.length === 0) {
+                    console.log(`⚠️ Empresa ${empresaId} sem atividades base 'Integração: Onvio', pulando...`);
+                    resultadosPorEmpresa.push({
+                        empresaId,
+                        empresaNome,
+                        sucesso: true,
+                        message: "Nenhuma atividade base 'Integração: Onvio' encontrada"
+                    });
+                    continue;
+                }
 
         console.log(`🔍 Encontradas ${atividadesBase.length} atividades base de integração Onvio.`);
         
@@ -65,7 +135,7 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
             const [atividadesCliente] = await db.query(`
                 SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id as obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, 
                        o.nome as obrigacao_nome, c.razao_social as cliente_nome, c.id as clienteId, c.cpf_cnpj as clienteCnpjCpf,
-                       oc.status as obrigacaoClienteStatus, oc.baixada_automaticamente as obrigacaoClienteBaixadaAutomaticamente,
+                       oc.status as obrigacaoClienteStatus, oc.baixado_automaticamente as obrigacaoClienteBaixadaAutomaticamente,
                        oc.ano_referencia, oc.mes_referencia
                 FROM obrigacoes_atividades_clientes oac
                 JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
@@ -76,7 +146,7 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                 AND oac.tipo = 'Integração: Onvio'
                 AND oac.concluida = 0
                 AND oc.status != 'concluida'
-                AND oc.baixada_automaticamente = 0
+                AND oc.baixado_automaticamente = 0
             `, [atividadeBase.obrigacaoBaseId, atividadeBase.atividadeTexto]);
             for (const atividadeCliente of atividadesCliente) {
                 if (!atividadesPorCliente[atividadeCliente.clienteId]) {
@@ -107,10 +177,45 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                 // Isso garante que browser e page sejam corretamente associados ao serviço
                 await onvioService.initializeBrowser();
                 await onvioService.fazerLogin(credenciais, true, empresaId);
+                
+                // ✅ IMPORTANTE: Navegar para área de documentos ANTES de selecionar cliente
+                console.log(`📁 Navegando para área de documentos...`);
+                await onvioService.navegarParaAreaDocumentos();
+                
+                // ✅ IMPORTANTE: Verificar e trocar base ANTES de buscar/selecionar cliente
+                // Buscar dados do cliente pelo CNPJ para verificar a base
+                console.log(`🔍 Buscando dados do cliente pelo CNPJ para verificar base antes de selecionar...`);
+                const dadosCliente = await onvioService.buscarNomeClientePorCNPJ(cliente.cnpjCpf);
+                if (dadosCliente && dadosCliente.base) {
+                    console.log(`🔍 Base encontrada pelo CNPJ: ${dadosCliente.base}`);
+                    await onvioService.verificarETrocarBase(dadosCliente.base);
+                }
+                
+                // Agora sim, selecionar o cliente (base já está correta)
+                console.log(`👤 Selecionando cliente pelo CNPJ (base já verificada)...`);
                 await onvioService.selecionarClientePorCNPJ(cliente.cnpjCpf);
 
-                // Para cada atividade, navegar para o caminho correto e buscar documentos
-                for (const atividade of atividades) {
+                // ✅ Agrupar atividades por competência para processar uma competência por vez
+                const atividadesPorCompetencia = {};
+                atividades.forEach(atividade => {
+                    const competenciaKey = atividade.ano_referencia && atividade.mes_referencia 
+                        ? `${atividade.ano_referencia}-${String(atividade.mes_referencia).padStart(2, '0')}`
+                        : 'sem-competencia';
+                    
+                    if (!atividadesPorCompetencia[competenciaKey]) {
+                        atividadesPorCompetencia[competenciaKey] = [];
+                    }
+                    atividadesPorCompetencia[competenciaKey].push(atividade);
+                });
+
+                console.log(`📊 Processando ${Object.keys(atividadesPorCompetencia).length} competência(s) para o cliente ${cliente.nome}`);
+
+                // Processar uma competência por vez
+                for (const [competenciaKey, atividadesDaCompetencia] of Object.entries(atividadesPorCompetencia)) {
+                    console.log(`📅 Processando competência: ${competenciaKey === 'sem-competencia' ? 'Sem competência definida' : competenciaKey} (${atividadesDaCompetencia.length} atividade(s))`);
+                    
+                    // Para cada atividade da competência, navegar para o caminho correto e buscar documentos
+                    for (const atividade of atividadesDaCompetencia) {
                     try {
                         let competencia = null;
                         if (atividade.ano_referencia && atividade.mes_referencia) {
@@ -279,7 +384,9 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                     } catch (e) {
                         resultados.push({ atividadeId: atividade.id, success: false, erro: e.message });
                     }
-                }
+                    } // Fim do loop de atividades da competência
+                } // Fim do loop de competências
+                
                 return { clienteId: cliente.id, clienteNome: cliente.nome, sucesso: true, resultados };
             } catch (e) {
                 console.error(`❌ Erro ao processar cliente ${cliente.nome}:`, e);
@@ -317,20 +424,68 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
             return resultados;
         }
 
-        // ⚡ OTIMIZAÇÃO: Reduzir processos paralelos de 5 para 2 para economizar memória na VPS
-        // Isso evita sobrecarga de processos Puppeteer simultâneos
-        const resultadosProcessamento = await processarClientesEmPool(clientes, atividadesPorCliente, credenciais, empresaId, 2);
-        const sucessos = resultadosProcessamento.filter(r => r.sucesso).length;
-        const falhas = resultadosProcessamento.length - sucessos;
+                // ⚡ OTIMIZAÇÃO: Reduzir processos paralelos de 5 para 2 para economizar memória na VPS
+                // Isso evita sobrecarga de processos Puppeteer simultâneos
+                const resultadosProcessamento = await processarClientesEmPool(clientes, atividadesPorCliente, credenciais, empresaId, 2);
+                const sucessos = resultadosProcessamento.filter(r => r.sucesso).length;
+                const falhas = resultadosProcessamento.length - sucessos;
+                
+                resultadosPorEmpresa.push({
+                    empresaId,
+                    empresaNome,
+                    sucesso: true,
+                    resumo: {
+                        total: resultadosProcessamento.length,
+                        sucessos,
+                        falhas
+                    },
+                    detalhes: resultadosProcessamento
+                });
+                
+                console.log(`✅ Empresa ${empresaId} processada: ${sucessos} sucessos, ${falhas} falhas`);
+                
+            } catch (erroEmpresa) {
+                console.error(`❌ Erro ao processar empresa ${empresaId}:`, erroEmpresa);
+                resultadosPorEmpresa.push({
+                    empresaId,
+                    empresaNome,
+                    sucesso: false,
+                    erro: erroEmpresa.message || String(erroEmpresa)
+                });
+            }
+        }
+        
+        // Consolidar resultados
+        const totalEmpresas = resultadosPorEmpresa.length;
+        const empresasComSucesso = resultadosPorEmpresa.filter(r => r.sucesso).length;
+        const empresasComFalha = totalEmpresas - empresasComSucesso;
+        
+        let totalClientes = 0;
+        let totalSucessos = 0;
+        let totalFalhas = 0;
+        
+        resultadosPorEmpresa.forEach(empresa => {
+            if (empresa.resumo) {
+                totalClientes += empresa.resumo.total || 0;
+                totalSucessos += empresa.resumo.sucessos || 0;
+                totalFalhas += empresa.resumo.falhas || 0;
+            }
+        });
+        
         res.json({
             success: true,
-            message: `Processamento concluído: ${sucessos} clientes com sucesso, ${falhas} falhas` ,
+            message: isSuperAdminUser 
+                ? `Processamento concluído para ${totalEmpresas} empresas: ${empresasComSucesso} com sucesso, ${empresasComFalha} com falhas. Total: ${totalSucessos} clientes processados com sucesso, ${totalFalhas} falhas`
+                : `Processamento concluído: ${totalSucessos} clientes com sucesso, ${totalFalhas} falhas`,
             resumo: {
-                total: resultadosProcessamento.length,
-                sucessos,
-                falhas
+                totalEmpresas,
+                empresasComSucesso,
+                empresasComFalha,
+                totalClientes,
+                totalSucessos,
+                totalFalhas
             },
-            detalhes: resultadosProcessamento,
+            detalhes: resultadosPorEmpresa,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
@@ -659,7 +814,7 @@ async function processarAtividadeBase(atividadeBase, empresaId) {
         const [atividadesCliente] = await db.query(`
             SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id as obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, 
                    o.nome as obrigacao_nome, c.razao_social as cliente_nome, c.id as clienteId, c.cpf_cnpj as clienteCnpjCpf,
-                   oc.status as obrigacaoClienteStatus, oc.baixada_automaticamente as obrigacaoClienteBaixadaAutomaticamente
+                   oc.status as obrigacaoClienteStatus, oc.baixado_automaticamente as obrigacaoClienteBaixadaAutomaticamente
             FROM obrigacoes_atividades_clientes oac
             JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
             JOIN obrigacoes o ON oc.obrigacao_id = o.id
@@ -799,13 +954,13 @@ async function processarAtividadeCliente(atividadeCliente, tituloDocumentoEspera
             
             // Marcar atividade como concluída
             await db.query(
-                'UPDATE obrigacoes_atividades_clientes SET concluida = 1, dataConclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
+                'UPDATE obrigacoes_atividades_clientes SET concluida = 1, data_conclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
                 [id]
             );
             
             // Marcar obrigação como baixada automaticamente
             await db.query(
-                'UPDATE obrigacoes_clientes SET baixada_automaticamente = 1 WHERE id = ?',
+                'UPDATE obrigacoes_clientes SET baixado_automaticamente = 1 WHERE id = ?',
                 [obrigacaoClienteId]
             );
             
@@ -918,7 +1073,7 @@ async function tentarMatchComAtividades(documentos, obrigacaoClienteId, empresaI
             
             // Marcar atividade como concluída
             await db.query(
-                'UPDATE obrigacoes_atividades_clientes SET concluida = 1, dataConclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
+                'UPDATE obrigacoes_atividades_clientes SET concluida = 1, data_conclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
                 [atividade.atividadeId]
             );
             
@@ -1392,7 +1547,7 @@ async function processarBaixaDocumento(docAtual, atividade, cliente, competencia
         const linkDocumento = /\/document\//i.test(linkPreferencial || '') ? linkPreferencial : null;
         // Marca a atividade como concluída (update direto no banco)
         await db.query(
-            'UPDATE obrigacoes_atividades_clientes SET concluida = 1, dataConclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
+            'UPDATE obrigacoes_atividades_clientes SET concluida = 1, data_conclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
             [atividade.id]
         );
       
