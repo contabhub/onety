@@ -92,12 +92,12 @@ export default function EmailModal({
   const [loadingAnexos, setLoadingAnexos] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  const clienteOptions = clientes.map((c) => ({ value: c.email, label: `${c.nome} - ${c.email}` }));
-  const funcionarioOptions = usuarios.map((u) => ({ 
+  const clienteOptions = Array.isArray(clientes) ? clientes.map((c) => ({ value: c.email, label: `${c.nome} - ${c.email}` })) : [];
+  const funcionarioOptions = Array.isArray(usuarios) ? usuarios.map((u) => ({ 
     value: u.email, 
     label: `${u.nome} - ${u.email}`,
     nome: u.nome 
-  }));
+  })) : [];
   const empresaId = typeof window !== "undefined"
     ? (sessionStorage.getItem("empresaId") || (() => {
         try {
@@ -349,9 +349,9 @@ export default function EmailModal({
 
   useEffect(() => {
     if (empresaId) {
-      api.get(`/gestao/clientes?empresaId=${empresaId}`).then((res) => setClientes(res.data.clientes || []));
       const token = resolveToken();
-      api.get(`/gestao/usuarios`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => setUsuarios(res.data || []));
+      api.get(`/gestao/clientes?empresaId=${empresaId}`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => setClientes(Array.isArray(res.data?.clientes) ? res.data.clientes : []));
+      api.get(`/usuarios`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => setUsuarios(Array.isArray(res.data) ? res.data : []));
     }
   }, [empresaId]);
 
@@ -444,18 +444,18 @@ export default function EmailModal({
       const token = resolveToken();
         if (tipo === "processo") {
           // Para processo, usamos os dados da tarefa/processo
-          const resProc = await api.get(`/api/tarefas/${processoId}`, {
+          const resProc = await api.get(`/gestao/tarefas/${processoId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           dadosProcesso = resProc.data;
         } else {
           // Obrigação: usa cadeia atual
-          const res = await api.get(`/api/obrigacoes/atividades-cliente/${processoId}`, {
+          const res = await api.get(`/gestao/obrigacoes/atividades-cliente/${processoId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data?.[0]) {
             const obrigacaoClienteId = res.data[0].obrigacaoClienteId;
-            const obrigacaoRes = await api.get(`/api/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
+            const obrigacaoRes = await api.get(`/gestao/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             dadosObrigacao = obrigacaoRes.data;
@@ -653,7 +653,7 @@ export default function EmailModal({
     const user = sessionStorage.getItem("usuario");
     if (user) setNomeUsuario(JSON.parse(user).nome);
     const token = resolveToken();
-    api.get("/api/escritorio", { headers: { Authorization: `Bearer ${token}` } }).then((res) => setEmpresa(res.data.razaoSocial));
+    api.get("/gestao/escritorio", { headers: { Authorization: `Bearer ${token}` } }).then((res) => setEmpresa(res.data.razaoSocial));
   }, []);
 
   useEffect(() => {
@@ -662,7 +662,7 @@ export default function EmailModal({
     const token = resolveToken();
 
     // Passo 1: buscar a atividade
-    api.get(`/api/obrigacoes/atividades-cliente/${processoId}`, {
+    api.get(`/gestao/obrigacoes/atividades-cliente/${processoId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -672,7 +672,7 @@ export default function EmailModal({
         if (!obrigacaoClienteId) throw new Error("Sem obrigacaoClienteId");
 
         // Passo 2: buscar a obrigação gerada com base no ID certo
-        return api.get(`/api/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
+        return api.get(`/gestao/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       })
@@ -706,7 +706,7 @@ export default function EmailModal({
     const token = sessionStorage.getItem("token");
     if (!token) return;
 
-    api.get(`/api/tarefas/${processoId}`, {
+    api.get(`/gestao/tarefas/${processoId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
