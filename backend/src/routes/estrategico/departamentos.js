@@ -14,14 +14,14 @@ router.get('/', verifyToken, async (req, res) => {
     }
 
     // Verificar se o usuário tem acesso à empresa
-    const [userAccess] = await db.query(
-      'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-      [req.user.id, companyId]
-    );
+      const [userAccess] = await db.query(
+        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
+        [req.user.id, companyId]
+      );
 
-    if (!userAccess || userAccess.length === 0) {
-      return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-    }
+      if (!userAccess || userAccess.length === 0) {
+        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
+      }
 
     // Construir query base - retornar TODOS os departamentos ativos da empresa
     const query = `
