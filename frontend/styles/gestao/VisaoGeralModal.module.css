@@ -511,7 +511,7 @@
       padding: var(--onity-space-s);
     }
     
-      .cellValue {
+    .cellValue {
     padding: var(--onity-space-s) var(--onity-space-m);
     font-size: var(--onity-type-body-size);
     }
@@ -593,7 +593,7 @@
   .paginationItemsSelect:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
-  }
+    }
 
   .paginationItemsOption {
     background-color: #2a2a2a;
@@ -609,4 +609,4 @@
     color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
   }
-    
+  

@@ -344,9 +344,9 @@ export default function VisaoGeralModal({ titulo, tarefas, onClose, abaAtiva }) 
                     className={`${styles.tableBody} ${styles.cellAssunto}`}
                     onClick={() => {
                       if (t.tipo === "tarefa") {
-                        window.open(`/tarefas/${t.id}/atividades`, "_blank");
+                        window.open(`/gestao/tarefas/${t.id}/atividades`, "_blank");
                       } else if (t.tipo === "obrigacao") {
-                        window.open(`/dashboard/obrigacoes/${t.id}/atividades`, "_blank");
+                        window.open(`/gestao/obrigacao/${t.id}/atividades`, "_blank");
                       }
                     }}
                   >

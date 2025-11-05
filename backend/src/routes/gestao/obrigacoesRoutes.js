@@ -2823,16 +2823,16 @@ router.get("/empresa/:empresaId/geradas/painel", verifyToken, async (req, res) =
         oc.nome AS assunto,
         oc.status,
         oc.vencimento,
-        oc.dataBaixa,
-        oc.baixadaAutomaticamente,
-        c.nome AS cliente_nome, 
-        c.cnpjCpf AS cliente_cnpj,
+        oc.data_baixa AS dataBaixa,
+        oc.baixado_automaticamente AS baixadaAutomaticamente,
+        c.razao_social AS cliente_nome, 
+        c.cpf_cnpj AS cliente_cnpj,
         c.status AS status_cliente,
         o.nome AS nomeObrigacao,
-        o.metaQtdDias,
-        o.metaTipoDias,
-        o.acaoQtdDias,
-        o.acaoTipoDias,
+        o.meta_qtd_dias AS metaQtdDias,
+        o.meta_tipo_dias AS metaTipoDias,
+        o.acao_qtd_dias AS acaoQtdDias,
+        NULL AS acaoTipoDias,
         d.nome AS departamento_nome,
         oc.ano_referencia,
         oc.mes_referencia
@@ -2850,7 +2850,7 @@ router.get("/empresa/:empresaId/geradas/painel", verifyToken, async (req, res) =
     }
     
     query += `
-      WHERE c.empresaId = ? AND oc.status != 'cancelada'`;
+      WHERE c.empresa_id = ? AND oc.status != 'cancelada'`;
     
     // ✅ Filtro por mês e ano para obrigações concluídas
     if (mes && ano) {
@@ -2858,7 +2858,7 @@ router.get("/empresa/:empresaId/geradas/painel", verifyToken, async (req, res) =
       const anoNum = parseInt(ano);
       query += ` AND (
         oc.status != 'concluida' OR 
-        (oc.status = 'concluida' AND MONTH(oc.dataBaixa) = ? AND YEAR(oc.dataBaixa) = ?)
+        (oc.status = 'concluida' AND MONTH(oc.data_baixa) = ? AND YEAR(oc.data_baixa) = ?)
       )`;
       params.push(mesNum, anoNum);
     }
