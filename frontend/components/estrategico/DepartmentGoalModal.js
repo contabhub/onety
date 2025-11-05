@@ -106,17 +106,10 @@ export function DepartmentGoalModal({
   goalToEdit,
 }) {
 
-  const [title, setTitle] = useState(goalToEdit?.title || '');
-  const [description, setDescription] = useState(goalToEdit?.description || '');
-  const [departmentId, setDepartmentId] = useState(goalToEdit?.department_id || '');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [departmentId, setDepartmentId] = useState('');
   const [trimestre, setTrimestre] = useState(() => {
-    if (goalToEdit?.start_date) {
-      const m = new Date(goalToEdit.start_date).getMonth() + 1;
-      if (m <= 3) return '1';
-      if (m <= 6) return '2';
-      if (m <= 9) return '3';
-      return '4';
-    }
     const currentMonth = new Date().getMonth() + 1;
     if (currentMonth <= 3) return '1';
     if (currentMonth <= 6) return '2';
@@ -126,12 +119,49 @@ export function DepartmentGoalModal({
 
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [calculationType, setCalculationType] = useState(goalToEdit?.calculation_type || 'acumulativa');
+  const [calculationType, setCalculationType] = useState('acumulativa');
   const fixedTargetValue = 1;
-  const [indicatorType, setIndicatorType] = useState(goalToEdit?.indicator_type || 'qtd');
-  const [progressType, setProgressType] = useState(goalToEdit?.progress_type || 'progresso');
+  const [indicatorType, setIndicatorType] = useState('qtd');
+  const [progressType, setProgressType] = useState('progresso');
   const [user, setUser] = useState(null);
   const [permissoes, setPermissoes] = useState({});
+
+  // Atualizar campos quando goalToEdit mudar
+  useEffect(() => {
+    if (goalToEdit) {
+      // Mapear campos do backend (português) para o formato do frontend
+      setTitle(goalToEdit.title || goalToEdit.nome || '');
+      setDescription(goalToEdit.description || goalToEdit.descricao || '');
+      setDepartmentId(goalToEdit.department_id || goalToEdit.departamento_id || '');
+      setCalculationType(goalToEdit.calculation_type || goalToEdit.calculo_tipo || 'acumulativa');
+      setIndicatorType(goalToEdit.indicator_type || goalToEdit.indicador_tipo || 'qtd');
+      setProgressType(goalToEdit.progress_type || goalToEdit.progresso_tipo || 'progresso');
+      
+      const startDate = goalToEdit.start_date || goalToEdit.data_inicio || '';
+      if (startDate) {
+        const m = new Date(startDate).getMonth() + 1;
+        let newTrimestre = '4';
+        if (m <= 3) newTrimestre = '1';
+        else if (m <= 6) newTrimestre = '2';
+        else if (m <= 9) newTrimestre = '3';
+        setTrimestre(newTrimestre);
+      }
+    } else {
+      // Resetar campos quando não há goalToEdit
+      setTitle('');
+      setDescription('');
+      setDepartmentId('');
+      setCalculationType('acumulativa');
+      setIndicatorType('qtd');
+      setProgressType('progresso');
+      const currentMonth = new Date().getMonth() + 1;
+      let currentTrim = '4';
+      if (currentMonth <= 3) currentTrim = '1';
+      else if (currentMonth <= 6) currentTrim = '2';
+      else if (currentMonth <= 9) currentTrim = '3';
+      setTrimestre(currentTrim);
+    }
+  }, [goalToEdit]);
 
   useEffect(() => {
     const loadUser = () => {

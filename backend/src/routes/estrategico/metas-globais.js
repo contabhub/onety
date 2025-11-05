@@ -199,6 +199,32 @@ router.put('/:id', verifyToken, async (req, res) => {
       mappedUpdates[mappedKey] = updates[key];
     });
 
+    // Converter datas ISO para formato MySQL (YYYY-MM-DD)
+    const formatDateForMySQL = (dateString) => {
+      if (!dateString) return null;
+      try {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      } catch (error) {
+        return null;
+      }
+    };
+
+    // Converter datas se presentes
+    if (mappedUpdates.data_inicio) {
+      mappedUpdates.data_inicio = formatDateForMySQL(mappedUpdates.data_inicio);
+    }
+    if (mappedUpdates.data_fim) {
+      mappedUpdates.data_fim = formatDateForMySQL(mappedUpdates.data_fim);
+    }
+
+    // Remover campos que não devem ser atualizados (como id)
+    delete mappedUpdates.id;
+    delete mappedUpdates.empresa_id;
+
     const fields = Object.keys(mappedUpdates).map(key => `${key} = ?`).join(', ');
     const values = Object.values(mappedUpdates);
 

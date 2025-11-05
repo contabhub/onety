@@ -501,14 +501,28 @@ router.put('/:id', verifyToken, async (req, res) => {
       return res.status(403).json({ error: 'Acesso negado a esta empresa' });
     }
 
+    // Converter datas ISO para formato MySQL (YYYY-MM-DD)
+    const formatDateForMySQL = (dateString) => {
+      if (!dateString) return null;
+      try {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      } catch (error) {
+        return null;
+      }
+    };
+
     // Mapear campos do payload para o schema
     const updates = {};
     if (department_id !== undefined) updates.departamento_id = department_id;
     if (title !== undefined) updates.nome = title;
     if (description !== undefined) updates.descricao = description;
     if (target_value !== undefined) updates.valor_alvo = target_value;
-    if (start_date !== undefined) updates.data_inicio = start_date;
-    if (end_date !== undefined) updates.data_fim = end_date;
+    if (start_date !== undefined) updates.data_inicio = formatDateForMySQL(start_date);
+    if (end_date !== undefined) updates.data_fim = formatDateForMySQL(end_date);
     if (calculation_type !== undefined) updates.calculo_tipo = calculation_type;
     if (indicator_type !== undefined) updates.indicador_tipo = indicator_type;
     if (progress_type !== undefined) updates.progresso_tipo = progress_type;

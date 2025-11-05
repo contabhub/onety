@@ -22,11 +22,15 @@ const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
 
   useEffect(() => {
     if (goalData) {
-      setTitle(goalData.title || '');
-      setDescription(goalData.description || '');
-      setStartDate(goalData.start_date || '');
-      setEndDate(goalData.end_date || '');
-      setTrimestre(getTrimestreFromDate(goalData.start_date || ''));
+      // Mapear campos do backend (português) para o formato do frontend
+      setTitle(goalData.title || goalData.titulo || '');
+      setDescription(goalData.description || goalData.descricao || '');
+      setStartDate(goalData.start_date || goalData.data_inicio || '');
+      setEndDate(goalData.end_date || goalData.data_fim || '');
+      setTrimestre(getTrimestreFromDate(goalData.start_date || goalData.data_inicio || ''));
+      setCalculationType(goalData.calculation_type || goalData.calculo_tipo || 'acumulativa');
+      setIndicatorType(goalData.indicator_type || goalData.indicador_tipo || 'qtd');
+      setProgressType(goalData.progress_type || goalData.progresso_tipo || 'progresso');
     } else {
       setTitle('');
       setDescription('');
