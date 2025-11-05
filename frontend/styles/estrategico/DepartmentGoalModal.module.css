@@ -1,0 +1,167 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--onity-z-modal-backdrop);
+  min-height: 100vh;
+  padding: var(--onity-space-m);
+}
+
+.modalContainer {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-xl);
+  width: 100%;
+  max-width: 28rem;
+  transition: all var(--onity-transition-fast);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-l);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-font-weight-bold);
+  color: var(--onity-color-text);
+}
+
+.modalCloseButton {
+  color: var(--onity-text-med);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+}
+
+.modalCloseButton:hover {
+  color: var(--onity-color-text);
+}
+
+.modalBody {
+  margin-bottom: var(--onity-space-xl);
+  color: var(--onity-color-text);
+  font-size: var(--onity-font-size-lg);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-s);
+}
+
+.formGroup {
+  margin-bottom: var(--onity-space-m);
+}
+
+.formInput {
+  width: 90%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formTextarea {
+  width: 90%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  min-height: 80px;
+  resize: vertical;
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formSelect {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formLabel {
+  display: block;
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-s);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  border-radius: var(--onity-radius-xs);
+  border: none;
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonSecondary:hover {
+  background-color: var(--onity-color-border);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  background-color: inherit;
+}

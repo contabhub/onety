@@ -1,0 +1,274 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+.content {
+  padding: var(--onity-space-m);
+}
+
+.wrapper {
+  width: 100%;
+}
+
+.inner {
+  position: relative;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.emptyStateContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.emptyStateTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+}
+
+.emptyStateDescription {
+  margin-top: var(--onity-space-xs);
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+}
+
+.chartGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--onity-space-m);
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
+.departmentCard {
+  position: relative;
+}
+
+.departmentCardInner {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-med);
+  border-width: 2px;
+  border-color: var(--onity-color-border);
+  padding: var(--onity-space-m);
+  margin: 0 auto;
+  width: 16rem;
+  position: relative;
+  transition: box-shadow var(--onity-transition-fast);
+}
+
+.departmentCardInner:hover {
+  box-shadow: var(--onity-elev-high);
+}
+
+.departmentHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-s);
+}
+
+.avatarContainer {
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border-width: 2px;
+  border-color: var(--onity-color-border);
+}
+
+.avatarPlaceholder {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, var(--onity-color-info), var(--onity-color-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 2px;
+  border-color: var(--onity-color-border);
+}
+
+.departmentInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.departmentTitle {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  transition: color var(--onity-transition-fast);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.departmentTitle:hover {
+  color: var(--onity-color-primary);
+}
+
+.managerName {
+  font-size: var(--onity-font-size-xs);
+  color: var(--onity-text-med);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.departmentActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.toggleButton {
+  flex-shrink: 0;
+  padding: var(--onity-space-xs);
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--onity-transition-fast);
+}
+
+.toggleButton:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.menuButton {
+  flex-shrink: 0;
+  padding: var(--onity-space-xs);
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--onity-transition-fast);
+}
+
+.menuButton:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.menuIcon {
+  width: var(--onity-space-m);
+  height: var(--onity-space-m);
+  color: var(--onity-text-med);
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 2rem;
+  z-index: var(--onity-z-dropdown);
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-xs);
+  min-width: 10rem;
+}
+
+.menuButtonItem {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--onity-color-text);
+  display: flex;
+  align-items: center;
+  transition: background-color var(--onity-transition-fast);
+  font-size: var(--onity-font-size-sm);
+}
+
+.menuButtonItem:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.menuIconSmall {
+  width: var(--onity-space-m);
+  height: var(--onity-space-m);
+  margin-right: var(--onity-space-s);
+}
+
+.progressSection {
+  margin-top: var(--onity-space-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.progressItem {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.progressLabel {
+  font-size: var(--onity-font-size-xs);
+  color: var(--onity-text-med);
+  min-width: 4rem;
+}
+
+.progressBarContainer {
+  flex: 1;
+  height: 0.5rem;
+  background-color: var(--onity-color-border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width var(--onity-transition-normal);
+}
+
+.progressValue {
+  font-size: var(--onity-font-size-xs);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.childrenContainer {
+  margin-top: var(--onity-space-m);
+  padding-left: 2rem;
+  border-left: 2px solid var(--onity-color-border);
+}
+
+@media (max-width: 640px) {
+  .chartGrid {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .departmentCardInner {
+    width: 100%;
+    max-width: 20rem;
+  }
+}

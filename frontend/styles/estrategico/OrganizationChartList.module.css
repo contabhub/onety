@@ -1,0 +1,327 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+  margin-top: var(--onity-space-l);
+}
+
+.content {
+  padding: var(--onity-space-m);
+}
+
+.wrapper {
+  width: 100%;
+}
+
+.inner {
+  position: relative;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.emptyStateContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.emptyStateTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+}
+
+.emptyStateDescription {
+  margin-top: var(--onity-space-xs);
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeader {
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableHeaderRow {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-m) var(--onity-space-l);
+  align-items: center;
+}
+
+.tableHeaderCell {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  text-align: left;
+}
+
+.tableHeaderCellCenter {
+  text-align: center;
+}
+
+.tableRow {
+  padding: var(--onity-space-m) var(--onity-space-l);
+  border-bottom: 1px solid var(--onity-color-border);
+  transition: background-color var(--onity-transition-fast);
+}
+
+.tableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.tableRowGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--onity-space-m);
+  align-items: center;
+}
+
+.tableCell {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-text);
+}
+
+.tableCellCenter {
+  text-align: center;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  color: var(--onity-text-med);
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+  padding: var(--onity-space-xs);
+}
+
+.expandButton:hover {
+  color: var(--onity-color-text);
+}
+
+.departmentCell {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.departmentIcon {
+  width: var(--onity-space-m);
+  height: var(--onity-space-m);
+  color: var(--onity-text-med);
+}
+
+.departmentTitle {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  transition: color var(--onity-transition-fast);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.departmentTitle:hover {
+  color: var(--onity-color-primary);
+}
+
+.managerCell {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.managerAvatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.managerAvatarPlaceholder {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: var(--onity-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.managerName {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onity-space-xs) calc(var(--onity-space-s) + var(--onity-space-xs));
+  border-radius: 9999px;
+  font-size: var(--onity-font-size-xs);
+  font-weight: var(--onity-font-weight-medium);
+}
+
+.badgeBlue {
+  background-color: color-mix(in oklab, var(--onity-color-info) 15%, var(--onity-color-surface));
+  color: var(--onity-color-info);
+}
+
+.badgeGreen {
+  background-color: color-mix(in oklab, var(--onity-color-success) 15%, var(--onity-color-surface));
+  color: var(--onity-color-success);
+}
+
+.progressContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.progressCircle {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressText {
+  font-size: 8px;
+  font-weight: var(--onity-font-weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 1;
+}
+
+.actionsCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-s);
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  color: var(--onity-text-med);
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+  padding: var(--onity-space-xs);
+}
+
+.actionButton:hover {
+  color: var(--onity-color-primary);
+}
+
+.actionButtonDanger {
+  color: var(--onity-text-med);
+}
+
+.actionButtonDanger:hover {
+  color: var(--onity-color-error);
+}
+
+.actionButtonIcon {
+  width: var(--onity-space-m);
+  height: var(--onity-space-m);
+}
+
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-xs);
+}
+
+.emptyStateIcon {
+  margin: 0 auto;
+  width: 3rem;
+  height: 3rem;
+  color: var(--onity-text-low);
+}
+
+.emptyStateTitleSpacing {
+  margin-top: var(--onity-space-s);
+}
+
+.tableWrapper {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-low);
+  border: 1px solid var(--onity-color-border);
+  overflow: hidden;
+}
+
+.tableScrollContainer {
+  overflow-x: auto;
+}
+
+.tableHeaderPrimary {
+  min-width: 1000px;
+  background-color: var(--onity-color-primary);
+  border-bottom: 1px solid var(--onity-color-primary-hover);
+  padding: var(--onity-space-m) var(--onity-space-l);
+}
+
+.tableHeaderRowPrimary {
+  color: var(--onity-color-primary-contrast);
+}
+
+.tableBodyContainer {
+  border-top: 1px solid var(--onity-color-border);
+  min-width: 1000px;
+}
+
+.tableRowNested {
+  padding-left: var(--onity-space-l);
+}
+
+.departmentCellInner {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.progressTextEmpty {
+  font-size: var(--onity-font-size-xs);
+  color: var(--onity-text-med);
+}
+
+.managerAvatarIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--onity-text-med);
+}
+
+@media (max-width: 1024px) {
+  .tableHeaderRow,
+  .tableRowGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .tableHeaderCell:nth-child(n+5),
+  .tableCell:nth-child(n+5) {
+    display: none;
+  }
+}

@@ -1,0 +1,89 @@
+.pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-m) var(--onity-space-m);
+  background-color: var(--onity-color-surface);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.paginationInfo {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-text);
+}
+
+.paginationInfo strong {
+  font-weight: var(--onity-font-weight-medium);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.paginationButton {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-text-med);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+}
+
+.paginationButton:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButton:disabled:hover {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-text-med);
+}
+
+.paginationButtonActive {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: var(--onity-color-primary);
+}
+
+.paginationButtonActive:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.paginationDots {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+}
+
+.paginationButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.hiddenMobile {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .hiddenMobile {
+    display: inline;
+  }
+  .pagination {
+    flex-direction: row;
+  }
+}

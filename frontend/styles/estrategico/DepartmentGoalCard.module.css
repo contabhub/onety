@@ -1,0 +1,385 @@
+.goalCard {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-med);
+  border: 1px solid var(--onity-color-border);
+  overflow: hidden;
+  margin-bottom: var(--onity-space-l);
+}
+
+.goalCardHeader {
+  background-color: var(--onity-color-primary);
+  padding: var(--onity-space-m) var(--onity-space-l);
+  color: var(--onity-color-primary-contrast);
+}
+
+.goalCardHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--onity-space-m);
+}
+
+.goalCardTitleSection {
+  flex: 1;
+}
+
+.goalCardTitleRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-s);
+}
+
+.goalCardTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-bold);
+  color: var(--onity-color-primary-contrast);
+}
+
+.goalCardActions {
+  display: flex;
+  gap: var(--onity-space-s);
+}
+
+.goalCardActionButton {
+  background: none;
+  border: none;
+  color: color-mix(in oklab, var(--onity-color-primary-contrast) 80%, transparent);
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+  padding: var(--onity-space-xs);
+}
+
+.goalCardActionButton:hover {
+  color: var(--onity-color-primary-contrast);
+}
+
+.goalCardActionButtonDanger:hover {
+  color: var(--onity-color-error);
+}
+
+.goalCardDescription {
+  color: color-mix(in oklab, var(--onity-color-primary-contrast) 80%, transparent);
+  font-size: var(--onity-font-size-sm);
+}
+
+.goalCardToggleButton {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--onity-color-primary-contrast);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-semibold);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-m);
+  border: none;
+  cursor: pointer;
+  transition: all var(--onity-transition-normal);
+  box-shadow: var(--onity-elev-low);
+}
+
+.goalCardToggleButton:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: var(--onity-elev-med);
+}
+
+.goalCardToggleIcon {
+  width: var(--onity-space-m);
+  height: var(--onity-space-m);
+  transition: transform var(--onity-transition-normal);
+}
+
+.goalCardToggleIconOpen {
+  transform: rotate(180deg);
+}
+
+.goalCardBody {
+  padding: var(--onity-space-l);
+}
+
+.goalCardDetails {
+  border-top: 1px solid var(--onity-color-border);
+  padding-top: var(--onity-space-l);
+}
+
+.goalCardDetailsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-m);
+}
+
+.goalCardDetailsTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.goalCardProgressSection {
+  margin-bottom: var(--onity-space-l);
+}
+
+.goalCardProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-s);
+}
+
+.goalCardProgressTitle {
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.goalCardProgressValue {
+  text-align: right;
+}
+
+.goalCardProgressPercentage {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-bold);
+}
+
+.goalCardProgressPercentageDanger {
+  color: var(--onity-color-error);
+}
+
+.goalCardProgressPercentageSuccess {
+  color: var(--onity-color-primary);
+}
+
+.goalCardProgressText {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs);
+}
+
+.goalCardProgressSubtext {
+  font-size: var(--onity-font-size-xs);
+  color: var(--onity-text-med);
+}
+
+.goalCardProgressSubtextDanger {
+  color: var(--onity-color-error);
+  font-weight: var(--onity-font-weight-semibold);
+}
+
+.goalCardAddForm {
+  background-color: color-mix(in oklab, var(--onity-color-primary) 15%, var(--onity-color-surface));
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+}
+
+.goalCardAddFormGrid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--onity-space-m);
+}
+
+.infoGrid {
+  display: grid;
+  gap: var(--onity-space-m);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.infoGrid4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.infoCard {
+  background-color: color-mix(in oklab, var(--onity-color-info) 15%, var(--onity-color-surface));
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+}
+
+.infoCardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  margin-bottom: var(--onity-space-s);
+}
+
+.infoCardIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--onity-color-primary);
+}
+
+.infoCardTitle {
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.infoCardValue {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+  margin-bottom: var(--onity-space-xs);
+}
+
+.infoCardValue strong {
+  font-weight: var(--onity-font-weight-medium);
+}
+
+.infoCardMeta {
+  font-size: var(--onity-font-size-xs);
+  color: var(--onity-text-med);
+}
+
+.progressContainer {
+  width: 100%;
+  background-color: var(--onity-color-border);
+  border-radius: 9999px;
+  height: 0.75rem;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width var(--onity-transition-normal), background-color var(--onity-transition-normal);
+}
+
+.progressBarSuccess {
+  background-color: var(--onity-color-success);
+}
+
+.progressBarDanger {
+  background-color: var(--onity-color-error);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onity-space-xs) calc(var(--onity-space-s) + var(--onity-space-xs));
+  border-radius: 9999px;
+  font-size: var(--onity-font-size-xs);
+  font-weight: var(--onity-font-weight-medium);
+}
+
+.badgeWarning {
+  background-color: color-mix(in oklab, var(--onity-color-warning) 20%, var(--onity-color-surface));
+  color: var(--onity-color-warning);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  border-radius: var(--onity-radius-xs);
+  border: none;
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonSecondary:hover {
+  background-color: var(--onity-color-border);
+}
+
+.buttonSmall {
+  padding: calc(var(--onity-space-s) - var(--onity-space-xs)) var(--onity-space-m);
+  font-size: var(--onity-font-size-xs);
+}
+
+.formSelect {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formInput {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  min-height: 60vh;
+}
+
+.emptyStateIcon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--onity-text-low);
+  margin-bottom: var(--onity-space-s);
+}
+
+.emptyStateTitle {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  margin-top: var(--onity-space-s);
+}
+
+.emptyStateDescription {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+  margin-top: var(--onity-space-xs);
+}
+
+@media (min-width: 640px) {
+  .goalCardTitleRow {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--onity-space-m);
+  }
+  
+  .goalCardAddFormGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .infoGrid4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -348,10 +348,16 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
-        id: 'dashboard',
-        label: 'Dashboard',
-        icon: <Target size={18} />,
-        route: '/estrategico/dashboard'
+        id: 'organograma',
+        label: 'Organograma',
+        icon: <Building2 size={18} />,
+        route: '/estrategico/organograma'
+      },
+      {
+        id: 'kpis',
+        label: 'KPIs',
+        icon: <FileBarChart size={18} />,
+        route: '/estrategico/kpis'
       },
       {
         id: 'metas',
