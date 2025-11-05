@@ -114,6 +114,83 @@
   --onity-radius-m: 8px;
   --onity-radius-l: 16px;
   --onity-icon-stroke: 2px;
+
+  /* ===== Aliases para tokens usados em módulos (VisaoGeral) ===== */
+  /* Cores semânticas */
+  --onity-text-high: var(--onity-color-text);
+  --onity-text-med: color-mix(in oklab, var(--onity-color-text) 80%, transparent);
+  --onity-text-low: var(--onity-color-border);
+
+  --onity-primary: var(--onity-color-primary);
+  --onity-primary-hover: var(--onity-color-primary-hover);
+  --onity-success: var(--onity-color-success);
+  --onity-warning: var(--onity-color-warning);
+  --onity-error: var(--onity-color-error);
+  --onity-info: var(--onity-color-info);
+
+  --onity-card-bg: var(--onity-color-surface);
+  --onity-base-00: var(--onity-color-surface);
+  --onity-base-10: var(--onity-color-bg);
+  --onity-base-20: var(--onity-color-bg);
+  --onity-stroke: var(--onity-color-border);
+  --onity-grid-line: var(--onity-color-border);
+  --onity-input-bg: var(--onity-color-surface);
+  --onity-input-focus: rgba(68, 84, 100, 0.2);
+
+  /* Espaçamentos (spacing -> space) */
+  --onity-spacing-xs: var(--onity-space-xs);
+  --onity-spacing-sm: var(--onity-space-s);
+  --onity-spacing-md: var(--onity-space-m);
+  --onity-spacing-lg: var(--onity-space-l);
+  --onity-spacing-xl: var(--onity-space-xl);
+  --onity-spacing-2xl: var(--onity-space-xl);
+
+  /* Tipografia aproximada */
+  --onity-font-size-xs: var(--onity-type-caption-size);
+  --onity-font-size-sm: var(--onity-type-body-size);
+  --onity-font-size-base: var(--onity-type-body-size);
+  --onity-font-size-lg: var(--onity-type-h3-size);
+  --onity-font-size-xl: var(--onity-type-h3-size);
+  --onity-font-size-2xl: var(--onity-type-h2-size);
+  --onity-font-weight-medium: 500;
+  --onity-font-weight-semibold: 600;
+  --onity-font-weight-bold: 700;
+  --onity-font-family: var(--onity-font-family-sans);
+  --onity-line-height-relaxed: var(--onity-type-body-line);
+  --onity-line-height-tight: 1.2;
+
+  /* Raios (aliases) */
+  --onity-radius-sm: var(--onity-radius-xs);
+  --onity-radius-md: var(--onity-radius-m);
+  --onity-radius-lg: var(--onity-radius-l);
+
+  /* Sombras e glow */
+  --onity-shadow-sm: var(--onity-elev-low);
+  --onity-shadow-md: var(--onity-elev-med);
+  --onity-shadow-lg: var(--onity-elev-high);
+  --onity-glow-primary: var(--onity-elev-low);
+  --onity-glow-success: var(--onity-elev-low);
+  --onity-glow-warning: var(--onity-elev-low);
+  --onity-glow-error: var(--onity-elev-low);
+
+  /* Transições e z-index */
+  --onity-transition-fast: 0.15s ease;
+  --onity-transition-normal: 0.25s ease;
+  --onity-z-tooltip: 10002;
+  --onity-z-dropdown: 10001;
+  --onity-z-popover: 10002;
+  --onity-z-modal-backdrop: 10002;
+  --onity-z-modal: 10003;
+
+  /* CTA (usa primário como base) */
+  --onity-cta-bg: var(--onity-color-primary);
+  --onity-cta-bg-hover: var(--onity-color-primary-hover);
+  --onity-cta-text: var(--onity-color-primary-contrast);
+  --onity-cta-shadow: var(--onity-elev-med);
+
+  /* Gradientes auxiliares */
+  --grad-start: #004CFF;
+  --grad-end: #2EE5B6;
 }
 
 /* Explicit light theme mapping */

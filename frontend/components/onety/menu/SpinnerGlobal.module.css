@@ -1,0 +1,45 @@
+/* Spinner styles using onity tokens */
+
+.spinnerGlobal {
+  display: inline-block;
+}
+
+@keyframes spinner-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinner-dash {
+  0% { stroke-dashoffset: 31.416; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -31.416; }
+}
+
+/* Vibrant variant circles */
+.spinnerOuter {
+  stroke: var(--onity-primary);
+  animation: spinner-dash 1.6s ease-in-out infinite;
+}
+
+.spinnerInner {
+  stroke: var(--onity-primary-hover);
+  animation: spinner-dash 1.4s ease-in-out infinite;
+}
+
+.spinnerCenter {
+  stroke: var(--onity-success);
+  animation: spinner-dash 1.2s ease-in-out infinite;
+}
+
+/* Gradient variant circle */
+.spinnerGradientCircle {
+  animation: spinner-dash 1.6s ease-in-out infinite;
+}
+
+/* Default variant */
+.spinnerDefaultCircle {
+  stroke: var(--onity-text-high);
+  animation: spinner-dash 1.6s ease-in-out infinite;
+}
+
+

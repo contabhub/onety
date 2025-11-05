@@ -1,0 +1,348 @@
+/* ModalPdfLayout.module.css - SISTEMA ONITY */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: var(--onity-z-modal-backdrop);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  /* Light theme: overlay claro */
+  :root[data-theme="light"] .modalOverlay {
+    background: rgba(255, 255, 255, 0.55);
+  }
+  
+  .modalContent {
+    background: rgba(11, 11, 17, 0.6);
+    border-radius: var(--onity-radius-lg);
+    max-width: 600px;
+    width: 90%;
+    padding: var(--onity-spacing-lg);
+    box-shadow: var(--onity-shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Light theme: conteúdo branco com borda e sombra leves */
+  :root[data-theme="light"] .modalContent {
+    background: #ffffff;
+    border: 1px solid var(--onity-stroke);
+    box-shadow: var(--onity-shadow-md);
+  }
+  
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--onity-spacing-lg);
+  }
+  
+  .modalTitle {
+    margin: 0;
+    font-size: var(--onity-font-size-xl);
+    font-weight: var(--onity-font-weight-semibold);
+    color: var(--onity-text-high);
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--onity-text-med);
+    padding: 4px;
+    border-radius: var(--onity-radius-sm);
+    transition: all var(--onity-transition-fast);
+  }
+  
+  .closeButton:hover {
+    background: var(--onity-input-bg);
+    color: var(--onity-text-high);
+  }
+  
+  .dropArea {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: var(--onity-radius-md);
+    padding: var(--onity-spacing-xl);
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all var(--onity-transition-fast);
+    margin-bottom: var(--onity-spacing-lg);
+  }
+  
+  /* Light theme: bordas e fundo suaves */
+  :root[data-theme="light"] .dropArea {
+    border-color: var(--onity-stroke);
+    background-color: var(--onity-base-10);
+  }
+  
+  .dropAreaActive {
+    border-color: var(--onity-primary);
+    background-color: rgba(0, 76, 255, 0.1);
+  }
+  
+  .dropAreaIcon {
+    margin-bottom: 12px;
+    color: var(--onity-text-med);
+  }
+  
+  .dropAreaTitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--onity-text-high);
+    margin-bottom: 8px;
+  }
+  
+  .dropAreaSubtitle {
+    font-size: 14px;
+    color: var(--onity-text-med);
+    margin-bottom: 16px;
+  }
+  
+  .fileInput {
+    display: none;
+  }
+  
+  .selectFilesButton {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--onity-primary);
+    color: white;
+    border-radius: var(--onity-radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .selectFilesButton:hover {
+    background-color: var(--onity-primary-hover);
+  }
+  
+  .filesSelected {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--onity-success);
+    margin-bottom: 12px;
+  }
+  
+  .filesList {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .fileItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--onity-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  /* Light theme: itens com fundo claro */
+  :root[data-theme="light"] .fileItem {
+    background-color: var(--onity-base-10);
+    border: 1px solid var(--onity-stroke);
+  }
+  
+  .fileIcon {
+    width: 20px;
+    height: 20px;
+    background-color: var(--onity-success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .fileName {
+    flex: 1;
+    font-size: 14px;
+    color: var(--onity-text-high);
+    text-align: left;
+  }
+  
+  .fileSize {
+    font-size: 12px;
+    color: var(--onity-text-med);
+    margin-right: 8px;
+  }
+  
+  .deleteButton {
+    background: var(--onity-error);
+    color: white;
+    border: none;
+    border-radius: var(--onity-radius-sm);
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .deleteButton:hover {
+    background-color: #dc2626;
+  }
+  
+  .processButton {
+    width: 100%;
+    padding: var(--onity-spacing-sm);
+    background-color: var(--onity-primary);
+    color: white;
+    border: none;
+    border-radius: var(--onity-radius-sm);
+    font-size: var(--onity-font-size-sm);
+    font-weight: var(--onity-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--onity-transition-fast);
+    margin-bottom: var(--onity-spacing-lg);
+  }
+  
+  .processButton:hover:not(:disabled) {
+    background-color: var(--onity-primary-hover);
+    transform: scale(1.02);
+  }
+  
+  .processButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .processButtonContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--onity-spacing-sm);
+  }
+  
+  .resultContainer {
+    padding: var(--onity-spacing-md);
+    border-radius: var(--onity-radius-md);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .resultSuccess {
+    background-color: rgba(46, 229, 182, 0.15);
+    border: 1px solid rgba(46, 229, 182, 0.4);
+  }
+  
+  .resultError {
+    background-color: rgba(255, 92, 92, 0.15);
+    border: 1px solid rgba(255, 92, 92, 0.4);
+  }
+  
+  .resultHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .resultTitle {
+    font-weight: 500;
+  }
+  
+  .resultTitleSuccess {
+    color: var(--onity-success);
+  }
+  
+  .resultTitleError {
+    color: var(--onity-error);
+  }
+  
+  .resultMessage {
+    font-size: 14px;
+  }
+  
+  .resultMessageSuccess {
+    color: var(--onity-success-text);
+  }
+  
+  .resultMessageError {
+    color: var(--onity-error-text);
+  }
+  
+  .resultDetails {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--titan-radius-sm);
+  }
+  
+  /* Light theme: detalhes com fundo claro */
+  :root[data-theme="light"] .resultDetails {
+    background-color: var(--onity-base-10);
+    border: 1px solid var(--onity-stroke);
+  }
+  
+  .resultStats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  
+  .resultStat {
+    color: var(--onity-text-high);
+  }
+  
+  .resultStatSuccess {
+    color: var(--onity-success);
+  }
+  
+  .resultStatError {
+    color: var(--onity-error);
+  }
+  
+  .resultList {
+    margin-top: 8px;
+  }
+  
+  .resultListTitle {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  
+  .resultListTitleSuccess {
+    color: var(--onity-success);
+  }
+  
+  .resultListTitleError {
+    color: var(--onity-error);
+  }
+  
+  .resultListItem {
+    font-size: 12px;
+    color: var(--onity-text-med);
+    margin-bottom: 2px;
+  }
+
+  .resultLine {
+    margin-bottom: 2px;
+  }
+  
+  .resultListItemError {
+    color: var(--onity-error);
+  }
+  
+  .resultErrorDetails {
+    margin-left: 16px;
+    font-size: 11px;
+    color: var(--onity-error-text);
+  }
+  
