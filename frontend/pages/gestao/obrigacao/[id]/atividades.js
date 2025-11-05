@@ -308,7 +308,7 @@ export default function AtividadesObrigacao() {
     // ✅ Função para navegar para obrigação anterior/próxima
     const navegarParaObrigacao = (obrigacaoDestino) => {
         if (!obrigacaoDestino) return;
-        router.push(`/dashboard/obrigacoes/${obrigacaoDestino.id}/atividades`);
+        router.push(`/gestao/obrigacao/${obrigacaoDestino.id}/atividades`);
     };
 
     // ✅ Função carregarDados extraída para reutilização
@@ -1186,7 +1186,17 @@ export default function AtividadesObrigacao() {
                                                 onClick={() => navegarParaObrigacao(obrigacaoAnterior)}
                                                 disabled={!obrigacaoAnterior || loadingNavegacao}
                                                 className={`${styles.botaoNavegacao} ${!obrigacaoAnterior || loadingNavegacao ? styles.botaoNavegacaoDisabled : ''}`}
-                                                title={obrigacaoAnterior ? `Competência anterior: ${obrigacaoAnterior.ano_referencia}/${String(obrigacaoAnterior.mes_referencia).padStart(2, '0')}` : "Não há competência anterior"}
+                                                title={obrigacaoAnterior ? (() => {
+                                                    const freqAnterior = (obrigacaoAnterior.frequencia || '').toLowerCase();
+                                                    const isDiariaOuSemanalAnterior = freqAnterior.includes('diário') || freqAnterior.includes('semanal');
+                                                    
+                                                    if (isDiariaOuSemanalAnterior && obrigacaoAnterior.vencimento) {
+                                                        return `Vencimento anterior: ${formatarData(new Date(obrigacaoAnterior.vencimento))}`;
+                                                    } else if (obrigacaoAnterior.anoReferencia && obrigacaoAnterior.mesReferencia) {
+                                                        return `Competência anterior: ${obrigacaoAnterior.anoReferencia}/${String(obrigacaoAnterior.mesReferencia).padStart(2, '0')}`;
+                                                    }
+                                                    return "Não há competência anterior";
+                                                })() : "Não há competência anterior"}
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="m11 17-5-5 5-5"/>
@@ -1195,24 +1205,48 @@ export default function AtividadesObrigacao() {
                                             </button>
                                             
                                             <span className={styles.competenciaAtual}>
-                                                {obrigacao && obrigacao.ano_referencia && obrigacao.mes_referencia ? 
-                                                    (() => {
+                                                {(() => {
+                                                    // ✅ Verificar frequência para determinar se é diária/semanal
+                                                    const frequencia = (obrigacao?.frequencia || '').toLowerCase();
+                                                    const isDiariaOuSemanal = frequencia.includes('diário') || frequencia.includes('semanal');
+                                                    
+                                                    if (isDiariaOuSemanal && obrigacao?.vencimento) {
+                                                        // Se é diária/semanal, usar vencimento
+                                                        const vencimentoDate = new Date(obrigacao.vencimento);
+                                                        return formatarData(vencimentoDate);
+                                                    } else if (obrigacao?.anoReferencia && obrigacao?.mesReferencia) {
+                                                        // Se tem competência, mostrar mês/ano
                                                         const meses = [
                                                             "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
                                                             "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"
                                                         ];
-                                                        const mesIndex = obrigacao.mes_referencia - 1;
-                                                        return `${meses[mesIndex]}/${obrigacao.ano_referencia}`;
-                                                    })() : 
-                                                    "Competência"
-                                                }
+                                                        const ano = obrigacao.anoReferencia || obrigacao.ano_referencia;
+                                                        const mes = obrigacao.mesReferencia || obrigacao.mes_referencia;
+                                                        const mesIndex = mes - 1;
+                                                        if (mesIndex >= 0 && mesIndex < 12) {
+                                                            return `${meses[mesIndex]}/${ano}`;
+                                                        }
+                                                        return `${String(mes).padStart(2, '0')}/${ano}`;
+                                                    }
+                                                    return "Competência";
+                                                })()}
                                             </span>
                                             
                                             <button
                                                 onClick={() => navegarParaObrigacao(obrigacaoProxima)}
                                                 disabled={!obrigacaoProxima || loadingNavegacao}
                                                 className={`${styles.botaoNavegacao} ${!obrigacaoProxima || loadingNavegacao ? styles.botaoNavegacaoDisabled : ''}`}
-                                                title={obrigacaoProxima ? `Próxima competência: ${obrigacaoProxima.ano_referencia}/${String(obrigacaoProxima.mes_referencia).padStart(2, '0')}` : "Não há próxima competência"}
+                                                title={obrigacaoProxima ? (() => {
+                                                    const freqProxima = (obrigacaoProxima.frequencia || '').toLowerCase();
+                                                    const isDiariaOuSemanalProxima = freqProxima.includes('diário') || freqProxima.includes('semanal');
+                                                    
+                                                    if (isDiariaOuSemanalProxima && obrigacaoProxima.vencimento) {
+                                                        return `Próximo vencimento: ${formatarData(new Date(obrigacaoProxima.vencimento))}`;
+                                                    } else if (obrigacaoProxima.anoReferencia && obrigacaoProxima.mesReferencia) {
+                                                        return `Próxima competência: ${obrigacaoProxima.anoReferencia}/${String(obrigacaoProxima.mesReferencia).padStart(2, '0')}`;
+                                                    }
+                                                    return "Não há próxima competência";
+                                                })() : "Não há próxima competência"}
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="m6 17 5-5-5-5"/>

@@ -2619,13 +2619,13 @@ class OnvioService {
             // Buscar e selecionar cliente (AGORA a base já está correta)
             if (clienteId && dadosCliente) {
                 // Se temos clienteId e dados, usar dados do cliente
-                console.log(`👤 Dados do cliente encontrados pelo ID ${clienteId}:`, dadosCliente);
-                await this.selecionarClientePorDados(dadosCliente);
+                    console.log(`👤 Dados do cliente encontrados pelo ID ${clienteId}:`, dadosCliente);
+                    await this.selecionarClientePorDados(dadosCliente);
             } else if (dadosCliente) {
                 // Se temos dados do cliente (por CNPJ), usar
                 console.log(`👤 Dados do cliente encontrados pelo CNPJ:`, dadosCliente);
                 await this.selecionarClientePorDados(dadosCliente);
-            } else {
+                } else {
                 // Fallback: buscar pelo CNPJ (a base já foi verificada acima)
                 console.log(`👤 Buscando cliente pelo CNPJ (base já verificada)...`);
                 await this.selecionarClientePorCNPJ(cnpj);
@@ -3694,23 +3694,23 @@ class OnvioService {
                 console.log(`🔍 Tentativa ${tentativa}/${maxTentativas} de encontrar filtro CNPJ...`);
 
                 for (const seletor of seletoresFiltro) {
-                    try {
+                try {
                         // ✅ AGUARDAR o seletor aparecer antes de tentar usar
                         await this.page.waitForSelector(seletor, { timeout: 2000, visible: true });
                         elemento = await this.page.$(seletor);
 
-                        if (elemento) {
+                    if (elemento) {
                             console.log(`✅ Filtro CNPJ encontrado via seletor: ${seletor}`);
-                            await elemento.click();
+                        await elemento.click();
                             await new Promise(resolve => setTimeout(resolve, 300)); // Aguardar campo ficar ativo
-                            await elemento.clear();
+                        await elemento.clear();
                             await new Promise(resolve => setTimeout(resolve, 200));
                             await elemento.type(cnpjLimpo, { delay: 50 });
-                            encontrou = true;
+                        encontrou = true;
                             console.log(`✅ CNPJ ${cnpjLimpo} digitado com sucesso`);
-                            break;
-                        }
-                    } catch (e) {
+                        break;
+                    }
+                } catch (e) {
                         // Seletor não encontrado nesta tentativa, continua para o próximo
                         continue;
                     }

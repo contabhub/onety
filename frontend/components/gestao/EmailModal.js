@@ -114,9 +114,24 @@ export default function EmailModal({
     const nomeArquivo = anexo?.nome_arquivo || anexo?.nomeArquivo || 'arquivo';
 
     try {
+      // Caso 1: base64Data é uma string (base64 direto)
       if (base64Data && typeof base64Data === 'string') {
         const response = await fetch(`data:application/octet-stream;base64,${base64Data}`);
         const blob = await response.blob();
+        return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
+      }
+
+      // Caso 2: base64Data é um Buffer (objeto com type: 'Buffer' e data: Array)
+      if (base64Data && typeof base64Data === 'object' && base64Data.type === 'Buffer' && Array.isArray(base64Data.data)) {
+        // Converter o array de bytes para Uint8Array e depois para Blob
+        const bytes = new Uint8Array(base64Data.data);
+        const blob = new Blob([bytes], { type: 'application/octet-stream' });
+        return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
+      }
+
+      // Caso 3: base64Data é um ArrayBuffer ou Uint8Array
+      if (base64Data instanceof ArrayBuffer || base64Data instanceof Uint8Array) {
+        const blob = new Blob([base64Data], { type: 'application/octet-stream' });
         return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
       }
 
@@ -130,10 +145,10 @@ export default function EmailModal({
         return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
       }
     } catch (e) {
-      console.warn('[EmailModal] Falha ao obter blob/base64 do anexo', { nomeArquivo, id: anexo?.id, error: String(e) });
+      console.warn('[EmailModal] Falha ao obter blob/base64 do anexo', { nomeArquivo, id: anexo?.id, base64Data: base64Data?.type || typeof base64Data, error: String(e) });
     }
 
-    console.warn('[EmailModal] Anexo inválido, ignorando', { nomeArquivo, id: anexo?.id });
+    console.warn('[EmailModal] Anexo inválido, ignorando', { nomeArquivo, id: anexo?.id, base64Data: base64Data?.type || typeof base64Data });
     return null;
   };
 
@@ -992,7 +1007,7 @@ export default function EmailModal({
                 maxHeight: '160px',
                 overflowY: 'auto'
               }}>
-                {anexo.map((file, i) => {
+                {anexo.filter(file => file && file.name).map((file, i) => {
                   // Buscar informações da atividade para este anexo
                   const anexoOrigem = anexosAtividades.find(anexoAtividade => 
                     anexoAtividade.nome_arquivo === file.name || anexoAtividade.nomeArquivo === file.name
