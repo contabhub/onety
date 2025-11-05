@@ -38,7 +38,27 @@ const getUserFromStorage = () => {
 const BASE_CANDIDATE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 const LOCAL_API_BASE = (typeof window !== 'undefined') ? (localStorage.getItem('apiBase') || '') : '';
 const BASE_URL = (BASE_CANDIDATE || LOCAL_API_BASE || 'http://localhost:5000').replace(/\/$/, '');
-const normalizeUrl = (u) => `${BASE_URL}${u.startsWith('/') ? '' : '/'}${u}`;
+
+// ✅ URL do serviço Onvio separado (pode ser configurado via variável de ambiente)
+// Em desenvolvimento: http://localhost:3001
+// Em produção: configure NEXT_PUBLIC_ONVIO_SERVICE_URL
+const ONVIO_SERVICE_URL = (process.env.NEXT_PUBLIC_ONVIO_SERVICE_URL || 'http://localhost:3001').replace(/\/$/, '');
+
+// ✅ Função para normalizar URL - detecta endpoints Onvio e direciona para serviço separado
+const normalizeUrl = (u) => {
+  // Verificar se é um endpoint do Onvio
+  const isOnvioEndpoint = u.includes('/gestao/onvio/') || u.includes('/onvio/');
+  
+  // Se for endpoint Onvio, usar serviço separado
+  if (isOnvioEndpoint) {
+    // Garantir que a URL tenha o prefixo /api se necessário
+    const onvioUrl = u.startsWith('/api/') ? u : `/api${u}`;
+    return `${ONVIO_SERVICE_URL}${onvioUrl.startsWith('/') ? '' : '/'}${onvioUrl}`;
+  }
+  
+  // Caso contrário, usar a URL base normal
+  return `${BASE_URL}${u.startsWith('/') ? '' : '/'}${u}`;
+};
 const api = {
   async get(url, opts = {}) {
     const res = await fetch(normalizeUrl(url), { ...(opts || {}) });
@@ -592,8 +612,12 @@ export default function AtividadesObrigacao() {
     const [anexosEcontadorExpandidos, setAnexosEcontadorExpandidos] = useState({});
 
     const buscarMatchesEcontador = async (atividade) => {
-        const token = sessionStorage.getItem("token");
-        if (!token || !atividade) return;
+        const token = getToken() || sessionStorage.getItem("token");
+        if (!token || !atividade) {
+            console.error("❌ [Frontend] Token ou atividade não encontrado", { token: !!token, atividade: !!atividade });
+            toast.error("Token ou atividade não encontrado");
+            return;
+        }
 
         try {
             setBuscandoMatches(atividade.id);
@@ -614,17 +638,34 @@ export default function AtividadesObrigacao() {
                 return;
             }
             
+            console.log("🔍 [Frontend] Endpoint detectado:", endpoint);
+            console.log("🔍 [Frontend] URL normalizada será:", normalizeUrl(endpoint));
+            
             toast.info(mensagemInicial);
             
             // Chamar API para busca automática por CNPJ
+            // ✅ CORREÇÃO: usar id da obrigação (da URL) como obrigacaoClienteId se não vier na atividade
+            const obrigacaoClienteId = atividade.obrigacaoClienteId || atividade.obrigacao_cliente_id || obrigacao?.id || id;
+            
+            const urlFinal = normalizeUrl(endpoint);
+            console.log("🌐 [Frontend] Fazendo requisição POST para:", urlFinal);
+            console.log("📦 [Frontend] Dados enviados:", {
+                clienteId: obrigacao.clienteId,
+                obrigacaoClienteId: obrigacaoClienteId,
+                atividadeId: atividade.id,
+                atividadeTexto: atividade.texto || atividade.tipo || null
+            });
+            
             const response = await api.post(endpoint, {
                 clienteId: obrigacao.clienteId,
-                obrigacaoClienteId: atividade.obrigacaoClienteId,
+                obrigacaoClienteId: obrigacaoClienteId,
                 atividadeId: atividade.id, // garante que buscamos exatamente o item clicado
                 atividadeTexto: atividade.texto || atividade.tipo || null // ajuda o backend a distinguir Recibo vs Extrato
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+
+            console.log("✅ [Frontend] Resposta recebida:", response.data);
 
             if (response.data.success) {
                 toast.success("Documento encontrado e atividade concluída com sucesso!");
@@ -637,9 +678,14 @@ export default function AtividadesObrigacao() {
             }
 
         } catch (err) {
-            console.error("Erro ao buscar matches:", err);
-            const mensagemErro = err.response?.data?.message || "Erro ao buscar matches";
-            toast.error(`${mensagemErro}`);
+            console.error("❌ [Frontend] Erro ao buscar matches:", err);
+            console.error("❌ [Frontend] Detalhes do erro:", {
+                message: err.message,
+                stack: err.stack,
+                response: err.response?.data
+            });
+            const mensagemErro = err.response?.data?.message || err.message || "Erro ao buscar matches";
+            toast.error(`Erro: ${mensagemErro}`);
         } finally {
             setBuscandoMatches(null);
         }
@@ -1022,7 +1068,7 @@ export default function AtividadesObrigacao() {
                                 <div className={styles.itemInfo}>
                                     <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                                         <button
-                                            onClick={() => window.open(`/dashboard/clientes/${obrigacao.clienteId}`, '_blank')}
+                                            onClick={() => window.open(`/gestao/clientes/${obrigacao.clienteId}`, '_blank')}
                                             style={{
                                                 background: "none",
                                                 border: "none",

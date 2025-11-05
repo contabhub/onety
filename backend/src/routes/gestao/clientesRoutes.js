@@ -797,7 +797,7 @@ router.post("/importar", async (req, res) => {
 /**
  * 📌 Rota para listar os clientes
  */
-router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), async (req, res) => {
+router.get("/", autenticarToken, async (req, res) => {
   try {
     const {
       empresaId,
