@@ -337,12 +337,15 @@ export default function GlobalGoals() {
       console.log('🔍 [GlobalGoals] companyId:', companyId);
       console.log('🔍 [GlobalGoals] permissoes:', permissoes);
 
+      // Sempre enviar companyId para validação
+      departmentGoalsParams.append('companyId', companyId);
+      
+      // Se um departamento específico foi selecionado, adicionar o filtro
       if (selectedDepartment) {
         departmentGoalsParams.append('departmentId', selectedDepartment);
         console.log('🔍 [GlobalGoals] Adicionado departmentId:', selectedDepartment);
       } else {
-        departmentGoalsParams.append('companyId', companyId);
-        console.log('🔍 [GlobalGoals] Adicionado companyId:', companyId);
+        console.log('🔍 [GlobalGoals] Nenhum departamento selecionado - retornando todos');
       }
       
       if (selectedTrimestre && selectedTrimestre !== '') {

@@ -156,10 +156,17 @@ export function DepartmentGoalCard({ goal, onUpdated, selectedMonth }) {
     const start = new Date(currentYear, parseInt(month) - 1, 1);
     const end = new Date(currentYear, parseInt(month), 0);
 
+    const empresaId = getEmpresaId();
+    if (!empresaId) {
+      toast.error('Empresa ID não encontrado');
+      return;
+    }
+
     try {
       await apiFetch(`/estrategico/metas-departamentais/${goal.id}/months`, {
         method: 'POST',
         body: {
+          companyId: empresaId,
           start_date: start.toISOString(),
           end_date: end.toISOString(),
           value_goal: value,

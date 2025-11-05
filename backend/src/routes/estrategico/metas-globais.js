@@ -379,7 +379,7 @@ router.get('/:id/monthly-goals', verifyToken, async (req, res) => {
       
     } catch (tableError) {
       console.error('Erro ao buscar metas mensais:', tableError);
-      monthlyGoals = [];
+        monthlyGoals = [];
     }
 
     // Formatar os dados para o formato esperado pelo frontend

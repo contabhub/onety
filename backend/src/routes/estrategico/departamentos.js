@@ -13,57 +13,18 @@ router.get('/', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'ID da empresa é obrigatório' });
     }
 
-    // SUPERADMIN, ADMIN e RH têm acesso TOTAL a todos os departamentos - SEMPRE
-    if (req.user.role !== 'SUPERADMIN' && req.user.role !== 'ADMIN' && req.user.role !== 'RH') {
-      // Para outros roles, verificar se tem acesso à empresa
-      const [userAccess] = await db.query(
-        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-        [req.user.id, companyId]
-      );
+    // Verificar se o usuário tem acesso à empresa
+    const [userAccess] = await db.query(
+      'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
+      [req.user.id, companyId]
+    );
 
-      if (!userAccess || userAccess.length === 0) {
-        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-      }
+    if (!userAccess || userAccess.length === 0) {
+      return res.status(403).json({ error: 'Acesso negado a esta empresa' });
     }
 
-    // Aplicar filtros baseados no role do usuário
-    let departmentFilter = null;
-    
-    if (req.user.role === 'GESTOR') {
-      // GESTOR pode ver só do seu departamento e do seu time
-      const [userDepartments] = await db.query(
-        'SELECT departamento_id FROM usuarios_empresas WHERE usuario_id = ? AND departamento_id IS NOT NULL',
-        [req.user.id]
-      );
-      
-      if (userDepartments && userDepartments.length > 0) {
-        departmentFilter = userDepartments.map(d => d.departamento_id);
-      }
-    } else if (req.user.role === 'FUNCIONARIO') {
-      // FUNCIONARIO pode ver do seu departamento e do departamento que é líder
-      const [userDepartments] = await db.query(
-        'SELECT departamento_id FROM usuarios_empresas WHERE usuario_id = ? AND departamento_id IS NOT NULL',
-        [req.user.id]
-      );
-      
-      const [leaderDepartments] = await db.query(
-        'SELECT id FROM departamentos WHERE responsavel_id = ?',
-        [req.user.id]
-      );
-      
-      let allDepartments = [];
-      if (userDepartments && userDepartments.length > 0) {
-        allDepartments = allDepartments.concat(userDepartments.map(d => d.departamento_id));
-      }
-      if (leaderDepartments && leaderDepartments.length > 0) {
-        allDepartments = allDepartments.concat(leaderDepartments.map(d => d.id));
-      }
-      
-      departmentFilter = [...new Set(allDepartments)];
-    }
-
-    // Construir query base
-    let query = `
+    // Construir query base - retornar TODOS os departamentos ativos da empresa
+    const query = `
       SELECT d.id, d.nome, d.descricao, d.parent_id, d.responsavel_id,
         u.id as manager_id_field,
         u.nome as manager_nome,
@@ -74,15 +35,6 @@ router.get('/', verifyToken, async (req, res) => {
       WHERE d.empresa_id = ? AND d.status = 'ativo'
     `;
     const params = [companyId];
-
-    // Aplicar filtro de departamento se necessário
-    if (departmentFilter && departmentFilter.length > 0) {
-      const placeholders = departmentFilter.map(() => '?').join(',');
-      query += ` AND d.id IN (${placeholders})`;
-      params.push(...departmentFilter);
-    } else if (req.user.role !== 'SUPERADMIN' && req.user.role !== 'ADMIN' && req.user.role !== 'RH') {
-      return res.json([]);
-    }
 
     const [data] = await db.query(query, params);
 
