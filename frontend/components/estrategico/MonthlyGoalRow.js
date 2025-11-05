@@ -117,9 +117,16 @@ export function MonthlyGoalRow({ goal, onUpdated, calculationType, progressType 
 
   const handleSave = async () => {
     try {
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        toast.error('Empresa ID não encontrado');
+        return;
+      }
+
       await apiFetch(`/estrategico/metas-departamentais/monthly-goals/${goal.id}`, {
         method: 'PUT',
         body: {
+          companyId: empresaId,
           value_goal: goalValue,
           value_achieved: achievedValue
         }
@@ -136,7 +143,13 @@ export function MonthlyGoalRow({ goal, onUpdated, calculationType, progressType 
 
   const handleDeleteMonth = async (monthId) => {
     try {
-      await apiFetch(`/estrategico/metas-departamentais/monthly-goals/${monthId}`, {
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        toast.error('Empresa ID não encontrado');
+        return;
+      }
+
+      await apiFetch(`/estrategico/metas-departamentais/monthly-goals/${monthId}?companyId=${empresaId}`, {
         method: 'DELETE'
       });
       toast.success('Mês excluído com sucesso!');
