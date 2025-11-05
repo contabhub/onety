@@ -1,0 +1,345 @@
+/* Organization Page Styles */
+
+.pageContainer {
+  padding: var(--onity-space-l);
+  font-family: var(--onity-font-family-sans);
+  background: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.headerCard {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-low);
+  border: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-l);
+  z-index: 10;
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-l);
+}
+
+.headerTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-m);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.headerIcon {
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-font-weight-bold);
+  color: var(--onity-color-text);
+}
+
+.addButton {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-primary-contrast);
+  background-color: var(--onity-color-primary);
+  border-radius: var(--onity-radius-m);
+  transition: background-color var(--onity-transition-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  border: none;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.filtersSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.filtersRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.viewModeGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-m);
+  padding: 8px 12px;
+}
+
+.viewModeButton {
+  padding: 4px;
+  font-size: 6px;
+  font-weight: var(--onity-font-weight-medium);
+  border-radius: var(--onity-radius-xs);
+  transition: all var(--onity-transition-fast);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.viewModeButtonActive {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  box-shadow: var(--onity-elev-low);
+}
+
+.viewModeButtonInactive {
+  color: var(--onity-text-med);
+}
+
+.viewModeButtonInactive:hover {
+  color: var(--onity-color-text);
+}
+
+.filtersControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--onity-space-m);
+}
+
+.exportButton {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  transition: background-color var(--onity-transition-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  cursor: pointer;
+}
+
+.exportButton:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.exportButton:disabled,
+.exportButtonDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chartContainer {
+  position: relative;
+  margin-top: var(--onity-space-m);
+}
+
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 2rem;
+  width: 2rem;
+  border: 2px solid var(--onity-color-border);
+  border-top-color: var(--onity-color-primary);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.menu {
+  position: fixed;
+  z-index: var(--onity-z-dropdown);
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  border: 1px solid var(--onity-color-border);
+  padding: var(--onity-space-s);
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+}
+
+.menuButton {
+  text-align: left;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border-radius: var(--onity-radius-xs);
+  transition: background-color var(--onity-transition-fast);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-text);
+}
+
+.menuButtonEdit {
+  color: var(--onity-color-primary);
+}
+
+.menuButtonEdit:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.menuButtonDelete {
+  color: var(--onity-color-error);
+}
+
+.menuButtonDelete:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.deleteModalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--onity-z-modal-backdrop);
+}
+
+.deleteModal {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 32rem;
+}
+
+.deleteModalTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-m);
+}
+
+.deleteModalText {
+  margin-bottom: var(--onity-space-m);
+  color: var(--onity-color-text);
+}
+
+.deleteModalWarning {
+  margin-bottom: var(--onity-space-m);
+  padding: var(--onity-space-m);
+  background-color: color-mix(in oklab, var(--onity-color-warning) 15%, var(--onity-color-surface));
+  border: 1px solid color-mix(in oklab, var(--onity-color-warning) 30%, transparent);
+  border-radius: var(--onity-radius-xs);
+}
+
+.deleteModalWarningText {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-warning);
+}
+
+.deleteModalTasks {
+  margin-bottom: var(--onity-space-l);
+}
+
+.deleteModalTasksTitle {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-m);
+}
+
+.deleteModalTasksOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.deleteModalCheckbox {
+  display: flex;
+  align-items: center;
+}
+
+.deleteModalCheckboxInput {
+  margin-right: var(--onity-space-s);
+}
+
+.deleteModalCheckboxLabel {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-text);
+}
+
+.deleteModalSelectContainer {
+  margin-left: var(--onity-space-l);
+  margin-top: var(--onity-space-s);
+}
+
+.deleteModalSelect {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  outline: none;
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.deleteModalSelect:focus {
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.deleteModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--onity-space-m);
+}
+
+.deleteModalButton {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  border-radius: var(--onity-radius-xs);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--onity-transition-fast);
+}
+
+.deleteModalButtonCancel {
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+}
+
+.deleteModalButtonCancel:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.deleteModalButtonDelete {
+  color: var(--onity-color-primary-contrast);
+  background-color: var(--onity-color-error);
+  border: 1px solid transparent;
+}
+
+.deleteModalButtonDelete:hover {
+  background-color: color-mix(in oklab, var(--onity-color-error) 90%, black);
+}

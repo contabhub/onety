@@ -1,0 +1,308 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--onity-z-modal-backdrop);
+}
+
+.modalContainer {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-l);
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: var(--onity-elev-high);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-m);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.modalCloseButton {
+  color: var(--onity-text-med);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+  padding: var(--onity-space-xs);
+}
+
+.modalCloseButton:hover {
+  color: var(--onity-color-text);
+}
+
+.errorMessage {
+  color: var(--onity-color-error);
+  font-size: var(--onity-font-size-sm);
+  margin-bottom: var(--onity-space-s);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.formGroup {
+  margin-bottom: var(--onity-space-m);
+}
+
+.formLabel {
+  display: block;
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-s);
+}
+
+.formInput {
+  width: 90%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formInput:disabled {
+  background-color: var(--onity-color-bg);
+  cursor: not-allowed;
+  color: var(--onity-text-med);
+}
+
+.formTextarea {
+  width: 90%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  min-height: 80px;
+  resize: vertical;
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formTextarea:disabled {
+  background-color: var(--onity-color-bg);
+  cursor: not-allowed;
+  color: var(--onity-text-med);
+}
+
+.comboboxContainer {
+  position: relative;
+  margin-top: var(--onity-space-s);
+}
+
+.comboboxInput {
+  width: 90%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  padding-right: 2.5rem;
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  text-align: left;
+  cursor: default;
+  overflow: hidden;
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.comboboxInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.comboboxButton {
+  position: absolute;
+  right: var(--onity-space-s);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--onity-text-med);
+  cursor: pointer;
+  padding: var(--onity-space-xs);
+}
+
+.comboboxOptions {
+  position: absolute;
+  z-index: var(--onity-z-dropdown);
+  margin-top: var(--onity-space-xs);
+  max-height: 15rem;
+  overflow: auto;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  box-shadow: var(--onity-elev-high);
+  width: 90%;
+}
+
+.comboboxOption {
+  padding: var(--onity-space-s) var(--onity-space-m);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  transition: background-color var(--onity-transition-fast);
+}
+
+.comboboxOptionActive {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.comboboxOptionInactive {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+}
+
+.comboboxOptionInactive:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.comboboxOptionDisabled {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-text-med);
+  cursor: not-allowed;
+}
+
+.warningText {
+  margin-top: var(--onity-space-xs);
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-warning);
+}
+
+.disabledInput {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-bg);
+  color: var(--onity-text-med);
+  cursor: not-allowed;
+}
+
+.formActions {
+  display: flex;
+  gap: var(--onity-space-m);
+  margin-top: var(--onity-space-m);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  border-radius: var(--onity-radius-xs);
+  border: none;
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+  flex: 1;
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background-color: var(--onity-color-border);
+  color: var(--onity-color-text);
+}
+
+.buttonSecondary:hover {
+  background-color: color-mix(in oklab, var(--onity-color-border) 90%, black);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  background-color: inherit;
+}
+
+.disabledInputWrapper {
+  margin-top: var(--onity-space-s);
+}
+
+.comboboxOptionText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comboboxOptionTextSelected {
+  font-weight: var(--onity-font-weight-medium);
+}
+
+.comboboxOptionTextUnselected {
+  font-weight: var(--onity-type-body-weight);
+}
+
+.comboboxOptionCheckIcon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding-left: var(--onity-space-m);
+}
+
+.comboboxOptionCheckIconActive {
+  color: var(--onity-color-primary-contrast);
+}
+
+.comboboxOptionCheckIconInactive {
+  color: var(--onity-color-primary);
+}
+
+.comboboxEmptyMessage {
+  position: relative;
+  cursor: default;
+  user-select: none;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  color: var(--onity-color-text);
+}

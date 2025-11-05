@@ -130,6 +130,13 @@ const gestaoResumoRoutes = require('./gestao/ResumoRoutes');
 const escritorioRoutes = require('./gestao/escritorioRoutes');
 const adminRoutes = require('./gestao/adminRoutes');
 
+// Rotas do estrategico
+const estrategicoDepartamentosRoutes = require('./estrategico/departamentos');
+const estrategicoFuncionariosRoutes = require('./estrategico/funcionarios');
+const estrategicoKpisRoutes = require('./estrategico/kpis');
+const estrategicoMetasDepartamentaisRoutes = require('./estrategico/metas-departamentais');
+const estrategicoMetasGlobaisRoutes = require('./estrategico/metas-globais');
+const estrategicoOrganogramaRoutes = require('./estrategico/organograma');
 
 // Rotas do Onety
 router.use('/auth', authRoutes);
@@ -261,6 +268,13 @@ router.use('/gestao/resumo', gestaoResumoRoutes);
 router.use('/gestao/escritorio', escritorioRoutes);
 router.use('/gestao/admin', adminRoutes);
 
+// Rotas do estrategico
+router.use('/estrategico/departamentos', estrategicoDepartamentosRoutes);
+router.use('/estrategico/funcionarios', estrategicoFuncionariosRoutes);
+router.use('/estrategico/kpis', estrategicoKpisRoutes);
+router.use('/estrategico/metas-departamentais', estrategicoMetasDepartamentaisRoutes);
+router.use('/estrategico/metas-globais', estrategicoMetasGlobaisRoutes);
+router.use('/estrategico/organograma', estrategicoOrganogramaRoutes);
 
 
 router.get("/", (req, res) => {

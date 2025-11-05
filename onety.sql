@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: onety_onety:3306
--- Tempo de geração: 04/11/2025 às 16:56
+-- Tempo de geração: 05/11/2025 às 15:18
 -- Versão do servidor: 9.4.0
 -- Versão do PHP: 8.2.27
 
@@ -843,6 +843,8 @@ CREATE TABLE `departamentos` (
   `nome` varchar(100) NOT NULL,
   `descricao` text,
   `status` enum('ativo','inativo') DEFAULT 'ativo',
+  `nivel` int NOT NULL DEFAULT '1',
+  `parent_id` int DEFAULT NULL,
   `departamento_global_id` int DEFAULT NULL,
   `responsavel_id` int DEFAULT NULL,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1144,6 +1146,25 @@ CREATE TABLE `inter_tokens_cache` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `kpis`
+--
+
+CREATE TABLE `kpis` (
+  `id` int NOT NULL,
+  `empresa_id` int NOT NULL,
+  `tipo_kpi_id` int NOT NULL,
+  `ano` int NOT NULL,
+  `mes` tinyint NOT NULL,
+  `valor_alvo` decimal(15,2) DEFAULT NULL,
+  `valor_atual` decimal(15,2) DEFAULT '0.00',
+  `departamento_id` int DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `leads`
 --
 
@@ -1227,6 +1248,90 @@ CREATE TABLE `mensagens` (
   `midia_url` varchar(500) DEFAULT NULL,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `lido` tinyint(1) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `metas_departamentais`
+--
+
+CREATE TABLE `metas_departamentais` (
+  `id` int NOT NULL,
+  `empresa_id` int NOT NULL,
+  `departamento_id` int NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  `descricao` text,
+  `valor_alvo` decimal(15,2) DEFAULT NULL,
+  `valor_atual` decimal(15,2) DEFAULT '0.00',
+  `data_inicio` date DEFAULT NULL,
+  `data_fim` date DEFAULT NULL,
+  `status` varchar(50) DEFAULT NULL,
+  `calculo_tipo` varchar(50) DEFAULT NULL,
+  `indicador_tipo` varchar(50) DEFAULT NULL,
+  `progresso_tipo` varchar(50) DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `metas_globais`
+--
+
+CREATE TABLE `metas_globais` (
+  `id` int NOT NULL,
+  `empresa_id` int NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `descricao` text,
+  `valor_alvo` decimal(15,2) DEFAULT NULL,
+  `valor_atual` decimal(15,2) DEFAULT '0.00',
+  `data_inicio` date DEFAULT NULL,
+  `data_fim` date DEFAULT NULL,
+  `status` varchar(50) DEFAULT NULL,
+  `calculo_tipo` varchar(50) DEFAULT NULL,
+  `indicador_tipo` varchar(50) DEFAULT NULL,
+  `progresso_tipo` varchar(50) DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `metas_mensais_departamentais`
+--
+
+CREATE TABLE `metas_mensais_departamentais` (
+  `id` int NOT NULL,
+  `id_metas_departamentais` int NOT NULL,
+  `data_inicio` date DEFAULT NULL,
+  `data_fim` date DEFAULT NULL,
+  `valor_alvo` decimal(15,2) DEFAULT NULL,
+  `valor_alcancado` decimal(15,2) DEFAULT '0.00',
+  `status` varchar(50) DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `metas_mensais_globais`
+--
+
+CREATE TABLE `metas_mensais_globais` (
+  `id` int NOT NULL,
+  `id_metas_globais` int NOT NULL,
+  `mes` tinyint NOT NULL,
+  `data_inicio` date DEFAULT NULL,
+  `data_fim` date DEFAULT NULL,
+  `valor_alvo` decimal(15,2) DEFAULT NULL,
+  `valor_alcancado` decimal(15,2) DEFAULT '0.00',
+  `status` varchar(50) DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -1511,7 +1616,8 @@ CREATE TABLE `pdf_layouts` (
   `versao` varchar(50) DEFAULT NULL,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `pdf` longblob,
-  `empresa_id` int NOT NULL
+  `empresa_id` int NOT NULL,
+  `pdf_base64` longtext
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -1999,6 +2105,23 @@ CREATE TABLE `tipos` (
   `empresa_id` int NOT NULL,
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `padrao` tinyint(1) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tipos_kpi`
+--
+
+CREATE TABLE `tipos_kpi` (
+  `id` int NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  `descricao` text,
+  `tipo_unidade` varchar(50) DEFAULT NULL,
+  `unidade_simbolo` varchar(20) DEFAULT NULL,
+  `empresa_id` int NOT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -2581,7 +2704,8 @@ ALTER TABLE `departamentos`
   ADD KEY `idx_empresa_id` (`empresa_id`),
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_departamento_global_id` (`departamento_global_id`),
-  ADD KEY `idx_responsavel_id` (`responsavel_id`);
+  ADD KEY `idx_responsavel_id` (`responsavel_id`),
+  ADD KEY `fk_departamentos_parent` (`parent_id`);
 
 --
 -- Índices de tabela `departamentos_globais`
@@ -2712,6 +2836,15 @@ ALTER TABLE `inter_tokens_cache`
   ADD KEY `fk_inter_tokens_cache_expiracao` (`expiracao_local`);
 
 --
+-- Índices de tabela `kpis`
+--
+ALTER TABLE `kpis`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_kpis_empresas` (`empresa_id`),
+  ADD KEY `fk_kpis_tipos` (`tipo_kpi_id`),
+  ADD KEY `fk_kpis_depart` (`departamento_id`);
+
+--
 -- Índices de tabela `leads`
 --
 ALTER TABLE `leads`
@@ -2750,6 +2883,35 @@ ALTER TABLE `mensagens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_mensagens_conversas` (`conversas_id`),
   ADD KEY `fk_mensagens_usuarios` (`enviador_id`);
+
+--
+-- Índices de tabela `metas_departamentais`
+--
+ALTER TABLE `metas_departamentais`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_md_empresas` (`empresa_id`),
+  ADD KEY `fk_md_departamentos` (`departamento_id`);
+
+--
+-- Índices de tabela `metas_globais`
+--
+ALTER TABLE `metas_globais`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_metas_globais_empresas` (`empresa_id`);
+
+--
+-- Índices de tabela `metas_mensais_departamentais`
+--
+ALTER TABLE `metas_mensais_departamentais`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_mmd_meta` (`id_metas_departamentais`);
+
+--
+-- Índices de tabela `metas_mensais_globais`
+--
+ALTER TABLE `metas_mensais_globais`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_mmg_meta` (`id_metas_globais`);
 
 --
 -- Índices de tabela `modelos_contrato`
@@ -3094,6 +3256,13 @@ ALTER TABLE `times_atendimento_usuarios`
 ALTER TABLE `tipos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_tipos_empresas` (`empresa_id`);
+
+--
+-- Índices de tabela `tipos_kpi`
+--
+ALTER TABLE `tipos_kpi`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_tipos_kpi_empresas` (`empresa_id`);
 
 --
 -- Índices de tabela `transacoes`
@@ -3558,6 +3727,12 @@ ALTER TABLE `inter_tokens_cache`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `kpis`
+--
+ALTER TABLE `kpis`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `leads`
 --
 ALTER TABLE `leads`
@@ -3585,6 +3760,30 @@ ALTER TABLE `lista_signatarios`
 -- AUTO_INCREMENT de tabela `mensagens`
 --
 ALTER TABLE `mensagens`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `metas_departamentais`
+--
+ALTER TABLE `metas_departamentais`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `metas_globais`
+--
+ALTER TABLE `metas_globais`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `metas_mensais_departamentais`
+--
+ALTER TABLE `metas_mensais_departamentais`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `metas_mensais_globais`
+--
+ALTER TABLE `metas_mensais_globais`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -3837,6 +4036,12 @@ ALTER TABLE `times_atendimento_usuarios`
 -- AUTO_INCREMENT de tabela `tipos`
 --
 ALTER TABLE `tipos`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `tipos_kpi`
+--
+ALTER TABLE `tipos_kpi`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -4204,7 +4409,8 @@ ALTER TABLE `crm_valores_personalizados`
 ALTER TABLE `departamentos`
   ADD CONSTRAINT `departamentos_ibfk_1` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `departamentos_ibfk_2` FOREIGN KEY (`departamento_global_id`) REFERENCES `departamentos_globais` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `departamentos_ibfk_3` FOREIGN KEY (`responsavel_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `departamentos_ibfk_3` FOREIGN KEY (`responsavel_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_departamentos_parent` FOREIGN KEY (`parent_id`) REFERENCES `departamentos` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `documentos`
@@ -4306,6 +4512,14 @@ ALTER TABLE `inter_tokens_cache`
   ADD CONSTRAINT `fk_inter_tokens_cache_expiracao` FOREIGN KEY (`expiracao_local`) REFERENCES `inter_tokens` (`id`);
 
 --
+-- Restrições para tabelas `kpis`
+--
+ALTER TABLE `kpis`
+  ADD CONSTRAINT `fk_kpis_depart` FOREIGN KEY (`departamento_id`) REFERENCES `departamentos` (`id`),
+  ADD CONSTRAINT `fk_kpis_empresas` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`),
+  ADD CONSTRAINT `fk_kpis_tipos` FOREIGN KEY (`tipo_kpi_id`) REFERENCES `tipos_kpi` (`id`);
+
+--
 -- Restrições para tabelas `leads`
 --
 ALTER TABLE `leads`
@@ -4339,6 +4553,31 @@ ALTER TABLE `lista_signatarios`
 ALTER TABLE `mensagens`
   ADD CONSTRAINT `fk_mensagens_conversas` FOREIGN KEY (`conversas_id`) REFERENCES `conversas` (`id`),
   ADD CONSTRAINT `fk_mensagens_usuarios` FOREIGN KEY (`enviador_id`) REFERENCES `usuarios` (`id`);
+
+--
+-- Restrições para tabelas `metas_departamentais`
+--
+ALTER TABLE `metas_departamentais`
+  ADD CONSTRAINT `fk_md_departamentos` FOREIGN KEY (`departamento_id`) REFERENCES `departamentos` (`id`),
+  ADD CONSTRAINT `fk_md_empresas` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`);
+
+--
+-- Restrições para tabelas `metas_globais`
+--
+ALTER TABLE `metas_globais`
+  ADD CONSTRAINT `fk_metas_globais_empresas` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`);
+
+--
+-- Restrições para tabelas `metas_mensais_departamentais`
+--
+ALTER TABLE `metas_mensais_departamentais`
+  ADD CONSTRAINT `fk_mmd_meta` FOREIGN KEY (`id_metas_departamentais`) REFERENCES `metas_departamentais` (`id`);
+
+--
+-- Restrições para tabelas `metas_mensais_globais`
+--
+ALTER TABLE `metas_mensais_globais`
+  ADD CONSTRAINT `fk_mmg_meta` FOREIGN KEY (`id_metas_globais`) REFERENCES `metas_globais` (`id`);
 
 --
 -- Restrições para tabelas `modelos_contrato`
@@ -4626,6 +4865,12 @@ ALTER TABLE `times_atendimento_usuarios`
 --
 ALTER TABLE `tipos`
   ADD CONSTRAINT `fk_tipos_empresas` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`);
+
+--
+-- Restrições para tabelas `tipos_kpi`
+--
+ALTER TABLE `tipos_kpi`
+  ADD CONSTRAINT `fk_tipos_kpi_empresas` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`);
 
 --
 -- Restrições para tabelas `transacoes`

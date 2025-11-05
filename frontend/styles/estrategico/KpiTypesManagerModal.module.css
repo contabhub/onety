@@ -1,0 +1,338 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--onity-z-modal-backdrop);
+  min-height: 100vh;
+}
+
+.modalContainer {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-m);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-l);
+  max-width: 56rem;
+  width: 100%;
+  margin: 0 var(--onity-space-m);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--onity-space-l);
+}
+
+.modalTitle {
+  font-size: var(--onity-type-h3-size);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.modalCloseButton {
+  color: var(--onity-text-med);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+}
+
+.modalCloseButton:hover {
+  color: var(--onity-color-text);
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  padding: var(--onity-space-s) var(--onity-space-m);
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-radius: var(--onity-radius-xs);
+  border: none;
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--onity-transition-fast);
+  margin-bottom: var(--onity-space-m);
+}
+
+.addButton:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.formSection {
+  margin-bottom: var(--onity-space-l);
+  padding: var(--onity-space-m);
+  background-color: var(--onity-color-bg);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+}
+
+.formTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-m);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+}
+
+.formGroup {
+  margin-bottom: var(--onity-space-m);
+}
+
+.formLabel {
+  display: block;
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-s);
+}
+
+.formLabelRequired {
+  color: var(--onity-color-error);
+}
+
+.formInput {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formTextarea {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  min-height: 80px;
+  resize: vertical;
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formSelect {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xs);
+  font-size: var(--onity-font-size-sm);
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px rgba(68, 84, 100, 0.15);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--onity-space-m);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  border-radius: var(--onity-radius-xs);
+  border: none;
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+  flex: 1;
+}
+
+.buttonPrimary {
+  background-color: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--onity-color-primary-hover);
+}
+
+.buttonSecondary {
+  background-color: var(--onity-color-surface);
+  color: var(--onity-color-text);
+  border: 1px solid var(--onity-color-border);
+}
+
+.buttonSecondary:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  background-color: inherit;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeader {
+  background-color: var(--onity-color-bg);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableHeaderRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-m) var(--onity-space-m);
+}
+
+.tableHeaderCell {
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  text-align: left;
+}
+
+.tableBody {
+  display: block;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+  gap: var(--onity-space-m);
+  padding: var(--onity-space-m) var(--onity-space-m);
+  border-bottom: 1px solid var(--onity-color-border);
+  align-items: center;
+  transition: background-color var(--onity-transition-fast);
+}
+
+.tableRow:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.tableCell {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-color-text);
+}
+
+.tableCellName {
+  font-weight: var(--onity-font-weight-medium);
+}
+
+.tableCellDescription {
+  color: var(--onity-text-med);
+  font-size: var(--onity-font-size-xs);
+}
+
+.tableCellActions {
+  display: flex;
+  gap: var(--onity-space-s);
+  justify-content: flex-end;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  color: var(--onity-text-med);
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+  padding: var(--onity-space-xs);
+}
+
+.actionButton:hover {
+  color: var(--onity-color-primary);
+}
+
+.actionButtonDanger:hover {
+  color: var(--onity-color-error);
+}
+
+.loadingSpinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--onity-color-border);
+  border-top-color: var(--onity-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.emptyStateIcon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--onity-text-low);
+  margin-bottom: var(--onity-space-s);
+}
+
+.emptyStateText {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+  margin-top: var(--onity-space-s);
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+@media (min-width: 768px) {
+  .formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

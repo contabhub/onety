@@ -1,0 +1,132 @@
+/* Canvas Org Chart Styles */
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.canvas {
+  width: 100%;
+  height: 100vh;
+  touch-action: none;
+}
+
+.canvasDragging {
+  cursor: grabbing;
+}
+
+.canvasNotDragging {
+  cursor: grab;
+}
+
+.canvasTransitioning {
+  transition: transform 0.5s ease-out;
+}
+
+/* Circular Progress Bar */
+.circularProgressBar {
+  position: absolute;
+  z-index: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 1;
+  font-weight: var(--onity-font-weight-bold);
+}
+
+/* Context Menu */
+.contextMenu {
+  position: fixed;
+  z-index: 9999;
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-s) 0;
+  min-width: 140px;
+  border: 1px solid var(--onity-color-border);
+}
+
+.contextMenuButton {
+  width: 100%;
+  padding: var(--onity-space-s) var(--onity-space-m);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--onity-color-text);
+  display: flex;
+  align-items: center;
+  transition: background-color var(--onity-transition-fast);
+  font-size: var(--onity-font-size-sm);
+}
+
+.contextMenuButton:hover {
+  background-color: var(--onity-color-bg);
+}
+
+.contextMenuButtonDanger {
+  color: var(--onity-color-error);
+}
+
+.contextMenuButtonIcon {
+  width: var(--onity-space-m);
+  height: var(--onity-space-m);
+  margin-right: var(--onity-space-s);
+}
+
+/* Zoom Controls */
+.zoomControls {
+  position: fixed;
+  bottom: 5rem;
+  right: var(--onity-space-l);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-l);
+  box-shadow: var(--onity-elev-high);
+  padding: var(--onity-space-s);
+  z-index: 50;
+}
+
+.zoomButton {
+  padding: var(--onity-space-s);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--onity-text-med);
+  border-radius: var(--onity-radius-xs);
+  transition: background-color var(--onity-transition-fast), color var(--onity-transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-semibold);
+  min-width: 2rem;
+}
+
+.zoomButton:hover {
+  background-color: var(--onity-color-bg);
+  color: var(--onity-color-text);
+}
+
+.zoomLabel {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+  min-width: 4rem;
+  text-align: center;
+}
+
