@@ -192,11 +192,7 @@ import NovoClienteModal from "@/components/gestao/NovoClienteModal";
 import ClientesImportTemplateModal from "@/components/gestao/ClientesImportTemplateModal";
 import styles from "../../styles/gestao/Clientes.module.css";
 import EnviarPesquisaFranqueadosModal from "@/components/gestao/EnviarPesquisaFranqueadosModal";
-<<<<<<< Updated upstream
 import NovoGrupoClienteModal from "@/components/gestao/NovoGrupoClienteModal";
-=======
-import NovoGrupoModal from "@/components/gestao/NovoGrupoModal";
->>>>>>> Stashed changes
 import PrincipalSidebar from "@/components/onety/principal/PrincipalSidebar";
 import { Pencil, Trash2, Loader2, Send, Users } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
@@ -1503,23 +1499,16 @@ export default function ClientesPage() {
                       <td className={styles.td}>{c.tipoInscricao || ""}</td>
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
-<<<<<<< Updated upstream
                         onClick={() => router.push(`/gestao/clientes/${c.id}`)}
-=======
-                        onClick={() => router.push(`gestao/clientes/${c.id}`)}
->>>>>>> Stashed changes
-                      >
+
+>
                         <span className={styles.cellHighlight}>
                           {formatarCnpjCpf(c.cnpjCpf)}
                         </span>
                       </td>
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
-<<<<<<< Updated upstream
                         onClick={() => router.push(`/gestao/clientes/${c.id}`)}
-=======
-                        onClick={() => router.push(`gestao/clientes/${c.id}`)}
->>>>>>> Stashed changes
                       >
                         <span className={styles.cellHighlight}>
                           {c.nome || ""}
@@ -1646,21 +1635,14 @@ export default function ClientesPage() {
 
             </div>
             {mostrarModalGrupo && (
-<<<<<<< Updated upstream
               <NovoGrupoClienteModal
-=======
-              <NovoGrupoModal
->>>>>>> Stashed changes
                 isOpen={mostrarModalGrupo}
                 onClose={() => setMostrarModalGrupo(false)}
                 onCreated={() => {
                   setMostrarModalGrupo(false);
                   buscarGrupos();
                 }}
-<<<<<<< Updated upstream
                 grupo={grupoEditando}
-=======
->>>>>>> Stashed changes
               />
             )}
             {loadingGrupos ? (
