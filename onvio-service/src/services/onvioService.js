@@ -273,6 +273,18 @@ class OnvioService {
 
             }
 
+            // ✅ AGUARDAR O BOTÃO "ENTRAR" CARREGAR COMPLETAMENTE ANTES DE CLICAR
+            console.log('⏳ Aguardando botão "Entrar" carregar completamente...');
+            
+            // Aguardar que o elemento esteja presente no DOM e visível
+            await this.page.waitForSelector(resultadoBotaoEntrar.seletor, { 
+                visible: true, 
+                timeout: 10000 
+            });
+            
+            // Aguardar um pouco mais para garantir que JavaScript da página terminou de carregar
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             // Verificar se o elemento está visível e clicável antes de tentar clicar
             const elemento = await this.page.$(resultadoBotaoEntrar.seletor);
             if (!elemento) {
@@ -284,9 +296,31 @@ class OnvioService {
             if (!isVisible) {
                 console.log('⚠️ Elemento não está visível, tentando scroll para o elemento...');
                 await elemento.scrollIntoView();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            // ✅ Verificar se o botão está habilitado (não desabilitado)
+            const isDisabled = await this.page.evaluate((selector) => {
+                const element = document.querySelector(selector);
+                return element ? element.disabled || element.hasAttribute('disabled') : true;
+            }, resultadoBotaoEntrar.seletor);
+            
+            if (isDisabled) {
+                console.log('⚠️ Botão está desabilitado, aguardando habilitar...');
+                // Aguardar até que o botão esteja habilitado (máximo 5 segundos)
+                await this.page.waitForFunction(
+                    (selector) => {
+                        const element = document.querySelector(selector);
+                        return element && !element.disabled && !element.hasAttribute('disabled');
+                    },
+                    { timeout: 5000 },
+                    resultadoBotaoEntrar.seletor
+                );
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
 
+            console.log('✅ Botão "Entrar" carregado e pronto para clicar');
+            
             // Tentar clique com diferentes métodos
             try {
                 await this.page.click(resultadoBotaoEntrar.seletor);
@@ -2857,8 +2891,9 @@ class OnvioService {
             console.log(`👤 Dados do cliente encontrados - Nome: ${nomeCliente}, Sistema: ${sistemaCliente}, Base: ${baseCliente}, Código: ${codigoCliente}`);
             
             // 🧠 DELAY INTELIGENTE: Aguardo o tempo necessário para a página processar
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 800ms para 400ms
             console.log('⏳ Aguardando processamento da seleção de cliente...');
-            await new Promise(resolve => setTimeout(resolve, 800)); // Delay inteligente: nem muito rápido, nem muito lento
+            await new Promise(resolve => setTimeout(resolve, 400));
             
             // Tentar encontrar o campo "Selecione um cliente"
             const seletoresCampoCliente = [
@@ -2946,8 +2981,9 @@ class OnvioService {
             }
             
             // Aguardar dropdown aparecer
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 600ms para 300ms
             console.log('⏳ Aguardando dropdown aparecer...');
-            await new Promise(resolve => setTimeout(resolve, 600)); // 🧠 DELAY INTELIGENTE: Tempo necessário para dropdown carregar
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // Garantir que o campo está focado
             try {
@@ -3024,8 +3060,8 @@ class OnvioService {
                 }
             }
             
-            // 🚀 OTIMIZAÇÃO: Aguardo ultra-rápido para velocidade máxima
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 500ms para 300ms
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // Tentar encontrar e clicar no cliente correto pelo nome
             let clienteEncontrado = await this.encontrarEClicarCliente(nomeCliente, cnpj);
@@ -3057,8 +3093,8 @@ class OnvioService {
             }
             
             if (clienteEncontrado) {
-                // 🚀 OTIMIZAÇÃO: Aguardo ultra-rápido para velocidade máxima
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera após clicar no cliente de 1000ms para 500ms
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 // Verificar se a página carregou corretamente
                 const urlAtual = this.page.url();
@@ -3383,8 +3419,9 @@ class OnvioService {
             }
             
             // Aguardar dropdown aparecer
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 600ms para 300ms
             console.log('⏳ Aguardando dropdown aparecer...');
-            await new Promise(resolve => setTimeout(resolve, 600));
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // Garantir que o campo está focado
             try {
@@ -3489,8 +3526,9 @@ class OnvioService {
             console.log(`🎯 Procurando cliente: ${nomeCliente} (CNPJ: ${cnpj})`);
             
             // 🧠 DELAY INTELIGENTE: Aguardo o tempo necessário para a página processar
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 800ms para 400ms
             console.log('⏳ Aguardando processamento da busca de cliente...');
-            await new Promise(resolve => setTimeout(resolve, 800)); // Delay inteligente: nem muito rápido, nem muito lento
+            await new Promise(resolve => setTimeout(resolve, 400));
             
             // Tentar diferentes seletores para lista de clientes
             // Baseado no HTML fornecido, priorizar os seletores mais específicos
@@ -3847,13 +3885,14 @@ class OnvioService {
     async extrairDocumentos(maxTentativas = 1, delayEntreTentativas = 2000) {
         try {
             console.log('📄 Extraindo documentos da página (apenas 1 tentativa, sem retry)...');
-            // 1. Aguardar carregamento inicial da página
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera inicial de 500ms para 200ms
+            await new Promise(resolve => setTimeout(resolve, 200));
             // 2. Verificar se a página está carregada e estável
             try {
+                // 🚀 OTIMIZAÇÃO: Reduzir timeout de 3000ms para 1500ms
                 await this.page.waitForFunction(
                     () => document.readyState === 'complete',
-                    { timeout: 3000 }
+                    { timeout: 1500 }
                 );
             } catch (e) {
                 console.log('⚠️ Timeout aguardando readyState, continuando...');
@@ -3866,9 +3905,10 @@ class OnvioService {
                 ];
                 for (const seletor of seletoresLoading) {
                     try {
+                        // 🚀 OTIMIZAÇÃO: Reduzir timeout de 500ms para 200ms
                         await this.page.waitForFunction(
                             (sel) => !document.querySelector(sel),
-                            { timeout: 500 },
+                            { timeout: 200 },
                             seletor
                         );
                     } catch (e) {}
@@ -4549,8 +4589,8 @@ class OnvioService {
             }, parte);
             
             if (resultadoClique.sucesso) {
-                // Aguardar um pouco para ver se a página mudou
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera após clique de 2000ms para 800ms
+                await new Promise(resolve => setTimeout(resolve, 800));
                 
                 // ESTRATÉGIA 2: Verificar se o clique realmente funcionou
                 const mudancaDetectada = await this.verificarMudancaPagina();
@@ -4576,8 +4616,8 @@ class OnvioService {
      */
     async verificarMudancaPagina() {
         try {
-            // Aguardar um pouco para mudanças carregarem
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 1000ms para 300ms
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // Verificar se há mudanças visuais (novos elementos, mudanças de URL, etc.)
             const mudancas = await this.page.evaluate(() => {
@@ -5124,6 +5164,10 @@ class OnvioService {
      * 🗂️ Navega pela sidebar esquerda baseado no caminho do documento
      */
     async navegarPelaSidebar(tituloDocumento, competencia = null, obrigacaoClienteId = null, empresaId = null, atividadeIdEspecifica = null) {
+        // ✅ TIMEOUT TOTAL: Máximo de 60 segundos para toda a navegação
+        const timeoutTotal = 60000; // 60 segundos
+        const inicioTempo = Date.now();
+        
         try {
             console.log(`🗂️ Navegando pela sidebar com caminho: ${tituloDocumento}`);
             if (competencia) {
@@ -5136,9 +5180,9 @@ class OnvioService {
             // Armazenar o caminho da sidebar para poder voltar depois
             this.caminhoSidebarAtual = tituloDocumento;
             
-            // Aguardar carregamento inicial
+            // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera inicial de 3000ms para 1000ms
             console.log(`⏳ Aguardando carregamento inicial da página...`);
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // Dividir o caminho em partes (pastas/arquivos)
             const partesCaminho = tituloDocumento.split('/').filter(parte => parte.trim() !== '');
@@ -5164,14 +5208,25 @@ class OnvioService {
             
             // Para cada parte do caminho, navegar
             for (let i = 0; i < partesCaminho.length; i++) {
+                // ✅ Verificar timeout total antes de processar cada parte
+                const tempoDecorrido = Date.now() - inicioTempo;
+                if (tempoDecorrido > timeoutTotal) {
+                    console.log(`⏱️ TIMEOUT TOTAL: ${timeoutTotal/1000}s ultrapassados. Abortando navegação pela sidebar.`);
+                    throw new Error(`Timeout máximo de ${timeoutTotal/1000}s atingido ao navegar pela sidebar`);
+                }
+                
                 const parte = partesCaminho[i].trim();
                 const isUltimaParte = (i === partesCaminho.length - 1);
                 
                 console.log(`🔍 Procurando parte ${i + 1}/${partesCaminho.length}: "${parte}" ${isUltimaParte ? '(ÚLTIMA - PASTA DE DOCUMENTOS)' : '(PASTA)'}`);
                 
-                // Aguardar entre navegações
-            if (i > 0) {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                // ✅ TIMEOUT POR PARTE: Máximo de 20 segundos por parte
+                const timeoutPorParte = 20000; // 20 segundos
+                const inicioParte = Date.now();
+                
+                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera entre navegações de 2000ms para 500ms
+                if (i > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
                 
                 // 🔍 BUSCA SIMPLIFICADA: Usar a mesma lógica da rota baixar-atividades
@@ -5180,6 +5235,12 @@ class OnvioService {
                 const maxTentativas = 3;
                 
                 while (!elementoEncontrado && tentativas < maxTentativas) {
+                    // ✅ Verificar timeout por parte
+                    const tempoParte = Date.now() - inicioParte;
+                    if (tempoParte > timeoutPorParte) {
+                        console.log(`⏱️ TIMEOUT: ${timeoutPorParte/1000}s ultrapassados tentando encontrar "${parte}". Abortando e seguindo para próxima atividade.`);
+                        throw new Error(`Timeout de ${timeoutPorParte/1000}s ao tentar encontrar "${parte}" na sidebar`);
+                    }
                     tentativas++;
                     console.log(`    🔍 Tentativa ${tentativas}/${maxTentativas} para encontrar "${parte}"...`);
                     
@@ -5271,64 +5332,7 @@ class OnvioService {
                             return elementos.slice(0, 2000); // TODOS OS ELEMENTOS para análise completa!
                         });
                         
-                        console.log(`    📋 Elementos encontrados na página (${elementosAreaPrincipal.length} elementos):`);
-                        
-                        // LOG COMPLETO DE TODOS OS ELEMENTOS DA PÁGINA
-                        console.log(`    🔍 INICIANDO LOG COMPLETO DE TODOS OS ELEMENTOS DA PÁGINA...`);
-                        const todosElementos = await this.page.evaluate(() => {
-                            const elementos = [];
-                            const todosOsElementos = document.querySelectorAll('*');
-                            todosOsElementos.forEach((el, index) => {
-                                if (index < 500) { // Limite para não explodir o log
-                                    const texto = el.textContent?.trim() || '';
-                                    if (texto.length > 0 && texto.length < 100) { // Filtrar só elementos com texto relevante
-                                        elementos.push({
-                                            index: index,
-                                            tagName: el.tagName.toLowerCase(),
-                                            texto: texto,
-                                            className: el.className || '',
-                                            id: el.id || '',
-                                            href: el.href || '',
-                                            title: el.title || '',
-                                            ariaLabel: el.getAttribute('aria-label') || '',
-                                            name: el.getAttribute('name') || ''
-                                        });
-                                    }
-                                }
-                            });
-                            return elementos;
-                        });
-                        
-                        todosElementos.forEach((el, index) => {
-                            const info = [];
-                            if (el.texto) info.push(`"${el.texto}"`);
-                            if (el.className) info.push(`class:"${el.className.split(' ')[0]}"`);
-                            if (el.id) info.push(`id:"${el.id}"`);
-                            if (el.href) info.push(`href:"${el.href.substring(0, 30)}..."`);
-                            if (el.title) info.push(`title:"${el.title}"`);
-                            if (el.ariaLabel) info.push(`aria:"${el.ariaLabel}"`);
-                            if (el.name) info.push(`name:"${el.name}"`);
-                            
-                            console.log(`    [${el.index}] ${el.tagName} -> ${info.join(' | ')}`);
-                        });
-                        console.log(`    🔍 FIM DO LOG COMPLETO (${todosElementos.length} elementos relevantes)`);
-                        
-                        console.log(`    📋 RESUMO dos elementos encontrados na área principal (${elementosAreaPrincipal.length} elementos):`);
-                        elementosAreaPrincipal.forEach((el, index) => {
-                            const info = [];
-                            if (el.texto) info.push(`texto:"${el.texto.substring(0, 40)}"`);
-                            if (el.title) info.push(`title:"${el.title}"`);
-                            if (el.name) info.push(`name:"${el.name}"`);
-                            if (el.href) info.push(`href:"${el.href.substring(0, 50)}..."`);
-                            if (el.className) info.push(`class:"${el.className.split(' ')[0]}"`);
-                            if (el.id) info.push(`id:"${el.id}"`);
-                            
-                            // Destaque especial para a.ng-binding
-                            const destaque = el.tagName === 'a' && el.className?.includes('ng-binding') ? '🔗 [NG-BINDING]' : 
-                                           el.tagName === 'dms-grid-text-cell' ? '📋 [GRID-CELL]' : '';
-                            
-                            console.log(`    ${index + 1}. [${el.tagName}] ${info.join(' | ')} [${el.container}] ${destaque}`);
-                        });
+                        // ✅ LOG REMOVIDO: Log completo de elementos removido para não poluir o console
                         
                         // ESTRATÉGIA 1: BUSCA DIRETA baseada no log detalhado
                         console.log(`    🔍 BUSCA DIRETA: Procurando "${parte}" na página...`);
@@ -5827,8 +5831,9 @@ class OnvioService {
                             }
                             
                             if (!elementoEncontrado) {
-                                console.log(`    ⏳ Elemento ainda não encontrado, aguardando mais 2s...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera entre tentativas de 2000ms para 500ms
+                                console.log(`    ⏳ Elemento ainda não encontrado, aguardando mais...`);
+                                await new Promise(resolve => setTimeout(resolve, 500));
                             }
                     }
                 }
@@ -5880,9 +5885,9 @@ class OnvioService {
                             console.log(`    ❌ Não foi possível clicar em "${parte}"`);
                         }
                         
-                        // Aguardar carregamento após clique
+                        // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera após clique de 1000ms para 500ms
                         console.log(`    ⏳ Aguardando carregamento após clique...`);
-                        await new Promise(resolve => setTimeout(resolve, 4000));
+                        await new Promise(resolve => setTimeout(resolve, 500));
                         
                     } catch (error) {
                         console.log(`    ❌ Erro ao clicar em "${parte}":`, error.message);
@@ -5900,8 +5905,8 @@ class OnvioService {
                 if (isUltimaParte) {
                     console.log(`🎯 ÚLTIMA PARTE ATINGIDA! Fazendo overview dos arquivos...`);
                     
-                    // Aguardar carregamento da página após clicar
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera após clique de 3000ms para 1500ms
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     
                     // Agora fazer overview dos arquivos na pasta
                     if (competencia) {
@@ -6440,7 +6445,8 @@ class OnvioService {
      * ⏳ Aguarda um elemento específico carregar na página
      */
     // 🚀 OTIMIZAÇÃO: Timeout ultra-rápido para velocidade máxima
-    async aguardarElementoCarregar(texto, timeoutMaximo = 3000) {
+    // 🚀 OTIMIZAÇÃO: Reduzir timeout padrão de 3000ms para 1500ms
+    async aguardarElementoCarregar(texto, timeoutMaximo = 1500) {
         try {
             const inicio = Date.now();
             while (Date.now() - inicio < timeoutMaximo) {
@@ -6999,7 +7005,7 @@ class OnvioService {
      * 
      * 🚀 NOVA FUNCIONALIDADE: Retry inteligente que não recomeça a navegação
      */
-    async fazerOverviewArquivosPorCompetencia(competencia, obrigacaoClienteId, empresaId, maxTentativas = 1, atividadeIdEspecifica = null) { // 🚀 OTIMIZAÇÃO ULTRA-AGGRESSIVA: Apenas 1 tentativa para velocidade máxima
+    async fazerOverviewArquivosPorCompetencia(competencia, obrigacaoClienteId, empresaId, maxTentativas = 2, atividadeIdEspecifica = null) { // ✅ OTIMIZAÇÃO: 2 tentativas máximo - se não encontrar, pular para próxima
         try {
             console.log(`🔍 OVERVIEW DOS ARQUIVOS: Analisando arquivos na pasta atual para competência ${competencia}`);
             
@@ -7015,8 +7021,9 @@ class OnvioService {
                 
                 
                 // 1. Aguardar carregamento inicial da página
+                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 500ms para 200ms
                 console.log('⏳ Aguardando carregamento inicial da página...');
-                await new Promise(resolve => setTimeout(resolve, 500)); // 🚀 OTIMIZAÇÃO ULTRA-AGGRESSIVA: Reduzido para 500ms para velocidade máxima
+                await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // 2. Verificar se a página está estável
                 try {
@@ -7033,7 +7040,8 @@ class OnvioService {
                 
                 // 4. Tentar extrair documentos com retry
                 console.log(`📄 Fazendo OVERVIEW de todos os arquivos visíveis na pasta (tentativa ${tentativa})...`);
-                documentos = await this.extrairDocumentos(3, 2000); // 3 tentativas, 2s entre elas
+                // 🚀 OTIMIZAÇÃO: Reduzir tentativas de 3 para 2 e delay de 2000ms para 500ms
+                documentos = await this.extrairDocumentos(2, 500);
                 
                 if (documentos.length === 0) {
                     console.log(`⏳ Nenhum arquivo encontrado na tentativa ${tentativa}, aguardando mais tempo...`);
@@ -7060,6 +7068,8 @@ class OnvioService {
             if (documentosFiltrados.length === 0) {
                     console.log(`⚠️ Nenhum arquivo encontrado para competência: ${competencia} na tentativa ${tentativa}`);
                     
+                    // ✅ OTIMIZAÇÃO: Se não encontrou após 2 tentativas, considerar como não encontrado e pular
+                    // Não fazer retry inteligente nem recarregamento de página
                     if (tentativa < maxTentativas) {
                         console.log(`🔄 Tentando novamente com mais tempo de espera...`);
                         
@@ -7071,33 +7081,13 @@ class OnvioService {
                         // Tentar rolar a página para carregar mais conteúdo
                         await this.tentarRolarPagina();
                         
-                        // Tentar recarregar a página se necessário
-                        if (tentativa === maxTentativas - 1) {
-                            console.log(`🔄 Última tentativa: tentando recarregar a página...`);
-                            try {
-                                // 🚀 OTIMIZAÇÃO: Usar waitUntil mais rápido e reduzir tempo de espera
-                                await this.page.reload({ waitUntil: 'domcontentloaded' });
-                                await new Promise(resolve => setTimeout(resolve, 2000));
-                            } catch (e) {
-                                console.log('⚠️ Erro ao recarregar página, continuando...');
-                            }
-                        }
-                        
                         tentativa++;
                         continue;
                     } else {
-                        // Última tentativa falhou, tentar retry inteligente no mesmo local
-                        console.log(`🔄 Última tentativa falhou, iniciando retry inteligente no mesmo local...`);
-                        const resultadoRetry = await this.retryInteligenteMesmoLocal(competencia, 3);
-                        
-                        if (resultadoRetry.sucesso) {
-                            console.log(`✅ Retry inteligente bem-sucedido!`);
-                            documentosFiltrados = resultadoRetry.documentos;
-                            break;
-                        } else {
-                            console.log(`❌ Retry inteligente também falhou`);
-                            return { sucesso: false, erro: `Nenhum arquivo encontrado para competência ${competencia} após múltiplas tentativas e retry inteligente` };
-                        }
+                        // ✅ Após segunda tentativa, considerar como não encontrado e retornar erro
+                        // SEM retry inteligente, SEM recarregamento de página
+                        console.log(`❌ Nenhum arquivo encontrado para competência ${competencia} após ${maxTentativas} tentativas. Pulando para próxima atividade.`);
+                        return { sucesso: false, erro: `Nenhum arquivo encontrado para competência ${competencia} após ${maxTentativas} tentativas` };
                     }
                 }
                 
@@ -7126,25 +7116,136 @@ class OnvioService {
                 // 8. Aguardar documento estar clicável
                 await this.aguardarDocumentoClicavel(documento);
                 
-                // 9. Abrir o documento: priorizar link interno com /document/, depois duplo clique com retries
-                try {
-                    const handle = await this.page.evaluateHandle((titulo) => {
-                        const linhas = Array.from(document.querySelectorAll('tr, .wj-row, .grid-row, div'));
-                        const linha = linhas.find(el => (el.textContent || '').toLowerCase().includes((titulo || '').toLowerCase()));
-                        if (!linha) return null;
-                        const link = linha.querySelector('a[href*="/document/"]');
-                        return link || null;
-                    }, documento.titulo || documento.nome);
-                    if (handle && handle.asElement) {
-                        try { await handle.asElement().click(); } catch(_) {}
-                        await new Promise(r => setTimeout(r, 400));
-                    }
-                } catch(_) {}
+                // 9. Abrir o documento: PRIORIZAR elemento armazenado (mais confiável) e depois buscar link se necessário
+                console.log(`🔍 Tentando clicar no documento usando elemento armazenado: ${documento.titulo || documento.nome}`);
                 
-                for (let i = 0; i < 8; i++) {
-                    if (/\/document\//i.test(this.page.url())) break;
-                    try { await documento.elemento.click({ clickCount: 2, delay: 20 }); } catch (_) {}
-                    await new Promise(r => setTimeout(r, 500));
+                // 🎯 PRIORIDADE 1: Usar o elemento já armazenado e validado (mais confiável)
+                let clicouComSucesso = false;
+                if (documento.elemento) {
+                    try {
+                        // Tentar encontrar link dentro do elemento armazenado
+                        const linkNoElemento = await documento.elemento.$('a[href*="/document/"]');
+                        if (linkNoElemento) {
+                            console.log(`✅ Link encontrado dentro do elemento armazenado, clicando...`);
+                            await linkNoElemento.click();
+                            await new Promise(r => setTimeout(r, 400));
+                            clicouComSucesso = true;
+                        } else {
+                            // Se não tem link, clicar diretamente no elemento
+                            console.log(`✅ Clicando diretamente no elemento armazenado...`);
+                            await documento.elemento.click({ clickCount: 2, delay: 20 });
+                            await new Promise(r => setTimeout(r, 400));
+                            clicouComSucesso = true;
+                        }
+                    } catch (erroElemento) {
+                        console.log(`⚠️ Erro ao clicar no elemento armazenado: ${erroElemento.message}`);
+                        // Continuar para tentativa com busca mais precisa
+                    }
+                }
+                
+                // 🎯 PRIORIDADE 2: Se não clicou com elemento armazenado, buscar de forma mais precisa validando competência
+                if (!clicouComSucesso) {
+                    try {
+                        const tituloBusca = (documento.titulo || documento.nome).toLowerCase().trim();
+                        console.log(`🔍 Buscando elemento na página com título: ${tituloBusca} e competência: ${competencia}`);
+                        
+                        // Extrair mês e ano da competência para validação
+                        let mes, ano;
+                        if (competencia.includes('/')) {
+                            const [mesStr, anoStr] = competencia.split('/');
+                            mes = parseInt(mesStr);
+                            ano = parseInt(anoStr);
+                        } else {
+                            if (competencia.length === 6) {
+                                mes = parseInt(competencia.substring(0, 2));
+                                ano = parseInt(competencia.substring(2, 6));
+                            } else if (competencia.length === 5) {
+                                mes = parseInt(competencia.substring(0, 1));
+                                ano = parseInt(competencia.substring(1, 5));
+                            }
+                        }
+                        
+                        const handle = await this.page.evaluateHandle((tituloParaBuscar, mesParaValidar, anoParaValidar) => {
+                            // Buscar todas as linhas possíveis
+                            const linhas = Array.from(document.querySelectorAll('tr, .wj-row, .grid-row, div'));
+                            
+                            // Função para validar competência no texto
+                            const validarCompetencia = (texto) => {
+                                const mesComPadding = mesParaValidar.toString().padStart(2, '0');
+                                const mesSemPadding = mesParaValidar.toString();
+                                const anoStr = anoParaValidar.toString();
+                                
+                                // Verificar formatos: mm/yyyy, mmyyyy, mm.yyyy, mm_yyyy, etc.
+                                const formatos = [
+                                    mesComPadding + '/' + anoStr,
+                                    mesSemPadding + '/' + anoStr,
+                                    mesComPadding + anoStr,
+                                    mesSemPadding + anoStr,
+                                    mesComPadding + '.' + anoStr,
+                                    mesSemPadding + '.' + anoStr,
+                                    mesComPadding + '_' + anoStr,
+                                    mesSemPadding + '_' + anoStr
+                                ];
+                                
+                                return formatos.some(formato => texto.includes(formato));
+                            };
+                            
+                            // Tentar encontrar linha que contenha o título E a competência correta
+                            const linhaExata = linhas.find(el => {
+                                const texto = (el.textContent || '').toLowerCase().trim();
+                                
+                                // Primeiro verificar se contém o título
+                                const temTitulo = texto.includes(tituloParaBuscar) || 
+                                                 texto === tituloParaBuscar ||
+                                                 texto.replace(/\s+/g, ' ').includes(tituloParaBuscar.replace(/\s+/g, ' '));
+                                
+                                if (!temTitulo) return false;
+                                
+                                // Se tem título, validar também a competência
+                                return validarCompetencia(texto);
+                            });
+                            
+                            if (linhaExata) {
+                                console.log('✅ Linha encontrada com título e competência corretos');
+                                // Tentar encontrar link dentro da linha
+                                const link = linhaExata.querySelector('a[href*="/document/"]');
+                                if (link) return link;
+                                // Se não tem link, retornar a própria linha
+                                return linhaExata;
+                            }
+                            
+                            return null;
+                        }, tituloBusca, mes, ano);
+                        
+                        if (handle && handle.asElement) {
+                            console.log(`✅ Elemento encontrado na busca com validação de competência, clicando...`);
+                            try { 
+                                await handle.asElement().click(); 
+                                await new Promise(r => setTimeout(r, 400));
+                                clicouComSucesso = true;
+                            } catch(erroClick) {
+                                console.log(`⚠️ Erro ao clicar no elemento encontrado: ${erroClick.message}`);
+                            }
+                        } else {
+                            console.log(`⚠️ Nenhum elemento encontrado na busca com validação de competência`);
+                        }
+                    } catch(erroBusca) {
+                        console.log(`⚠️ Erro ao buscar elemento na página: ${erroBusca.message}`);
+                    }
+                }
+                
+                // 🎯 PRIORIDADE 3: Retry com duplo clique no elemento armazenado (fallback)
+                for (let i = 0; i < 8 && !clicouComSucesso; i++) {
+                    if (/\/document\//i.test(this.page.url())) {
+                        clicouComSucesso = true;
+                        break;
+                    }
+                    if (documento.elemento) {
+                        try { 
+                            await documento.elemento.click({ clickCount: 2, delay: 20 }); 
+                            await new Promise(r => setTimeout(r, 500));
+                        } catch (_) {}
+                    }
                 }
                 
                 // 10. Validar abertura: se ainda não abriu, abortar sem automação
@@ -7189,8 +7290,10 @@ class OnvioService {
                             console.log(`✅ Competência: ${competencia}`);
                             console.log(`✅ Atividade marcada como concluída`);
                             
-                            // 13. VOLTAR PARA A PASTA ANTERIOR (não recomeçar tudo)
-                            await this.voltarParaPastaAnterior(null, null, this.caminhoSidebarAtual, competencia, obrigacaoClienteId, empresaId);
+                            // ✅ NÃO VOLTAR PARA PASTA ANTERIOR após match automático bem-sucedido
+                            // Isso evita que o sistema continue processando outras atividades
+                            // O código que chamou esta função deve decidir se continua ou não
+                            console.log(`⏹️ Match automático concluído. Retornando sem tentar voltar para pasta anterior.`);
                             
                             return {
                                 sucesso: true,
@@ -7400,35 +7503,11 @@ class OnvioService {
             console.log(`↩️ Tentando voltar para a pasta anterior...`);
             await new Promise(resolve => setTimeout(resolve, 500));
             
+            // ✅ REMOVIDO: goBack() removido completamente - não usar nunca!
             // 🎯 CORREÇÃO: Se temos o caminho da sidebar, usar a EXATA mesma lógica do início
             if (caminhoSidebar) {
                 console.log(`🎯 Tentando voltar usando caminho da sidebar: ${caminhoSidebar}`);
-                
-                // 🎯 NOVA ESTRATÉGIA: Usar page.goBack() primeiro para voltar para a pasta anterior
-                console.log('↩️ Usando page.goBack() para voltar para a pasta anterior...');
-                try {
-                    // 🚀 OTIMIZAÇÃO: Usar waitUntil mais rápido para velocidade
-                    await this.page.goBack({ waitUntil: 'domcontentloaded' });
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Agora que voltou para a pasta anterior, verificar se está no local correto
-                    const urlAtual = this.page.url();
-                    console.log(`📍 URL após voltar: ${urlAtual}`);
-                    
-                    // Se voltou com sucesso, retornar true
-                    if (urlAtual.includes('/folder/') && !urlAtual.includes('/document/')) {
-                        console.log('✅ Voltou com sucesso para a pasta anterior!');
-                        return true;
-                    } else if (urlAtual.includes('/Project/')) {
-                        console.log('✅ Voltou com sucesso para o projeto!');
-                        return true;
-                    } else {
-                        console.log(`⚠️ Não voltou para a pasta correta. URL atual: ${urlAtual}`);
-                        console.log('⚠️ Tentando fallback...');
-                    }
-                } catch (e) {
-                    console.log('⚠️ Erro ao usar page.goBack(), tentando fallback...');
-                }
+                // ✅ SEM goBack - apenas usar sidebar para voltar
             }
             
             // Fallback: tentar usar o último item da sidebar
