@@ -116,6 +116,32 @@ const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'O
 const anoAtual = new Date().getFullYear();
 const anosMock = [anoAtual - 1, anoAtual, anoAtual + 1, anoAtual + 2];
 
+// Função para converter número do formato brasileiro para número
+function parsePtBrNumber(str) {
+  if (!str) return 0;
+  const clean = str.replace(/\./g, '').replace(/,/g, '.');
+  const num = Number(clean);
+  return isNaN(num) ? 0 : num;
+}
+
+// Função para formatar número no padrão brasileiro para exibição
+function formatPtBrNumber(num) {
+  if (num === null || num === undefined || num === '') return '';
+  const numValue = typeof num === 'string' ? parseFloat(num) : num;
+  if (isNaN(numValue)) return '';
+  
+  // Converter para string e separar parte inteira e decimal
+  const parts = numValue.toString().split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts[1] || '';
+  
+  // Formatar parte inteira com pontos como separador de milhares
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  // Retornar com vírgula como separador decimal
+  return decimalPart ? `${formattedInteger},${decimalPart}` : formattedInteger;
+}
+
 function DeleteConfirmationModal({ isOpen, onClose, kpi, onConfirm }) {
   const [loading, setLoading] = useState(false);
 
@@ -554,8 +580,8 @@ function EditKpiModal({ isOpen, onClose, kpi, kpiTypes, departments, onSave }) {
         kpi_type_id: kpi.kpi_type_id,
         year: kpi.year,
         month: kpi.month,
-        target_value: kpi.target_value.toString(),
-        actual_value: kpi.actual_value.toString(),
+        target_value: formatPtBrNumber(kpi.target_value),
+        actual_value: formatPtBrNumber(kpi.actual_value),
         department_id: kpi.department_id || '',
       });
     }
@@ -941,13 +967,6 @@ function LinkDepartmentModal({ isOpen, onClose, kpi, allKpisOfType, departments,
   );
 }
 
-function parsePtBrNumber(str) {
-  if (!str) return 0;
-  const clean = str.replace(/\./g, '').replace(/,/g, '.');
-  const num = Number(clean);
-  return isNaN(num) ? 0 : num;
-}
-
 export default function KpiDashboard() {
   const router = useRouter();
   // Tentar pegar companyId da URL primeiro, se não tiver, pegar do localStorage
@@ -1308,26 +1327,6 @@ export default function KpiDashboard() {
         return `${valor}${unitSymbol}`;
     }
   };
-
-  if (!user || userRole === null) {
-    return <div className={styles.loadingContainer}>Carregando...</div>;
-  }
-
-  if (userRole === 'FUNCIONARIO') {
-    return (
-      <div className={styles.restrictedContainer}>
-        Acesso restrito: funcionários não podem acessar esta página.
-      </div>
-    );
-  }
-
-  if (!['ADMIN', 'SUPERADMIN', 'RH', 'GESTOR'].includes(userRole)) {
-    return (
-      <div className={styles.restrictedContainer}>
-        Acesso restrito: você não tem permissão para visualizar esta página.
-      </div>
-    );
-  }
 
   if (loading) {
     return <div className={styles.loadingContainer}>Carregando dados...</div>;

@@ -167,34 +167,93 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
         const clientes = Object.values(clientesInfo);
         console.log(`👥 Total de clientes a processar: ${clientes.length}`);
 
-        // Função para processar um cliente (sessão única)
-        async function processarCliente(cliente, atividades, credenciais, empresaId) {
-            const onvioService = new OnvioService(req.usuario.id);
-            const resultados = [];
+        // Função auxiliar para inicializar navegador e fazer setup do cliente
+        async function inicializarNavegadorECliente(onvioService, cliente, credenciais, empresaId) {
+            await onvioService.initializeBrowser();
             
+            // ✅ GARANTIR: Navegar explicitamente para página de login antes de fazer login
+            // Isso garante que quando reabre o navegador, está na URL correta
             try {
-                // ✅ CORREÇÃO: Usar o método do OnvioService para criar browser
-                // Isso garante que browser e page sejam corretamente associados ao serviço
-                await onvioService.initializeBrowser();
-                await onvioService.fazerLogin(credenciais, true, empresaId);
+                console.log(`🌐 Navegando para página de login da Onvio...`);
+                await onvioService.page.goto('https://onvio.com.br/login/#/', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 30000
+                });
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                console.log(`✅ Navegado para página de login`);
+            } catch (navError) {
+                console.error(`❌ Erro ao navegar para página de login:`, navError);
+                // Tentar novamente
+                await onvioService.page.goto('https://onvio.com.br/login/#/', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 30000
+                });
+            }
+            
+            await onvioService.fazerLogin(credenciais, true, empresaId);
+            
+            // ✅ IMPORTANTE: Navegar para área de documentos ANTES de selecionar cliente
+            console.log(`📁 Navegando para área de documentos...`);
+            await onvioService.navegarParaAreaDocumentos();
+            
+            // ✅ IMPORTANTE: Verificar e trocar base ANTES de buscar/selecionar cliente
+            // Buscar dados do cliente pelo CNPJ para verificar a base
+            console.log(`🔍 Buscando dados do cliente pelo CNPJ para verificar base antes de selecionar...`);
+            const dadosCliente = await onvioService.buscarNomeClientePorCNPJ(cliente.cnpjCpf);
+            if (dadosCliente && dadosCliente.base) {
+                console.log(`🔍 Base encontrada pelo CNPJ: ${dadosCliente.base}`);
+                await onvioService.verificarETrocarBase(dadosCliente.base);
+            }
+            
+            // Agora sim, selecionar o cliente (base já está correta)
+            console.log(`👤 Selecionando cliente pelo CNPJ (base já verificada)...`);
+            await onvioService.selecionarClientePorCNPJ(cliente.cnpjCpf);
+        }
+
+        // Função auxiliar para voltar à página inicial de documentos e refazer seleção do cliente
+        // Usada quando uma atividade é concluída e precisa processar a próxima
+        async function voltarParaInicioDocumentos(onvioService, cliente) {
+            try {
+                console.log(`🔄 Voltando para página inicial de documentos para processar próxima atividade...`);
                 
-                // ✅ IMPORTANTE: Navegar para área de documentos ANTES de selecionar cliente
-                console.log(`📁 Navegando para área de documentos...`);
-                await onvioService.navegarParaAreaDocumentos();
+                // ✅ Navegar diretamente para a URL base de documentos (sem fechar navegador)
+                await onvioService.page.goto('https://onvio.com.br/staff/#/documents/client', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 30000
+                });
+                
+                // Aguardar carregamento da página
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 // ✅ IMPORTANTE: Verificar e trocar base ANTES de buscar/selecionar cliente
-                // Buscar dados do cliente pelo CNPJ para verificar a base
-                console.log(`🔍 Buscando dados do cliente pelo CNPJ para verificar base antes de selecionar...`);
+                console.log(`🔍 Verificando base antes de selecionar cliente novamente...`);
                 const dadosCliente = await onvioService.buscarNomeClientePorCNPJ(cliente.cnpjCpf);
                 if (dadosCliente && dadosCliente.base) {
                     console.log(`🔍 Base encontrada pelo CNPJ: ${dadosCliente.base}`);
                     await onvioService.verificarETrocarBase(dadosCliente.base);
                 }
                 
-                // Agora sim, selecionar o cliente (base já está correta)
-                console.log(`👤 Selecionando cliente pelo CNPJ (base já verificada)...`);
+                // Agora sim, selecionar o cliente novamente (base já está correta)
+                console.log(`👤 Selecionando cliente pelo CNPJ novamente (base já verificada)...`);
                 await onvioService.selecionarClientePorCNPJ(cliente.cnpjCpf);
+                
+                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 2000ms para 1000ms
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                console.log(`✅ Voltou para página inicial de documentos e cliente selecionado novamente`);
+            } catch (error) {
+                console.error(`❌ Erro ao voltar para página inicial de documentos:`, error);
+                throw error;
+            }
+        }
 
+        // Função para processar um cliente (fecha e reabre navegador após cada atividade concluída)
+        async function processarCliente(cliente, atividades, credenciais, empresaId) {
+            let onvioService = new OnvioService(req.usuario.id);
+            const resultados = [];
+            let concluiuAtividade = false; // ✅ Flag para controlar se já concluiu uma atividade
+            
+            try {
                 // ✅ Agrupar atividades por competência para processar uma competência por vez
                 const atividadesPorCompetencia = {};
                 atividades.forEach(atividade => {
@@ -210,6 +269,9 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
 
                 console.log(`📊 Processando ${Object.keys(atividadesPorCompetencia).length} competência(s) para o cliente ${cliente.nome}`);
 
+                // Inicializar navegador uma vez no início
+                await inicializarNavegadorECliente(onvioService, cliente, credenciais, empresaId);
+
                 // Processar uma competência por vez
                 for (const [competenciaKey, atividadesDaCompetencia] of Object.entries(atividadesPorCompetencia)) {
                     console.log(`📅 Processando competência: ${competenciaKey === 'sem-competencia' ? 'Sem competência definida' : competenciaKey} (${atividadesDaCompetencia.length} atividade(s))`);
@@ -222,10 +284,80 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                             competencia = formatarCompetencia(atividade.mes_referencia, atividade.ano_referencia, 'mm/yyyy');
                         }
                         // Navegar para o caminho da sidebar (pasta correta) só no início da atividade
+                        let resultadoNavegacao = null;
                         if (atividade.tituloDocumentoEsperado) {
-                            await onvioService.navegarPelaSidebar(atividade.tituloDocumentoEsperado, competencia, atividade.obrigacaoClienteId, empresaId);
+                            try {
+                                resultadoNavegacao = await onvioService.navegarPelaSidebar(atividade.tituloDocumentoEsperado, competencia, atividade.obrigacaoClienteId, empresaId);
+                                
+                                // ✅ Se a navegação retornou com atividade concluída (match automático), marcar como concluída mas CONTINUAR processando outras atividades
+                                if (resultadoNavegacao && resultadoNavegacao.atividadeConcluida) {
+                                    console.log(`[${cliente.nome}] ✅ Atividade ${atividade.id} concluída automaticamente durante navegação. Continuando para próximas atividades...`);
+                                    
+                                    // Marcar esta atividade como concluída
+                                    concluiuAtividade = true;
+                                    
+                                    resultados.push({
+                                        atividadeId: atividade.id,
+                                        success: true,
+                                        message: "Atividade concluída automaticamente durante navegação",
+                                        matchAutomático: true,
+                                        arquivo: resultadoNavegacao.arquivo
+                                    });
+                                    
+                                    // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                    // Isso garante que o cliente está selecionado e a base está correta
+                                    try {
+                                        await voltarParaInicioDocumentos(onvioService, cliente);
+                                    } catch (voltarError) {
+                                        console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                    }
+                                    
+                                    // Continuar para a próxima atividade (não retornar!)
+                                    continue;
+                                }
+                                
+                                // ✅ Se a navegação falhou (não encontrou a parte), voltar para página inicial e continuar
+                                if (resultadoNavegacao && !resultadoNavegacao.sucesso) {
+                                    console.log(`[${cliente.nome}] ⚠️ Navegação pela sidebar falhou para atividade ${atividade.id}. Voltando para página inicial e continuando...`);
+                                    
+                                    resultados.push({
+                                        atividadeId: atividade.id,
+                                        success: false,
+                                        message: `Navegação pela sidebar falhou: ${resultadoNavegacao.erro || 'Parte não encontrada'}`,
+                                        erro: resultadoNavegacao.erro
+                                    });
+                                    
+                                    // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                    try {
+                                        await voltarParaInicioDocumentos(onvioService, cliente);
+                                    } catch (voltarError) {
+                                        console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                    }
+                                    
+                                    // Continuar para a próxima atividade (não retornar!)
+                                    continue;
+                                }
+                            } catch (navError) {
+                                console.log(`[${cliente.nome}] ❌ Erro ao navegar pela sidebar para atividade ${atividade.id}: ${navError.message}`);
+                                
+                                resultados.push({
+                                    atividadeId: atividade.id,
+                                    success: false,
+                                    erro: `Erro na navegação: ${navError.message}`
+                                });
+                                
+                                // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                try {
+                                    await voltarParaInicioDocumentos(onvioService, cliente);
+                                } catch (voltarError) {
+                                    console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                }
+                                
+                                // Continuar para a próxima atividade (não retornar!)
+                                continue;
+                            }
                         }
-                        // Buscar documentos na pasta
+                        // Buscar documentos na pasta (apenas se não foi concluída automaticamente)
                         let documentosAtualizados = await onvioService.extrairDocumentos(5, 2000);
                         // LOG
                         console.log(`📄 [${cliente.nome}] Documentos encontrados na pasta '${atividade.tituloDocumentoEsperado}': ${documentosAtualizados.length}`);
@@ -263,7 +395,7 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                         }
                         if (matches.length > 0) {
                             const matchesDetalhados = [];
-                            let concluiuAtividade = false;
+                            // ✅ Usar a variável concluiuAtividade do escopo superior (já declarada)
                             for (const doc of matches) {
                                 let docAtual = null;
                                 let tentativas = 0;
@@ -340,13 +472,7 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                                             sucesso: false
                                         };
                                     }
-                                    // Após processar, goBack para a listagem
-                                    try {
-                                        await onvioService.page.goBack({ waitUntil: 'domcontentloaded' });
-                                        await new Promise(resolve => setTimeout(resolve, 1000));
-                                    } catch (goBackError) {
-                                        console.log(`⚠️ Erro ao voltar para listagem:`, goBackError);
-                                    }
+                                    // ✅ SEM NAVEGAÇÃO após processar documento: após concluir, navegador fecha imediatamente
                                 } else {
                                     resultadoBaixa = {
                                         arquivo: doc.titulo || doc.nome,
@@ -359,20 +485,38 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                                 if (!atividade.resultadosBaixa) atividade.resultadosBaixa = [];
                                 atividade.resultadosBaixa.push(resultadoBaixa);
 
-                                // Se concluiu com sucesso, parar imediatamente de processar outros docs desta atividade
+                                // Se concluiu com sucesso, marcar como concluída mas CONTINUAR processando outras atividades
                                 if (resultadoBaixa && resultadoBaixa.sucesso) {
                                     concluiuAtividade = true;
-                                    console.log(`[${cliente.nome}] ✅ Atividade ${atividade.id} concluída com sucesso. Encerrando execução desta atividade.`);
-                                    break;
+                                    console.log(`[${cliente.nome}] ✅ Atividade ${atividade.id} concluída com sucesso. Continuando para próximas atividades...`);
+                                    
+                                    // Adicionar resultado bem-sucedido
+                                    resultados.push({
+                                        atividadeId: atividade.id,
+                                        success: true,
+                                        matches: matchesDetalhados,
+                                        arquivo: resultadoBaixa.arquivo
+                                    });
+                                    
+                                    // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                    // Isso garante que o cliente está selecionado e a base está correta
+                                    try {
+                                        await voltarParaInicioDocumentos(onvioService, cliente);
+                                    } catch (voltarError) {
+                                        console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                    }
+                                    
+                                    // Continuar para o próximo documento ou atividade (não retornar!)
+                                    break; // Sair do loop de documentos, mas continuar para próxima atividade
                                 }
                             }
+                            // ✅ Se chegou aqui, não concluiu nenhuma atividade - adicionar resultado sem sucesso
                             resultados.push({
                                 atividadeId: atividade.id,
-                                success: true,
+                                success: false,
+                                message: "Nenhum documento foi processado com sucesso",
                                 matches: matchesDetalhados
                             });
-                            // Interromper após a primeira atividade concluída com sucesso
-                            if (concluiuAtividade) break;
                         } else {
                             resultados.push({
                                 atividadeId: atividade.id,
@@ -382,6 +526,19 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
                             });
                         }
                     } catch (e) {
+                        // ✅ Se for timeout na navegação, fechar navegador e seguir para próxima
+                        if (e.message && e.message.includes('Timeout')) {
+                            console.log(`⏱️ [${cliente.nome}] Timeout detectado na atividade ${atividade.id}. Fechando navegador e seguindo...`);
+                            try {
+                                await onvioService.fecharNavegador();
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                // Reabrir navegador para próxima atividade
+                                onvioService = new OnvioService(req.usuario.id);
+                                await inicializarNavegadorECliente(onvioService, cliente, credenciais, empresaId);
+                            } catch (err) {
+                                console.error(`❌ Erro ao fechar/reabrir navegador após timeout:`, err);
+                            }
+                        }
                         resultados.push({ atividadeId: atividade.id, success: false, erro: e.message });
                     }
                     } // Fim do loop de atividades da competência
@@ -394,9 +551,14 @@ router.post('/baixar-atividades', autenticarToken, async (req, res) => {
             } finally {
                 // ✅ CORREÇÃO CRÍTICA: Fechar navegador usando o método do OnvioService
                 // Isso garante que todos os recursos sejam liberados corretamente
+                // Verificar se navegador ainda está aberto antes de tentar fechar
                 try {
-                    await onvioService.fecharNavegador();
-                    console.log(`🔒 Navegador fechado para cliente: ${cliente.nome}`);
+                    if (onvioService && onvioService.browser && onvioService.browser.isConnected()) {
+                        await onvioService.fecharNavegador();
+                        console.log(`🔒 Navegador fechado para cliente: ${cliente.nome}`);
+                    } else {
+                        console.log(`ℹ️ Navegador já estava fechado para cliente: ${cliente.nome}`);
+                    }
                 } catch (closeError) {
                     console.error(`⚠️ Erro ao fechar navegador para ${cliente.nome}:`, closeError);
                 }
