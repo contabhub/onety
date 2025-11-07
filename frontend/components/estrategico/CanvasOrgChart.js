@@ -1029,7 +1029,7 @@ const CanvasOrgChart = ({
         const clickedNode = findNodeById(data);
         if (clickedNode) {
           // Navegar para a página do departamento
-          router.push(`/company/${companyId}/departments/${clickedNode.id}`);
+          router.push(`/estrategico/organograma/${clickedNode.id}`);
           return;
         }
       }
@@ -1136,7 +1136,7 @@ const CanvasOrgChart = ({
           <button
             className={styles.contextMenuButton}
             onClick={() => {
-              router.push(`/company/${companyId}/departments/${selectedNode.id}`);
+              router.push(`/estrategico/organograma/${selectedNode.id}`);
               handleCloseMenu();
             }}
           >
