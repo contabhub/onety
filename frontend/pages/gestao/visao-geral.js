@@ -1328,6 +1328,15 @@ export default function VisaoGeralPage() {
 
 
 
+    const normalizarDatas = (item = {}) => ({
+        dataAcao: item.dataAcao || item.data_acao || item.acaoData || item.dataAcaoPrevista || null,
+        dataMeta: item.dataMeta || item.data_meta || item.metaData || item.dataMetaPrevista || null,
+        dataPrazo: item.dataPrazo || item.data_prazo || item.prazo || item.dataPrazoPrevista || null,
+        vencimento: item.vencimento || item.vencimentoData || item.dataPrazo || item.data_prazo || null,
+    });
+
+
+
     function abrirModal(
         titulo,
         tarefas = [],
@@ -1335,28 +1344,38 @@ export default function VisaoGeralPage() {
         departamento,
         abaInicial = "solicitacoes"
     ) {
-        const tarefasFormatadas = tarefas.map((tarefa) => ({
-            ...tarefa,
-            departamento: departamento || tarefa.departamento || "-",
-            status: tarefa.status || "pendente",
-            tipo: tarefa.tipo || "tarefa",
-            atividades: tarefa.atividades || [],
-        }));
+        const tarefasFormatadas = tarefas.map((tarefa) => {
+            const datasNormalizadas = normalizarDatas(tarefa);
+            return {
+                ...tarefa,
+                ...datasNormalizadas,
+                departamento: departamento || tarefa.departamento || tarefa.departamento_nome || "-",
+                status: tarefa.status || "pendente",
+                tipo: tarefa.tipo || "tarefa",
+                atividades: tarefa.atividades || [],
+                cliente_cnpj: tarefa.cliente_cnpj || tarefa.clienteCnpj || tarefa.cnpj || null,
+            };
+        });
 
 
         const obrigacoesFormatadas = (obrigacoesExtras || [])
             .filter((ob) => ob && typeof ob === "object" && Object.keys(ob).length > 0)
-            .map((ob) => ({
-                ...ob,
-                tipo: "obrigacao",
-                departamento: ob.departamento_nome || ob.departamento || departamento || "-",
-                cliente: ob.cliente_nome || ob.cliente || "-",
-                statusCliente: ob.status_cliente || ob.statusCliente || "-",
-                status: ob.status || "pendente",
-                atividades: ob.atividades || [],
-                assunto: ob.assunto || ob.nome || "-", // 👈 ESSA LINHA AQUI
-                baixadaAutomaticamente: ob.baixadaAutomaticamente,  // <--- adicionar aqui
-            }));
+            .map((ob) => {
+                const datasNormalizadas = normalizarDatas(ob);
+                return {
+                    ...ob,
+                    ...datasNormalizadas,
+                    tipo: "obrigacao",
+                    departamento: ob.departamento_nome || ob.departamento || departamento || "-",
+                    cliente: ob.cliente_nome || ob.cliente || "-",
+                    statusCliente: ob.status_cliente || ob.statusCliente || "-",
+                    status: ob.status || "pendente",
+                    atividades: ob.atividades || [],
+                    assunto: ob.assunto || ob.nome || "-", // 👈 ESSA LINHA AQUI
+                    baixadaAutomaticamente: ob.baixadaAutomaticamente,
+                    cliente_cnpj: ob.cliente_cnpj || ob.clienteCnpj || ob.cnpj || null,
+                };
+            });
 
 
 
@@ -2921,22 +2940,8 @@ export default function VisaoGeralPage() {
                                             Tem certeza que deseja iniciar a <strong>baixa automática</strong> das atividades de integração Onvio?
                                         </p>
 
-                                        <div style={{
-                                            background: "var(--titan-info-bg)",
-                                            border: "1px solid var(--titan-info-border)",
-                                            borderRadius: "var(--titan-radius-md)",
-                                            padding: "var(--titan-spacing-md)",
-                                            marginBottom: "var(--titan-spacing-md)"
-                                        }}>
-                                            <h3 style={{
-                                                margin: "0 0 var(--titan-spacing-sm) 0",
-                                                fontSize: "var(--titan-font-size-sm)",
-                                                fontWeight: "var(--titan-font-weight-semibold)",
-                                                color: "var(--titan-info-text)",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "var(--titan-spacing-sm)"
-                                            }}>
+                                        <div className={styles.onvioInfoBox}>
+                                            <h3 className={styles.onvioInfoTitle}>
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                                     <polyline points="14,2 14,8 20,8" />
@@ -2946,13 +2951,7 @@ export default function VisaoGeralPage() {
                                                 </svg>
                                                 O que será processado:
                                             </h3>
-                                            <ul style={{
-                                                margin: 0,
-                                                paddingLeft: "20px",
-                                                color: "var(--titan-info-text)",
-                                                fontSize: "var(--titan-font-size-sm)",
-                                                lineHeight: "1.6"
-                                            }}>
+                                            <ul className={styles.onvioInfoList}>
                                                 <li>Atividades do tipo "Integração: Onvio" pendentes</li>
                                                 <li>Login automático na plataforma Onvio</li>
                                                 <li>Busca por documentos com competência específica</li>
@@ -2961,21 +2960,8 @@ export default function VisaoGeralPage() {
                                             </ul>
                                         </div>
 
-                                        <div style={{
-                                            background: "var(--titan-warning-bg)",
-                                            border: "1px solid var(--titan-warning-border)",
-                                            borderRadius: "var(--titan-radius-md)",
-                                            padding: "var(--titan-spacing-md)"
-                                        }}>
-                                            <p style={{
-                                                margin: 0,
-                                                color: "var(--titan-warning-text)",
-                                                fontSize: "var(--titan-font-size-sm)",
-                                                fontWeight: "var(--titan-font-weight-medium)",
-                                                display: "flex",
-                                                alignItems: "flex-start",
-                                                gap: "var(--titan-spacing-sm)"
-                                            }}>
+                                        <div className={styles.onvioWarningBox}>
+                                            <p className={styles.onvioWarningText}>
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginTop: "1px", flexShrink: 0 }}>
                                                     <circle cx="12" cy="12" r="10" />
                                                     <line x1="12" y1="8" x2="12" y2="12" />
