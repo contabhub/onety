@@ -1,7 +1,48 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import styles from '../../styles/estrategico/GlobalGoalModal.module.css';
+
+const TRIMESTERS = {
+  '1': ['01', '02', '03'],
+  '2': ['04', '05', '06'],
+  '3': ['07', '08', '09'],
+  '4': ['10', '11', '12'],
+};
+
+const getQuarterDateRange = (year, trimester) => {
+  const months = TRIMESTERS[trimester];
+  if (!months) {
+    return { startISO: null, endISO: null };
+  }
+
+  const startMonthIndex = parseInt(months[0], 10) - 1;
+  const endMonthIndex = parseInt(months[2], 10) - 1;
+
+  const startDate = new Date(year, startMonthIndex, 1);
+  const endDate = new Date(year, endMonthIndex + 1, 0);
+
+  const toISOAtNoonUTC = (date) => new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12)).toISOString();
+
+  return {
+    startISO: toISOAtNoonUTC(startDate),
+    endISO: toISOAtNoonUTC(endDate),
+  };
+};
+
+const formatDateForDisplay = (isoDate) => {
+  if (!isoDate) return '';
+  try {
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return date.toLocaleDateString('pt-BR');
+  } catch (error) {
+    console.error('Erro ao formatar data:', error);
+    return '';
+  }
+};
 
 const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
   const [title, setTitle] = useState('');
@@ -41,8 +82,11 @@ const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
         if (month <= 9) return '3';
         return '4';
       })();
+      const currentYear = new Date().getFullYear();
       setTrimestre(currentTrim);
-      setDatesBasedOnTrimestre(currentTrim);
+      const { startISO, endISO } = getQuarterDateRange(currentYear, currentTrim);
+      setStartDate(startISO || '');
+      setEndDate(endISO || '');
       setCalculationType('acumulativa');
       setIndicatorType('qtd');
       setProgressType('progresso');
@@ -57,32 +101,17 @@ const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
     return '4';
   };
 
-  const setDatesBasedOnTrimestre = (trimestre) => {
-    const currentYear = new Date().getFullYear();
-    let start = '';
-    let end = '';
+  const setDatesBasedOnTrimestre = (trimester, referenceYear) => {
+    const yearToUse = referenceYear ?? new Date().getFullYear();
+    const { startISO, endISO } = getQuarterDateRange(yearToUse, trimester);
 
-    switch (trimestre) {
-      case '1':
-        start = `${currentYear}-01-01`;
-        end = `${currentYear}-03-31`;
-        break;
-      case '2':
-        start = `${currentYear}-04-01`;
-        end = `${currentYear}-06-30`;
-        break;
-      case '3':
-        start = `${currentYear}-07-01`;
-        end = `${currentYear}-09-30`;
-        break;
-      case '4':
-        start = `${currentYear}-10-01`;
-        end = `${currentYear}-12-31`;
-        break;
+    if (!startISO || !endISO) {
+      toast.error('Período selecionado é inválido');
+      return;
     }
 
-    setStartDate(start);
-    setEndDate(end);
+    setStartDate(startISO);
+    setEndDate(endISO);
   };
 
   const handleSave = () => {
@@ -189,7 +218,9 @@ const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
                 onChange={(e) => {
                   const newTrimestre = e.target.value;
                   setTrimestre(newTrimestre);
-                  setDatesBasedOnTrimestre(newTrimestre);
+                  const referenceDate = goalData?.start_date || goalData?.data_inicio;
+                  const referenceYear = referenceDate ? new Date(referenceDate).getFullYear() : new Date().getFullYear();
+                  setDatesBasedOnTrimestre(newTrimestre, referenceYear);
                 }}
               >
                 <option value="1">1º Trimestre (Jan-Mar)</option>
@@ -203,7 +234,7 @@ const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
               <input
                 className={styles.formInput}
                 type="text"
-                value={startDate}
+                value={formatDateForDisplay(startDate)}
                 readOnly
               />
             </div>
@@ -212,7 +243,7 @@ const GlobalGoalModal = ({ isOpen, onClose, onSubmit, goalData }) => {
               <input
                 className={styles.formInput}
                 type="text"
-                value={endDate}
+                value={formatDateForDisplay(endDate)}
                 readOnly
               />
             </div>

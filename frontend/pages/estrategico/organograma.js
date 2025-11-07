@@ -671,7 +671,7 @@ export default function OrganizationChart() {
         return;
       }
     }
-    router.push(`/company/${companyId}/departments/${departmentId}`);
+    router.push(`/estrategico/organograma/${departmentId}`);
   };
 
   const getMesesDisponiveis = () => {
@@ -880,7 +880,7 @@ export default function OrganizationChart() {
             }}
             onDeleteDepartment={handleDeleteDepartment}
             onDepartmentCardClick={(node) => {
-              router.push(`/company/${companyId}/departments/${node.id}`);
+              router.push(`/estrategico/organograma/${node.id}`);
             }}
             userRole={userRole}
             user={user}
@@ -899,7 +899,7 @@ export default function OrganizationChart() {
             }}
             onDeleteDepartment={handleDeleteDepartment}
             onDepartmentCardClick={(node) => {
-              router.push(`/company/${companyId}/departments/${node.id}`);
+              router.push(`/estrategico/organograma/${node.id}`);
             }}
             userRole={userRole}
             selectedYear={selectedYear}

@@ -103,6 +103,110 @@ const apiFetch = async (url, options = {}) => {
 };
 
 
+const normalizeDepartmentGoal = (goal) => {
+  if (!goal) return null;
+
+  const departmentId = goal.department_id ?? goal.departamento_id ?? goal.department?.id ?? null;
+  const departmentData = goal.department || {
+    id: departmentId,
+    title: goal.department?.title ?? goal.department_title ?? goal.department?.nome ?? goal.nome_departamento ?? null,
+    nome: goal.department?.nome ?? goal.department_title ?? goal.nome_departamento ?? null,
+    description: goal.department?.description ?? goal.department_description ?? null,
+    descricao: goal.department?.descricao ?? goal.department_description ?? null,
+    company_id: goal.department?.company_id ?? goal.department_company_id ?? goal.empresa_id ?? null,
+    empresa_id: goal.department?.empresa_id ?? goal.department_company_id ?? goal.empresa_id ?? null,
+  };
+
+  const parseNumber = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return 0;
+    }
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const normalizeMonth = (month) => {
+    if (!month) return null;
+
+    return {
+      ...month,
+      id: month.id,
+      meta_departamental_id: month.meta_departamental_id ?? month.id_metas_departamentais ?? goal.id ?? null,
+      start_date: month.start_date ?? month.data_inicio ?? null,
+      end_date: month.end_date ?? month.data_fim ?? null,
+      value_goal: parseNumber(month.value_goal ?? month.valor_alvo),
+      value_achieved: parseNumber(month.value_achieved ?? month.valor_alcancado),
+      status: month.status,
+      created_at: month.created_at ?? month.criado_em ?? null,
+      updated_at: month.updated_at ?? month.atualizado_em ?? null,
+    };
+  };
+
+  return {
+    ...goal,
+    company_id: goal.company_id ?? goal.empresa_id ?? null,
+    empresa_id: goal.empresa_id ?? goal.company_id ?? null,
+    department_id: departmentId,
+    departamento_id: goal.departamento_id ?? departmentId,
+    title: goal.title ?? goal.nome ?? '',
+    nome: goal.nome ?? goal.title ?? '',
+    description: goal.description ?? goal.descricao ?? '',
+    descricao: goal.descricao ?? goal.description ?? '',
+    target_value: parseNumber(goal.target_value ?? goal.valor_alvo),
+    current_value: parseNumber(goal.current_value ?? goal.valor_atual),
+    calculation_type: goal.calculation_type ?? goal.calculo_tipo ?? 'acumulativa',
+    calculationType: goal.calculationType ?? goal.calculation_type ?? goal.calculo_tipo ?? 'acumulativa',
+    indicator_type: goal.indicator_type ?? goal.indicador_tipo ?? 'qtd',
+    indicatorType: goal.indicatorType ?? goal.indicator_type ?? goal.indicador_tipo ?? 'qtd',
+    progress_type: goal.progress_type ?? goal.progresso_tipo ?? 'progresso',
+    progressType: goal.progressType ?? goal.progress_type ?? goal.progresso_tipo ?? 'progresso',
+    start_date: goal.start_date ?? goal.data_inicio ?? null,
+    end_date: goal.end_date ?? goal.data_fim ?? null,
+    created_at: goal.created_at ?? goal.criado_em ?? null,
+    updated_at: goal.updated_at ?? goal.atualizado_em ?? null,
+    department: departmentData,
+    monthlyGoals: Array.isArray(goal.monthlyGoals)
+      ? goal.monthlyGoals.map(normalizeMonth).filter(Boolean)
+      : [],
+  };
+};
+
+const normalizeGlobalGoal = (goal) => {
+  if (!goal) return null;
+
+  const parseNumber = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return 0;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  return {
+    ...goal,
+    company_id: goal.company_id ?? goal.empresa_id ?? null,
+    empresa_id: goal.empresa_id ?? goal.company_id ?? null,
+    title: goal.title ?? goal.titulo ?? '',
+    titulo: goal.titulo ?? goal.title ?? '',
+    description: goal.description ?? goal.descricao ?? '',
+    descricao: goal.descricao ?? goal.description ?? '',
+    target_value: parseNumber(goal.target_value ?? goal.valor_alvo),
+    current_value: parseNumber(goal.current_value ?? goal.valor_atual),
+    calculation_type: goal.calculation_type ?? goal.calculo_tipo ?? 'acumulativa',
+    calculationType: goal.calculationType ?? goal.calculation_type ?? goal.calculo_tipo ?? 'acumulativa',
+    indicator_type: goal.indicator_type ?? goal.indicador_tipo ?? 'qtd',
+    indicatorType: goal.indicatorType ?? goal.indicator_type ?? goal.indicador_tipo ?? 'qtd',
+    progress_type: goal.progress_type ?? goal.progresso_tipo ?? 'progresso',
+    progressType: goal.progressType ?? goal.progress_type ?? goal.progresso_tipo ?? 'progresso',
+    start_date: goal.start_date ?? goal.data_inicio ?? null,
+    end_date: goal.end_date ?? goal.data_fim ?? null,
+    created_at: goal.created_at ?? goal.criado_em ?? null,
+    updated_at: goal.updated_at ?? goal.atualizado_em ?? null,
+  };
+};
+
+
 export default function GlobalGoals() {
   const router = useRouter();
   // Tentar pegar companyId da URL primeiro, se não tiver, pegar do localStorage
@@ -302,11 +406,17 @@ export default function GlobalGoals() {
       
       if (globalGoalsResponse.data && globalGoalsResponse.pagination) {
         console.log('🔍 [GlobalGoals] Usando resposta paginada:', globalGoalsResponse.data);
-        setGoals(globalGoalsResponse.data);
+        const normalizedGoals = (globalGoalsResponse.data || [])
+          .map(normalizeGlobalGoal)
+          .filter(Boolean);
+        setGoals(normalizedGoals);
         setGlobalGoalsPagination(globalGoalsResponse.pagination);
       } else {
         console.log('🔍 [GlobalGoals] Usando fallback (resposta antiga):', globalGoalsResponse);
-        setGoals(globalGoalsResponse || []);
+        const normalizedGoals = (Array.isArray(globalGoalsResponse) ? globalGoalsResponse : [globalGoalsResponse])
+          .map(normalizeGlobalGoal)
+          .filter(Boolean);
+        setGoals(normalizedGoals);
       }
 
     } catch (error) {
@@ -368,11 +478,19 @@ export default function GlobalGoals() {
       if (departmentGoalsResponse.data && departmentGoalsResponse.pagination) {
         console.log('🔍 [GlobalGoals] Usando resposta paginada departamental:', departmentGoalsResponse.data);
         console.log('🔍 [GlobalGoals] Paginação departamental:', departmentGoalsResponse.pagination);
-        setGoalsDepartment(departmentGoalsResponse.data);
+
+        const normalizedGoals = (departmentGoalsResponse.data || [])
+          .map(normalizeDepartmentGoal)
+          .filter(Boolean);
+
+        setGoalsDepartment(normalizedGoals);
         setDepartmentGoalsPagination(departmentGoalsResponse.pagination);
       } else {
         console.log('🔍 [GlobalGoals] Usando fallback departamental (resposta antiga):', departmentGoalsResponse);
-        setGoalsDepartment(departmentGoalsResponse || []);
+        const normalizedGoals = (Array.isArray(departmentGoalsResponse) ? departmentGoalsResponse : [departmentGoalsResponse])
+          .map(normalizeDepartmentGoal)
+          .filter(Boolean);
+        setGoalsDepartment(normalizedGoals);
       }
 
     } catch (error) {
