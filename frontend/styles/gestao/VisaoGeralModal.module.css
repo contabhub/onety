@@ -178,8 +178,8 @@
     font-weight: 500;
   }
   
-  .cellAssunto {
-    color: var(--onity-color-primary);
+.cellAssunto {
+  color: var(--onity-text-high);
     cursor: pointer;
     min-width: 120px;
     max-width: 180px;
@@ -188,7 +188,7 @@
   }
   
   .cellAssunto:hover {
-    color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary-hover);
     text-decoration: underline;
   }
   
@@ -217,10 +217,12 @@
     min-width: 90px;
     max-width: 130px;
     word-break: break-word;
+  color: var(--onity-text-high);
   }
   
   .cellDatas span {
-    font-weight: 700;
+  font-weight: 700;
+  color: var(--onity-text-high);
   }
   
   .cellConclusao {
