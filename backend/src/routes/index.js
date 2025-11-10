@@ -138,6 +138,18 @@ const estrategicoMetasDepartamentaisRoutes = require('./estrategico/metas-depart
 const estrategicoMetasGlobaisRoutes = require('./estrategico/metas-globais');
 const estrategicoOrganogramaRoutes = require('./estrategico/organograma');
 
+// Rotas da Auditoria
+const auditoriaAnalysesRoutes = require('./auditoria/analyses');
+const auditoriaCnaeInfoRoutes = require('./auditoria/cnae-info');
+const auditoriaClientesRoutes = require('./auditoria/clientes');
+const auditoriaEcacRoutes = require('./auditoria/ecac');
+const auditoriaIcmsRecolhidoRoutes = require('./auditoria/icms-recolhido');
+const auditoriaNcmsAnalisesRoutes = require('./auditoria/ncms-analises');
+const auditoriaNotasFiscaisRoutes = require('./auditoria/notas-fiscais');
+const auditoriaRegimeNormalRoutes = require('./auditoria/regime-normal');
+const auditoriaRctSnRoutes = require('./auditoria/rct-sn');
+const auditoriaSimplesNacionalRoutes = require('./auditoria/simples-nacional');
+
 // Rotas do Onety
 router.use('/auth', authRoutes);
 router.use('/empresas', empresasRoutes);
@@ -276,6 +288,17 @@ router.use('/estrategico/metas-departamentais', estrategicoMetasDepartamentaisRo
 router.use('/estrategico/metas-globais', estrategicoMetasGlobaisRoutes);
 router.use('/estrategico/organograma', estrategicoOrganogramaRoutes);
 
+// Rotas da Auditoria
+router.use('/auditoria/analyses', auditoriaAnalysesRoutes);
+router.use('/auditoria/cnae-info', auditoriaCnaeInfoRoutes);
+router.use('/auditoria/clientes', auditoriaClientesRoutes);
+router.use('/auditoria/ecac', auditoriaEcacRoutes);
+router.use('/auditoria/icms-recolhido', auditoriaIcmsRecolhidoRoutes);
+router.use('/auditoria/ncms-analises', auditoriaNcmsAnalisesRoutes);
+router.use('/auditoria/notas-fiscais', auditoriaNotasFiscaisRoutes);
+router.use('/auditoria/regime-normal', auditoriaRegimeNormalRoutes);
+router.use('/auditoria/rct-sn', auditoriaRctSnRoutes);
+router.use('/auditoria/simples-nacional', auditoriaSimplesNacionalRoutes);
 
 router.get("/", (req, res) => {
   res.send("API rodando!");
