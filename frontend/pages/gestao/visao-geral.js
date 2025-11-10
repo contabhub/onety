@@ -1317,16 +1317,7 @@ export default function VisaoGeralPage() {
         );
     };
 
-
-
-
     const hoje = new Date().toISOString().split("T")[0];
-
-
-
-
-
-
 
     const normalizarDatas = (item = {}) => ({
         dataAcao: item.dataAcao || item.data_acao || item.acaoData || item.dataAcaoPrevista || null,
@@ -1334,8 +1325,6 @@ export default function VisaoGeralPage() {
         dataPrazo: item.dataPrazo || item.data_prazo || item.prazo || item.dataPrazoPrevista || null,
         vencimento: item.vencimento || item.vencimentoData || item.dataPrazo || item.data_prazo || null,
     });
-
-
 
     function abrirModal(
         titulo,
@@ -1356,7 +1345,6 @@ export default function VisaoGeralPage() {
                 cliente_cnpj: tarefa.cliente_cnpj || tarefa.clienteCnpj || tarefa.cnpj || null,
             };
         });
-
 
         const obrigacoesFormatadas = (obrigacoesExtras || [])
             .filter((ob) => ob && typeof ob === "object" && Object.keys(ob).length > 0)
