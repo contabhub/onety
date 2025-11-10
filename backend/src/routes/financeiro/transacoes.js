@@ -2,6 +2,17 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../config/database");
 const verifyToken = require("../../middlewares/auth");
+
+// Garantir que DOMMatrix exista no ambiente Node para o pdf-parse
+try {
+  const { DOMMatrix } = require("canvas");
+  if (!global.DOMMatrix && DOMMatrix) {
+    global.DOMMatrix = DOMMatrix;
+  }
+} catch (error) {
+  console.warn("[WARN] Não foi possível carregar DOMMatrix a partir de canvas:", error.message);
+}
+
 const pdfParse = require("pdf-parse");
 
 // 🔹 Função para extrair valor de PDF de boleto
