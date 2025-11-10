@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { database } = require("../../config/database");
-const { verifyToken } = require("../../middlewares/auth");
+const verifyToken = require("../../middlewares/auth");
 
 // ===== ROTAS PARA TABELA CLIENTES =====
 

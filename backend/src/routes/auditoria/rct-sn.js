@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../../config/database");
-const { verifyToken } = require("../../middlewares/auth");
+const verifyToken = require("../../middlewares/auth");
 
 // ===== ROTAS PARA RCT-SN (Relatório de Controle Tributário - Simples Nacional) =====
 
