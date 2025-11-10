@@ -4,6 +4,28 @@ const pool = require("../../config/database");
 const verifyToken = require("../../middlewares/auth");
 const consultaCnaeService = require("../../services/auditoria/ConsultaCnae");
 
+const parseDecimal = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.replace(",", ".").trim();
+    if (!normalized) {
+      return null;
+    }
+
+    const numeric = Number(normalized);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+
+  return null;
+};
+
 // ===== ROTAS PARA TABELA CNAE_INFO =====
 
 // POST /cnae-info/consultar - Consultar CNAEs na API da LegisWeb
@@ -104,6 +126,23 @@ router.post("/consultar-e-salvar", verifyToken, async (req, res) => {
           continue;
         }
 
+        const fatorRValue = parseDecimal(cnae.fator_r);
+        const aliquotaValue = parseDecimal(cnae.aliquota);
+
+        if (cnae.fator_r && fatorRValue === null) {
+          console.warn(
+            `[CNAE Info] Valor de fator_r inválido para CNAE ${cnae.codigo}:`,
+            cnae.fator_r
+          );
+        }
+
+        if (cnae.aliquota && aliquotaValue === null) {
+          console.warn(
+            `[CNAE Info] Valor de aliquota inválido para CNAE ${cnae.codigo}:`,
+            cnae.aliquota
+          );
+        }
+
         const [insertResult] = await pool.query(
           `
             INSERT INTO cnae_info (
@@ -122,8 +161,8 @@ router.post("/consultar-e-salvar", verifyToken, async (req, res) => {
             cnae.codigo,
             cnae.descricao,
             cnae.anexo,
-            cnae.fator_r,
-            cnae.aliquota,
+            fatorRValue,
+            aliquotaValue,
             req.user.userId,
             req.user.userId
           ]
@@ -210,9 +249,20 @@ router.post("/", verifyToken, async (req, res) => {
       aliquota
     } = req.body;
 
-    if (!clientes_id || !cnae || !descricao || !anexo || fator_r === undefined || aliquota === undefined) {
+    const fatorRSanitized = parseDecimal(fator_r);
+    const aliquotaSanitized = parseDecimal(aliquota);
+
+    if (
+      !clientes_id ||
+      !cnae ||
+      !descricao ||
+      !anexo ||
+      fatorRSanitized === null ||
+      aliquotaSanitized === null
+    ) {
       return res.status(400).json({
-        error: "Todos os campos são obrigatórios: clientes_id, cnae, descricao, anexo, fator_r, aliquota"
+        error:
+          "Todos os campos são obrigatórios e devem ser numéricos: clientes_id, cnae, descricao, anexo, fator_r, aliquota"
       });
     }
 
@@ -246,7 +296,16 @@ router.post("/", verifyToken, async (req, res) => {
           atualizado_por
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [clientes_id, cnae, descricao, anexo, fator_r, aliquota, req.user.userId, req.user.userId]
+      [
+        clientes_id,
+        cnae,
+        descricao,
+        anexo,
+        fatorRSanitized,
+        aliquotaSanitized,
+        req.user.userId,
+        req.user.userId
+      ]
     );
 
     const [novoCnae] = await pool.query(
@@ -428,9 +487,19 @@ router.put("/:id", verifyToken, async (req, res) => {
       aliquota
     } = req.body;
 
-    if (!cnae || !descricao || !anexo || fator_r === undefined || aliquota === undefined) {
+    const fatorRSanitized = parseDecimal(fator_r);
+    const aliquotaSanitized = parseDecimal(aliquota);
+
+    if (
+      !cnae ||
+      !descricao ||
+      !anexo ||
+      fatorRSanitized === null ||
+      aliquotaSanitized === null
+    ) {
       return res.status(400).json({
-        error: "Todos os campos são obrigatórios: cnae, descricao, anexo, fator_r, aliquota"
+        error:
+          "Todos os campos são obrigatórios e devem ser numéricos: cnae, descricao, anexo, fator_r, aliquota"
       });
     }
 
@@ -482,7 +551,15 @@ router.put("/:id", verifyToken, async (req, res) => {
           atualizado_por = ?
         WHERE id = ?
       `,
-      [cnae, descricao, anexo, fator_r, aliquota, req.user.userId, id]
+      [
+        cnae,
+        descricao,
+        anexo,
+        fatorRSanitized,
+        aliquotaSanitized,
+        req.user.userId,
+        id
+      ]
     );
 
     const [atualizado] = await pool.query(
