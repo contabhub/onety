@@ -169,6 +169,13 @@ const normalizeKpiType = (kpiType) => ({
   description: kpiType.description ?? kpiType.descricao ?? ''
 });
 
+function parsePtBrNumber(str) {
+  if (!str) return 0;
+  const clean = str.replace(/\./g, '').replace(/,/g, '.');
+  const num = Number(clean);
+  return Number.isNaN(num) ? 0 : num;
+}
+
 function DeleteConfirmationModal({ isOpen, onClose, kpi, onConfirm }) {
   const [loading, setLoading] = useState(false);
 
@@ -999,13 +1006,6 @@ function LinkDepartmentModal({ isOpen, onClose, kpi, allKpisOfType, departments,
       </div>
     </div>
   );
-}
-
-function parsePtBrNumber(str) {
-  if (!str) return 0;
-  const clean = str.replace(/\./g, '').replace(/,/g, '.');
-  const num = Number(clean);
-  return isNaN(num) ? 0 : num;
 }
 
 export default function KpiDashboard() {

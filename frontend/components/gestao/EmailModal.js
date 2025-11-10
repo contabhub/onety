@@ -92,12 +92,12 @@ export default function EmailModal({
   const [loadingAnexos, setLoadingAnexos] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  const clienteOptions = clientes.map((c) => ({ value: c.email, label: `${c.nome} - ${c.email}` }));
-  const funcionarioOptions = usuarios.map((u) => ({ 
+  const clienteOptions = Array.isArray(clientes) ? clientes.map((c) => ({ value: c.email, label: `${c.nome} - ${c.email}` })) : [];
+  const funcionarioOptions = Array.isArray(usuarios) ? usuarios.map((u) => ({ 
     value: u.email, 
     label: `${u.nome} - ${u.email}`,
     nome: u.nome 
-  }));
+  })) : [];
   const empresaId = typeof window !== "undefined"
     ? (sessionStorage.getItem("empresaId") || (() => {
         try {
@@ -114,9 +114,24 @@ export default function EmailModal({
     const nomeArquivo = anexo?.nome_arquivo || anexo?.nomeArquivo || 'arquivo';
 
     try {
+      // Caso 1: base64Data é uma string (base64 direto)
       if (base64Data && typeof base64Data === 'string') {
         const response = await fetch(`data:application/octet-stream;base64,${base64Data}`);
         const blob = await response.blob();
+        return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
+      }
+
+      // Caso 2: base64Data é um Buffer (objeto com type: 'Buffer' e data: Array)
+      if (base64Data && typeof base64Data === 'object' && base64Data.type === 'Buffer' && Array.isArray(base64Data.data)) {
+        // Converter o array de bytes para Uint8Array e depois para Blob
+        const bytes = new Uint8Array(base64Data.data);
+        const blob = new Blob([bytes], { type: 'application/octet-stream' });
+        return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
+      }
+
+      // Caso 3: base64Data é um ArrayBuffer ou Uint8Array
+      if (base64Data instanceof ArrayBuffer || base64Data instanceof Uint8Array) {
+        const blob = new Blob([base64Data], { type: 'application/octet-stream' });
         return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
       }
 
@@ -130,10 +145,10 @@ export default function EmailModal({
         return new File([blob], nomeArquivo, { type: blob.type || 'application/octet-stream' });
       }
     } catch (e) {
-      console.warn('[EmailModal] Falha ao obter blob/base64 do anexo', { nomeArquivo, id: anexo?.id, error: String(e) });
+      console.warn('[EmailModal] Falha ao obter blob/base64 do anexo', { nomeArquivo, id: anexo?.id, base64Data: base64Data?.type || typeof base64Data, error: String(e) });
     }
 
-    console.warn('[EmailModal] Anexo inválido, ignorando', { nomeArquivo, id: anexo?.id });
+    console.warn('[EmailModal] Anexo inválido, ignorando', { nomeArquivo, id: anexo?.id, base64Data: base64Data?.type || typeof base64Data });
     return null;
   };
 
@@ -349,9 +364,9 @@ export default function EmailModal({
 
   useEffect(() => {
     if (empresaId) {
-      api.get(`/gestao/clientes?empresaId=${empresaId}`).then((res) => setClientes(res.data.clientes || []));
       const token = resolveToken();
-      api.get(`/gestao/usuarios`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => setUsuarios(res.data || []));
+      api.get(`/gestao/clientes?empresaId=${empresaId}`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => setClientes(Array.isArray(res.data?.clientes) ? res.data.clientes : []));
+      api.get(`/usuarios`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => setUsuarios(Array.isArray(res.data) ? res.data : []));
     }
   }, [empresaId]);
 
@@ -444,18 +459,18 @@ export default function EmailModal({
       const token = resolveToken();
         if (tipo === "processo") {
           // Para processo, usamos os dados da tarefa/processo
-          const resProc = await api.get(`/api/tarefas/${processoId}`, {
+          const resProc = await api.get(`/gestao/tarefas/${processoId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           dadosProcesso = resProc.data;
         } else {
           // Obrigação: usa cadeia atual
-          const res = await api.get(`/api/obrigacoes/atividades-cliente/${processoId}`, {
+          const res = await api.get(`/gestao/obrigacoes/atividades-cliente/${processoId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.data?.[0]) {
             const obrigacaoClienteId = res.data[0].obrigacaoClienteId;
-            const obrigacaoRes = await api.get(`/api/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
+            const obrigacaoRes = await api.get(`/gestao/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             dadosObrigacao = obrigacaoRes.data;
@@ -653,7 +668,7 @@ export default function EmailModal({
     const user = sessionStorage.getItem("usuario");
     if (user) setNomeUsuario(JSON.parse(user).nome);
     const token = resolveToken();
-    api.get("/api/escritorio", { headers: { Authorization: `Bearer ${token}` } }).then((res) => setEmpresa(res.data.razaoSocial));
+    api.get("/gestao/escritorio", { headers: { Authorization: `Bearer ${token}` } }).then((res) => setEmpresa(res.data.razaoSocial));
   }, []);
 
   useEffect(() => {
@@ -662,7 +677,7 @@ export default function EmailModal({
     const token = resolveToken();
 
     // Passo 1: buscar a atividade
-    api.get(`/api/obrigacoes/atividades-cliente/${processoId}`, {
+    api.get(`/gestao/obrigacoes/atividades-cliente/${processoId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -672,7 +687,7 @@ export default function EmailModal({
         if (!obrigacaoClienteId) throw new Error("Sem obrigacaoClienteId");
 
         // Passo 2: buscar a obrigação gerada com base no ID certo
-        return api.get(`/api/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
+        return api.get(`/gestao/obrigacoes/cliente-obrigacao/${obrigacaoClienteId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       })
@@ -706,7 +721,7 @@ export default function EmailModal({
     const token = sessionStorage.getItem("token");
     if (!token) return;
 
-    api.get(`/api/tarefas/${processoId}`, {
+    api.get(`/gestao/tarefas/${processoId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -992,7 +1007,7 @@ export default function EmailModal({
                 maxHeight: '160px',
                 overflowY: 'auto'
               }}>
-                {anexo.map((file, i) => {
+                {anexo.filter(file => file && file.name).map((file, i) => {
                   // Buscar informações da atividade para este anexo
                   const anexoOrigem = anexosAtividades.find(anexoAtividade => 
                     anexoAtividade.nome_arquivo === file.name || anexoAtividade.nomeArquivo === file.name

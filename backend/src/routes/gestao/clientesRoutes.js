@@ -797,7 +797,7 @@ router.post("/importar", async (req, res) => {
 /**
  * 📌 Rota para listar os clientes
  */
-router.get("/", autenticarToken, verificarPermissao('clientes.visualizar'), async (req, res) => {
+router.get("/", autenticarToken, async (req, res) => {
   try {
     const {
       empresaId,
@@ -1078,7 +1078,14 @@ router.get("/todos/:empresaId", async (req, res) => {
     return res.status(400).json({ error: "Empresa ID é obrigatório." });
   }
 
-  let sql = `SELECT id as clienteId, nome, cnpjCpf FROM clientes WHERE empresaId = ?`;
+  let sql = `
+    SELECT
+      c.id AS clienteId,
+      c.razao_social AS nome,
+      c.cpf_cnpj AS cnpjCpf
+    FROM clientes c
+    WHERE c.empresa_id = ?
+  `;
   let params = [empresaId];
 
   if (busca) {
@@ -1089,7 +1096,7 @@ router.get("/todos/:empresaId", async (req, res) => {
     if (termos.length > 0) {
       sql += " AND (";
       // Busca em nome
-      sql += termos.map(() => `LOWER(nome) LIKE ?`).join(" AND ");
+      sql += termos.map(() => `LOWER(c.razao_social) LIKE ?`).join(" AND ");
       // Busca também no CNPJ (opcional, pode manter do jeito antigo se quiser)
       // Se quiser buscar CNPJ pelo termo completo, pode adicionar mais uma OR, mas normalmente só busca por número
       sql += ")";
@@ -1098,7 +1105,7 @@ router.get("/todos/:empresaId", async (req, res) => {
     }
   }
 
-  sql += " ORDER BY nome ASC";
+  sql += " ORDER BY c.razao_social ASC";
 
   try {
     const [clientes] = await db.query(sql, params);

@@ -1,0 +1,1741 @@
+const express = require('express');
+const { OnvioService } = require('../services/onvioService'); // ✅ Usar destructuring para pegar a classe
+const autenticarToken = require("../middlewares/auth");
+const db = require('../config/database');
+const { authenticator } = require("otplib");
+
+
+const router = express.Router();
+
+
+/**
+ * 🔐 Verificar se o usuário é superadmin
+ */
+function isSuperAdmin(req) {
+    try {
+        const permissoes = req.user?.permissoes || req.usuario?.permissoes || {};
+        const admList = Array.isArray(permissoes.adm)
+            ? permissoes.adm.map((p) => String(p).toLowerCase())
+            : [];
+        return admList.includes("superadmin");
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * 📥 Baixar atividades automaticamente da Onvio
+ * Se for superadmin, processa todas as empresas. Caso contrário, apenas a empresa do usuário.
+ */
+router.post('/baixar-atividades', autenticarToken, async (req, res) => {
+    try {
+        const isSuperAdminUser = isSuperAdmin(req);
+        let empresaId = req.usuario?.empresaId;
+        
+        // Se não for superadmin, exige empresaId
+        if (!isSuperAdminUser && !empresaId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Empresa ID é obrigatório" 
+            });
+        }
+
+        // Se for superadmin, buscar todas as empresas com atividades Onvio
+        let empresasParaProcessar = [];
+        
+        if (isSuperAdminUser) {
+            console.log(`🔑 Superadmin detectado! Processando todas as empresas com atividades Onvio...`);
+            
+            // Buscar todas as empresas que têm atividades Onvio pendentes
+            const [empresasComAtividades] = await db.query(`
+                SELECT DISTINCT e.id AS empresaId, e.nome AS empresaNome
+                FROM empresas e
+                JOIN obrigacoes o ON o.empresa_id = e.id
+                JOIN atividades_obrigacao ao ON ao.obrigacao_id = o.id
+                JOIN obrigacoes_clientes oc ON oc.obrigacao_id = o.id
+                JOIN obrigacoes_atividades_clientes oac ON oac.obrigacao_cliente_id = oc.id
+                WHERE ao.tipo = 'Integração: Onvio'
+                AND oac.concluida = 0
+                AND oc.status != 'concluida'
+                AND oc.baixado_automaticamente = 0
+                AND e.onvioLogin IS NOT NULL
+                AND e.onvioSenha IS NOT NULL
+                ORDER BY e.id
+            `);
+            
+            empresasParaProcessar = empresasComAtividades;
+            console.log(`🏢 Encontradas ${empresasParaProcessar.length} empresas com atividades Onvio pendentes`);
+        } else {
+            // Usuário normal: processar apenas sua empresa
+            empresasParaProcessar = [{ empresaId, empresaNome: 'Empresa do usuário' }];
+        }
+
+        if (empresasParaProcessar.length === 0) {
+            return res.json({
+                success: true,
+                message: "Nenhuma empresa com atividades Onvio pendentes encontrada.",
+                detalhes: []
+            });
+        }
+
+        // Processar cada empresa
+        const resultadosPorEmpresa = [];
+        
+        for (const empresa of empresasParaProcessar) {
+            empresaId = empresa.empresaId;
+            const empresaNome = empresa.empresaNome || 'N/A';
+            console.log(`🚀 Processando empresa ID: ${empresaId} (${empresaNome})`);
+            
+            try {
+                // Verificar se tem credenciais configuradas
+                const credenciais = await obterCredenciaisOnvio(empresaId);
+                if (!credenciais) {
+                    console.log(`⚠️ Empresa ${empresaId} sem credenciais configuradas, pulando...`);
+                    resultadosPorEmpresa.push({
+                        empresaId,
+                        empresaNome,
+                        sucesso: false,
+                        erro: "Credenciais da Onvio não configuradas"
+                    });
+                    continue;
+                }
+
+                // Buscar atividades base do tipo "Integração: Onvio"
+                const [atividadesBase] = await db.query(`
+                    SELECT
+                        ao.id AS atividadeBaseId,
+                        ao.texto AS atividadeTexto,
+                        ao.titulo_documento AS tituloDocumentoEsperado,
+                        ao.pdf_layout_id AS pdfLayoutId,
+                        o.id AS obrigacaoBaseId,
+                        o.nome AS obrigacaoNome
+                    FROM atividades_obrigacao ao
+                    JOIN obrigacoes o ON ao.obrigacao_id = o.id
+                    WHERE ao.tipo = 'Integração: Onvio'
+                    AND o.empresa_id = ?
+                `, [empresaId]);
+
+                if (atividadesBase.length === 0) {
+                    console.log(`⚠️ Empresa ${empresaId} sem atividades base 'Integração: Onvio', pulando...`);
+                    resultadosPorEmpresa.push({
+                        empresaId,
+                        empresaNome,
+                        sucesso: true,
+                        message: "Nenhuma atividade base 'Integração: Onvio' encontrada"
+                    });
+                    continue;
+                }
+
+        console.log(`🔍 Encontradas ${atividadesBase.length} atividades base de integração Onvio.`);
+        
+        // Agrupar atividades de clientes por clienteId
+        let atividadesPorCliente = {};
+        let clientesInfo = {};
+        for (const atividadeBase of atividadesBase) {
+            const [atividadesCliente] = await db.query(`
+                SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id as obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, 
+                       o.nome as obrigacao_nome, c.razao_social as cliente_nome, c.id as clienteId, c.cpf_cnpj as clienteCnpjCpf,
+                       oc.status as obrigacaoClienteStatus, oc.baixado_automaticamente as obrigacaoClienteBaixadaAutomaticamente,
+                       oc.ano_referencia, oc.mes_referencia
+                FROM obrigacoes_atividades_clientes oac
+                JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+                JOIN obrigacoes o ON oc.obrigacao_id = o.id
+                JOIN clientes c ON oc.cliente_id = c.id
+                WHERE oc.obrigacao_id = ?
+                AND oac.texto = ?
+                AND oac.tipo = 'Integração: Onvio'
+                AND oac.concluida = 0
+                AND oc.status != 'concluida'
+                AND oc.baixado_automaticamente = 0
+            `, [atividadeBase.obrigacaoBaseId, atividadeBase.atividadeTexto]);
+            for (const atividadeCliente of atividadesCliente) {
+                if (!atividadesPorCliente[atividadeCliente.clienteId]) {
+                    atividadesPorCliente[atividadeCliente.clienteId] = [];
+                    clientesInfo[atividadeCliente.clienteId] = {
+                        id: atividadeCliente.clienteId,
+                        nome: atividadeCliente.cliente_nome,
+                        cnpjCpf: atividadeCliente.clienteCnpjCpf
+                    };
+                }
+                atividadesPorCliente[atividadeCliente.clienteId].push({
+                    ...atividadeCliente,
+                    tituloDocumentoEsperado: atividadeBase.tituloDocumentoEsperado,
+                    pdfLayoutId: atividadeBase.pdfLayoutId
+                });
+            }
+        }
+        const clientes = Object.values(clientesInfo);
+        console.log(`👥 Total de clientes a processar: ${clientes.length}`);
+
+        // Função auxiliar para inicializar navegador e fazer setup do cliente
+        async function inicializarNavegadorECliente(onvioService, cliente, credenciais, empresaId) {
+            await onvioService.initializeBrowser();
+            
+            // ✅ GARANTIR: Navegar explicitamente para página de login antes de fazer login
+            // Isso garante que quando reabre o navegador, está na URL correta
+            try {
+                console.log(`🌐 Navegando para página de login da Onvio...`);
+                await onvioService.page.goto('https://onvio.com.br/login/#/', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 30000
+                });
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                console.log(`✅ Navegado para página de login`);
+            } catch (navError) {
+                console.error(`❌ Erro ao navegar para página de login:`, navError);
+                // Tentar novamente
+                await onvioService.page.goto('https://onvio.com.br/login/#/', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 30000
+                });
+            }
+            
+            await onvioService.fazerLogin(credenciais, true, empresaId);
+            
+            // ✅ IMPORTANTE: Navegar para área de documentos ANTES de selecionar cliente
+            console.log(`📁 Navegando para área de documentos...`);
+            await onvioService.navegarParaAreaDocumentos();
+            
+            // ✅ IMPORTANTE: Verificar e trocar base ANTES de buscar/selecionar cliente
+            // Buscar dados do cliente pelo CNPJ para verificar a base
+            console.log(`🔍 Buscando dados do cliente pelo CNPJ para verificar base antes de selecionar...`);
+            const dadosCliente = await onvioService.buscarNomeClientePorCNPJ(cliente.cnpjCpf);
+            if (dadosCliente && dadosCliente.base) {
+                console.log(`🔍 Base encontrada pelo CNPJ: ${dadosCliente.base}`);
+                await onvioService.verificarETrocarBase(dadosCliente.base);
+            }
+            
+            // Agora sim, selecionar o cliente (base já está correta)
+            console.log(`👤 Selecionando cliente pelo CNPJ (base já verificada)...`);
+            await onvioService.selecionarClientePorCNPJ(cliente.cnpjCpf);
+        }
+
+        // Função auxiliar para voltar à página inicial de documentos e refazer seleção do cliente
+        // Usada quando uma atividade é concluída e precisa processar a próxima
+        async function voltarParaInicioDocumentos(onvioService, cliente) {
+            try {
+                console.log(`🔄 Voltando para página inicial de documentos para processar próxima atividade...`);
+                
+                // ✅ Navegar diretamente para a URL base de documentos (sem fechar navegador)
+                await onvioService.page.goto('https://onvio.com.br/staff/#/documents/client', {
+                    waitUntil: 'domcontentloaded',
+                    timeout: 30000
+                });
+                
+                // Aguardar carregamento da página
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // ✅ IMPORTANTE: Verificar e trocar base ANTES de buscar/selecionar cliente
+                console.log(`🔍 Verificando base antes de selecionar cliente novamente...`);
+                const dadosCliente = await onvioService.buscarNomeClientePorCNPJ(cliente.cnpjCpf);
+                if (dadosCliente && dadosCliente.base) {
+                    console.log(`🔍 Base encontrada pelo CNPJ: ${dadosCliente.base}`);
+                    await onvioService.verificarETrocarBase(dadosCliente.base);
+                }
+                
+                // Agora sim, selecionar o cliente novamente (base já está correta)
+                console.log(`👤 Selecionando cliente pelo CNPJ novamente (base já verificada)...`);
+                await onvioService.selecionarClientePorCNPJ(cliente.cnpjCpf);
+                
+                // 🚀 OTIMIZAÇÃO: Reduzir tempo de espera de 2000ms para 1000ms
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                console.log(`✅ Voltou para página inicial de documentos e cliente selecionado novamente`);
+            } catch (error) {
+                console.error(`❌ Erro ao voltar para página inicial de documentos:`, error);
+                throw error;
+            }
+        }
+
+        // Função para processar um cliente (fecha e reabre navegador após cada atividade concluída)
+        async function processarCliente(cliente, atividades, credenciais, empresaId) {
+            let onvioService = new OnvioService(req.usuario.id);
+            const resultados = [];
+            let concluiuAtividade = false; // ✅ Flag para controlar se já concluiu uma atividade
+            
+            try {
+                // ✅ Agrupar atividades por competência para processar uma competência por vez
+                const atividadesPorCompetencia = {};
+                atividades.forEach(atividade => {
+                    const competenciaKey = atividade.ano_referencia && atividade.mes_referencia 
+                        ? `${atividade.ano_referencia}-${String(atividade.mes_referencia).padStart(2, '0')}`
+                        : 'sem-competencia';
+                    
+                    if (!atividadesPorCompetencia[competenciaKey]) {
+                        atividadesPorCompetencia[competenciaKey] = [];
+                    }
+                    atividadesPorCompetencia[competenciaKey].push(atividade);
+                });
+
+                console.log(`📊 Processando ${Object.keys(atividadesPorCompetencia).length} competência(s) para o cliente ${cliente.nome}`);
+
+                // Inicializar navegador uma vez no início
+                await inicializarNavegadorECliente(onvioService, cliente, credenciais, empresaId);
+
+                // Processar uma competência por vez
+                for (const [competenciaKey, atividadesDaCompetencia] of Object.entries(atividadesPorCompetencia)) {
+                    console.log(`📅 Processando competência: ${competenciaKey === 'sem-competencia' ? 'Sem competência definida' : competenciaKey} (${atividadesDaCompetencia.length} atividade(s))`);
+                    
+                    // Para cada atividade da competência, navegar para o caminho correto e buscar documentos
+                    for (const atividade of atividadesDaCompetencia) {
+                    try {
+                        let competencia = null;
+                        if (atividade.ano_referencia && atividade.mes_referencia) {
+                            competencia = formatarCompetencia(atividade.mes_referencia, atividade.ano_referencia, 'mm/yyyy');
+                        }
+                        // Navegar para o caminho da sidebar (pasta correta) só no início da atividade
+                        let resultadoNavegacao = null;
+                        if (atividade.tituloDocumentoEsperado) {
+                            try {
+                                resultadoNavegacao = await onvioService.navegarPelaSidebar(atividade.tituloDocumentoEsperado, competencia, atividade.obrigacaoClienteId, empresaId);
+                                
+                                // ✅ Se a navegação retornou com atividade concluída (match automático), marcar como concluída mas CONTINUAR processando outras atividades
+                                if (resultadoNavegacao && resultadoNavegacao.atividadeConcluida) {
+                                    console.log(`[${cliente.nome}] ✅ Atividade ${atividade.id} concluída automaticamente durante navegação. Continuando para próximas atividades...`);
+                                    
+                                    // Marcar esta atividade como concluída
+                                    concluiuAtividade = true;
+                                    
+                                    resultados.push({
+                                        atividadeId: atividade.id,
+                                        success: true,
+                                        message: "Atividade concluída automaticamente durante navegação",
+                                        matchAutomático: true,
+                                        arquivo: resultadoNavegacao.arquivo
+                                    });
+                                    
+                                    // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                    // Isso garante que o cliente está selecionado e a base está correta
+                                    try {
+                                        await voltarParaInicioDocumentos(onvioService, cliente);
+                                    } catch (voltarError) {
+                                        console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                    }
+                                    
+                                    // Continuar para a próxima atividade (não retornar!)
+                                    continue;
+                                }
+                                
+                                // ✅ Se a navegação falhou (não encontrou a parte), voltar para página inicial e continuar
+                                if (resultadoNavegacao && !resultadoNavegacao.sucesso) {
+                                    console.log(`[${cliente.nome}] ⚠️ Navegação pela sidebar falhou para atividade ${atividade.id}. Voltando para página inicial e continuando...`);
+                                    
+                                    resultados.push({
+                                        atividadeId: atividade.id,
+                                        success: false,
+                                        message: `Navegação pela sidebar falhou: ${resultadoNavegacao.erro || 'Parte não encontrada'}`,
+                                        erro: resultadoNavegacao.erro
+                                    });
+                                    
+                                    // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                    try {
+                                        await voltarParaInicioDocumentos(onvioService, cliente);
+                                    } catch (voltarError) {
+                                        console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                    }
+                                    
+                                    // Continuar para a próxima atividade (não retornar!)
+                                    continue;
+                                }
+                            } catch (navError) {
+                                console.log(`[${cliente.nome}] ❌ Erro ao navegar pela sidebar para atividade ${atividade.id}: ${navError.message}`);
+                                
+                                resultados.push({
+                                    atividadeId: atividade.id,
+                                    success: false,
+                                    erro: `Erro na navegação: ${navError.message}`
+                                });
+                                
+                                // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                try {
+                                    await voltarParaInicioDocumentos(onvioService, cliente);
+                                } catch (voltarError) {
+                                    console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                }
+                                
+                                // Continuar para a próxima atividade (não retornar!)
+                                continue;
+                            }
+                        }
+                        // Buscar documentos na pasta (apenas se não foi concluída automaticamente)
+                        let documentosAtualizados = await onvioService.extrairDocumentos(5, 2000);
+                        // LOG
+                        console.log(`📄 [${cliente.nome}] Documentos encontrados na pasta '${atividade.tituloDocumentoEsperado}': ${documentosAtualizados.length}`);
+                        if (documentosAtualizados.length > 0) {
+                            documentosAtualizados.forEach((doc, idx) => {
+                                console.log(`    [${cliente.nome}] Documento ${idx + 1}: ${doc.titulo || doc.nome}`);
+                            });
+                        }
+                        // Lógica de match igual já existe: pelo nome e competência
+                        const matches = documentosAtualizados.filter(doc => {
+                            const nomeDoc = (doc.titulo || doc.nome || '').toLowerCase();
+                            const tituloEsperado = (atividade.tituloDocumentoEsperado || '').toLowerCase();
+                            let matchNome = false;
+                            if (tituloEsperado && nomeDoc.includes(tituloEsperado)) {
+                                matchNome = true;
+                            }
+                            // Competência
+                            let matchCompetencia = false;
+                            if (competencia && nomeDoc.includes(competencia.replace('/', ''))) {
+                                matchCompetencia = true;
+                            } else if (competencia && nomeDoc.includes(competencia.replace('/', '-'))) {
+                                matchCompetencia = true;
+                            } else if (competencia && nomeDoc.includes(competencia.replace('/', '.'))) {
+                                matchCompetencia = true;
+                            } else if (competencia && nomeDoc.includes(competencia)) {
+                                matchCompetencia = true;
+                            }
+                            return matchNome || matchCompetencia;
+                        });
+                        // LOG: Matches encontrados
+                        if (matches.length > 0) {
+                            console.log(`[${cliente.nome}] Documentos que deram match para atividade ${atividade.id}:`, matches.map(d => d.titulo || d.nome));
+                        } else {
+                            console.log(`[${cliente.nome}] Nenhum documento deu match para atividade ${atividade.id}`);
+                        }
+                        if (matches.length > 0) {
+                            const matchesDetalhados = [];
+                            // ✅ Usar a variável concluiuAtividade do escopo superior (já declarada)
+                            for (const doc of matches) {
+                                let docAtual = null;
+                                let tentativas = 0;
+                                let resultadoBaixa = null;
+                                while (!docAtual && tentativas < 2) {
+                                    // 1ª tentativa: só extrai os arquivos da pasta (sem sidebar)
+                                    const documentosAtualizados = await onvioService.extrairDocumentos(5, 2000);
+                                    docAtual = documentosAtualizados.find(d => (d.titulo || d.nome) === (doc.titulo || doc.nome));
+                                    tentativas++;
+                                    if (!docAtual) {
+                                        // Se não encontrou, tenta navegar pela sidebar e extrair de novo
+                                        if (atividade.tituloDocumentoEsperado) {
+                                            await onvioService.navegarPelaSidebar(atividade.tituloDocumentoEsperado, competencia, atividade.obrigacaoClienteId, empresaId);
+                                        }
+                                    }
+                                }
+                                if (docAtual) {
+                                    try {
+                                        // Tentar clicar até 5 vezes no documento
+                                        let clicou = false;
+                                        for (let tentativaClique = 1; tentativaClique <= 5; tentativaClique++) {
+                                            try {
+                                                if (docAtual.elemento && typeof docAtual.elemento.click === 'function') {
+                                                    await docAtual.elemento.click();
+                                                } else {
+                                                    await onvioService.tentarCliqueRobusto(docAtual.elemento, docAtual.titulo || docAtual.nome);
+                                                }
+                                                clicou = true;
+                                                console.log(`[${cliente.nome}] Clique realizado no documento (${tentativaClique}ª tentativa): ${docAtual.titulo || docAtual.nome}`);
+                                                break;
+                                            } catch (erro) {
+                                                console.log(`[${cliente.nome}] Falha ao clicar no documento (${tentativaClique}ª tentativa): ${docAtual.titulo || docAtual.nome}`, erro);
+                                                await new Promise(resolve => setTimeout(resolve, 300));
+                                            }
+                                        }
+                                        if (!clicou) {
+                                            console.log(`[${cliente.nome}] Não foi possível clicar no documento após 5 tentativas: ${docAtual.titulo || docAtual.nome}`);
+                                            // Pode seguir para o próximo documento ou marcar como erro
+                                            continue;
+                                        }
+                                        // Tenta aguardar carregamento do documento até 2 vezes
+                                        let carregou = false;
+                                        // Continuar clicando até carregar de fato (sem seguir mesmo assim)
+                                        for (let i = 0; i < 6; i++) {
+                                            carregou = await onvioService.aguardarCarregamentoDocumento(3, docAtual.titulo || docAtual.nome);
+                                            if (carregou) break;
+                                            console.log(`[${cliente.nome}] Documento não carregou na tentativa ${i + 1}, tentando novo duplo clique...`);
+                                            try {
+                                                if (docAtual.elemento && typeof docAtual.elemento.click === 'function') {
+                                                    await docAtual.elemento.click({ clickCount: 2, delay: 20 });
+                                                } else {
+                                                    await onvioService.tentarCliqueRobusto(docAtual.elemento, docAtual.titulo || docAtual.nome);
+                                                }
+                                            } catch (_) {}
+                                            await new Promise(resolve => setTimeout(resolve, 500));
+                                        }
+                                        if (!carregou) {
+                                            console.log(`[${cliente.nome}] Documento não confirmou carregamento. Abortando esta atividade sem concluir.`);
+                                            resultadoBaixa = {
+                                                arquivo: docAtual.titulo || docAtual.nome,
+                                                erro: 'Documento não abriu (sem /document/)',
+                                                carregamentoForcado: false,
+                                                sucesso: false
+                                            };
+                                        } else {
+                                            resultadoBaixa = await processarBaixaDocumento(docAtual, atividade, cliente, competencia, onvioService.page, false, onvioService);
+                                        }
+                                    } catch (erro) {
+                                        console.log(`[${cliente.nome}] Erro ao clicar/processar documento: ${docAtual.titulo || docAtual.nome}`, erro);
+                                        resultadoBaixa = {
+                                            arquivo: docAtual.titulo || docAtual.nome,
+                                            erro: erro.message || erro,
+                                            carregamentoForcado: false,
+                                            sucesso: false
+                                        };
+                                    }
+                                    // ✅ SEM NAVEGAÇÃO após processar documento: após concluir, navegador fecha imediatamente
+                                } else {
+                                    resultadoBaixa = {
+                                        arquivo: doc.titulo || doc.nome,
+                                        erro: 'Documento não encontrado após tentativas',
+                                        carregamentoForcado: false,
+                                        sucesso: false
+                                    };
+                                }
+                                // Adiciona o resultado ao array de resultados da atividade
+                                if (!atividade.resultadosBaixa) atividade.resultadosBaixa = [];
+                                atividade.resultadosBaixa.push(resultadoBaixa);
+
+                                // Se concluiu com sucesso, marcar como concluída mas CONTINUAR processando outras atividades
+                                if (resultadoBaixa && resultadoBaixa.sucesso) {
+                                    concluiuAtividade = true;
+                                    console.log(`[${cliente.nome}] ✅ Atividade ${atividade.id} concluída com sucesso. Continuando para próximas atividades...`);
+                                    
+                                    // Adicionar resultado bem-sucedido
+                                    resultados.push({
+                                        atividadeId: atividade.id,
+                                        success: true,
+                                        matches: matchesDetalhados,
+                                        arquivo: resultadoBaixa.arquivo
+                                    });
+                                    
+                                    // ✅ VOLTAR PARA PÁGINA INICIAL DE DOCUMENTOS antes de processar próxima atividade
+                                    // Isso garante que o cliente está selecionado e a base está correta
+                                    try {
+                                        await voltarParaInicioDocumentos(onvioService, cliente);
+                                    } catch (voltarError) {
+                                        console.error(`⚠️ Erro ao voltar para página inicial: ${voltarError.message}. Tentando continuar mesmo assim...`);
+                                    }
+                                    
+                                    // Continuar para o próximo documento ou atividade (não retornar!)
+                                    break; // Sair do loop de documentos, mas continuar para próxima atividade
+                                }
+                            }
+                            // ✅ Se chegou aqui, não concluiu nenhuma atividade - adicionar resultado sem sucesso
+                            resultados.push({
+                                atividadeId: atividade.id,
+                                success: false,
+                                message: "Nenhum documento foi processado com sucesso",
+                                matches: matchesDetalhados
+                            });
+                        } else {
+                            resultados.push({
+                                atividadeId: atividade.id,
+                                success: false,
+                                message: "Documento não encontrado ou título não confere",
+                                documentosDisponiveis: documentosAtualizados.map(d => d.titulo || d.nome)
+                            });
+                        }
+                    } catch (e) {
+                        // ✅ Se for timeout na navegação, fechar navegador e seguir para próxima
+                        if (e.message && e.message.includes('Timeout')) {
+                            console.log(`⏱️ [${cliente.nome}] Timeout detectado na atividade ${atividade.id}. Fechando navegador e seguindo...`);
+                            try {
+                                await onvioService.fecharNavegador();
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                // Reabrir navegador para próxima atividade
+                                onvioService = new OnvioService(req.usuario.id);
+                                await inicializarNavegadorECliente(onvioService, cliente, credenciais, empresaId);
+                            } catch (err) {
+                                console.error(`❌ Erro ao fechar/reabrir navegador após timeout:`, err);
+                            }
+                        }
+                        resultados.push({ atividadeId: atividade.id, success: false, erro: e.message });
+                    }
+                    } // Fim do loop de atividades da competência
+                } // Fim do loop de competências
+                
+                return { clienteId: cliente.id, clienteNome: cliente.nome, sucesso: true, resultados };
+            } catch (e) {
+                console.error(`❌ Erro ao processar cliente ${cliente.nome}:`, e);
+                return { clienteId: cliente.id, clienteNome: cliente.nome, sucesso: false, erro: e.message, resultados };
+            } finally {
+                // ✅ CORREÇÃO CRÍTICA: Fechar navegador usando o método do OnvioService
+                // Isso garante que todos os recursos sejam liberados corretamente
+                // Verificar se navegador ainda está aberto antes de tentar fechar
+                try {
+                    if (onvioService && onvioService.browser && onvioService.browser.isConnected()) {
+                        await onvioService.fecharNavegador();
+                        console.log(`🔒 Navegador fechado para cliente: ${cliente.nome}`);
+                    } else {
+                        console.log(`ℹ️ Navegador já estava fechado para cliente: ${cliente.nome}`);
+                    }
+                } catch (closeError) {
+                    console.error(`⚠️ Erro ao fechar navegador para ${cliente.nome}:`, closeError);
+                }
+                
+                // Aguardar um pouco para garantir que o processo foi terminado
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        // Função de pool de paralelismo
+        async function processarClientesEmPool(clientes, atividadesPorCliente, credenciais, empresaId, maxParalelos = 5) {
+            const resultados = [];
+            let index = 0;
+            async function next() {
+                if (index >= clientes.length) return;
+                const cliente = clientes[index++];
+                const atividades = atividadesPorCliente[cliente.id];
+                const resultado = await processarCliente(cliente, atividades, credenciais, empresaId);
+                resultados.push(resultado);
+                await next();
+            }
+            const pool = [];
+            for (let i = 0; i < Math.min(maxParalelos, clientes.length); i++) pool.push(next());
+            await Promise.all(pool);
+            return resultados;
+        }
+
+                // ⚡ OTIMIZAÇÃO: Reduzir processos paralelos de 5 para 2 para economizar memória na VPS
+                // Isso evita sobrecarga de processos Puppeteer simultâneos
+                const resultadosProcessamento = await processarClientesEmPool(clientes, atividadesPorCliente, credenciais, empresaId, 2);
+                const sucessos = resultadosProcessamento.filter(r => r.sucesso).length;
+                const falhas = resultadosProcessamento.length - sucessos;
+                
+                resultadosPorEmpresa.push({
+                    empresaId,
+                    empresaNome,
+                    sucesso: true,
+                    resumo: {
+                        total: resultadosProcessamento.length,
+                        sucessos,
+                        falhas
+                    },
+                    detalhes: resultadosProcessamento
+                });
+                
+                console.log(`✅ Empresa ${empresaId} processada: ${sucessos} sucessos, ${falhas} falhas`);
+                
+            } catch (erroEmpresa) {
+                console.error(`❌ Erro ao processar empresa ${empresaId}:`, erroEmpresa);
+                resultadosPorEmpresa.push({
+                    empresaId,
+                    empresaNome,
+                    sucesso: false,
+                    erro: erroEmpresa.message || String(erroEmpresa)
+                });
+            }
+        }
+        
+        // Consolidar resultados
+        const totalEmpresas = resultadosPorEmpresa.length;
+        const empresasComSucesso = resultadosPorEmpresa.filter(r => r.sucesso).length;
+        const empresasComFalha = totalEmpresas - empresasComSucesso;
+        
+        let totalClientes = 0;
+        let totalSucessos = 0;
+        let totalFalhas = 0;
+        
+        resultadosPorEmpresa.forEach(empresa => {
+            if (empresa.resumo) {
+                totalClientes += empresa.resumo.total || 0;
+                totalSucessos += empresa.resumo.sucessos || 0;
+                totalFalhas += empresa.resumo.falhas || 0;
+            }
+        });
+        
+        res.json({
+            success: true,
+            message: isSuperAdminUser 
+                ? `Processamento concluído para ${totalEmpresas} empresas: ${empresasComSucesso} com sucesso, ${empresasComFalha} com falhas. Total: ${totalSucessos} clientes processados com sucesso, ${totalFalhas} falhas`
+                : `Processamento concluído: ${totalSucessos} clientes com sucesso, ${totalFalhas} falhas`,
+            resumo: {
+                totalEmpresas,
+                empresasComSucesso,
+                empresasComFalha,
+                totalClientes,
+                totalSucessos,
+                totalFalhas
+            },
+            detalhes: resultadosPorEmpresa,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Erro ao baixar atividades da Onvio:', error);
+        res.status(500).json({
+            success: false,
+            message: `Erro ao baixar atividades: ${error.message}`,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * ⚙️ Configurar credenciais da Onvio para uma empresa
+ */
+router.post('/configurar-credenciais', autenticarToken, async (req, res) => {
+    try {
+        const { email, senha, mfaSecret, onvioCodigoAutenticacao } = req.body;
+        const empresaId = req.usuario?.empresaId;
+        
+        if (!email || !senha || !empresaId) {
+            return res.status(400).json({
+                success: false,
+                message: "Email, senha e empresa são obrigatórios"
+            });
+        }
+
+        // Salvar credenciais (criptografadas)
+        await salvarCredenciaisOnvio(empresaId, email, senha, mfaSecret, onvioCodigoAutenticacao);
+        
+        res.json({
+            success: true,
+            message: "✅ Credenciais da Onvio configuradas com sucesso!",
+            detalhes: {
+                empresaId,
+                email: email.substring(0, 3) + '***',
+                secretConfigurado: !!mfaSecret,
+                codigoAutenticacaoSalvo: !!onvioCodigoAutenticacao,
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao configurar credenciais:', error);
+        res.status(500).json({
+            success: false,
+            message: `Erro ao configurar credenciais: ${error.message}`,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * 🔑 Gerar código TOTP da Onvio
+ */
+router.get('/gerar-codigo/:empresaId', autenticarToken, async (req, res) => {
+    try {
+        const { empresaId } = req.params;
+
+        // Buscar secret salvo no banco
+        const credenciais = await obterCredenciaisOnvio(empresaId);
+        if (!credenciais?.mfaSecret) {
+            return res.status(400).json({
+                success: false,
+                message: "❌ Nenhum secret configurado para essa empresa"
+            });
+        }
+
+        const code = authenticator.generate(credenciais.mfaSecret);
+
+        res.json({
+            success: true,
+            code,
+            validadeSegundos: 30 - (Math.floor(Date.now() / 1000) % 30) // tempo restante do código
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao gerar código:', error);
+        res.status(500).json({
+            success: false,
+            message: `Erro ao gerar código: ${error.message}`,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * 📊 Obter status da integração Onvio
+ */
+
+// ===== FUNÇÕES AUXILIARES =====
+
+/**
+ * 📅 Formatar competência de forma inteligente e flexível
+ * Detecta automaticamente formatos: mm/yyyy, mmyyyy, myyyy, mm-yyyy, mm.yyyy, etc.
+ */
+function formatarCompetencia(mes, ano, formatoPreferido = 'mm/yyyy') {
+    try {
+        if (!mes || !ano) {
+            return null;
+        }
+        
+        const mesNum = parseInt(mes);
+        const anoNum = parseInt(ano);
+        
+        if (isNaN(mesNum) || isNaN(anoNum)) {
+            return null;
+        }
+        
+        if (formatoPreferido === 'mmyyyy') {
+            // Formato: mmyyyy (ex: 072025)
+            return mesNum.toString().padStart(2, '0') + anoNum.toString();
+        } else {
+            // Formato padrão: mm/yyyy (ex: 7/2025)
+            return `${mesNum}/${anoNum}`;
+        }
+    } catch (error) {
+        console.error('❌ Erro ao formatar competência:', error);
+        return null;
+    }
+}
+
+/**
+ * 🧠 Detecta automaticamente o formato de competência em um texto
+ * Aceita qualquer formato: mm/yyyy, mmyyyy, myyyy, mm-yyyy, mm.yyyy, etc.
+ */
+function detectarCompetenciaAutomaticamente(texto) {
+    try {
+        if (!texto || typeof texto !== 'string') {
+            return null;
+        }
+        
+        console.log(`🔍 Detectando competência automaticamente em: "${texto}"`);
+        
+        // Padrões para detectar competência
+        const padroes = [
+            // mm/yyyy ou m/yyyy (ex: 07/2025, 7/2025)
+            /(\d{1,2})\/(\d{4})/,
+            // mmyyyy (ex: 072025)
+            /(\d{2})(\d{4})/,
+            // myyyy (ex: 72025)
+            /(\d{1})(\d{4})/,
+            // mm-yyyy ou m-yyyy (ex: 07-2025, 7-2025)
+            /(\d{1,2})-(\d{4})/,
+            // mm.yyyy ou m.yyyy (ex: 07.2025, 7.2025)
+            /(\d{1,2})\.(\d{4})/,
+            // mm yyyy ou m yyyy (ex: 07 2025, 7 2025)
+            /(\d{1,2})\s+(\d{4})/,
+            // yyyy-mm (ex: 2025-07)
+            /(\d{4})-(\d{1,2})/,
+            // yyyy/mm (ex: 2025/07)
+            /(\d{4})\/(\d{1,2})/,
+            // yyyy.mm (ex: 2025.07)
+            /(\d{4})\.(\d{1,2})/,
+            // yyyy mm (ex: 2025 07)
+            /(\d{4})\s+(\d{1,2})/
+        ];
+        
+        for (const padrao of padroes) {
+            const match = texto.match(padrao);
+            if (match) {
+                let mes, ano;
+                
+                // Verificar se é formato ano-mês ou mês-ano
+                if (match[1].length === 4) {
+                    // Formato: yyyy-mm, yyyy/mm, yyyy.mm, yyyy mm
+                    ano = parseInt(match[1]);
+                    mes = parseInt(match[2]);
+                } else {
+                    // Formato: mm-yyyy, mm/yyyy, mm.yyyy, mm yyyy, mmyyyy, myyyy
+                    mes = parseInt(match[1]);
+                    ano = parseInt(match[2]);
+                }
+                
+                // Validar mês e ano
+                if (mes >= 1 && mes <= 12 && ano >= 2000 && ano <= 2100) {
+                    console.log(`✅ Competência detectada: mês ${mes}, ano ${ano} (padrão: ${padrao.source})`);
+                    return { mes, ano, padrao: padrao.source };
+                }
+            }
+        }
+        
+        console.log(`⚠️ Nenhuma competência válida detectada em: "${texto}"`);
+        return null;
+        
+    } catch (error) {
+        console.error('❌ Erro ao detectar competência automaticamente:', error);
+        return null;
+    }
+}
+
+/**
+ * 🔍 Filtra documentos por competência usando detecção automática
+ * Aceita qualquer formato de competência nos nomes dos arquivos
+ */
+function filtrarDocumentosPorCompetenciaInteligente(documentos, competenciaEsperada) {
+    try {
+        console.log(`🧠 Filtrando ${documentos.length} documentos com detecção automática de competência`);
+        console.log(`🎯 Competência esperada: ${competenciaEsperada}`);
+        
+        // Primeiro, tentar detectar a competência esperada
+        const competenciaDetectada = detectarCompetenciaAutomaticamente(competenciaEsperada);
+        if (!competenciaDetectada) {
+            console.log(`⚠️ Não foi possível detectar competência em: ${competenciaEsperada}`);
+            return [];
+        }
+        
+        const { mes, ano } = competenciaDetectada;
+        console.log(`📅 Buscando documentos com mês: ${mes}, ano: ${ano}`);
+        
+        const documentosFiltrados = documentos.filter(documento => {
+            const nome = documento.nome || documento;
+            
+            // Detectar competência no nome do arquivo
+            const competenciaArquivo = detectarCompetenciaAutomaticamente(nome);
+            if (!competenciaArquivo) {
+                return false;
+            }
+            
+            // Comparar mês e ano
+            const match = competenciaArquivo.mes === mes && competenciaArquivo.ano === ano;
+            
+            if (match) {
+                console.log(`✅ Documento "${nome}" corresponde à competência ${mes}/${ano}`);
+            }
+            
+            return match;
+        });
+        
+        console.log(`✅ Filtrados ${documentosFiltrados.length} documentos para competência ${mes}/${ano}`);
+        return documentosFiltrados;
+        
+    } catch (error) {
+        console.error('❌ Erro ao filtrar documentos com detecção automática:', error);
+        return [];
+    }
+}
+
+/**
+ * 💾 Salvar credenciais Onvio na tabela empresas
+ */
+async function salvarCredenciaisOnvio(empresaId, email, senha, mfaSecret, onvioCodigoAutenticacao) {
+    try {
+        // Criptografar senha (implementar criptografia adequada em produção)
+        const senhaCriptografada = Buffer.from(senha).toString('base64');
+        let query = 'UPDATE empresas SET onvioLogin = ?, onvioSenha = ?';
+        let params = [email, senhaCriptografada];
+        if (mfaSecret) {
+            query += ', onvioMfaSecret = ?';
+            params.push(mfaSecret);
+        }
+        if (onvioCodigoAutenticacao) {
+            query += ', onvioCodigoAutenticacao = ?';
+            params.push(onvioCodigoAutenticacao);
+        }
+        query += ' WHERE id = ?';
+        params.push(empresaId);
+        await db.query(query, params);
+        console.log(`✅ Credenciais Onvio salvas na tabela empresas para empresa ID: ${empresaId}`);
+    } catch (error) {
+        console.error('❌ Erro ao salvar credenciais Onvio:', error);
+        throw error;
+    }
+}
+
+/**
+ * 🔑 Obter credenciais da Onvio da tabela empresas (descriptografadas)
+ */
+async function obterCredenciaisOnvio(empresaId) {
+    try {
+        const [credenciais] = await db.query(
+            'SELECT onvioLogin, onvioSenha, onvioMfaSecret FROM empresas WHERE id = ?',
+            [empresaId]
+        );
+        if (credenciais.length === 0 || !credenciais[0].onvioLogin || !credenciais[0].onvioSenha) {
+            console.log(`⚠️ Credenciais Onvio incompletas para empresa ${empresaId}: email=${!!credenciais[0].onvioLogin}, senha=${!!credenciais[0].onvioSenha}`);
+            return null;
+        }
+        const credencial = credenciais[0];
+        // Descriptografar senha (se estiver em base64)
+        let senhaDescriptografada;
+        try {
+            senhaDescriptografada = Buffer.from(credencial.onvioSenha, 'base64').toString();
+        } catch (e) {
+            senhaDescriptografada = credencial.onvioSenha;
+        }
+        return {
+            email: credencial.onvioLogin,
+            senha: senhaDescriptografada,
+            mfaSecret: credencial.onvioMfaSecret || null
+        };
+    } catch (error) {
+        console.error('❌ Erro ao obter credenciais Onvio:', error);
+        return null;
+    }
+}
+
+/**
+ * ✅ Verificar se empresa tem credenciais Onvio configuradas na tabela empresas
+ */
+async function verificarSeTemCredenciaisOnvio(empresaId) {
+    try {
+        const [resultado] = await db.query(
+            'SELECT COUNT(*) as total FROM empresas WHERE id = ? AND onvioLogin IS NOT NULL AND onvioSenha IS NOT NULL',
+            [empresaId]
+        );
+        
+        return resultado[0].total > 0;
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar credenciais Onvio:', error);
+        return false;
+    }
+}
+
+/**
+ * 🔄 Processar uma atividade base específica
+ */
+async function processarAtividadeBase(atividadeBase, empresaId) {
+    try {
+        const { atividadeBaseId, atividadeTexto, tituloDocumentoEsperado, pdfLayoutId, obrigacaoBaseId, obrigacaoNome } = atividadeBase;
+        
+        console.log(`    🔍 Processando atividade base: "${atividadeTexto}"`);
+        
+        // Buscar atividades do cliente que correspondem a esta atividade base
+        const [atividadesCliente] = await db.query(`
+            SELECT oac.id, oac.concluida, oac.obrigacao_cliente_id as obrigacaoClienteId, oac.texto, oac.descricao, oac.tipo, 
+                   o.nome as obrigacao_nome, c.razao_social as cliente_nome, c.id as clienteId, c.cpf_cnpj as clienteCnpjCpf,
+                   oc.status as obrigacaoClienteStatus, oc.baixado_automaticamente as obrigacaoClienteBaixadaAutomaticamente
+            FROM obrigacoes_atividades_clientes oac
+            JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+            JOIN obrigacoes o ON oc.obrigacao_id = o.id
+            JOIN clientes c ON oc.cliente_id = c.id
+            WHERE oc.obrigacao_id = ?
+            AND oac.texto = ?
+            AND oac.tipo = 'Integração: Onvio'
+            AND oac.concluida = 0
+            AND oc.status != 'concluida'
+            AND oc.baixadaAutomaticamente = 0
+        `, [obrigacaoBaseId, atividadeTexto]);
+        
+        if (atividadesCliente.length === 0) {
+            console.log(`    ⚠️ Nenhuma atividade do cliente encontrada para atividade base: "${atividadeTexto}"`);
+            return {
+                atividadeBaseId,
+                atividadeTexto,
+                success: true,
+                message: "Nenhuma atividade pendente encontrada",
+                processadas: 0
+            };
+        }
+        
+        console.log(`    🔍 Encontradas ${atividadesCliente.length} atividades do cliente para atividade base: "${atividadeTexto}"`);
+        
+        let processadas = 0;
+        let sucessos = 0;
+        
+        for (const atividadeCliente of atividadesCliente) {
+            try {
+                const resultado = await processarAtividadeCliente(atividadeCliente, tituloDocumentoEsperado, pdfLayoutId, empresaId);
+                
+                if (resultado.success) {
+                    sucessos++;
+                }
+                
+                processadas++;
+                
+            } catch (error) {
+                console.error(`    ❌ Erro ao processar atividade ${atividadeCliente.id}:`, error);
+            }
+        }
+        
+        return {
+            atividadeBaseId,
+            atividadeTexto,
+            success: true,
+            message: `Processadas ${processadas} atividades, ${sucessos} com sucesso`,
+            processadas,
+            sucessos,
+            falhas: processadas - sucessos
+        };
+        
+    } catch (error) {
+        console.error(`❌ Erro ao processar atividade base ${atividadeBase.atividadeBaseId}:`, error);
+        return {
+            atividadeBaseId: atividadeBase.atividadeBaseId,
+            atividadeTexto: atividadeBase.atividadeTexto,
+            success: false,
+            message: `Erro: ${error.message}`,
+            error: error.message
+        };
+    }
+}
+
+/**
+ * 🔄 Processar uma atividade específica do cliente
+ */
+async function processarAtividadeCliente(atividadeCliente, tituloDocumentoEsperado, pdfLayoutId, empresaId, onvioService) {
+    try {
+        const { id, obrigacaoClienteId, clienteId, clienteCnpjCpf, clienteNome } = atividadeCliente;
+        
+        console.log(`        🔍 Processando atividade ${id} para cliente: ${clienteNome}`);
+        
+        // Buscar competência da obrigação do cliente
+        const [competenciaInfo] = await db.query(`
+            SELECT oc.ano_referencia, oc.mes_referencia
+            FROM obrigacoes_clientes oc
+            WHERE oc.id = ?
+        `, [obrigacaoClienteId]);
+        
+        let competencia = null;
+        if (competenciaInfo.length > 0 && competenciaInfo[0].ano_referencia && competenciaInfo[0].mes_referencia) {
+            // 🆕 NOVO: Usar função de formatação flexível
+            competencia = formatarCompetencia(competenciaInfo[0].mes_referencia, competenciaInfo[0].ano_referencia, 'mm/yyyy');
+            console.log(`        📅 Competência encontrada: ${competencia}`);
+        } else {
+            console.log(`        ⚠️ Competência não encontrada para obrigação ${obrigacaoClienteId}`);
+        }
+        
+        // Buscar documentos na Onvio
+        console.log(`        🎯 Chamando buscarDocumentosEmpresa com automação para obrigação ${obrigacaoClienteId} e empresa ${empresaId}`);
+        let documentos = await onvioService.buscarDocumentosEmpresa(
+            clienteCnpjCpf, 
+            null, // 🚀 NOVA ESTRATÉGIA: NÃO passar competência específica, deixar buscar TODAS!
+            tituloDocumentoEsperado,
+            null, // obrigacaoClienteId não disponível neste contexto
+            empresaId, // 🎯 NOVO: Passar empresaId para automação
+            clienteId // 🎯 NOVO: Passar clienteId para busca otimizada
+        );
+        
+        // 🎯 CORREÇÃO: Garantir que documentos seja sempre um array
+        if (!documentos) {
+            console.log(`        ⚠️ Documentos retornados como undefined/null, convertendo para array vazio`);
+            documentos = [];
+        } else if (!Array.isArray(documentos)) {
+            console.log(`        ⚠️ Documentos retornados como objeto único, convertendo para array`);
+            documentos = [documentos];
+        }
+        
+        console.log(`        📊 Documentos retornados: ${documentos.length}`);
+        if (documentos.length > 0) {
+            documentos.forEach((doc, index) => {
+                console.log(`        📄 Documento ${index + 1}:`, {
+                    titulo: doc.titulo,
+                    tipo: doc.tipo,
+                    matchImediato: doc.matchImediato,
+                    atividadeConcluida: doc.atividadeConcluida,
+                    comentarioInserido: doc.comentarioInserido,
+                    erroMatch: doc.erroMatch
+                });
+            });
+        }
+        
+        if (documentos.length === 0) {
+            console.log(`        ⚠️ Nenhum documento encontrado para cliente: ${clienteNome}`);
+            return { success: false, message: "Nenhum documento encontrado" };
+        }
+        
+        // Tentar fazer match com o título esperado
+        const documentoMatch = documentos.find(doc => 
+            doc.titulo && doc.titulo.toLowerCase().includes(tituloDocumentoEsperado.toLowerCase())
+        );
+        
+        if (documentoMatch) {
+            console.log(`        ✅ Documento encontrado: "${documentoMatch.titulo}"`);
+            
+            // Marcar atividade como concluída
+            await db.query(
+                'UPDATE obrigacoes_atividades_clientes SET concluida = 1, data_conclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
+                [id]
+            );
+            
+            // Marcar obrigação como baixada automaticamente
+            await db.query(
+                'UPDATE obrigacoes_clientes SET baixado_automaticamente = 1 WHERE id = ?',
+                [obrigacaoClienteId]
+            );
+            
+            return { 
+                success: true, 
+                message: "Documento encontrado e atividade concluída",
+                documento: documentoMatch
+            };
+        } else {
+            console.log(`        ⚠️ Nenhum match encontrado para título esperado: "${tituloDocumentoEsperado}"`);
+            return { 
+                success: false, 
+                message: "Documento não encontrado ou título não confere",
+                documentosDisponiveis: documentos.map(d => d.titulo)
+            };
+        }
+        
+    } catch (error) {
+        console.error(`❌ Erro ao processar atividade do cliente:`, error);
+        throw error;
+    }
+}
+
+/**
+ * 🔍 Tentar fazer match entre documentos e atividades
+ */
+async function tentarMatchComAtividades(documentos, obrigacaoClienteId, empresaId) {
+    try {
+        // 🎯 CORREÇÃO: Garantir que documentos seja sempre um array válido
+        if (!documentos) {
+            console.log('⚠️ tentarMatchComAtividades: documentos é undefined/null, retornando erro');
+            return { matchEncontrado: false, message: "Documentos não fornecidos" };
+        }
+        
+        if (!Array.isArray(documentos)) {
+            console.log('⚠️ tentarMatchComAtividades: documentos não é um array, convertendo...');
+            documentos = [documentos];
+        }
+        
+        // Buscar informações da obrigação - CORREÇÃO: usar obrigacaoId diretamente
+        const [obrigacaoInfo] = await db.query(`
+            SELECT oac.id AS atividadeId, oac.texto AS atividadeTexto, ao.titulo_documento AS tituloDocumentoEsperado,
+                   ao.pdf_layout_id AS pdfLayoutId, o.id AS obrigacaoBaseId, o.nome AS obrigacaoNome,
+                   oc.id AS obrigacaoClienteId, c.id AS clienteId, c.razao_social AS clienteNome, c.cpf_cnpj AS clienteCnpjCpf,
+                   oc.ano_referencia, oc.mes_referencia
+            FROM obrigacoes_atividades_clientes oac
+            JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+            JOIN obrigacoes o ON oc.obrigacao_id = o.id
+            JOIN clientes c ON oc.cliente_id = c.id
+            JOIN atividades_obrigacao ao ON o.id = ao.obrigacao_id AND oac.tipo = ao.tipo
+            WHERE oc.id = ? AND oac.tipo = 'Integração: Onvio' AND c.empresa_id = ?
+        `, [obrigacaoClienteId, empresaId]);
+
+        if (obrigacaoInfo.length === 0) {
+            return { matchEncontrado: false, message: "Atividade 'Integração: Onvio' não encontrada" };
+        }
+
+        const atividade = obrigacaoInfo[0];
+        
+        // Tentar fazer match com base na competência e título
+        let documentoMatch = null;
+        
+        // Primeiro, verificar se há match imediato (arquivo encontrado durante navegação)
+        documentoMatch = documentos.find(doc => doc.tipo === 'documento_encontrado_match_imediato');
+        if (documentoMatch) {
+            console.log(`🎯 MATCH IMEDIATO encontrado: "${documentoMatch.titulo}" - arquivo encontrado durante navegação!`);
+        }
+        
+        // Se não há match imediato, tentar match por competência (mais preciso)
+        if (!documentoMatch && atividade.ano_referencia && atividade.mes_referencia) {
+            // 🆕 NOVO: Usar função de formatação flexível
+            const competenciaEsperada = formatarCompetencia(atividade.mes_referencia, atividade.ano_referencia, 'mm/yyyy');
+            documentoMatch = documentos.find(doc => 
+                doc.competencia === competenciaEsperada && 
+                doc.status === 'encontrado_com_link'
+            );
+            
+            if (documentoMatch) {
+                console.log(`✅ Match por competência encontrado: "${documentoMatch.titulo}" para competência: ${competenciaEsperada}`);
+            }
+        }
+        
+        // Se não encontrou por competência, tentar por título
+        if (!documentoMatch) {
+            documentoMatch = documentos.find(doc => 
+                doc.titulo && doc.titulo.toLowerCase().includes(atividade.tituloDocumentoEsperado.toLowerCase())
+            );
+            
+            if (documentoMatch) {
+                console.log(`✅ Match por título encontrado: "${documentoMatch.titulo}" para atividade: "${atividade.atividadeTexto}"`);
+            }
+        }
+        
+        if (documentoMatch) {
+            console.log(`✅ Match encontrado: "${documentoMatch.titulo}" para atividade: "${atividade.atividadeTexto}"`);
+            
+            // Se o documento tem link, salvar no comentarios_obrigacao
+            if (documentoMatch.linkDocumento || documentoMatch.urlAtual || documentoMatch.href) {
+                const linkDocumento = documentoMatch.linkDocumento || documentoMatch.urlAtual || documentoMatch.href;
+                const comentario = `Documento encontrado automaticamente via integração Onvio: ${documentoMatch.titulo}\n\nLink: ${linkDocumento}\n\nData da busca: ${new Date().toLocaleString('pt-BR')}`;
+                
+                // Inserir comentário na tabela comentarios_obrigacao
+                await db.query(`
+                    INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, tipo, criadoEm)
+                    VALUES (?, ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '-09:00'))
+                `, [atividade.obrigacaoBaseId, 46, comentario, 'usuario']);
+                
+                console.log(`💾 Comentário salvo no banco com link do documento`);
+            }
+            
+            // Marcar atividade como concluída
+            await db.query(
+                'UPDATE obrigacoes_atividades_clientes SET concluida = 1, data_conclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
+                [atividade.atividadeId]
+            );
+            
+
+            
+            const mensagem = documentoMatch.tipo === 'documento_encontrado_match_imediato' 
+                ? "Match IMEDIATO encontrado durante navegação, link salvo e atividade concluída"
+                : "Match encontrado, link salvo e atividade concluída";
+                
+            return { 
+                matchEncontrado: true, 
+                atividadeId: atividade.atividadeId,
+                documento: documentoMatch,
+                linkSalvo: true,
+                matchImediato: documentoMatch.tipo === 'documento_encontrado_match_imediato',
+                message: mensagem
+            };
+        }
+        
+        return { 
+            matchEncontrado: false, 
+            message: "Nenhum match encontrado para o título esperado ou competência",
+            tituloEsperado: atividade.tituloDocumentoEsperado,
+            competenciaEsperada: atividade.ano_referencia && atividade.mes_referencia ? 
+                `${atividade.mes_referencia}/${atividade.ano_referencia}` : 'Não especificada',
+            documentosDisponiveis: documentos.map(d => ({
+                titulo: d.titulo,
+                competencia: d.competencia,
+                status: d.status
+            }))
+        };
+        
+    } catch (error) {
+        console.error('❌ Erro ao tentar match com atividades:', error);
+        return { matchEncontrado: false, message: `Erro: ${error.message}` };
+    }
+}
+
+/**
+ * 🧪 TESTE: Endpoint para testar extração de base64 com competência específica
+ */
+router.post('/teste-extracao-base64', autenticarToken, async (req, res) => {
+    try {
+        const { clienteId, obrigacaoClienteId, competencia, tituloDocumento } = req.body;
+        const empresaId = req.usuario?.empresaId;
+        
+        if (!empresaId || !clienteId || !obrigacaoClienteId || !competencia || !tituloDocumento) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "EmpresaId, clienteId, obrigacaoClienteId, competencia e tituloDocumento são obrigatórios" 
+            });
+        }
+        
+        // Buscar informações do cliente
+        const [clienteInfo] = await db.query(`
+            SELECT c.id, c.razao_social as nome, c.cpf_cnpj as cnpjCpf
+            FROM clientes c
+            WHERE c.id = ? AND c.empresa_id = ?
+        `, [clienteId, empresaId]);
+
+        if (clienteInfo.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Cliente não encontrado ou não pertence à empresa"
+            });
+        }
+
+        const cliente = clienteInfo[0];
+        
+        // Buscar credenciais da Onvio
+        const credenciais = await obterCredenciaisOnvio(empresaId);
+        if (!credenciais) {
+            return res.status(400).json({
+                success: false,
+                message: "Credenciais da Onvio não configuradas para esta empresa"
+            });
+        }
+        
+        try {
+            // Criar nova instância do OnvioService com o ID do usuário
+            const onvioService = new OnvioService(req.usuario.id);
+            
+            // Inicializar navegador
+            await onvioService.initializeBrowser();
+            
+            // Fazer login usando email da empresa
+            await onvioService.fazerLogin(credenciais, true, empresaId);
+            
+            // Buscar documentos com competência específica
+            let documentos = await onvioService.buscarDocumentosEmpresa(
+                cliente.cnpjCpf, 
+                null, // 🚀 NOVA ESTRATÉGIA: NÃO passar competência específica, deixar buscar TODAS!
+                tituloDocumento,
+                null, // obrigacaoClienteId não disponível neste contexto
+                empresaId, // 🎯 NOVO: Passar empresaId para automação
+                cliente.id // 🎯 NOVO: Passar clienteId para busca otimizada
+            );
+            
+            // 🎯 CORREÇÃO: Garantir que documentos seja sempre um array
+            if (!documentos) {
+                console.log(`⚠️ Documentos retornados como undefined/null, convertendo para array vazio`);
+                documentos = [];
+            } else if (!Array.isArray(documentos)) {
+                console.log(`⚠️ Documentos retornados como objeto único, convertendo para array`);
+                documentos = [documentos];
+            }
+            
+            // Processar resultados
+            const resultado = {
+                success: true,
+                message: "Teste de extração concluído",
+                cliente: {
+                    id: cliente.id,
+                    nome: cliente.nome,
+                    cnpjCpf: cliente.cnpjCpf
+                },
+                competencia: competencia,
+                tituloDocumento: tituloDocumento,
+                documentos: documentos,
+                timestamp: new Date().toISOString()
+            };
+
+            // Verificar se algum documento foi extraído com base64
+            const documentosComBase64 = documentos.filter(doc => doc.conteudoBase64);
+            if (documentosComBase64.length > 0) {
+                resultado.extracaoBase64 = {
+                    sucesso: true,
+                    quantidade: documentosComBase64.length,
+                    tamanhos: documentosComBase64.map(doc => ({
+                        titulo: doc.titulo,
+                        tamanhoBase64: doc.conteudoBase64 ? doc.conteudoBase64.length : 0,
+                        tipo: doc.tipo
+                    }))
+                };
+                resultado.message = `✅ ${documentosComBase64.length} documento(s) extraído(s) com base64!`;
+            } else {
+                resultado.extracaoBase64 = {
+                    sucesso: false,
+                    mensagem: "Nenhum documento foi extraído com base64"
+                };
+                resultado.message = "⚠️ Documentos encontrados, mas sem extração de base64";
+            }
+
+            res.json(resultado);
+            
+        } finally {
+            // Sempre fechar o navegador
+            await onvioService.fecharNavegador();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro no teste de extração de base64:', error);
+        
+        // Fechar navegador em caso de erro
+        try {
+            await onvioService.fecharNavegador();
+        } catch (e) {
+            console.error('❌ Erro ao fechar navegador:', e);
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: `Erro no teste: ${error.message}`,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * 🔍 Busca automática por CNPJ do cliente na Onvio
+ */
+router.post('/buscar-automatico-por-cnpj', autenticarToken, async (req, res) => {
+    let onvioService = null; // Declarar fora do try para usar no finally/catch
+    
+    try {
+        const { clienteId, obrigacaoClienteId, atividadeId, atividadeTexto } = req.body;
+        let empresaId = req.usuario?.empresaId; // ✅ Mudar para 'let' para permitir reatribuição
+        
+        console.log('🔍 [DEBUG] Recebido no /buscar-automatico-por-cnpj:');
+        console.log('  - req.body:', req.body);
+        console.log('  - req.usuario:', req.usuario);
+        console.log('  - empresaId:', empresaId);
+        console.log('  - clienteId:', clienteId);
+        console.log('  - obrigacaoClienteId:', obrigacaoClienteId);
+        console.log('  - atividadeId:', atividadeId);
+        console.log('  - atividadeTexto:', atividadeTexto);
+        
+        if (!empresaId || !clienteId || !obrigacaoClienteId) {
+            console.error('❌ [DEBUG] Validação falhou - campos obrigatórios ausentes');
+            return res.status(400).json({ 
+                success: false, 
+                message: "EmpresaId, clienteId e obrigacaoClienteId são obrigatórios." 
+            });
+        }
+
+
+        // Buscar a atividade de Integração Onvio clicada (se atividadeId fornecido, filtra por ele)
+        // Junta pelo mesmo texto para garantir que pegamos o título_documento correto (Recibo vs Extrato)
+        // ✅ CORREÇÃO: Não filtrar por empresaId do token, mas validar depois se o cliente pertence à empresa do usuário
+        const params = [obrigacaoClienteId];
+        const filtroAtividade = atividadeId ? " AND oac.id = ?" : "";
+        if (atividadeId) params.push(atividadeId);
+
+        console.log('🔍 [DEBUG] Query SQL será executada com:');
+        console.log('  - Parâmetros:', params);
+        console.log('  - Filtro atividade:', filtroAtividade);
+
+        const [atividadeInfo] = await db.query(`
+            SELECT 
+                oac.id AS atividadeId,
+                oac.texto AS atividadeTexto,
+                oac.tipo AS tipoAtividade,
+                ao.titulo_documento AS tituloDocumentoEsperado,
+                ao.pdf_layout_id AS pdfLayoutId,
+                o.id AS obrigacaoBaseId,
+                o.nome AS obrigacaoNome,
+                oc.id AS obrigacaoClienteId,
+                c.id AS clienteId,
+                c.empresa_id AS empresaIdCliente,
+                c.razao_social AS clienteNome,
+                c.cpf_cnpj AS clienteCnpjCpf,
+                oc.ano_referencia,
+                oc.mes_referencia
+            FROM obrigacoes_atividades_clientes oac
+            JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+            JOIN obrigacoes o ON oc.obrigacao_id = o.id
+            JOIN clientes c ON oc.cliente_id = c.id
+            LEFT JOIN atividades_obrigacao ao 
+                ON ao.obrigacao_id = o.id 
+                AND ao.tipo = oac.tipo 
+                AND ao.texto = oac.texto
+            WHERE oc.id = ? AND oac.tipo = 'Integração: Onvio'${filtroAtividade}
+        `, params);
+
+        console.log('🔍 [DEBUG] Resultado da query:');
+        console.log('  - Registros encontrados:', atividadeInfo.length);
+        if (atividadeInfo.length > 0) {
+            console.log('  - Primeiro registro:', JSON.stringify(atividadeInfo[0], null, 2));
+            
+            // ✅ VALIDAÇÃO: Verificar se o cliente pertence à empresa do usuário (ou se o usuário tem acesso)
+            const infoEmpresaId = atividadeInfo[0].empresaIdCliente;
+            console.log('🔍 [DEBUG] Validação de acesso:');
+            console.log('  - empresaId do cliente (banco):', infoEmpresaId);
+            console.log('  - empresaId do token:', empresaId);
+            
+            // Se o cliente está em uma empresa diferente, verificar se o usuário tem acesso via vínculo
+            if (infoEmpresaId !== empresaId) {
+                console.log('⚠️ [DEBUG] Cliente está em empresa diferente. Verificando vínculo...');
+                const [vinculo] = await db.query(`
+                    SELECT empresa_id FROM usuarios_empresas 
+                    WHERE usuario_id = ? AND empresa_id = ?
+                `, [req.usuario.id, infoEmpresaId]);
+                
+                if (vinculo.length === 0) {
+                    console.error('❌ [DEBUG] Usuário não tem acesso à empresa do cliente');
+                    return res.status(403).json({
+                        success: false,
+                        message: "Você não tem acesso a este cliente (empresa diferente)"
+                    });
+                }
+                console.log('✅ [DEBUG] Usuário tem vínculo com a empresa do cliente');
+                // Atualizar empresaId para usar a do cliente
+                empresaId = infoEmpresaId;
+            }
+        } else {
+            // Fazer uma query adicional para debug
+            console.log('⚠️ [DEBUG] Nenhum registro encontrado. Fazendo query de debug...');
+            const [debugQuery] = await db.query(`
+                SELECT 
+                    oac.id AS atividadeId,
+                    oac.texto AS atividadeTexto,
+                    oac.tipo AS tipoAtividade,
+                    oc.id AS obrigacaoClienteId,
+                    c.id AS clienteId,
+                    c.empresa_id AS empresaIdCliente
+                FROM obrigacoes_atividades_clientes oac
+                JOIN obrigacoes_clientes oc ON oac.obrigacao_cliente_id = oc.id
+                JOIN clientes c ON oc.cliente_id = c.id
+                WHERE oc.id = ?
+            `, [obrigacaoClienteId]);
+            console.log('  - Atividades para obrigacaoClienteId:', debugQuery.length);
+            debugQuery.forEach((row, idx) => {
+                console.log(`    [${idx}] id: ${row.atividadeId}, tipo: "${row.tipoAtividade}", texto: "${row.texto}", empresaId: ${row.empresaIdCliente}`);
+            });
+        }
+
+        if (atividadeInfo.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Atividade 'Integração: Onvio' não encontrada para esta obrigação" 
+            });
+        }
+
+        const info = atividadeInfo[0];
+
+        // Fallback: se não encontrou tituloDocumentoEsperado na LEFT JOIN, usa o texto da atividade enviada
+        if (!info.tituloDocumentoEsperado && atividadeTexto) {
+            info.tituloDocumentoEsperado = atividadeTexto;
+        }
+
+        // Verificar se tem credenciais configuradas
+        const credenciais = await obterCredenciaisOnvio(empresaId);
+        if (!credenciais) {
+            return res.status(400).json({
+                success: false,
+                message: "Credenciais da Onvio não configuradas para esta empresa"
+            });
+        }
+
+        try {
+            // Criar nova instância do OnvioService com o ID do usuário
+            onvioService = new OnvioService(req.usuario.id);
+            
+            // Inicializar navegador
+            await onvioService.initializeBrowser();
+            
+            // Fazer login usando email da empresa
+            await onvioService.fazerLogin(credenciais, true, empresaId);
+            
+            // Formatar competência para busca
+            let competencia = null;
+            if (info.ano_referencia && info.mes_referencia) {
+                competencia = `${String(info.mes_referencia).padStart(2, '0')}/${info.ano_referencia}`;
+            }
+            
+            // Buscar documentos na Onvio
+            let documentos = await onvioService.buscarDocumentosEmpresa(
+                info.clienteCnpjCpf, 
+                competencia, // Passar competência específica para filtrar
+                info.tituloDocumentoEsperado,
+                obrigacaoClienteId, // Passar obrigacaoClienteId para automação
+                empresaId,
+                info.clienteId, // 🎯 NOVO: Passar clienteId para busca otimizada
+                info.atividadeId // 🎯 NOVO: Passar atividadeId específica
+            );
+            
+            // Garantir que documentos seja sempre um array
+            if (!documentos) {
+                documentos = [];
+            } else if (!Array.isArray(documentos)) {
+                documentos = [documentos];
+            }
+
+            console.log(`📄 Encontrados ${documentos.length} documentos na Onvio`);
+
+            if (documentos.length === 0) {
+                return res.json({
+                    success: false,
+                    message: "Nenhum documento válido encontrado na Onvio"
+                });
+            }
+
+            // Tentar fazer match com o primeiro documento encontrado
+            const documentoEncontrado = documentos[0];
+            console.log(`🎯 Tentando fazer match com documento: ${documentoEncontrado.nome || documentoEncontrado.titulo}`);
+
+            // Clicar no documento para abrir e extrair informações
+            try {
+                if (documentoEncontrado.elemento && typeof documentoEncontrado.elemento.click === 'function') {
+                    await documentoEncontrado.elemento.click();
+                    console.log(`✅ Documento clicado com sucesso: ${documentoEncontrado.nome || documentoEncontrado.titulo}`);
+                    
+                    // Aguardar carregamento do documento
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                } else {
+                    console.log(`⚠️ Elemento do documento não encontrado ou não clicável`);
+                }
+            } catch (error) {
+                console.log(`⚠️ Erro ao clicar no documento: ${error.message}`);
+            }
+
+            const resultadoMatch = await onvioService.fazerMatchEAutomatizarAtividade(
+                documentoEncontrado, 
+                obrigacaoClienteId, 
+                empresaId,
+                info.atividadeId // Passar o ID específico da atividade clicada
+            );
+
+            if (resultadoMatch.sucesso) {
+                return res.json({
+                    success: true,
+                    message: "Documento encontrado e atividade concluída com sucesso!",
+                    detalhes: {
+                        cliente: info.clienteNome,
+                        documento: documentoEncontrado.nome || documentoEncontrado.titulo,
+                        atividadeId: resultadoMatch.atividadeId
+                    }
+                });
+            } else {
+                // Se a atividade já foi concluída na primeira tentativa, retornar sucesso
+                if (resultadoMatch.erro && resultadoMatch.erro.includes('Nenhuma atividade de integração encontrada')) {
+                    return res.json({
+                        success: true,
+                        message: "Documento encontrado e atividade já foi concluída!",
+                        detalhes: {
+                            cliente: info.clienteNome,
+                            documento: documentoEncontrado.nome || documentoEncontrado.titulo,
+                            atividadeJaConcluida: true
+                        }
+                    });
+                }
+                
+                return res.json({
+                    success: false,
+                    message: resultadoMatch.erro || "Erro ao processar documento encontrado"
+                });
+            }
+
+        } finally {
+            // Sempre fechar o navegador
+            if (onvioService) {
+                try {
+            await onvioService.fecharNavegador();
+                } catch (e) {
+                    console.error('❌ Erro ao fechar navegador no finally:', e);
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro na busca automática Onvio:', error);
+        
+        // Fechar navegador em caso de erro
+        if (onvioService) {
+        try {
+            await onvioService.fecharNavegador();
+        } catch (e) {
+            console.error('❌ Erro ao fechar navegador:', e);
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: `Erro na busca automática: ${error.message}`,
+            error: error.message
+        });
+    }
+});
+
+// Função auxiliar para processar a baixa de um documento
+async function processarBaixaDocumento(docAtual, atividade, cliente, competencia, page, forcar = false, onvioService = null) {
+    try {
+        // Garantir que abriu o documento: tentar link interno /document/ e duplo clique com retries até URL conter /document/
+        try {
+            const linkInterno = await page.$('a[href*="/document/"]');
+            if (linkInterno) {
+                try { await linkInterno.click(); } catch(_) {}
+                await new Promise(r => setTimeout(r, 400));
+            }
+            for (let i = 0; i < 8; i++) {
+                const atual = await page.url();
+                if (/\/document\//i.test(atual)) break;
+                try {
+                    if (docAtual.elemento && typeof docAtual.elemento.click === 'function') {
+                        await docAtual.elemento.click({ clickCount: 2, delay: 20 });
+                    }
+                } catch(_) {}
+                await new Promise(r => setTimeout(r, 500));
+            }
+        } catch(_) {}
+
+        // Após clicar, capturar a URL atual do navegador
+        const urlAtual = await page.url();
+        // Pega o link do documento (usando onvioService se disponível)
+        let infoArquivo = null;
+        if (onvioService && typeof onvioService.extrairInfoArquivo === 'function') {
+            infoArquivo = await onvioService.extrairInfoArquivo();
+        }
+        // Usa a URL do navegador como link principal, mas exige /document/
+        const linkPreferencial = infoArquivo?.url || infoArquivo?.linkDocumento || infoArquivo?.href || urlAtual || null;
+        const linkDocumento = /\/document\//i.test(linkPreferencial || '') ? linkPreferencial : null;
+        // Marca a atividade como concluída (update direto no banco)
+        await db.query(
+            'UPDATE obrigacoes_atividades_clientes SET concluida = 1, data_conclusao = CONVERT_TZ(NOW(), \'+00:00\', \'-09:00\') WHERE id = ?',
+            [atividade.id]
+        );
+      
+        // Salva o link do documento nos comentários da obrigação
+        const comentario = `Documento encontrado automaticamente via integração Onvio: ${docAtual.titulo || docAtual.nome}\n\nLink: ${linkDocumento || '(não confirmou /document/)'}\n\nData da busca: ${new Date().toLocaleString('pt-BR')}`;
+        await db.query(`
+            INSERT INTO comentarios_obrigacao (obrigacaoId, usuarioId, comentario, tipo, criadoEm)
+            VALUES (?, ?, ?, ?, CONVERT_TZ(NOW(), '+00:00', '-09:00'))
+        `, [atividade.obrigacaoClienteId, 1, comentario, 'usuario']);
+        console.log(`[${cliente.nome}] ${forcar ? '[FORÇADO]' : ''} Baixa realizada e atividade ${atividade.id} marcada como concluída para documento: ${docAtual.titulo || docAtual.nome}`);
+        // Adicione ao array de resultados, se necessário
+        return {
+            arquivo: docAtual.titulo || docAtual.nome,
+            link: linkDocumento,
+            carregamentoForcado: forcar,
+            sucesso: true
+        };
+    } catch (erro) {
+        console.log(`[${cliente.nome}] Erro ao processar baixa do documento: ${docAtual.titulo || docAtual.nome}`, erro);
+        return {
+            arquivo: docAtual.titulo || docAtual.nome,
+            erro: erro.message || erro,
+            carregamentoForcado: forcar,
+            sucesso: false
+        };
+    }
+}
+
+module.exports = router;

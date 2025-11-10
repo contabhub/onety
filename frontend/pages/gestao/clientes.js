@@ -1500,7 +1500,8 @@ export default function ClientesPage() {
                       <td
                         className={`${styles.td} ${styles.linkTd}`}
                         onClick={() => router.push(`/gestao/clientes/${c.id}`)}
-                      >
+
+>
                         <span className={styles.cellHighlight}>
                           {formatarCnpjCpf(c.cnpjCpf)}
                         </span>

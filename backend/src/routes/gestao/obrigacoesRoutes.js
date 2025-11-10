@@ -921,7 +921,7 @@ router.post('/processar-template/:obrigacaoClienteId/:atividadeId', verifyToken,
   try {
     // Buscar template
     const [[template]] = await db.query(`
-      SELECT * FROM obrigacoes_email_templates WHERE atividadeId = ?
+      SELECT * FROM obrigacoes_email_templates WHERE atividade_id = ?
     `, [atividadeId]);
     
     if (!template) {
@@ -3095,6 +3095,7 @@ router.get("/cliente-obrigacao/:id", verifyToken, async (req, res) => {
         o.meta_qtd_dias AS metaQtdDias,
         o.meta_tipo_dias AS metaTipoDias,
         o.vencimento_tipo AS vencimentoTipo,
+        o.frequencia,
         o.vencimento_dia AS vencimentoDia,
         o.fato_gerador AS fatoGerador,
         o.orgao,
@@ -3134,6 +3135,19 @@ router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke
   const { clienteId, obrigacaoId } = req.params;
 
   try {
+    // ✅ Usar o tipo da obrigação base para decidir a ordenação
+    const [obrigacaoBase] = await db.query(`
+      SELECT frequencia FROM obrigacoes WHERE id = ? LIMIT 1
+    `, [obrigacaoId]);
+
+    const frequencia = (obrigacaoBase[0]?.frequencia || '').toLowerCase();
+    const isDiariaOuSemanal = frequencia.includes('diário') || frequencia.includes('semanal');
+
+    // Diária/Semanal: ordenar por vencimento. Caso contrário: por competência (ano/mês)
+    const orderBy = isDiariaOuSemanal
+      ? 'ORDER BY oc.vencimento ASC'
+      : 'ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC';
+
     const [competencias] = await db.query(`
       SELECT 
         oc.id,
@@ -3142,10 +3156,12 @@ router.get("/cliente/:clienteId/obrigacao/:obrigacaoId/competencias", verifyToke
         oc.vencimento,
         oc.status,
         oc.data_baixa AS dataBaixa,
+        o.frequencia,
         CONCAT(oc.mes_referencia, '/', oc.ano_referencia) as competencia
       FROM obrigacoes_clientes oc
+      JOIN obrigacoes o ON oc.obrigacao_id = o.id
       WHERE oc.cliente_id = ? AND oc.obrigacao_id = ?
-      ORDER BY oc.ano_referencia ASC, oc.mes_referencia ASC
+      ${orderBy}
     `, [clienteId, obrigacaoId]);
 
     res.json(competencias);
@@ -3162,13 +3178,30 @@ router.get("/atividades-cliente/:obrigacaoClienteId", verifyToken, async (req, r
   try {
     const [atividades] = await db.query(`
   SELECT 
-    oac.*, 
-    u1.nome AS concluidoPorNome,
-    u2.nome AS canceladoPorNome,
+    oac.id,
+    oac.cliente_id,
+    oac.obrigacao_cliente_id AS obrigacaoClienteId,
+    oac.tipo,
     CASE 
       WHEN TRIM(oac.texto) = '0' THEN NULL 
       ELSE oac.texto 
-    END AS texto
+    END AS texto,
+    oac.descricao,
+    oac.tipo_cancelamento,
+    oac.ordem,
+    oac.concluida,
+    oac.cancelada,
+    oac.justificativa,
+    oac.data_conclusao AS dataConclusao,
+    oac.data_cancelamento AS dataCancelamento,
+    oac.cancelado_por,
+    oac.concluido_por,
+    oac.criado_em,
+    oac.atualizado_em,
+    oac.anexo,
+    oac.nome_arquivo AS nomeArquivo,
+    u1.nome AS concluidoPorNome,
+    u2.nome AS canceladoPorNome
   FROM obrigacoes_atividades_clientes oac
   LEFT JOIN usuarios u1 ON oac.concluido_por = u1.id
   LEFT JOIN usuarios u2 ON oac.cancelado_por = u2.id
@@ -3237,7 +3270,7 @@ router.patch("/atividade/:atividadeId/concluir", verifyToken, async (req, res) =
 
     await db.query(`
       UPDATE obrigacoes_atividades_clientes
-      SET concluida = 1, dataConclusao = ?, concluidoPor = ?
+      SET concluida = 1, data_conclusao = ?, concluido_por = ?
       WHERE id = ?
     `, [dataHora, userId, atividadeId]);
 
@@ -3372,7 +3405,7 @@ router.patch("/atividade/:atividadeId/cancelar", verifyToken, async (req, res) =
 
     await db.query(`
       UPDATE obrigacoes_atividades_clientes
-      SET cancelada = 1, dataCancelamento = ?, canceladoPor = ?, justificativa = ?
+      SET cancelada = 1, data_cancelamento = ?, cancelado_por = ?, justificativa = ?
       WHERE id = ?
     `, [dataHora, userId, justificativa || null, atividadeId]);
 
@@ -3629,7 +3662,7 @@ router.patch("/atividade/:atividadeId/descancelar", verifyToken, async (req, res
   try {
     const [result] = await db.query(
       `UPDATE obrigacoes_atividades_clientes 
-       SET cancelada = 0, justificativa = NULL, concluidoPor = NULL, dataCancelamento = NULL
+       SET cancelada = 0, justificativa = NULL, concluido_por = NULL, data_cancelamento = NULL
        WHERE id = ?`,
       [atividadeId]
     );
@@ -3674,7 +3707,7 @@ router.patch("/atividade/:atividadeId/anexo", verifyToken, async (req, res) => {
 
     await db.query(`
       UPDATE obrigacoes_atividades_clientes
-      SET anexo = ?, nomeArquivo = ?
+      SET anexo = ?, nome_arquivo = ?
       WHERE id = ?
     `, [base64, nomeArquivo, atividadeId]);
 
@@ -4297,7 +4330,7 @@ router.patch("/atividade/:atividadeId/disconcluir", verifyToken, async (req, res
   try {
     const [result] = await db.query(
       `UPDATE obrigacoes_atividades_clientes 
-       SET concluida = 0, dataConclusao = NULL, concluidoPor = NULL
+       SET concluida = 0, data_conclusao = NULL, concluido_por = NULL
        WHERE id = ?`,
       [atividadeId]
     );
@@ -4412,7 +4445,7 @@ router.get('/atividades/:atividadeId/email-template', verifyToken, async (req, r
     
     // Buscar template usando o ID da atividade base
     const [[template]] = await db.query(`
-      SELECT * FROM obrigacoes_email_templates WHERE atividadeId = ?
+      SELECT * FROM obrigacoes_email_templates WHERE atividade_id = ?
     `, [atividadeBaseId]);
     
     console.log("🔍 [BACKEND] Template encontrado:", template);
@@ -4536,7 +4569,7 @@ router.post('/atividades/:atividadeId/email-template', verifyToken, async (req, 
     
     // Verificar se já existe template
     const [[existente]] = await db.query(`
-      SELECT id FROM obrigacoes_email_templates WHERE atividadeId = ?
+      SELECT id FROM obrigacoes_email_templates WHERE atividade_id = ?
     `, [atividadeBaseId]);
     
     if (existente) {
@@ -4545,14 +4578,14 @@ router.post('/atividades/:atividadeId/email-template', verifyToken, async (req, 
       await db.query(`
         UPDATE obrigacoes_email_templates 
         SET nome = ?, assunto = ?, corpo = ?, destinatario = ?, cc = ?, co = ?, variaveis = ?
-        WHERE atividadeId = ?
+        WHERE atividade_id = ?
       `, [nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis), atividadeBaseId]);
     } else {
       // Criar novo
       console.log("➕ [BACKEND POST] Criando novo template para atividadeBaseId:", atividadeBaseId);
       await db.query(`
         INSERT INTO obrigacoes_email_templates 
-        (atividadeId, nome, assunto, corpo, destinatario, cc, co, variaveis)
+        (atividade_id, nome, assunto, corpo, destinatario, cc, co, variaveis)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `, [atividadeBaseId, nome, assunto, corpo, destinatario, cc, co, JSON.stringify(variaveis)]);
     }

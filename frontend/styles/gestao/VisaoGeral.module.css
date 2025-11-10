@@ -495,8 +495,8 @@
     border: 1px solid var(--onity-stroke);
   }
   
-  .cardGestaoDocTitulo {
-    font-size: var(--onity-font-size-lg);
+.cardGestaoDocTitulo {
+    font-size: var(--onity-font-size-base);
     font-weight: var(--onity-font-weight-semibold);
     color: var(--onity-text-high);
     margin-bottom: var(--onity-spacing-lg);
@@ -525,8 +525,8 @@
   
   .cardGestaoDocResumoCol { display: flex; flex-direction: column; gap: var(--onity-spacing-md); }
   .cardGestaoDocResumoLinha { display: flex; justify-content: space-between; align-items: center; }
-  .cardGestaoDocResumoLabel { font-size: var(--onity-font-size-base); color: var(--onity-text-med); }
-  .cardGestaoDocResumoValor { font-size: var(--onity-font-size-lg); font-weight: var(--onity-font-weight-semibold); color: var(--onity-text-high); }
+.cardGestaoDocResumoLabel { font-size: var(--onity-font-size-sm); color: var(--onity-text-med); }
+.cardGestaoDocResumoValor { font-size: calc(var(--onity-font-size-base) + 3px); font-weight: var(--onity-font-weight-semibold); color: var(--onity-text-high); }
   .cardGestaoDocResumoValorVerde { color: var(--onity-success); text-shadow: var(--onity-glow-success); }
   .cardGestaoDocResumoValorAmarelo { color: var(--onity-warning); text-shadow: var(--onity-glow-warning); }
   .cardGestaoDocResumoValorVermelho { color: var(--onity-error); text-shadow: var(--onity-glow-error); }
@@ -540,6 +540,10 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--onity-spacing-md);
+}
+
+.cardPesquisaHeader + .cardGestaoDocResumoCol {
+  margin-top: -20px;
 }
 
 .pesquisaLinkBtn {
@@ -563,19 +567,27 @@
 }
 
   /* --- Performance do MÃªs --------------------------------------------- */
-  .performanceMesWrapper { margin-bottom: var(--onity-spacing-xl); }
+.performanceMesWrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--onity-spacing-lg);
+  margin-bottom: var(--onity-spacing-xl);
+  justify-content: start;
+}
   
   .performanceMesCard {
     background-color: var(--onity-card-bg);
     border-radius: var(--onity-radius-md);
     padding: var(--onity-spacing-md);
-    min-height: 170px;
+    min-height: 220px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: var(--onity-spacing-md);
     box-shadow: var(--onity-shadow-md);
     font-family: var(--onity-font-family);
-    width: 100%;
+    width: 98%;
     border: 1px solid var(--onity-stroke);
   }
   
@@ -595,28 +607,30 @@
   }
   
   .performanceMesTopo {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    padding: 0 var(--onity-spacing-sm);
   }
-  .performanceMesTitulo { font-size: var(--onity-font-size-base); color: var(--onity-text-high); font-weight: var(--onity-font-weight-semibold); }
-  .performanceMesNavegacao { display: flex; gap: var(--onity-spacing-sm); font-size: var(--onity-font-size-base); color: var(--onity-text-high); cursor: pointer; }
+  .performanceMesTitulo { font-size: var(--onity-font-size-xs); color: var(--onity-text-high); font-weight: var(--onity-font-weight-semibold); text-transform: uppercase; }
+  .performanceMesNavegacao { display: flex; gap: var(--onity-spacing-xs); font-size: var(--onity-font-size-sm); color: var(--onity-text-high); cursor: pointer; }
   
-  .performanceMesGraficoLinha { display: flex; justify-content: center; align-items: center; gap: 4px; }
-  .performanceMesRealizadas { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 80px; }
-  .performanceMesRealizadasValor { font-size: var(--onity-font-size-2xl); font-weight: var(--onity-font-weight-semibold); color: var(--onity-success); text-shadow: var(--onity-glow-success); }
-  .performanceMesRealizadasLabel { font-size: var(--onity-font-size-base); color: var(--onity-success); }
+.performanceMesGraficoLinha { width: 100%; display: flex; justify-content: center; align-items: flex-end; gap: clamp(16px, 6vw, 72px); padding: 0 var(--onity-spacing-sm); }
+.performanceMesRealizadas { display: flex; flex-direction: column; align-items: center; cursor: pointer; min-width: 80px; transform: translateY(-40px); }
+  .performanceMesRealizadasValor { font-size: var(--onity-font-size-lg); font-weight: var(--onity-font-weight-semibold); color: var(--onity-success); text-shadow: var(--onity-glow-success); }
+  .performanceMesRealizadasLabel { font-size: var(--onity-font-size-sm); color: var(--onity-success); }
+
+  .performanceMesGrafico { width: 260px; height: 170px; display: flex; justify-content: center; align-items: center; }
+  .performanceMesGrafico svg { transform: translateY(60px) scale(1.08); transform-origin: center; }
+  .performanceMesGraficoValor { margin-top: 55px; font-size: var(--onity-font-size-lg); font-weight: var(--onity-font-weight-bold); color: var(--onity-text-high); }
+  .performanceMesGraficoLabel { font-size: var(--onity-font-size-sm); color: var(--onity-text-med); }
+
+.performanceMesRestantes { display: flex; flex-direction: column; align-items: center; position: relative; min-width: 80px; transform: translateY(-40px); }
+  .performanceMesRestantesValor { font-size: var(--onity-font-size-lg); font-weight: var(--onity-font-weight-semibold); color: var(--onity-text-high); position: relative; }
+  .performanceMesRestantesLabel { font-size: var(--onity-font-size-sm); color: var(--onity-text-high); }
   
-  .performanceMesGrafico { width: 700px; height: 40px; display: flex; justify-content: center; align-items: center; margin-top: 120px; }
-  .performanceMesGraficoValor { margin-top: -90px; font-size: var(--onity-font-size-2xl); font-weight: var(--onity-font-weight-bold); color: var(--onity-text-high); }
-  .performanceMesGraficoLabel { font-size: var(--onity-font-size-base); color: var(--onity-text-med); }
-  
-  .performanceMesRestantes { display: flex; flex-direction: column; align-items: center; position: relative; min-width: 80px; }
-  .performanceMesRestantesValor { font-size: var(--onity-font-size-2xl); font-weight: var(--onity-font-weight-semibold); color: var(--onity-text-high); position: relative; }
-  .performanceMesRestantesLabel { font-size: var(--onity-font-size-base); color: var(--onity-text-high); }
-  
-  .performanceMesRodape { display: flex; justify-content: space-between; align-items: center; font-size: 9px; margin-top: var(--onity-spacing-sm); }
+  .performanceMesRodape { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-top: auto; padding: 0 var(--onity-spacing-sm); }
   .performanceMesRodapeObs { color: var(--onity-text-low); }
   .performanceMesRodapeBtn {
     font-size: 10px;
@@ -627,6 +641,35 @@
     cursor: pointer;
     font-weight: var(--onity-font-weight-medium);
     text-decoration: underline;
+  }
+
+  @media (max-width: 1024px) {
+    .performanceMesGraficoLinha {
+      gap: clamp(12px, 4vw, 40px);
+    }
+    .performanceMesRealizadas,
+    .performanceMesRestantes {
+      transform: translateY(-24px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .performanceMesGraficoLinha {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--onity-spacing-md);
+    }
+    .performanceMesRealizadas,
+    .performanceMesRestantes {
+      transform: translateY(-12px);
+    }
+    .performanceMesGrafico svg {
+      transform: translateY(32px) scale(1.02);
+    }
+    .performanceMesGraficoValor {
+      margin-top: 32px;
+    }
   }
   
   /* --- CartÃ£o IntegraÃ§Ã£o ---------------------------------------------- */
@@ -668,7 +711,7 @@
   .cardIntegracaoBtnOnvio:hover { background: rgba(255,202,58,0.08); }
   
   /* --- Painel de Controle -------------------------------------------- */
-  .painelControleHeader {
+.painelControleHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -680,7 +723,7 @@
   .painelControleDepartamentoCellAtivo { color: var(--onity-text-high); }
   
   .painelControleTitulo {
-    font-size: var(--onity-font-size-xl);
+  font-size: var(--onity-font-size-lg);
     font-weight: var(--onity-font-weight-semibold);
     font-family: var(--onity-font-family);
     margin: 0;
@@ -780,17 +823,16 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--onity-spacing-sm);
-    font-weight: var(--onity-font-weight-medium);
-    padding: 2px 8px;
-    border-radius: var(--onity-radius-sm);
-    background: transparent;
+  font-weight: var(--onity-font-weight-medium);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--onity-text-high);
   }
   .painelControleDepartamentoCellAtivo {
-    background-color: rgba(0, 76, 255, 0.12);
-    color: var(--onity-text-high);
-    box-shadow: var(--onity-glow-primary);
+  color: var(--onity-text-high);
   }
-  .painelControleDepartamentoCellInativo { color: var(--onity-text-low); }
+.painelControleDepartamentoCellInativo { color: var(--onity-text-high); opacity: 0.85; }
   
   .painelControleDepartamentoDropdownBtn {
     padding: var(--onity-spacing-sm);
@@ -1177,21 +1219,27 @@
     color: var(--onity-text-high);
   }
   
-  .performanceMesTitulo {
-    font-size: var(--onity-font-size-lg);
-    font-weight: var(--onity-font-weight-bold);
+.performanceMesTitulo {
+    font-size: var(--onity-font-size-sm);
+    font-weight: var(--onity-font-weight-medium);
     background: linear-gradient(90deg, #2EE5B6, #004CFF);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: gradientScroll 4s linear infinite;
     background-size: 200%;
-    letter-spacing: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
   }
   
 /* === Control Panel (migrado de VisaoGeralModal.module.css) === */
 .controlPanel {
   margin-top: var(--onity-spacing-xl);
+  background: var(--onity-card-bg);
+  border: 1px solid var(--onity-stroke);
+  border-radius: var(--onity-radius-lg);
+  padding: var(--onity-spacing-xl);
+  box-shadow: var(--onity-shadow-lg);
+  backdrop-filter: blur(12px);
 }
 
 /* VisaoGeral page - inline cleanup */
@@ -1302,8 +1350,8 @@
 
 /* Onvio modal (content/alerts/actions) */
 .onvioInfoBox {
-  background: var(--onity-info-bg);
-  border: 1px solid var(--onity-info-border);
+  background: rgba(0, 207, 232, 0.08);
+  border: 1px solid rgba(0, 207, 232, 0.35);
   border-radius: var(--onity-radius-md);
   padding: var(--onity-spacing-md);
   margin-bottom: var(--onity-spacing-md);
@@ -1313,29 +1361,35 @@
   margin: 0 0 var(--onity-spacing-sm) 0;
   font-size: var(--onity-font-size-sm);
   font-weight: var(--onity-font-weight-semibold);
-  color: var(--onity-info-text);
-  display: flex; align-items: center; gap: var(--onity-spacing-sm);
+  color: var(--onity-color-info);
+  display: flex;
+  align-items: center;
+  gap: var(--onity-spacing-sm);
 }
 
 .onvioInfoList {
-  margin: 0; padding-left: 20px;
-  color: var(--onity-info-text);
+  margin: 0;
+  padding-left: 20px;
+  color: var(--onity-text-high);
   font-size: var(--onity-font-size-sm);
   line-height: 1.6;
 }
 
 .onvioWarningBox {
-  background: var(--onity-warning-bg);
-  border: 1px solid var(--onity-warning-border);
+  background: rgba(255, 159, 67, 0.1);
+  border: 1px solid rgba(255, 159, 67, 0.35);
   border-radius: var(--onity-radius-md);
   padding: var(--onity-spacing-md);
 }
 
 .onvioWarningText {
-  margin: 0; color: var(--onity-warning-text);
+  margin: 0;
+  color: var(--onity-color-warning);
   font-size: var(--onity-font-size-sm);
   font-weight: var(--onity-font-weight-medium);
-  display: flex; align-items: flex-start; gap: var(--onity-spacing-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--onity-spacing-sm);
 }
 
 .onvioActionsRow { display: flex; gap: var(--onity-spacing-sm); justify-content: flex-end; }
@@ -1367,24 +1421,22 @@
 
 .controlPanelTable {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 12px;
+  border-collapse: collapse;
 }
 
 .controlPanelHeader th {
-  text-align: left;
-  padding: 10px 14px;
+  text-align: center;
+  padding: 12px 16px;
   color: var(--onity-text-high);
   font-weight: var(--onity-font-weight-semibold);
   border-bottom: 1px solid var(--onity-grid-line);
 }
 
 .controlPanelRow td {
-  background: var(--onity-card-bg);
-  border: 1px solid var(--onity-stroke);
+  background: transparent;
+  border: none;
   padding: 12px 16px;
   color: var(--onity-text-med);
-  border-radius: var(--onity-radius-md);
 }
 
 
