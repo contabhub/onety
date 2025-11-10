@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 
+// Garante polyfills necessários antes de carregar pdf-parse
+require('../../lib/nodeCanvasPolyfills');
 
 let pdfParse;
 try {
