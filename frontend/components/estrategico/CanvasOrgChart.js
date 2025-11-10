@@ -5,6 +5,7 @@ import { getKpiMetaPercentualDepartamentoRecursivo, getKpiMetaPercentualDepartam
 import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 import CountUp from '../../components/estrategico/CountUp';
 import styles from '../../styles/estrategico/CanvasOrgChart.module.css';
+import 'react-circular-progressbar/dist/styles.css';
 
 const CircularProgressBar = ({ percentage, color, x, y, size, tooltip, isIcon }) => {
   const [displayValue, setDisplayValue] = useState(0);

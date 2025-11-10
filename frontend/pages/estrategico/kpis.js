@@ -53,18 +53,24 @@ const getUserData = () => {
 const getUserRole = () => {
   try {
     const userData = localStorage.getItem('userData');
-    if (userData) {
-      const parsed = JSON.parse(userData);
-      // Verificar se tem role direto
-      if (parsed.role) return parsed.role;
-      // Verificar permissões
-      const permissoes = parsed.permissoes || {};
-      if (permissoes.adm && permissoes.adm.includes('admin')) return 'ADMIN';
-      if (permissoes.rh && permissoes.rh.includes('admin')) return 'RH';
-      if (permissoes.gestao && permissoes.gestao.includes('admin')) return 'GESTOR';
-      return 'FUNCIONARIO';
-    }
-    return null;
+    if (!userData) return null;
+
+    const parsed = JSON.parse(userData);
+
+    if (parsed.role) return parsed.role;
+
+    const permissoes = parsed.permissoes || {};
+    const hasPermission = (grupo, valores) => {
+      if (!permissoes[grupo] || !Array.isArray(permissoes[grupo])) return false;
+      return permissoes[grupo].some(valor => valores.includes(valor));
+    };
+
+    if (hasPermission('adm', ['superadmin'])) return 'SUPERADMIN';
+    if (hasPermission('adm', ['admin'])) return 'ADMIN';
+    if (hasPermission('rh', ['superadmin', 'admin', 'gestor'])) return 'RH';
+    if (hasPermission('gestao', ['superadmin', 'admin', 'gestor'])) return 'GESTOR';
+
+    return 'FUNCIONARIO';
   } catch {
     return null;
   }
@@ -113,33 +119,61 @@ const apiFetch = async (url, options = {}) => {
 };
 
 const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const mapMesParaNumero = (mesAbreviado) => {
+  if (mesAbreviado === null || mesAbreviado === undefined) return null;
+
+  if (typeof mesAbreviado === 'number') {
+    return mesAbreviado >= 1 && mesAbreviado <= 12 ? mesAbreviado : null;
+  }
+
+  const parsed = Number(mesAbreviado);
+  if (!Number.isNaN(parsed)) {
+    return parsed >= 1 && parsed <= 12 ? parsed : null;
+  }
+
+  const index = meses.findIndex((mes) => mes.toLowerCase() === String(mesAbreviado).toLowerCase());
+  return index >= 0 ? index + 1 : null;
+};
+const mapNumeroParaMes = (numero) => {
+  if (numero === null || numero === undefined) return '';
+  const parsed = Number(numero);
+  if (Number.isNaN(parsed) || parsed < 1 || parsed > 12) return '';
+  return meses[parsed - 1] || '';
+};
+const normalizeKpiRecord = (kpi) => {
+  const rawMonth = kpi.month ?? kpi.mes;
+  const monthNumber = mapMesParaNumero(rawMonth);
+  const monthLabel = monthNumber ? mapNumeroParaMes(monthNumber) : (typeof rawMonth === 'string' ? rawMonth : '');
+  const kpiTypeId = kpi.kpi_type_id ?? kpi.tipo_kpi_id ?? null;
+  const targetValue = kpi.target_value ?? kpi.valor_alvo ?? 0;
+  const actualValue = kpi.actual_value ?? kpi.valor_atual ?? 0;
+  const yearValue = kpi.year ?? kpi.ano ?? null;
+  return {
+    ...kpi,
+    kpi_type_id: kpiTypeId,
+    month: monthLabel,
+    monthNumber: monthNumber || undefined,
+    target_value: typeof targetValue === 'string' ? Number(targetValue) : targetValue,
+    actual_value: typeof actualValue === 'string' ? Number(actualValue) : actualValue,
+    year: typeof yearValue === 'string' ? Number(yearValue) : yearValue,
+  };
+};
 const anoAtual = new Date().getFullYear();
 const anosMock = [anoAtual - 1, anoAtual, anoAtual + 1, anoAtual + 2];
 
-// Função para converter número do formato brasileiro para número
+const normalizeKpiType = (kpiType) => ({
+  id: Number(kpiType.id),
+  name: kpiType.name ?? kpiType.nome ?? '',
+  unit_type: kpiType.unit_type ?? kpiType.tipo_unidade ?? '',
+  unit_symbol: kpiType.unit_symbol ?? kpiType.unidade_simbolo ?? '',
+  description: kpiType.description ?? kpiType.descricao ?? ''
+});
+
 function parsePtBrNumber(str) {
   if (!str) return 0;
   const clean = str.replace(/\./g, '').replace(/,/g, '.');
   const num = Number(clean);
-  return isNaN(num) ? 0 : num;
-}
-
-// Função para formatar número no padrão brasileiro para exibição
-function formatPtBrNumber(num) {
-  if (num === null || num === undefined || num === '') return '';
-  const numValue = typeof num === 'string' ? parseFloat(num) : num;
-  if (isNaN(numValue)) return '';
-  
-  // Converter para string e separar parte inteira e decimal
-  const parts = numValue.toString().split('.');
-  const integerPart = parts[0];
-  const decimalPart = parts[1] || '';
-  
-  // Formatar parte inteira com pontos como separador de milhares
-  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  
-  // Retornar com vírgula como separador decimal
-  return decimalPart ? `${formattedInteger},${decimalPart}` : formattedInteger;
+  return Number.isNaN(num) ? 0 : num;
 }
 
 function DeleteConfirmationModal({ isOpen, onClose, kpi, onConfirm }) {
@@ -579,9 +613,9 @@ function EditKpiModal({ isOpen, onClose, kpi, kpiTypes, departments, onSave }) {
       setForm({
         kpi_type_id: kpi.kpi_type_id,
         year: kpi.year,
-        month: kpi.month,
-        target_value: formatPtBrNumber(kpi.target_value),
-        actual_value: formatPtBrNumber(kpi.actual_value),
+        month: kpi.monthNumber ? mapNumeroParaMes(kpi.monthNumber) : mapNumeroParaMes(kpi.month) || kpi.month,
+        target_value: kpi.target_value.toString(),
+        actual_value: kpi.actual_value.toString(),
         department_id: kpi.department_id || '',
       });
     }
@@ -593,10 +627,17 @@ function EditKpiModal({ isOpen, onClose, kpi, kpiTypes, departments, onSave }) {
 
     setLoading(true);
     try {
+      const monthNumber = mapMesParaNumero(form.month);
+      if (!monthNumber) {
+        toast.error('Mês inválido selecionado.');
+        setLoading(false);
+        return;
+      }
+
       await onSave(kpi.id, {
         kpi_type_id: form.kpi_type_id,
         year: form.year,
-        month: form.month,
+        month: monthNumber,
         target_value: parsePtBrNumber(form.target_value),
         actual_value: parsePtBrNumber(form.actual_value),
         department_id: form.department_id || undefined,
@@ -1042,7 +1083,8 @@ export default function KpiDashboard() {
     try {
       if (!companyId) return;
       const data = await apiFetch(`/estrategico/kpis/types?companyId=${companyId}`);
-      setKpiTypes(data || []);
+      const normalized = Array.isArray(data) ? data.map(normalizeKpiType) : [];
+      setKpiTypes(normalized);
     } catch (err) {
       const error = err;
       setError(error.message);
@@ -1115,11 +1157,14 @@ export default function KpiDashboard() {
         }
       }
 
-      setAllKpis(data || []);
+      const normalizedData = (data || []).map(normalizeKpiRecord);
+
+      setAllKpis(normalizedData);
 
       const dadosOrganizados = {};
       kpiTypes.forEach((kpiType) => {
-        dadosOrganizados[kpiType.id] = {
+        const key = String(kpiType.id);
+        dadosOrganizados[key] = {
           name: kpiType.name,
           unit_type: kpiType.unit_type,
           unit_symbol: kpiType.unit_symbol,
@@ -1127,14 +1172,14 @@ export default function KpiDashboard() {
         };
       });
 
-      (data || []).forEach((kpi) => {
-        const kpiData = kpi;
-        const idx = meses.indexOf(kpiData.month);
-        if (idx !== -1 && dadosOrganizados[kpiData.kpi_type_id]) {
-          dadosOrganizados[kpiData.kpi_type_id].data[idx] = {
-            mes: kpiData.month,
-            orcado: kpiData.target_value,
-            realizado: kpiData.actual_value,
+      normalizedData.forEach((kpi) => {
+        const monthIndex = typeof kpi.monthNumber === 'number' ? kpi.monthNumber - 1 : meses.indexOf(kpi.month);
+        const kpiTypeKey = String(kpi.kpi_type_id ?? kpi.tipo_kpi_id ?? '');
+        if (monthIndex !== -1 && dadosOrganizados[kpiTypeKey]) {
+          dadosOrganizados[kpiTypeKey].data[monthIndex] = {
+            mes: meses[monthIndex] || kpi.month,
+            orcado: kpi.target_value,
+            realizado: kpi.actual_value,
           };
         }
       });
@@ -1154,10 +1199,12 @@ export default function KpiDashboard() {
       setError(null);
 
       const data = await apiFetch(`/estrategico/kpis?companyId=${companyId}&year=${anoComparacao || 0}`);
+      const normalizedData = (data || []).map(normalizeKpiRecord);
 
       const dadosOrganizados = {};
       kpiTypes.forEach((kpiType) => {
-        dadosOrganizados[kpiType.id] = {
+        const key = String(kpiType.id);
+        dadosOrganizados[key] = {
           name: kpiType.name,
           unit_type: kpiType.unit_type,
           unit_symbol: kpiType.unit_symbol,
@@ -1165,14 +1212,14 @@ export default function KpiDashboard() {
         };
       });
 
-      (data || []).forEach((kpi) => {
-        const kpiData = kpi;
-        const idx = meses.indexOf(kpiData.month);
-        if (idx !== -1 && dadosOrganizados[kpiData.kpi_type_id]) {
-          dadosOrganizados[kpiData.kpi_type_id].data[idx] = {
-            mes: kpiData.month,
-            orcado: kpiData.target_value,
-            realizado: kpiData.actual_value,
+      normalizedData.forEach((kpi) => {
+        const monthIndex = typeof kpi.monthNumber === 'number' ? kpi.monthNumber - 1 : meses.indexOf(kpi.month);
+        const kpiTypeKey = String(kpi.kpi_type_id ?? kpi.tipo_kpi_id ?? '');
+        if (monthIndex !== -1 && dadosOrganizados[kpiTypeKey]) {
+          dadosOrganizados[kpiTypeKey].data[monthIndex] = {
+            mes: meses[monthIndex] || kpi.month,
+            orcado: kpi.target_value,
+            realizado: kpi.actual_value,
           };
         }
       });
@@ -1203,13 +1250,19 @@ export default function KpiDashboard() {
       const orcadoNum = parsePtBrNumber(orcado);
       const realizadoNum = parsePtBrNumber(realizado);
 
+      const mesNumero = mapMesParaNumero(mes);
+      if (!mesNumero) {
+        toast.error('Mês inválido selecionado.');
+        return;
+      }
+
       await apiFetch('/estrategico/kpis', {
         method: 'POST',
         body: {
           companyId,
           kpi_type_id,
           year: Number(ano),
-          month: mes,
+          month: mesNumero,
           target_value: orcadoNum,
           actual_value: realizadoNum,
           department_id: department_id || undefined,
@@ -1327,6 +1380,19 @@ export default function KpiDashboard() {
         return `${valor}${unitSymbol}`;
     }
   };
+
+  if (!user || userRole === null) {
+    return <div className={styles.loadingContainer}>Carregando...</div>;
+  }
+
+
+  if (!['ADMIN', 'SUPERADMIN', 'RH', 'GESTOR'].includes(userRole)) {
+    return (
+      <div className={styles.restrictedContainer}>
+        Acesso restrito: você não tem permissão para visualizar esta página.
+      </div>
+    );
+  }
 
   if (loading) {
     return <div className={styles.loadingContainer}>Carregando dados...</div>;
@@ -1621,8 +1687,9 @@ export default function KpiDashboard() {
               const gruposKpi = {};
               
               allKpis.forEach(kpi => {
-                const departmentId = kpi.department_id || 'sem-departamento';
-                const chave = `${kpi.kpi_type_id}__${departmentId}`;
+                const departmentId = kpi.department_id ?? 'sem-departamento';
+                const kpiTypeKey = String(kpi.kpi_type_id ?? kpi.tipo_kpi_id ?? 'sem-tipo');
+                const chave = `${kpiTypeKey}__${departmentId}`;
                 
                 if (!gruposKpi[chave]) {
                   gruposKpi[chave] = [];
@@ -1634,8 +1701,10 @@ export default function KpiDashboard() {
                 .filter(([, kpis]) => kpis.length > 0)
                 .map(([chave, kpisDoGrupo]) => {
                   const primeiroKpi = kpisDoGrupo[0];
-                  const kpiTypeId = primeiroKpi.kpi_type_id;
-                  const kpiData = dados[kpiTypeId];
+                  const kpiTypeIdRaw = primeiroKpi.kpi_type_id ?? primeiroKpi.tipo_kpi_id;
+                  if (!kpiTypeIdRaw) return null;
+                  const kpiTypeIdKey = String(kpiTypeIdRaw);
+                  const kpiData = dados[kpiTypeIdKey];
                   
                   if (!kpiData) return null;
 
@@ -1643,8 +1712,8 @@ export default function KpiDashboard() {
                     const kpiDoMes = kpisDoGrupo.find(k => k.month === mes);
                     return {
                       mes,
-                      orcado: kpiDoMes?.target_value || 0,
-                      realizado: kpiDoMes?.actual_value || 0
+                      orcado: Number(kpiDoMes?.target_value ?? 0),
+                      realizado: Number(kpiDoMes?.actual_value ?? 0)
                     };
                   });
 
@@ -1656,8 +1725,8 @@ export default function KpiDashboard() {
                     titulo = `${kpiData.name} (${primeiroKpi.department.title}) - Orçado vs Realizado`;
                   }
 
-                  const dadosComparacaoAtual = anoComparacao && dadosComparacao[kpiTypeId] 
-                    ? dadosComparacao[kpiTypeId].data 
+                  const dadosComparacaoAtual = anoComparacao && dadosComparacao[kpiTypeIdKey] 
+                    ? dadosComparacao[kpiTypeIdKey].data 
                     : undefined;
 
                   return (

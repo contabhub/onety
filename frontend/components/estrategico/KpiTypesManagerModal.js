@@ -59,10 +59,16 @@ const apiFetch = async (url, options = {}) => {
 
   try {
     const response = await fetch(normalizeUrl(url), config);
-    const data = await response.json();
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+    const data = isJson ? await response.json() : await response.text();
 
     if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+      const message =
+        (typeof data === 'string' && data) ||
+        (data && typeof data === 'object' && 'error' in data && data.error) ||
+        `HTTP error! status: ${response.status}`;
+      throw new Error(message);
     }
 
     return data;
@@ -101,11 +107,20 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
     }
   }, [isOpen, companyId]);
 
+  const normalizeKpiType = (apiType) => ({
+    id: apiType.id,
+    name: apiType.name ?? apiType.nome ?? '',
+    description: apiType.description ?? apiType.descricao ?? '',
+    unit_type: apiType.unit_type ?? apiType.tipo_unidade ?? 'decimal',
+    unit_symbol: apiType.unit_symbol ?? apiType.unidade_simbolo ?? ''
+  });
+
   const loadKpiTypes = async () => {
     try {
       setLoading(true);
       const data = await apiFetch(`/estrategico/kpis/types?companyId=${companyId}`);
-      setKpiTypes(data || []);
+      const normalized = Array.isArray(data) ? data.map(normalizeKpiType) : [];
+      setKpiTypes(normalized);
     } catch (error) {
       console.error('Erro ao carregar tipos de KPI:', error);
       toast.error('Erro ao carregar indicadores');
@@ -125,22 +140,24 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
     try {
       setLoading(true);
       
+      const payload = {
+        nome: form.name,
+        descricao: form.description,
+        tipo_unidade: form.unit_type,
+        unidade_simbolo: form.unit_symbol,
+        companyId
+      };
+
       if (editingType) {
         await apiFetch(`/estrategico/kpis/types/${editingType.id}`, {
           method: 'PUT',
-          body: {
-            ...form,
-            companyId
-          }
+          body: payload
         });
         toast.success('Indicador atualizado com sucesso!');
       } else {
         await apiFetch('/estrategico/kpis/types', {
           method: 'POST',
-          body: {
-            ...form,
-            companyId
-          }
+          body: payload
         });
         toast.success('Indicador criado com sucesso!');
       }
@@ -162,10 +179,10 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
   const handleEdit = (kpiType) => {
     setEditingType(kpiType);
     setForm({
-      name: kpiType.name,
-      description: kpiType.description || '',
-      unit_type: kpiType.unit_type,
-      unit_symbol: kpiType.unit_symbol
+      name: kpiType.name ?? kpiType.nome ?? '',
+      description: kpiType.description ?? kpiType.descricao ?? '',
+      unit_type: kpiType.unit_type ?? kpiType.tipo_unidade ?? 'decimal',
+      unit_symbol: kpiType.unit_symbol ?? kpiType.unidade_simbolo ?? ''
     });
     setShowForm(true);
   };
@@ -310,31 +327,29 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
 
           {loading && !showForm ? (
             <div className={styles.loadingContainer}>
-              <div className="loading-spinner" style={{ width: '2rem', height: '2rem', border: '2px solid #e5e7eb', borderTopColor: '#4f46e5', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+              <div className={styles.loadingSpinner}></div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className={styles.kpiList}>
               {kpiTypes.map((kpiType) => (
                 <div
                   key={kpiType.id}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', backgroundColor: '#ffffff', transition: 'border-color 0.15s' }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#818cf8'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                  className={styles.kpiTypeCard}
                 >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <h4 style={{ fontWeight: 600, color: '#111827' }}>{kpiType.name}</h4>
+                  <div className={styles.kpiTypeContent}>
+                    <div className={styles.kpiTypeHeader}>
+                      <h4 className={styles.kpiTypeTitle}>{kpiType.name}</h4>
                     </div>
                     {kpiType.description && (
-                      <p style={{ fontSize: '0.875rem', color: '#4b5563', marginTop: '0.25rem' }}>{kpiType.description}</p>
+                      <p className={styles.kpiTypeDescription}>{kpiType.description}</p>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                    <div className={styles.kpiTypeMeta}>
                       <span>Tipo: <strong>{getUnitTypeLabel(kpiType.unit_type)}</strong></span>
                       <span>Símbolo: <strong>{kpiType.unit_symbol}</strong></span>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem' }}>
+                  <div className={styles.kpiTypeActions}>
                     <button
                       onClick={() => handleEdit(kpiType)}
                       className={styles.actionButton}
@@ -363,7 +378,7 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
             </div>
           )}
 
-          <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={styles.footerActions}>
             <button
               onClick={onClose}
               className={`${styles.button} ${styles.buttonSecondary}`}
@@ -375,19 +390,19 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
       </div>
 
       {deletingType && (
-        <div className={styles.modalOverlay} style={{ zIndex: 60 }}>
-          <div className={styles.modalContainer} style={{ maxWidth: '28rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', backgroundColor: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle className="h-5 w-5" style={{ color: '#dc2626' }} />
+        <div className={`${styles.modalOverlay} ${styles.confirmModalOverlay}`}>
+          <div className={`${styles.modalContainer} ${styles.confirmModalContainer}`}>
+            <div className={styles.confirmHeader}>
+              <div className={styles.confirmIconWrapper}>
+                <AlertTriangle className={styles.confirmIcon} size={20} />
               </div>
               <div>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#111827' }}>Confirmar Exclusão</h3>
-                <p style={{ fontSize: '0.875rem', color: '#4b5563' }}>Esta ação não pode ser desfeita</p>
+                <h3 className={styles.confirmTitle}>Confirmar Exclusão</h3>
+                <p className={styles.confirmSubtitle}>Esta ação não pode ser desfeita</p>
               </div>
             </div>
 
-            <p style={{ color: '#374151', marginBottom: '1.5rem' }}>
+            <p className={styles.confirmMessage}>
               Tem certeza que deseja excluir o indicador <strong>{deletingType.name}</strong>?
             </p>
 
@@ -402,10 +417,7 @@ export function KpiTypesManagerModal({ isOpen, onClose, companyId, onUpdate }) {
               <button
                 onClick={handleDelete}
                 disabled={loading}
-                className={`${styles.button}`}
-                style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                className={`${styles.button} ${styles.dangerButton}`}
               >
                 {loading ? 'Excluindo...' : 'Excluir'}
               </button>
