@@ -13,26 +13,34 @@ async function isUserLeaderOfDepartment(userId, departmentId) {
   return result && result.length > 0;
 }
 
+async function ensureCompanyAccess(req, res, companyId) {
+  if (!companyId) {
+    res.status(400).json({ error: 'ID da empresa é obrigatório' });
+    return false;
+  }
+
+  if (req.user.role !== 'SUPERADMIN') {
+    const [userAccess] = await db.query(
+      'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
+      [req.user.id, companyId]
+    );
+
+    if (!userAccess || userAccess.length === 0) {
+      res.status(403).json({ error: 'Acesso negado a esta empresa' });
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // GET /api/kpis/types - Listar tipos de KPI (USADO EM: kpis.js)
 router.get('/types', verifyToken, async (req, res) => {
   try {
     const { companyId } = req.query;
 
-    if (!companyId) {
-      return res.status(400).json({ error: 'ID da empresa é obrigatório' });
-    }
-
-    // Verificar se o usuário tem acesso à empresa (exceto SUPERADMIN)
-    if (req.user.role !== 'SUPERADMIN') {
-      const [userAccess] = await db.query(
-        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-        [req.user.id, companyId]
-      );
-
-      if (!userAccess || userAccess.length === 0) {
-        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-      }
-    }
+    const hasAccess = await ensureCompanyAccess(req, res, companyId);
+    if (!hasAccess) return;
 
     // Buscar apenas tipos da empresa específica
     const [kpiTypes] = await db.query(
@@ -44,6 +52,128 @@ router.get('/types', verifyToken, async (req, res) => {
 
   } catch (error) {
     console.error('Erro ao listar tipos de KPI:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// POST /api/kpis/types - Criar tipo de KPI
+router.post('/types', verifyToken, async (req, res) => {
+  try {
+    const { companyId, nome, descricao, tipo_unidade, unidade_simbolo } = req.body;
+
+    if (!companyId || !nome || !tipo_unidade || !unidade_simbolo) {
+      return res.status(400).json({ error: 'Campos obrigatórios: companyId, nome, tipo_unidade e unidade_simbolo' });
+    }
+
+    const hasAccess = await ensureCompanyAccess(req, res, companyId);
+    if (!hasAccess) return;
+
+    const nomeTrimmed = nome.trim();
+
+    const [existing] = await db.query(
+      'SELECT id FROM tipos_kpi WHERE empresa_id = ? AND LOWER(nome) = LOWER(?)',
+      [companyId, nomeTrimmed]
+    );
+
+    if (existing && existing.length > 0) {
+      return res.status(409).json({ error: 'Já existe um indicador com este nome para a empresa informada' });
+    }
+
+    const [result] = await db.query(
+      'INSERT INTO tipos_kpi (empresa_id, nome, descricao, tipo_unidade, unidade_simbolo) VALUES (?, ?, ?, ?, ?)',
+      [companyId, nomeTrimmed, descricao || null, tipo_unidade, unidade_simbolo]
+    );
+
+    const [created] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [result.insertId]);
+
+    return res.status(201).json(created[0] || null);
+  } catch (error) {
+    console.error('Erro ao criar tipo de KPI:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// PUT /api/kpis/types/:id - Atualizar tipo de KPI
+router.put('/types/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { companyId, nome, descricao, tipo_unidade, unidade_simbolo } = req.body;
+
+    if (!nome || !tipo_unidade || !unidade_simbolo) {
+      return res.status(400).json({ error: 'Campos obrigatórios: nome, tipo_unidade e unidade_simbolo' });
+    }
+
+    const [existingRows] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [id]);
+
+    if (!existingRows || existingRows.length === 0) {
+      return res.status(404).json({ error: 'Indicador não encontrado' });
+    }
+
+    const existing = existingRows[0];
+    const targetCompanyId = companyId || existing.empresa_id;
+
+    const hasAccess = await ensureCompanyAccess(req, res, targetCompanyId);
+    if (!hasAccess) return;
+
+    if (Number(targetCompanyId) !== Number(existing.empresa_id)) {
+      return res.status(400).json({ error: 'Não é permitido transferir o indicador para outra empresa' });
+    }
+
+    const nomeTrimmed = nome.trim();
+
+    const [duplicate] = await db.query(
+      'SELECT id FROM tipos_kpi WHERE empresa_id = ? AND LOWER(nome) = LOWER(?) AND id != ?',
+      [existing.empresa_id, nomeTrimmed, id]
+    );
+
+    if (duplicate && duplicate.length > 0) {
+      return res.status(409).json({ error: 'Já existe outro indicador com este nome para a empresa' });
+    }
+
+    await db.query(
+      'UPDATE tipos_kpi SET nome = ?, descricao = ?, tipo_unidade = ?, unidade_simbolo = ? WHERE id = ?',
+      [nomeTrimmed, descricao || null, tipo_unidade, unidade_simbolo, id]
+    );
+
+    const [updatedRows] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [id]);
+
+    return res.json(updatedRows[0] || null);
+  } catch (error) {
+    console.error('Erro ao atualizar tipo de KPI:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// DELETE /api/kpis/types/:id - Excluir tipo de KPI
+router.delete('/types/:id', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [existingRows] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [id]);
+
+    if (!existingRows || existingRows.length === 0) {
+      return res.status(404).json({ error: 'Indicador não encontrado' });
+    }
+
+    const existing = existingRows[0];
+
+    const hasAccess = await ensureCompanyAccess(req, res, existing.empresa_id);
+    if (!hasAccess) return;
+
+    const [relatedKpis] = await db.query(
+      'SELECT COUNT(*) as total FROM kpis WHERE tipo_kpi_id = ?',
+      [id]
+    );
+
+    if (relatedKpis && relatedKpis[0] && relatedKpis[0].total > 0) {
+      return res.status(409).json({ error: 'Não é possível excluir um indicador em uso por KPIs' });
+    }
+
+    await db.query('DELETE FROM tipos_kpi WHERE id = ?', [id]);
+
+    return res.json({ message: 'Indicador excluído com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir tipo de KPI:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -378,7 +508,7 @@ router.delete('/:id', verifyToken,  async (req, res) => {
 });
 
 // PATCH /api/kpis/:id/link-department - Vincular/Desvincular departamento a um KPI (USADO EM: kpis.js)
-router.patch('/:id/link-department', async (req, res) => {
+router.patch('/:id/link-department', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { department_id } = req.body;
