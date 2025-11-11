@@ -5,6 +5,7 @@ import { getKpiMetaPercentualDepartamentoRecursivo, getKpiMetaPercentualDepartam
 import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 import CountUp from '../../components/estrategico/CountUp';
 import styles from '../../styles/estrategico/CanvasOrgChart.module.css';
+import 'react-circular-progressbar/dist/styles.css';
 
 const CircularProgressBar = ({ percentage, color, x, y, size, tooltip, isIcon }) => {
   const [displayValue, setDisplayValue] = useState(0);
@@ -1029,7 +1030,7 @@ const CanvasOrgChart = ({
         const clickedNode = findNodeById(data);
         if (clickedNode) {
           // Navegar para a página do departamento
-          router.push(`/company/${companyId}/departments/${clickedNode.id}`);
+          router.push(`/estrategico/organograma/${clickedNode.id}`);
           return;
         }
       }
@@ -1136,7 +1137,7 @@ const CanvasOrgChart = ({
           <button
             className={styles.contextMenuButton}
             onClick={() => {
-              router.push(`/company/${companyId}/departments/${selectedNode.id}`);
+              router.push(`/estrategico/organograma/${selectedNode.id}`);
               handleCloseMenu();
             }}
           >

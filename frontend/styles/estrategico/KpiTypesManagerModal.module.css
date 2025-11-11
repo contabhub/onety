@@ -49,6 +49,71 @@
   color: var(--onity-color-text);
 }
 
+.kpiList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-s);
+}
+
+.kpiTypeCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-m);
+  border-radius: var(--onity-radius-m);
+  border: 1px solid var(--onity-color-border);
+  background-color: var(--onity-color-surface);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.kpiTypeCard:hover {
+  border-color: var(--onity-color-primary);
+  box-shadow: var(--onity-elev-low);
+}
+
+.kpiTypeContent {
+  flex: 1;
+}
+
+.kpiTypeHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+}
+
+.kpiTypeTitle {
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.kpiTypeDescription {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+  margin-top: var(--onity-space-xs);
+}
+
+.kpiTypeMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+  margin-top: var(--onity-space-s);
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-low);
+}
+
+.kpiTypeActions {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-s);
+  margin-left: var(--onity-space-m);
+}
+
+.footerActions {
+  margin-top: var(--onity-space-xl);
+  display: flex;
+  justify-content: flex-end;
+}
+
 .addButton {
   display: inline-flex;
   align-items: center;
@@ -108,7 +173,7 @@
 }
 
 .formInput {
-  width: 100%;
+  width: 90%;
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
@@ -125,7 +190,7 @@
 }
 
 .formTextarea {
-  width: 100%;
+  width: 95%;
   padding: var(--onity-space-s) var(--onity-space-m);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xs);
@@ -286,6 +351,15 @@
   color: var(--onity-color-error);
 }
 
+.dangerButton {
+  background-color: var(--onity-color-error);
+  color: var(--onity-color-primary-contrast);
+}
+
+.dangerButton:hover {
+  background-color: color-mix(in srgb, var(--onity-color-error) 85%, black);
+}
+
 .loadingSpinner {
   display: inline-block;
   width: 2rem;
@@ -329,6 +403,52 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
+}
+
+.confirmModalOverlay {
+  z-index: calc(var(--onity-z-modal-backdrop) + 10);
+}
+
+.confirmModalContainer {
+  max-width: 28rem;
+}
+
+.confirmHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-m);
+  margin-bottom: var(--onity-space-m);
+}
+
+.confirmIconWrapper {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--onity-color-error) 15%, var(--onity-color-surface));
+}
+
+.confirmIcon {
+  color: var(--onity-color-error);
+}
+
+.confirmTitle {
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.confirmSubtitle {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+}
+
+.confirmMessage {
+  color: var(--onity-text-med);
+  margin-bottom: var(--onity-space-xl);
 }
 
 @media (min-width: 768px) {

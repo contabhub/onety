@@ -13,6 +13,27 @@ async function isUserLeaderOfDepartment(userId, departmentId) {
   return result && result.length > 0;
 }
 
+async function ensureCompanyAccess(req, res, companyId) {
+  if (!companyId) {
+    res.status(400).json({ error: 'ID da empresa é obrigatório' });
+    return false;
+  }
+
+  if (req.user.role !== 'SUPERADMIN') {
+    const [userAccess] = await db.query(
+      'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
+      [req.user.id, companyId]
+    );
+
+    if (!userAccess || userAccess.length === 0) {
+      res.status(403).json({ error: 'Acesso negado a esta empresa' });
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // Funções auxiliares para conversão de mês
 const mesesMap = {
   'Jan': 1, 'Fev': 2, 'Mar': 3, 'Abr': 4, 'Mai': 5, 'Jun': 6,
@@ -24,25 +45,30 @@ const mesesReverseMap = {
   7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'
 };
 
-// Converter nome do mês (string) para número (1-12)
 function mesStringToNumber(mes) {
-  if (typeof mes === 'number') return mes; // Já é número
+  if (mes === null || mes === undefined) throw new Error('Mês inválido');
+  if (typeof mes === 'number') {
+    if (mes >= 1 && mes <= 12) return mes;
+    throw new Error(`Mês inválido: ${mes}`);
+  }
   if (typeof mes === 'string') {
-    const num = mesesMap[mes];
-    if (num) return num;
-    // Tentar converter string numérica
-    const parsed = parseInt(mes);
+    const trimmed = mes.trim();
+    if (!trimmed) throw new Error(`Mês inválido: ${mes}`);
+    if (mesesMap[trimmed]) return mesesMap[trimmed];
+    const parsed = parseInt(trimmed, 10);
     if (!isNaN(parsed) && parsed >= 1 && parsed <= 12) return parsed;
   }
   throw new Error(`Mês inválido: ${mes}`);
 }
 
-// Converter número do mês (1-12) para nome (string)
 function mesNumberToString(mes) {
-  if (typeof mes === 'string') return mes; // Já é string
-  if (typeof mes === 'number') {
-    const str = mesesReverseMap[mes];
-    if (str) return str;
+  if (mes === null || mes === undefined) throw new Error('Mês inválido');
+  if (typeof mes === 'string') {
+    if (mesesMap[mes]) return mes;
+    const parsed = parseInt(mes, 10);
+    if (!isNaN(parsed) && mesesReverseMap[parsed]) return mesesReverseMap[parsed];
+  } else if (typeof mes === 'number' && mesesReverseMap[mes]) {
+    return mesesReverseMap[mes];
   }
   throw new Error(`Mês inválido: ${mes}`);
 }
@@ -52,21 +78,8 @@ router.get('/types', verifyToken, async (req, res) => {
   try {
     const { companyId } = req.query;
 
-    if (!companyId) {
-      return res.status(400).json({ error: 'ID da empresa é obrigatório' });
-    }
-
-    // Verificar se o usuário tem acesso à empresa (exceto SUPERADMIN)
-    if (req.user.role !== 'SUPERADMIN') {
-      const [userAccess] = await db.query(
-        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-        [req.user.id, companyId]
-      );
-
-      if (!userAccess || userAccess.length === 0) {
-        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-      }
-    }
+    const hasAccess = await ensureCompanyAccess(req, res, companyId);
+    if (!hasAccess) return;
 
     // Buscar apenas tipos da empresa específica
     const [kpiTypes] = await db.query(
@@ -95,48 +108,59 @@ router.get('/types', verifyToken, async (req, res) => {
 // POST /api/kpis/types - Criar tipo de KPI (USADO EM: KpiTypesManagerModal.js)
 router.post('/types', verifyToken, async (req, res) => {
   try {
-    const { name, description, unit_type, unit_symbol, companyId } = req.body;
+    const {
+      companyId,
+      nome,
+      descricao,
+      tipo_unidade,
+      unidade_simbolo,
+      name,
+      description,
+      unit_type,
+      unit_symbol
+    } = req.body;
 
-    if (!name || !unit_type || !unit_symbol || !companyId) {
-      return res.status(400).json({ error: 'Campos obrigatórios: name, unit_type, unit_symbol, companyId' });
+    const resolvedName = (name ?? nome ?? '').trim();
+    const resolvedDescription = description ?? descricao ?? null;
+    const resolvedUnitType = unit_type ?? tipo_unidade;
+    const resolvedUnitSymbol = unit_symbol ?? unidade_simbolo;
+
+    if (!companyId || !resolvedName || !resolvedUnitType || !resolvedUnitSymbol) {
+      return res.status(400).json({
+        error: 'Campos obrigatórios: companyId, nome/unit_type, tipo_unidade/unit_type e unidade_simbolo/unit_symbol'
+      });
     }
 
-    // Verificar se o usuário tem acesso à empresa (exceto SUPERADMIN)
-    if (req.user.role !== 'SUPERADMIN') {
-      const [userAccess] = await db.query(
-        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-        [req.user.id, companyId]
-      );
+    const hasAccess = await ensureCompanyAccess(req, res, companyId);
+    if (!hasAccess) return;
 
-      if (!userAccess || userAccess.length === 0) {
-        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-      }
+    const [existing] = await db.query(
+      'SELECT id FROM tipos_kpi WHERE empresa_id = ? AND LOWER(nome) = LOWER(?)',
+      [companyId, resolvedName.toLowerCase()]
+    );
+
+    if (existing && existing.length > 0) {
+      return res.status(409).json({ error: 'Já existe um indicador com este nome para a empresa informada' });
     }
 
-    // Inserir tipo de KPI
     const [result] = await db.query(
-      `INSERT INTO tipos_kpi (nome, descricao, tipo_unidade, unidade_simbolo, empresa_id) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [name, description || null, unit_type, unit_symbol, companyId]
+      'INSERT INTO tipos_kpi (empresa_id, nome, descricao, tipo_unidade, unidade_simbolo) VALUES (?, ?, ?, ?, ?)',
+      [companyId, resolvedName, resolvedDescription, resolvedUnitType, resolvedUnitSymbol]
     );
 
-    // Buscar tipo criado
-    const [newType] = await db.query(
-      'SELECT * FROM tipos_kpi WHERE id = ?',
-      [result.insertId]
-    );
+    const [created] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [result.insertId]);
+    const createdType = created[0] || null;
 
-    const formatted = newType[0] ? {
-      id: newType[0].id,
-      name: newType[0].nome,
-      description: newType[0].descricao || null,
-      unit_type: newType[0].tipo_unidade,
-      unit_symbol: newType[0].unidade_simbolo,
-      empresa_id: newType[0].empresa_id
+    const formatted = createdType ? {
+      id: createdType.id,
+      name: createdType.nome,
+      description: createdType.descricao || null,
+      unit_type: createdType.tipo_unidade,
+      unit_symbol: createdType.unidade_simbolo,
+      empresa_id: createdType.empresa_id
     } : null;
 
-    res.status(201).json(formatted);
-
+    return res.status(201).json(formatted);
   } catch (error) {
     console.error('Erro ao criar tipo de KPI:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -147,63 +171,71 @@ router.post('/types', verifyToken, async (req, res) => {
 router.put('/types/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, unit_type, unit_symbol, companyId } = req.body;
+    const {
+      companyId,
+      nome,
+      descricao,
+      tipo_unidade,
+      unidade_simbolo,
+      name,
+      description,
+      unit_type,
+      unit_symbol
+    } = req.body;
 
-    if (!name || !unit_type || !unit_symbol || !companyId) {
-      return res.status(400).json({ error: 'Campos obrigatórios: name, unit_type, unit_symbol, companyId' });
+    const resolvedName = (name ?? nome ?? '').trim();
+    const resolvedDescription = description ?? descricao ?? null;
+    const resolvedUnitType = unit_type ?? tipo_unidade;
+    const resolvedUnitSymbol = unit_symbol ?? unidade_simbolo;
+
+    if (!resolvedName || !resolvedUnitType || !resolvedUnitSymbol) {
+      return res.status(400).json({
+        error: 'Campos obrigatórios: nome/unit_type, tipo_unidade/unit_type e unidade_simbolo/unit_symbol'
+      });
     }
 
-    // Verificar se o tipo existe
-    const [existingType] = await db.query(
-      'SELECT empresa_id FROM tipos_kpi WHERE id = ?',
-      [id]
+    const [existingRows] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [id]);
+    if (!existingRows || existingRows.length === 0) {
+      return res.status(404).json({ error: 'Indicador não encontrado' });
+    }
+
+    const existing = existingRows[0];
+    const targetCompanyId = companyId || existing.empresa_id;
+
+    const hasAccess = await ensureCompanyAccess(req, res, targetCompanyId);
+    if (!hasAccess) return;
+
+    if (Number(targetCompanyId) !== Number(existing.empresa_id)) {
+      return res.status(400).json({ error: 'Não é permitido transferir o indicador para outra empresa' });
+    }
+
+    const [duplicate] = await db.query(
+      'SELECT id FROM tipos_kpi WHERE empresa_id = ? AND LOWER(nome) = LOWER(?) AND id != ?',
+      [existing.empresa_id, resolvedName.toLowerCase(), id]
     );
 
-    if (!existingType || existingType.length === 0) {
-      return res.status(404).json({ error: 'Tipo de KPI não encontrado' });
+    if (duplicate && duplicate.length > 0) {
+      return res.status(409).json({ error: 'Já existe outro indicador com este nome para a empresa' });
     }
 
-    // Verificar se o usuário tem acesso à empresa (exceto SUPERADMIN)
-    if (req.user.role !== 'SUPERADMIN') {
-      const [userAccess] = await db.query(
-        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-        [req.user.id, companyId]
-      );
-
-      if (!userAccess || userAccess.length === 0) {
-        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-      }
-    }
-
-    // Verificar se o tipo pertence à empresa informada
-    if (existingType[0].empresa_id != companyId) {
-      return res.status(400).json({ error: 'Tipo de KPI não pertence a esta empresa' });
-    }
-
-    // Atualizar tipo de KPI
     await db.query(
-      `UPDATE tipos_kpi SET nome = ?, descricao = ?, tipo_unidade = ?, unidade_simbolo = ? 
-       WHERE id = ?`,
-      [name, description || null, unit_type, unit_symbol, id]
+      'UPDATE tipos_kpi SET nome = ?, descricao = ?, tipo_unidade = ?, unidade_simbolo = ? WHERE id = ?',
+      [resolvedName, resolvedDescription, resolvedUnitType, resolvedUnitSymbol, id]
     );
 
-    // Buscar tipo atualizado
-    const [updatedType] = await db.query(
-      'SELECT * FROM tipos_kpi WHERE id = ?',
-      [id]
-    );
+    const [updatedRows] = await db.query('SELECT * FROM tipos_kpi WHERE id = ?', [id]);
+    const updated = updatedRows[0] || null;
 
-    const formatted = updatedType[0] ? {
-      id: updatedType[0].id,
-      name: updatedType[0].nome,
-      description: updatedType[0].descricao || null,
-      unit_type: updatedType[0].tipo_unidade,
-      unit_symbol: updatedType[0].unidade_simbolo,
-      empresa_id: updatedType[0].empresa_id
+    const formatted = updated ? {
+      id: updated.id,
+      name: updated.nome,
+      description: updated.descricao || null,
+      unit_type: updated.tipo_unidade,
+      unit_symbol: updated.unidade_simbolo,
+      empresa_id: updated.empresa_id
     } : null;
 
-    res.json(formatted);
-
+    return res.json(formatted);
   } catch (error) {
     console.error('Erro ao atualizar tipo de KPI:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -215,45 +247,34 @@ router.delete('/types/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verificar se o tipo existe
-    const [existingType] = await db.query(
-      'SELECT empresa_id FROM tipos_kpi WHERE id = ?',
+    const [existingRows] = await db.query(
+      'SELECT * FROM tipos_kpi WHERE id = ?',
       [id]
     );
 
-    if (!existingType || existingType.length === 0) {
+    if (!existingRows || existingRows.length === 0) {
       return res.status(404).json({ error: 'Tipo de KPI não encontrado' });
     }
 
-    // Verificar se o usuário tem acesso à empresa (exceto SUPERADMIN)
-    if (req.user.role !== 'SUPERADMIN') {
-      const [userAccess] = await db.query(
-        'SELECT empresa_id FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
-        [req.user.id, existingType[0].empresa_id]
-      );
+    const existing = existingRows[0];
 
-      if (!userAccess || userAccess.length === 0) {
-        return res.status(403).json({ error: 'Acesso negado a esta empresa' });
-      }
-    }
+    const hasAccess = await ensureCompanyAccess(req, res, existing.empresa_id);
+    if (!hasAccess) return;
 
-    // Verificar se há KPIs usando este tipo
     const [kpisUsingType] = await db.query(
       'SELECT id FROM kpis WHERE tipo_kpi_id = ? LIMIT 1',
       [id]
     );
 
     if (kpisUsingType && kpisUsingType.length > 0) {
-      return res.status(400).json({ 
-        error: 'Não é possível excluir este tipo de KPI pois existem KPIs vinculados a ele' 
+      return res.status(409).json({
+        error: 'Não é possível excluir este tipo de KPI pois existem KPIs vinculados a ele'
       });
     }
 
-    // Excluir tipo de KPI
     await db.query('DELETE FROM tipos_kpi WHERE id = ?', [id]);
 
     res.json({ message: 'Tipo de KPI excluído com sucesso' });
-
   } catch (error) {
     console.error('Erro ao excluir tipo de KPI:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });

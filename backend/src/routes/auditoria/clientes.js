@@ -1,0 +1,974 @@
+const express = require("express");
+const router = express.Router();
+const { database } = require("../../config/database");
+const verifyToken = require("../../middlewares/auth");
+
+// ===== ROTAS PARA TABELA CLIENTES =====
+
+// Enums para validação
+const REGIME_TRIBUTARIO_OPTIONS = ['simples_nacional', 'regime_normal'];
+
+// POST /clientes - Criar novo cliente
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    const { 
+      company_id, 
+      nome, 
+      cnpj, 
+      uf, 
+      regime_tributario
+    } = req.body;
+    
+    // Validações obrigatórias
+    if (!company_id || !nome || !cnpj || !uf) {
+      return res.status(400).json({ 
+        error: "Todos os campos são obrigatórios: company_id, nome, cnpj, uf" 
+      });
+    }
+
+    // Validar formato do CNPJ (14 dígitos)
+    if (!/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
+      return res.status(400).json({ 
+        error: "CNPJ deve ter 14 dígitos" 
+      });
+    }
+
+    // Validar UF (2 caracteres)
+    if (!/^[A-Z]{2}$/.test(uf)) {
+      return res.status(400).json({ 
+        error: "UF deve ter 2 caracteres maiúsculos" 
+      });
+    }
+
+    // Validar regime_tributario (enum)
+    if (regime_tributario && !REGIME_TRIBUTARIO_OPTIONS.includes(regime_tributario)) {
+      return res.status(400).json({ 
+        error: "regime_tributario deve ser 'simples_nacional' ou 'regime_normal'" 
+      });
+    }
+
+    // Verificar se cliente já existe para este company_id e cnpj
+    const { data: existingCliente } = await supabase
+      .from('clientes')
+      .select('id')
+      .eq('company_id', company_id)
+      .eq('cnpj', cnpj)
+      .single();
+
+    if (existingCliente) {
+      return res.status(400).json({ 
+        error: "Cliente já existe para este CNPJ" 
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('clientes')
+      .insert({
+        company_id,
+        nome,
+        cnpj,
+        uf,
+        regime_tributario,
+        created_by: req.user.userId,
+        updated_by: req.user.userId
+      })
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Erro ao criar cliente:', error);
+      return res.status(500).json({ error: "Erro ao criar cliente." });
+    }
+
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Erro ao criar cliente:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// GET /clientes - Listar clientes com filtros
+router.get("/", verifyToken, async (req, res) => {
+  try {
+    const { 
+      company_id, 
+      cnpj, 
+      uf, 
+      nome, 
+      simples_nacional,
+      regime_tributario,
+      mes, 
+      ano,
+      page = 1,
+      limit = 50,
+      sort_by = 'created_at',
+      sort_order = 'desc'
+    } = req.query;
+
+    // Se não tem company_id mas tem cnpj e regime_tributario, buscar por CNPJ
+    if (!company_id && cnpj && regime_tributario) {
+      let query = supabase
+        .from('clientes')
+        .select('*')
+        .eq('cnpj', cnpj)
+        .eq('regime_tributario', regime_tributario);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Erro ao buscar cliente por CNPJ:', error);
+        return res.status(500).json({ error: "Erro ao buscar cliente." });
+      }
+
+      return res.json({
+        data: data || [],
+        pagination: {
+          page: 1,
+          limit: data?.length || 0,
+          total: data?.length || 0,
+          total_pages: 1
+        }
+      });
+    }
+
+    // company_id é obrigatório para outras consultas
+    if (!company_id) {
+      return res.status(400).json({ 
+        error: "company_id é obrigatório" 
+      });
+    }
+
+    // Verificar se o usuário tem acesso à empresa solicitada
+    console.log('🔍 [Clientes] Verificando acesso à empresa:', {
+      requested_company_id: company_id,
+      user_company_ids: req.user.all_company_ids,
+      has_access: req.user.all_company_ids.includes(company_id)
+    });
+    
+    if (!req.user.all_company_ids.includes(company_id)) {
+      return res.status(403).json({ 
+        error: "Acesso negado à empresa" 
+      });
+    }
+
+    let query = supabase
+      .from('clientes')
+      .select('*')
+      .eq('company_id', company_id);
+
+    // Aplicar filtros
+    if (cnpj) {
+      query = query.eq('cnpj', cnpj);
+    }
+
+    if (uf) {
+      query = query.eq('uf', uf.toUpperCase());
+    }
+
+    if (nome) {
+      query = query.ilike('nome', `%${nome}%`);
+    }
+
+    // Filtrar por regime tributário
+    if (simples_nacional !== undefined) {
+      if (simples_nacional === 'true' || simples_nacional === 'sim') {
+        query = query.eq('regime_tributario', 'simples_nacional');
+      } else if (simples_nacional === 'false' || simples_nacional === 'nao') {
+        query = query.eq('regime_tributario', 'regime_normal');
+      }
+    }
+
+    // Aplicar ordenação
+    if (sort_by && ['nome', 'cnpj', 'uf', 'created_at', 'updated_at'].includes(sort_by)) {
+      query = query.order(sort_by, { ascending: sort_order === 'asc' });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    // Aplicar paginação
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query = query.range(offset, offset + parseInt(limit) - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error('Erro ao buscar clientes:', error);
+      return res.status(500).json({ error: "Erro ao buscar clientes." });
+    }
+
+    // Buscar total de registros para paginação (considerando filtros aplicados)
+    let countQuery = supabase
+      .from('clientes')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', company_id);
+
+    // Aplicar os mesmos filtros na contagem
+    if (cnpj) {
+      countQuery = countQuery.eq('cnpj', cnpj);
+    }
+
+    if (uf) {
+      countQuery = countQuery.eq('uf', uf.toUpperCase());
+    }
+
+    if (nome) {
+      countQuery = countQuery.ilike('nome', `%${nome}%`);
+    }
+
+    if (simples_nacional !== undefined) {
+      if (simples_nacional === 'true' || simples_nacional === 'sim') {
+        countQuery = countQuery.eq('regime_tributario', 'simples_nacional');
+      } else if (simples_nacional === 'false' || simples_nacional === 'nao') {
+        countQuery = countQuery.eq('regime_tributario', 'regime_normal');
+      }
+    }
+
+    const { count: totalCount } = await countQuery;
+
+    res.json({
+      data: data || [],
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalCount || 0,
+        total_pages: Math.ceil((totalCount || 0) / parseInt(limit))
+      }
+    });
+  } catch (err) {
+    console.error('Erro ao buscar clientes:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// GET /clientes/simples-nacional - Buscar clientes do Simples Nacional
+router.get("/simples-nacional", verifyToken, async (req, res) => {
+  try {
+    const { 
+      company_id, 
+      cnpj, 
+      uf, 
+      nome, 
+      page = 1,
+      limit = 50,
+      sort_by = 'created_at',
+      sort_order = 'desc'
+    } = req.query;
+
+    if (!company_id) {
+      return res.status(400).json({ 
+        error: "company_id é obrigatório" 
+      });
+    }
+
+    let query = supabase
+      .from('clientes')
+      .select('*')
+      .eq('company_id', company_id)
+      .eq('regime_tributario', 'simples_nacional');
+
+    // Aplicar filtros adicionais
+    if (cnpj) {
+      query = query.eq('cnpj', cnpj);
+    }
+
+    if (uf) {
+      query = query.eq('uf', uf.toUpperCase());
+    }
+
+    if (nome) {
+      query = query.ilike('nome', `%${nome}%`);
+    }
+
+    // Aplicar ordenação
+    if (sort_by && ['nome', 'cnpj', 'uf', 'created_at', 'updated_at'].includes(sort_by)) {
+      query = query.order(sort_by, { ascending: sort_order === 'asc' });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    // Aplicar paginação
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query = query.range(offset, offset + parseInt(limit) - 1);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Erro ao buscar clientes do Simples Nacional:', error);
+      return res.status(500).json({ error: "Erro ao buscar clientes do Simples Nacional." });
+    }
+
+    // Buscar total de registros para paginação
+    let countQuery = supabase
+      .from('clientes')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', company_id)
+      .eq('regime_tributario', 'simples_nacional');
+
+    // Aplicar os mesmos filtros na contagem
+    if (cnpj) {
+      countQuery = countQuery.eq('cnpj', cnpj);
+    }
+
+    if (uf) {
+      countQuery = countQuery.eq('uf', uf.toUpperCase());
+    }
+
+    if (nome) {
+      countQuery = countQuery.ilike('nome', `%${nome}%`);
+    }
+
+    const { count: totalCount } = await countQuery;
+
+    res.json({
+      data: data || [],
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalCount || 0,
+        total_pages: Math.ceil((totalCount || 0) / parseInt(limit))
+      }
+    });
+  } catch (err) {
+    console.error('Erro ao buscar clientes do Simples Nacional:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// GET /clientes/regime-normal - Buscar clientes do Regime Normal
+router.get("/regime-normal", verifyToken, async (req, res) => {
+  try {
+    const { 
+      company_id, 
+      cnpj, 
+      uf, 
+      nome, 
+      page = 1,
+      limit = 50,
+      sort_by = 'created_at',
+      sort_order = 'desc'
+    } = req.query;
+
+    console.log('🔍 [DEBUG] Query params recebidos:', req.query);
+    console.log('🔍 [DEBUG] company_id:', company_id, 'tipo:', typeof company_id);
+
+    if (!company_id) {
+      return res.status(400).json({ 
+        error: "company_id é obrigatório" 
+      });
+    }
+
+    // Validar formato UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(company_id)) {
+      return res.status(400).json({ 
+        error: "company_id deve ser um UUID válido",
+        received: company_id
+      });
+    }
+
+    console.log('🔍 [DEBUG] Iniciando consulta ao Supabase...');
+    
+    // SOLUÇÃO ROBUSTA: Buscar todos os clientes da empresa e filtrar manualmente
+    // Isso evita problemas com tipos ENUM e interpretação incorreta de parâmetros
+    console.log('🔍 [DEBUG] Buscando todos os clientes da empresa...');
+    const { data: allClients, error: fetchError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('company_id', company_id);
+        
+    console.log('🔍 [DEBUG] Consulta executada - data length:', allClients?.length, 'error:', fetchError);
+    
+    if (fetchError) {
+      console.error('🔍 [DEBUG] Erro ao buscar clientes:', fetchError);
+      return res.status(500).json({ 
+        error: "Erro ao buscar clientes do Regime Normal.",
+        details: fetchError.message
+      });
+    }
+    
+    // Filtrar por regime_tributario = 'regime_normal'
+    const regimeNormalClients = allClients?.filter(cliente => 
+      cliente.regime_tributario === 'regime_normal'
+    ) || [];
+    
+    console.log('🔍 [DEBUG] Clientes do regime normal encontrados:', regimeNormalClients.length);
+    console.log('🔍 [DEBUG] Todos os regimes encontrados:', [...new Set(allClients?.map(c => c.regime_tributario))]);
+    
+    // Aplicar filtros adicionais manualmente
+    let finalData = regimeNormalClients;
+    
+    if (cnpj) {
+      finalData = finalData.filter(cliente => cliente.cnpj === cnpj);
+      console.log('🔍 [DEBUG] Filtro CNPJ aplicado:', cnpj, '- restantes:', finalData.length);
+    }
+
+    if (uf) {
+      finalData = finalData.filter(cliente => cliente.uf === uf.toUpperCase());
+      console.log('🔍 [DEBUG] Filtro UF aplicado:', uf.toUpperCase(), '- restantes:', finalData.length);
+    }
+
+    if (nome) {
+      finalData = finalData.filter(cliente => 
+        cliente.nome.toLowerCase().includes(nome.toLowerCase())
+      );
+      console.log('🔍 [DEBUG] Filtro nome aplicado:', nome, '- restantes:', finalData.length);
+    }
+
+    // Aplicar ordenação manualmente
+    if (sort_by && ['nome', 'cnpj', 'uf', 'created_at', 'updated_at'].includes(sort_by)) {
+      finalData.sort((a, b) => {
+        const aVal = a[sort_by];
+        const bVal = b[sort_by];
+        if (sort_order === 'asc') {
+          return aVal > bVal ? 1 : -1;
+        } else {
+          return aVal < bVal ? 1 : -1;
+        }
+      });
+      console.log('🔍 [DEBUG] Ordenação aplicada:', sort_by, sort_order);
+    }
+
+    // Aplicar paginação manualmente
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const paginatedData = finalData.slice(offset, offset + parseInt(limit));
+    console.log('🔍 [DEBUG] Paginação aplicada - offset:', offset, 'limit:', limit, 'resultado:', paginatedData.length);
+
+    res.json({
+      data: paginatedData,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: finalData.length,
+        total_pages: Math.ceil(finalData.length / parseInt(limit))
+      }
+    });
+    
+    return;
+  } catch (err) {
+    console.error('Erro ao buscar clientes do Regime Normal:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// GET /clientes/:id - Buscar cliente por ID
+router.get("/:id", verifyToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ error: "Cliente não encontrado." });
+      }
+      console.error('Erro ao buscar empresa:', error);
+      return res.status(500).json({ error: "Erro ao buscar empresa." });
+    }
+
+    // Verificar se a empresa pertence ao company_id do usuário
+    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(data.company_id)) {
+      return res.status(403).json({ error: "Acesso negado a esta empresa." });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Erro ao buscar empresa:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// PUT /empresas/:id - Atualizar empresa
+router.put("/:id", verifyToken, async (req, res) => {
+  try {
+    const { 
+      nome, 
+      cnpj, 
+      uf,
+      regime_tributario
+    } = req.body;
+
+    // Buscar empresa existente para validações
+    const { data: existingEmpresa, error: fetchError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        return res.status(404).json({ error: "Empresa não encontrada." });
+      }
+      console.error('Erro ao buscar empresa:', fetchError);
+      return res.status(500).json({ error: "Erro ao buscar empresa." });
+    }
+
+    // Verificar se a empresa pertence ao company_id do usuário
+    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(existingEmpresa.company_id)) {
+      return res.status(403).json({ error: "Acesso negado a esta empresa." });
+    }
+
+    // Validações
+    if (nome && !nome.trim()) {
+      return res.status(400).json({ error: "Nome não pode estar vazio" });
+    }
+
+    if (cnpj && !/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
+      return res.status(400).json({ error: "CNPJ deve ter 14 dígitos" });
+    }
+
+    if (uf && !/^[A-Z]{2}$/.test(uf)) {
+      return res.status(400).json({ error: "UF deve ter 2 caracteres maiúsculos" });
+    }
+
+    // Validar regime_tributario (enum)
+    if (regime_tributario && !REGIME_TRIBUTARIO_OPTIONS.includes(regime_tributario)) {
+      return res.status(400).json({ 
+        error: "regime_tributario deve ser 'simples_nacional' ou 'regime_normal'" 
+      });
+    }
+
+    // Verificar se já existe outra empresa com mesmo cnpj
+    if (cnpj) {
+      const { data: duplicateEmpresa } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('company_id', existingEmpresa.company_id)
+        .eq('cnpj', cnpj)
+        .neq('id', req.params.id)
+        .single();
+
+      if (duplicateEmpresa) {
+        return res.status(400).json({ 
+          error: "Já existe empresa com este CNPJ" 
+        });
+      }
+    }
+
+    // Preparar dados para atualização
+    const updateData = {};
+    if (nome !== undefined) updateData.nome = nome;
+    if (cnpj !== undefined) updateData.cnpj = cnpj;
+    if (uf !== undefined) updateData.uf = uf;
+    if (regime_tributario !== undefined) updateData.regime_tributario = regime_tributario;
+    
+    updateData.updated_by = req.user.userId;
+
+    const { data, error } = await supabase
+      .from('clientes')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar empresa:', error);
+      return res.status(500).json({ error: "Erro ao atualizar empresa." });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Erro ao atualizar empresa:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// DELETE /empresas/:id - Deletar empresa
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    // Buscar empresa para verificar permissões
+    const { data: existingEmpresa, error: fetchError } = await supabase
+      .from('clientes')
+      .select('company_id')
+      .eq('id', req.params.id)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        return res.status(404).json({ error: "Empresa não encontrada." });
+      }
+      console.error('Erro ao buscar empresa:', fetchError);
+      return res.status(500).json({ error: "Erro ao buscar empresa." });
+    }
+
+    // Verificar se a empresa pertence ao company_id do usuário
+    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(existingEmpresa.company_id)) {
+      return res.status(403).json({ 
+        error: "Acesso negado a esta empresa.",
+        user_company_ids: req.user.all_company_ids,
+        empresa_company_id: existingEmpresa.company_id
+      });
+    }
+
+    const { error } = await supabase
+      .from('clientes')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) {
+      console.error('Erro ao deletar empresa:', error);
+      return res.status(500).json({ error: "Erro ao deletar empresa." });
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Empresa deletada com sucesso" 
+    });
+  } catch (err) {
+    console.error('Erro ao deletar empresa:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// ===== ROTAS ESPECIALIZADAS =====
+
+// GET /empresas/estatisticas - Estatísticas das empresas
+router.get("/estatisticas", verifyToken, async (req, res) => {
+  try {
+    const { company_id } = req.query;
+
+    if (!company_id) {
+      return res.status(400).json({ 
+        error: "company_id é obrigatório" 
+      });
+    }
+
+    let query = supabase
+      .from('clientes')
+      .select('*')
+      .eq('company_id', company_id);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+      return res.status(500).json({ error: "Erro ao buscar estatísticas." });
+    }
+
+    const empresas = data || [];
+
+    // Calcular estatísticas
+    const estatisticas = {
+      total_empresas: empresas.length,
+      por_uf: {},
+      cnpjs_unicos: new Set(empresas.map(e => e.cnpj)).size
+    };
+
+    empresas.forEach(empresa => {
+      // Por UF
+      estatisticas.por_uf[empresa.uf] = (estatisticas.por_uf[empresa.uf] || 0) + 1;
+    });
+
+    // Converter Sets para números
+    estatisticas.cnpjs_unicos = estatisticas.cnpjs_unicos;
+
+    res.json(estatisticas);
+  } catch (err) {
+    console.error('Erro ao buscar estatísticas:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+
+// GET /clientes/por-cnpj/:cnpj - Buscar empresas por CNPJ
+router.get("/por-cnpj/:cnpj", verifyToken, async (req, res) => {
+  try {
+    const { company_id } = req.query;
+    const { cnpj } = req.params;
+
+    if (!company_id) {
+      return res.status(400).json({ 
+        error: "company_id é obrigatório" 
+      });
+    }
+
+    if (!cnpj || !/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
+      return res.status(400).json({ 
+        error: "CNPJ inválido" 
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('company_id', company_id)
+      .eq('cnpj', cnpj)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar empresas por CNPJ:', error);
+      return res.status(500).json({ error: "Erro ao buscar empresas por CNPJ." });
+    }
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('Erro ao buscar empresas por CNPJ:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// POST /empresas/bulk - Criar múltiplas empresas
+router.post("/bulk", verifyToken, async (req, res) => {
+  try {
+    const { empresas } = req.body;
+
+    if (!empresas || !Array.isArray(empresas) || empresas.length === 0) {
+      return res.status(400).json({ 
+        error: "Array de empresas é obrigatório" 
+      });
+    }
+
+    if (empresas.length > 100) {
+      return res.status(400).json({ 
+        error: "Máximo de 100 empresas por operação" 
+      });
+    }
+
+    const empresasValidadas = [];
+    const erros = [];
+
+    // Validar cada empresa
+    for (let i = 0; i < empresas.length; i++) {
+      const empresa = empresas[i];
+      
+      if (!empresa.company_id || !empresa.nome || !empresa.cnpj || !empresa.uf) {
+        erros.push(`Empresa ${i + 1}: Todos os campos são obrigatórios`);
+        continue;
+      }
+
+      // Validar regime_tributario se fornecido
+      if (empresa.regime_tributario && !REGIME_TRIBUTARIO_OPTIONS.includes(empresa.regime_tributario)) {
+        erros.push(`Empresa ${i + 1}: regime_tributario deve ser 'simples_nacional' ou 'regime_normal'`);
+        continue;
+      }
+
+      if (!/^\d{14}$/.test(empresa.cnpj.replace(/\D/g, ''))) {
+        erros.push(`Empresa ${i + 1}: CNPJ inválido`);
+        continue;
+      }
+
+      if (!/^[A-Z]{2}$/.test(empresa.uf)) {
+        erros.push(`Empresa ${i + 1}: UF inválida`);
+        continue;
+      }
+
+      empresasValidadas.push({
+        ...empresa,
+        created_by: req.user.userId,
+        updated_by: req.user.userId
+      });
+    }
+
+    if (erros.length > 0) {
+      return res.status(400).json({ 
+        error: "Erros de validação", 
+        detalhes: erros 
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('clientes')
+      .insert(empresasValidadas)
+      .select('*');
+
+    if (error) {
+      console.error('Erro ao criar empresas em lote:', error);
+      return res.status(500).json({ error: "Erro ao criar empresas em lote." });
+    }
+
+    res.status(201).json({
+      message: `${data.length} empresas criadas com sucesso`,
+      data: data
+    });
+  } catch (err) {
+    console.error('Erro ao criar empresas em lote:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+// GET /clientes/:id/dados-consolidados - Buscar dados consolidados para gráfico
+router.get("/:id/dados-consolidados", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ano } = req.query;
+
+    if (!id) {
+      return res.status(400).json({ 
+        error: "ID do cliente é obrigatório" 
+      });
+    }
+
+    if (!ano) {
+      return res.status(400).json({ 
+        error: "Ano é obrigatório" 
+      });
+    }
+
+    // Validar se o ano é um número válido
+    const anoNumero = parseInt(ano);
+    if (isNaN(anoNumero) || anoNumero < 1900 || anoNumero > 2100) {
+      return res.status(400).json({ 
+        error: "Ano deve ser um número válido entre 1900 e 2100" 
+      });
+    }
+
+    // Verificar se o cliente existe e pertence ao company_id do usuário
+    const { data: cliente, error: clienteError } = await supabase
+      .from('clientes')
+      .select('id, company_id')
+      .eq('id', id)
+      .single();
+
+    if (clienteError) {
+      if (clienteError.code === 'PGRST116') {
+        return res.status(404).json({ error: "Cliente não encontrado." });
+      }
+      console.error('Erro ao buscar cliente:', clienteError);
+      return res.status(500).json({ error: "Erro ao buscar cliente." });
+    }
+
+    // Verificar se o cliente pertence a qualquer uma das empresas do usuário
+    console.log('🔍 [DEBUG] Verificando acesso ao cliente:', {
+      cliente_id: id,
+      cliente_company_id: cliente.company_id,
+      user_company_id: req.user.company_id,
+      user_all_company_ids: req.user.all_company_ids,
+      user_id: req.user.id
+    });
+
+    if (!req.user.all_company_ids || req.user.all_company_ids.length === 0) {
+      console.error('❌ [DEBUG] Usuário não possui empresas associadas');
+      return res.status(403).json({ error: "Usuário não possui empresas associadas." });
+    }
+
+    if (!req.user.all_company_ids.includes(cliente.company_id)) {
+      console.error('❌ [DEBUG] Cliente não pertence a nenhuma empresa do usuário');
+      return res.status(403).json({ error: "Acesso negado a este cliente." });
+    }
+
+    // Buscar dados das notas fiscais para o ano especificado
+    const { data: notasFiscais, error: notasError } = await supabase
+      .from('notas_fiscais')
+      .select('valor_total_nfe, data_emissao')
+      .eq('clientes_id', id)
+      .gte('data_emissao', `${ano}-01-01`)
+      .lt('data_emissao', `${ano + 1}-01-01`);
+
+    if (notasError) {
+      console.error('Erro ao buscar notas fiscais:', notasError);
+      return res.status(500).json({ error: "Erro ao buscar notas fiscais." });
+    }
+
+    // Buscar dados das análises do Simples Nacional para o ano especificado
+    const { data: analisesSimples, error: analisesError } = await supabase
+      .from('analises_simples_nacional')
+      .select('valor_das, receita_total, mes, ano')
+      .eq('clientes_id', id)
+      .eq('ano', anoNumero);
+
+    if (analisesError) {
+      console.error('Erro ao buscar análises do Simples Nacional:', analisesError);
+      return res.status(500).json({ error: "Erro ao buscar análises do Simples Nacional." });
+    }
+
+    // Processar dados das notas fiscais por mês
+    const dadosPorMes = {
+      '01': { mes: 'Jan', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '02': { mes: 'Fev', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '03': { mes: 'Mar', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '04': { mes: 'Abr', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '05': { mes: 'Mai', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '06': { mes: 'Jun', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '07': { mes: 'Jul', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '08': { mes: 'Ago', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '09': { mes: 'Set', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '10': { mes: 'Out', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '11': { mes: 'Nov', faturamentoNotas: 0, quantidadeNotas: 0 },
+      '12': { mes: 'Dez', faturamentoNotas: 0, quantidadeNotas: 0 }
+    };
+
+    // Processar notas fiscais
+    if (notasFiscais && notasFiscais.length > 0) {
+      notasFiscais.forEach(nota => {
+        if (nota.data_emissao) {
+          const mes = nota.data_emissao.substring(5, 7); // Extrair mês (MM) da data
+          const valor = parseFloat(nota.valor_total_nfe) || 0;
+          
+          if (dadosPorMes[mes]) {
+            dadosPorMes[mes].faturamentoNotas += valor;
+            dadosPorMes[mes].quantidadeNotas += 1;
+          }
+        }
+      });
+    }
+
+    // Processar análises do Simples Nacional
+    const dadosSimplesPorMes = {};
+    if (analisesSimples && analisesSimples.length > 0) {
+      analisesSimples.forEach(analise => {
+        const mes = analise.mes?.toString().padStart(2, '0') || '01';
+        const valorDas = parseFloat(analise.valor_das) || 0;
+        const receitaTotal = parseFloat(analise.receita_total) || 0;
+        
+        if (!dadosSimplesPorMes[mes]) {
+          dadosSimplesPorMes[mes] = {
+            valorDas: 0,
+            receitaTotal: 0
+          };
+        }
+        
+        dadosSimplesPorMes[mes].valorDas += valorDas;
+        dadosSimplesPorMes[mes].receitaTotal += receitaTotal;
+      });
+    }
+
+    // Consolidar dados finais
+    const dadosConsolidados = Object.keys(dadosPorMes).map(mes => {
+      const dadosMes = dadosPorMes[mes];
+      const dadosSimples = dadosSimplesPorMes[mes] || { valorDas: 0, receitaTotal: 0 };
+      
+      return {
+        mes: dadosMes.mes,
+        mesNumero: parseInt(mes),
+        ano: anoNumero,
+        faturamentoNotas: dadosMes.faturamentoNotas,
+        quantidadeNotas: dadosMes.quantidadeNotas,
+        valorDas: dadosSimples.valorDas,
+        receitaTotal: dadosSimples.receitaTotal,
+        faturamentoExtrato: dadosSimples.receitaTotal // Alias para compatibilidade
+      };
+    });
+
+    // Ordenar por mês
+    dadosConsolidados.sort((a, b) => a.mesNumero - b.mesNumero);
+
+    // Calcular totais
+    const totais = {
+      faturamentoNotas: dadosConsolidados.reduce((sum, item) => sum + item.faturamentoNotas, 0),
+      quantidadeNotas: dadosConsolidados.reduce((sum, item) => sum + item.quantidadeNotas, 0),
+      valorDas: dadosConsolidados.reduce((sum, item) => sum + item.valorDas, 0),
+      receitaTotal: dadosConsolidados.reduce((sum, item) => sum + item.receitaTotal, 0)
+    };
+
+    res.json({
+      cliente_id: id,
+      ano: anoNumero,
+      dados_mensais: dadosConsolidados,
+      totais,
+      resumo: {
+        total_notas_fiscais: notasFiscais?.length || 0,
+        total_analises_simples: analisesSimples?.length || 0,
+        meses_com_dados: dadosConsolidados.filter(item => 
+          item.faturamentoNotas > 0 || item.valorDas > 0 || item.receitaTotal > 0
+        ).length
+      }
+    });
+
+  } catch (err) {
+    console.error('Erro ao buscar dados consolidados:', err);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+});
+
+module.exports = router;

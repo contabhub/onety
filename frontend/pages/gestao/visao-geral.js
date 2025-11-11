@@ -12,6 +12,7 @@ import { hasPermissaoCertificado, hasPermissao } from '../../utils/gestao/permis
 import PrincipalSidebar from "../../components/onety/principal/PrincipalSidebar";
 import styles from "../../styles/gestao/VisaoGeral.module.css";
 import SpinnerGlobal from "../../components/onety/menu/SpinnerGlobal";
+import SpaceLoader from "../../components/onety/menu/SpaceLoader";
 import ModalEcontador from "../../components/gestao/ModalEcontador";
 import ModalPdfLayout from "../../components/gestao/ModalPdfLayout";
 import * as React from "react";
@@ -2090,7 +2091,12 @@ export default function VisaoGeralPage() {
                                 <div>
                                     <div className={styles.cardResumoTituloGlow}>Vencem Hoje</div>
                                     {(loadingPainelTarefas || loadingPainelObrigacoes) ? (
-                                        <div className={styles.cardResumoValorCarregando}>Carregando...</div>
+                                        <SpaceLoader
+                                            size={6}
+                                            minHeight={16}
+                                            showText={false}
+                                            className={styles.cardResumoLoader}
+                                        />
                                     ) : (
                                         <div
                                             className={styles.cardResumoValorGlow}
@@ -2129,7 +2135,12 @@ export default function VisaoGeralPage() {
                                 {(loadingTarefasAbertas || loadingObrigacoes) ? (
                                     <div>
                                         <div className={styles.cardResumoTituloGlow}>Tarefas Geradas</div>
-                                        <div className={styles.cardResumoValorCarregando}>Carregando...</div>
+                                        <SpaceLoader
+                                            size={6}
+                                            minHeight={16}
+                                            showText={false}
+                                            className={styles.cardResumoLoader}
+                                        />
                                     </div>
                                 ) : (
                                     <div
@@ -2170,7 +2181,12 @@ export default function VisaoGeralPage() {
                                 <div>
                                     <div className={styles.cardResumoTituloGlow}>Taxa de Satisfação</div>
                                     {loadingPesquisas ? (
-                                        <div className={styles.cardResumoValorCarregando}>Carregando...</div>
+                                        <SpaceLoader
+                                            size={6}
+                                            minHeight={16}
+                                            showText={false}
+                                            className={styles.cardResumoLoader}
+                                        />
                                     ) : (
                                         <div className={styles.cardResumoValorGlow} style={{ color: "#22D3EE" }}>
                                             {dadosPesquisas?.taxaSatisfacao || 0}%
@@ -2512,7 +2528,7 @@ export default function VisaoGeralPage() {
                                                     const query = departamentosSelecionados.length > 0
                                                         ? `?departamentos=${encodeURIComponent(departamentosSelecionados.join(','))}`
                                                         : "";
-                                                    router.push(`/dashboard/performance-mensal${query}`);
+                                                    router.push(`/gestao/performance-mensal${query}`);
                                                 }}
                                                 className={styles.performanceMesRodapeBtn}
                                             >
@@ -2647,7 +2663,7 @@ export default function VisaoGeralPage() {
                                                                             className={styles.painelControleDepartamentoDropdown}
                                                                         >
                                                                             <button
-                                                                                onClick={() => window.open(`/dashboard/agenda?departamento=${encodeURIComponent(dep.departamento)}`, "_blank")}
+                                                                                onClick={() => window.open(`/gestao/agenda?departamento=${encodeURIComponent(dep.departamento)}`, "_blank")}
                                                                                 className={styles.painelControleDepartamentoDropdownItem}
                                                                             >
                                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -2902,8 +2918,6 @@ export default function VisaoGeralPage() {
                                 abaAtiva={abaAtiva}
                             />
                         )}
-
-
 
                         {/* Modal de Confirmação Onvio */}
                         {modalOnvio && (

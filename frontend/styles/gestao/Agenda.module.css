@@ -1,0 +1,292 @@
+.layoutRoot {
+  min-height: 100vh;
+  padding: var(--onity-spacing-xl);
+  background: var(--onity-base-10);
+  transition: padding 0.3s ease;
+  box-sizing: border-box;
+}
+
+.layoutContent {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - (var(--onity-spacing-xl) * 2));
+  gap: var(--onity-spacing-lg);
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-spacing-xl);
+  min-height: 0;
+}
+
+.pageContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: auto;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 13, 24, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: var(--onity-z-modal-backdrop);
+  padding: var(--onity-spacing-lg);
+}
+
+.modalContainer {
+  position: relative;
+  width: min(1200px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-spacing-lg);
+  padding: var(--onity-spacing-lg);
+  border-radius: var(--onity-radius-lg);
+  background: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-shadow-lg);
+  color: var(--onity-color-text);
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--onity-spacing-md);
+}
+
+.modalCloseButton {
+  position: absolute;
+  top: var(--onity-spacing-md);
+  right: var(--onity-spacing-lg);
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: var(--onity-text-low);
+  cursor: pointer;
+  transition: color var(--onity-transition-fast);
+}
+
+.modalCloseButton:hover {
+  color: var(--onity-text-high);
+}
+
+.modalHeader h2 {
+  margin: 0 0 var(--onity-spacing-xs);
+  font-size: var(--onity-font-size-lg);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-text-high);
+}
+
+.modalHeader p {
+  margin: 0;
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-low);
+  text-transform: capitalize;
+}
+
+.modalTabs {
+  display: flex;
+  gap: var(--onity-spacing-md);
+}
+
+.modalTab {
+  padding: var(--onity-spacing-xs) var(--onity-spacing-md);
+  border-radius: var(--onity-radius-sm);
+  border: 1px solid var(--onity-color-border);
+  background: transparent;
+  color: var(--onity-text-med);
+  font-size: var(--onity-font-size-sm);
+  font-weight: var(--onity-font-weight-medium);
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+}
+
+.modalTab:hover {
+  color: var(--onity-text-high);
+  border-color: var(--onity-color-primary);
+}
+
+.modalTabActive {
+  background: var(--onity-color-primary);
+  color: var(--onity-color-primary-contrast);
+  border-color: transparent;
+  box-shadow: var(--onity-glow-primary);
+}
+
+.modalSearch input {
+  width: 100%;
+  padding: var(--onity-spacing-sm) var(--onity-spacing-md);
+  border-radius: var(--onity-radius-sm);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-input-bg);
+  color: var(--onity-text-high);
+  font-size: var(--onity-font-size-sm);
+  transition: border-color var(--onity-transition-fast), box-shadow var(--onity-transition-fast);
+}
+
+.modalSearch input:focus {
+  outline: none;
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onity-color-primary) 20%, transparent);
+}
+
+.modalTableWrapper {
+  overflow: auto;
+  border-radius: var(--onity-radius-sm);
+  border: 1px solid var(--onity-color-border);
+}
+
+.modalTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 720px;
+}
+
+.modalTable thead {
+  background: color-mix(in srgb, var(--onity-color-surface) 90%, transparent);
+}
+
+.modalTable th,
+.modalTable td {
+  padding: var(--onity-spacing-xs) var(--onity-spacing-sm);
+  text-align: left;
+  color: var(--onity-text-high);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.modalTable th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--onity-text-low);
+  user-select: none;
+}
+
+.modalSortableHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.modalAssuntoHeader {
+  min-width: 140px;
+  max-width: 240px;
+}
+
+.modalLink {
+  cursor: pointer;
+  color: var(--onity-color-primary);
+  transition: color var(--onity-transition-fast);
+  min-width: 140px;
+  max-width: 220px;
+  word-break: break-word;
+}
+
+.modalLink:hover {
+  color: var(--onity-color-primary-hover);
+}
+
+.modalSecondary {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--onity-text-low);
+  word-break: break-word;
+}
+
+.modalBadge {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: var(--onity-radius-xs);
+  background: rgba(46, 229, 182, 0.18);
+  color: #0f9b73;
+  font-size: 10px;
+  font-weight: var(--onity-font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.modalEmpty {
+  text-align: center;
+  padding: var(--onity-spacing-md);
+  color: var(--onity-text-low);
+}
+
+.modalFooter {
+  display: flex;
+  gap: var(--onity-spacing-md);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding-top: var(--onity-spacing-sm);
+  border-top: 1px solid var(--onity-color-border);
+}
+
+.modalItensPorPagina {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-spacing-sm);
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+}
+
+.modalSelect {
+  padding: 6px 12px;
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-input-bg);
+  color: var(--onity-text-high);
+  font-size: var(--onity-font-size-sm);
+  cursor: pointer;
+  transition: border-color var(--onity-transition-fast), background-color var(--onity-transition-fast);
+}
+
+.modalSelect:hover,
+.modalSelect:focus {
+  border-color: var(--onity-color-primary);
+  outline: none;
+}
+
+.modalRange {
+  font-size: var(--onity-font-size-sm);
+  color: var(--onity-text-med);
+}
+
+.modalPaginationButtons {
+  display: flex;
+  gap: var(--onity-spacing-xs);
+}
+
+.modalPaginationButtons button {
+  padding: var(--onity-spacing-xs) var(--onity-spacing-sm);
+  border-radius: var(--onity-radius-xs);
+  border: 1px solid var(--onity-color-border);
+  background: var(--onity-color-surface);
+  color: var(--onity-text-med);
+  font-size: var(--onity-font-size-sm);
+  cursor: pointer;
+  transition: all var(--onity-transition-fast);
+}
+
+.modalPaginationButtons button:hover:not(:disabled) {
+  border-color: var(--onity-color-primary);
+  color: var(--onity-color-primary);
+}
+
+.modalPaginationButtons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.modalTable tbody tr:hover {
+  background: color-mix(in srgb, var(--onity-color-surface) 85%, transparent);
+}

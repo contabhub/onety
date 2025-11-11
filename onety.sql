@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: onety_onety:3306
--- Tempo de geração: 05/11/2025 às 15:18
--- Versão do servidor: 9.4.0
+-- Tempo de geração: 10/11/2025 às 15:04
+-- Versão do servidor: 9.5.0
 -- Versão do PHP: 8.2.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -32,6 +32,71 @@ CREATE TABLE `alternativa` (
   `questao_id` int NOT NULL,
   `opcao` varchar(500) NOT NULL,
   `correto` tinyint(1) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `analises_regime_normal`
+--
+
+CREATE TABLE `analises_regime_normal` (
+  `id` int NOT NULL,
+  `cliente_id` int NOT NULL,
+  `cnpj` varchar(18) DEFAULT NULL,
+  `arquivo_nome` varchar(255) DEFAULT NULL,
+  `tipo` varchar(100) DEFAULT NULL,
+  `mes` int DEFAULT NULL,
+  `ano` int DEFAULT NULL,
+  `resumo` text,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `criado_por` int DEFAULT NULL,
+  `atualizado_por` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `analises_simples_nacional`
+--
+
+CREATE TABLE `analises_simples_nacional` (
+  `id` int NOT NULL,
+  `cliente_id` int NOT NULL,
+  `cnpj` varchar(18) DEFAULT NULL,
+  `arquivo_nome` varchar(255) DEFAULT NULL,
+  `tipo` varchar(100) DEFAULT NULL,
+  `mes` int DEFAULT NULL,
+  `ano` int DEFAULT NULL,
+  `resumo` text,
+  `data_extracao` datetime DEFAULT NULL,
+  `resultado_api` text,
+  `fator_r_status` varchar(100) DEFAULT NULL,
+  `pdf_url` varchar(500) DEFAULT NULL,
+  `atividade_principal` varchar(255) DEFAULT NULL,
+  `canes` text,
+  `limite_faturamento_risco` varchar(255) DEFAULT NULL,
+  `icms_porcentagem` decimal(10,2) DEFAULT NULL,
+  `pis_cofins_porcentagem` decimal(10,2) DEFAULT NULL,
+  `receita_total` decimal(15,2) DEFAULT NULL,
+  `icms_total` decimal(15,2) DEFAULT NULL,
+  `pis_total` decimal(15,2) DEFAULT NULL,
+  `cofins_total` decimal(15,2) DEFAULT NULL,
+  `status_analise` varchar(100) DEFAULT NULL,
+  `observacoes` text,
+  `ultima_atualizacao` datetime DEFAULT NULL,
+  `versao_analise` varchar(50) DEFAULT NULL,
+  `periodo_documento` varchar(100) DEFAULT NULL,
+  `valor_das` decimal(15,2) DEFAULT NULL,
+  `anexos_simples` text,
+  `valor_folha` decimal(15,2) DEFAULT NULL,
+  `data_pag` date DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `criado_por` int DEFAULT NULL,
+  `atualizado_por` int DEFAULT NULL,
+  `folha_de_salarios_anteriores` decimal(15,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -447,6 +512,25 @@ CREATE TABLE `cliente_respostas` (
   `id` int NOT NULL,
   `cliente_id` int NOT NULL,
   `resposta_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `cnae_info`
+--
+
+CREATE TABLE `cnae_info` (
+  `id` int NOT NULL,
+  `cliente_id` int NOT NULL,
+  `cnae` varchar(20) NOT NULL,
+  `descricao` varchar(255) DEFAULT NULL,
+  `anexo` varchar(500) DEFAULT NULL,
+  `fator_r` decimal(5,2) DEFAULT NULL,
+  `aliquota` decimal(5,2) DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `criado_por` int DEFAULT NULL,
+  `atualizado_por` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -1092,6 +1176,21 @@ CREATE TABLE `historico_transferencias` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `icms_recolhido`
+--
+
+CREATE TABLE `icms_recolhido` (
+  `id` int NOT NULL,
+  `cliente_id` int NOT NULL,
+  `ano` int NOT NULL,
+  `mes` int NOT NULL,
+  `valor` decimal(15,2) DEFAULT '0.00',
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `instancias`
 --
 
@@ -1377,6 +1476,69 @@ CREATE TABLE `modulos_empresa` (
   `empresa_id` int NOT NULL,
   `modulo_id` int NOT NULL,
   `status` enum('liberado','bloqueado','em_andamento') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `ncms_analises`
+--
+
+CREATE TABLE `ncms_analises` (
+  `id` int NOT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `ncm` varchar(20) NOT NULL,
+  `search_result` text,
+  `estado_origem` varchar(2) DEFAULT NULL,
+  `estado_destino` varchar(2) DEFAULT NULL,
+  `cliente_id` int DEFAULT NULL,
+  `criado_por` int DEFAULT NULL,
+  `atualizado_por` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `notas_fiscais`
+--
+
+CREATE TABLE `notas_fiscais` (
+  `id` bigint NOT NULL,
+  `cliente_id` int NOT NULL,
+  `chave_nfe` varchar(60) DEFAULT NULL,
+  `numero_nfe` varchar(20) DEFAULT NULL,
+  `serie` varchar(10) DEFAULT NULL,
+  `data_emissao` datetime DEFAULT NULL,
+  `data_saida_entrada` datetime DEFAULT NULL,
+  `data_importacao` datetime DEFAULT NULL,
+  `cnpj_emitente` varchar(18) DEFAULT NULL,
+  `razao_social_emitente` varchar(255) DEFAULT NULL,
+  `cnpj_destinatario` varchar(18) DEFAULT NULL,
+  `razao_social_destinatario` varchar(255) DEFAULT NULL,
+  `uf_origem` varchar(2) DEFAULT NULL,
+  `uf_destino` varchar(2) DEFAULT NULL,
+  `estado_origem` varchar(50) DEFAULT NULL,
+  `estado_destino` varchar(50) DEFAULT NULL,
+  `valor_total_nfe` decimal(15,2) DEFAULT '0.00',
+  `quantidade` decimal(15,4) DEFAULT '0.0000',
+  `valor_unitario` decimal(15,4) DEFAULT '0.0000',
+  `valor_total_item` decimal(15,2) DEFAULT '0.00',
+  `pis` decimal(15,2) DEFAULT '0.00',
+  `cofins` decimal(15,2) DEFAULT '0.00',
+  `icms` decimal(15,2) DEFAULT '0.00',
+  `valor_iss_ret` decimal(15,2) DEFAULT '0.00',
+  `iss_ret` decimal(15,2) DEFAULT '0.00',
+  `natureza_operacao` varchar(255) DEFAULT NULL,
+  `modelo` varchar(10) DEFAULT NULL,
+  `ncm_notas` varchar(255) DEFAULT NULL,
+  `ncm` varchar(20) DEFAULT NULL,
+  `cat_pis` varchar(100) DEFAULT NULL,
+  `cat_cofins` varchar(100) DEFAULT NULL,
+  `cat_icms` varchar(100) DEFAULT NULL,
+  `cfop` varchar(10) DEFAULT NULL,
+  `descricao_produto` text,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -2356,6 +2518,24 @@ ALTER TABLE `alternativa`
   ADD KEY `alternativa_ibfk_1` (`questao_id`);
 
 --
+-- Índices de tabela `analises_regime_normal`
+--
+ALTER TABLE `analises_regime_normal`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_analise_regime_normal_cliente` (`cliente_id`),
+  ADD KEY `fk_analise_regime_normal_criado` (`criado_por`),
+  ADD KEY `fk_analise_regime_normal_atualizado` (`atualizado_por`);
+
+--
+-- Índices de tabela `analises_simples_nacional`
+--
+ALTER TABLE `analises_simples_nacional`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_analise_simples_cliente` (`cliente_id`),
+  ADD KEY `fk_analise_simples_criado` (`criado_por`),
+  ADD KEY `fk_analise_simples_atualizado` (`atualizado_por`);
+
+--
 -- Índices de tabela `anexos_atividade`
 --
 ALTER TABLE `anexos_atividade`
@@ -2532,6 +2712,15 @@ ALTER TABLE `clientes_solucoes`
 ALTER TABLE `cliente_respostas`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_cliente_respostas_cliente` (`cliente_id`);
+
+--
+-- Índices de tabela `cnae_info`
+--
+ALTER TABLE `cnae_info`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_cnae_info_clientes` (`cliente_id`),
+  ADD KEY `fk_cnae_info_criado` (`criado_por`),
+  ADD KEY `fk_cnae_info_atualizado` (`atualizado_por`);
 
 --
 -- Índices de tabela `comentarios_obrigacao`
@@ -2815,6 +3004,13 @@ ALTER TABLE `historico_transferencias`
   ADD KEY `fk_hist_transf_caixinha` (`caixinha_id`);
 
 --
+-- Índices de tabela `icms_recolhido`
+--
+ALTER TABLE `icms_recolhido`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_icms_recolhido_clientes` (`cliente_id`);
+
+--
 -- Índices de tabela `instancias`
 --
 ALTER TABLE `instancias`
@@ -2933,6 +3129,23 @@ ALTER TABLE `modulos_empresa`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `empresa_id` (`empresa_id`,`modulo_id`),
   ADD KEY `fk_modulos_empresa_modulo` (`modulo_id`);
+
+--
+-- Índices de tabela `ncms_analises`
+--
+ALTER TABLE `ncms_analises`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_ncms_analises_clientes` (`cliente_id`),
+  ADD KEY `fk_ncms_analises_criado` (`criado_por`),
+  ADD KEY `fk_ncms_analises_atualizado` (`atualizado_por`);
+
+--
+-- Índices de tabela `notas_fiscais`
+--
+ALTER TABLE `notas_fiscais`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `chave_nfe` (`chave_nfe`),
+  ADD KEY `fk_notas_fiscais_cliente` (`cliente_id`);
 
 --
 -- Índices de tabela `obrigacoes`
@@ -3373,6 +3586,18 @@ ALTER TABLE `alternativa`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `analises_regime_normal`
+--
+ALTER TABLE `analises_regime_normal`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `analises_simples_nacional`
+--
+ALTER TABLE `analises_simples_nacional`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `anexos_atividade`
 --
 ALTER TABLE `anexos_atividade`
@@ -3508,6 +3733,12 @@ ALTER TABLE `clientes_solucoes`
 -- AUTO_INCREMENT de tabela `cliente_respostas`
 --
 ALTER TABLE `cliente_respostas`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `cnae_info`
+--
+ALTER TABLE `cnae_info`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -3709,6 +3940,12 @@ ALTER TABLE `historico_transferencias`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `icms_recolhido`
+--
+ALTER TABLE `icms_recolhido`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `instancias`
 --
 ALTER TABLE `instancias`
@@ -3803,6 +4040,18 @@ ALTER TABLE `modulos`
 --
 ALTER TABLE `modulos_empresa`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `ncms_analises`
+--
+ALTER TABLE `ncms_analises`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `notas_fiscais`
+--
+ALTER TABLE `notas_fiscais`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `obrigacoes`
@@ -4115,6 +4364,22 @@ ALTER TABLE `alternativa`
   ADD CONSTRAINT `alternativa_ibfk_1` FOREIGN KEY (`questao_id`) REFERENCES `questao` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 --
+-- Restrições para tabelas `analises_regime_normal`
+--
+ALTER TABLE `analises_regime_normal`
+  ADD CONSTRAINT `fk_analise_regime_normal_atualizado` FOREIGN KEY (`atualizado_por`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_analise_regime_normal_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
+  ADD CONSTRAINT `fk_analise_regime_normal_criado` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`);
+
+--
+-- Restrições para tabelas `analises_simples_nacional`
+--
+ALTER TABLE `analises_simples_nacional`
+  ADD CONSTRAINT `fk_analise_simples_atualizado` FOREIGN KEY (`atualizado_por`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_analise_simples_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
+  ADD CONSTRAINT `fk_analise_simples_criado` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`);
+
+--
 -- Restrições para tabelas `anexos_atividade`
 --
 ALTER TABLE `anexos_atividade`
@@ -4260,6 +4525,14 @@ ALTER TABLE `clientes_solucoes`
 --
 ALTER TABLE `cliente_respostas`
   ADD CONSTRAINT `fk_cliente_respostas_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `cnae_info`
+--
+ALTER TABLE `cnae_info`
+  ADD CONSTRAINT `fk_cnae_info_atualizado` FOREIGN KEY (`atualizado_por`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_cnae_info_clientes` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
+  ADD CONSTRAINT `fk_cnae_info_criado` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`);
 
 --
 -- Restrições para tabelas `comentarios_obrigacao`
@@ -4499,6 +4772,12 @@ ALTER TABLE `historico_transferencias`
   ADD CONSTRAINT `fk_hist_transf_transferencias` FOREIGN KEY (`transferencia_id`) REFERENCES `transferencias_caixinha` (`id`);
 
 --
+-- Restrições para tabelas `icms_recolhido`
+--
+ALTER TABLE `icms_recolhido`
+  ADD CONSTRAINT `fk_icms_recolhido_clientes` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`);
+
+--
 -- Restrições para tabelas `instancias`
 --
 ALTER TABLE `instancias`
@@ -4591,6 +4870,20 @@ ALTER TABLE `modelos_contrato`
 ALTER TABLE `modulos_empresa`
   ADD CONSTRAINT `fk_modulos_empresa_empresa` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   ADD CONSTRAINT `fk_modulos_empresa_modulo` FOREIGN KEY (`modulo_id`) REFERENCES `modulos` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+--
+-- Restrições para tabelas `ncms_analises`
+--
+ALTER TABLE `ncms_analises`
+  ADD CONSTRAINT `fk_ncms_analises_atualizado` FOREIGN KEY (`atualizado_por`) REFERENCES `usuarios` (`id`),
+  ADD CONSTRAINT `fk_ncms_analises_clientes` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
+  ADD CONSTRAINT `fk_ncms_analises_criado` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`);
+
+--
+-- Restrições para tabelas `notas_fiscais`
+--
+ALTER TABLE `notas_fiscais`
+  ADD CONSTRAINT `fk_notas_fiscais_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`);
 
 --
 -- Restrições para tabelas `obrigacoes`
@@ -4933,7 +5226,7 @@ ALTER TABLE `vendas`
 
 --
 -- Restrições para tabelas `webhooks`
---
+--a
 ALTER TABLE `webhooks`
   ADD CONSTRAINT `fk_webhooks_empresas` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`);
 

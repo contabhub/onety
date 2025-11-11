@@ -99,6 +99,30 @@ const TRIMESTERS = {
   '4': ['10', '11', '12'],
 };
 
+const getQuarterDateRange = (year, trimester) => {
+  const months = TRIMESTERS[trimester];
+  if (!months) {
+    return {
+      startISO: null,
+      endISO: null,
+    };
+  }
+
+  const startMonthIndex = parseInt(months[0], 10) - 1;
+  const endMonthIndex = parseInt(months[2], 10) - 1;
+
+  const startDate = new Date(year, startMonthIndex, 1);
+  const endDate = new Date(year, endMonthIndex + 1, 0);
+
+  const toISOAtNoonUTC = (date) =>
+    new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12)).toISOString();
+
+  return {
+    startISO: toISOAtNoonUTC(startDate),
+    endISO: toISOAtNoonUTC(endDate),
+  };
+};
+
 export function DepartmentGoalModal({
   companyId,
   onClose,
@@ -251,11 +275,14 @@ export function DepartmentGoalModal({
     try {
       setLoading(true);
 
-      const currentYear = new Date().getFullYear();
-      const months = TRIMESTERS[trimestre];
+      const referenceDate = goalToEdit?.start_date || goalToEdit?.data_inicio;
+      const referenceYear = referenceDate ? new Date(referenceDate).getFullYear() : new Date().getFullYear();
+      const { startISO: start_date, endISO: end_date } = getQuarterDateRange(referenceYear, trimestre);
 
-      const start_date = `${currentYear}-${months[0]}-01`;
-      const end_date = `${currentYear}-${months[2]}-30`;
+      if (!start_date || !end_date) {
+        toast.error('Período selecionado é inválido');
+        return;
+      }
 
       if (goalToEdit) {
         await apiFetch(`/estrategico/metas-departamentais/${goalToEdit.id}`, {

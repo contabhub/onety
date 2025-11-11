@@ -1,0 +1,1569 @@
+/* =====================================================
+   FUNCIONARIOS PAGE - DESIGN SYSTEM TITAN
+   ===================================================== */
+
+   .container {
+    padding: var(--titan-spacing-lg);
+    background: var(--titan-base-10); /* MESMA COR DO DASHBOARD LAYOUT */
+    min-height: 100vh;
+    /* ✅ FORÇAR SEM SCROLL HORIZONTAL NA PÁGINA INTEIRA */
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    /* ✅ REMOVER QUALQUER SCROLL DESNECESSÁRIO */
+    overflow-y: auto !important;
+  }
+  
+  /* ✅ REMOVER SCROLL HORIZONTAL DE TODOS OS ELEMENTOS PRINCIPAIS */
+  .transferenciaContainer,
+  .filtrosTransferencia,
+  .clientesVinculados,
+  .header,
+  .searchContainer,
+  .tabsContainer,
+  .tableContainer,
+  .pagination {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+  }
+  
+  
+  
+  /* ✅ APENAS O WRAPPER PODE TER SCROLL HORIZONTAL */
+  .clientesVinculadosWrapper {
+    /* ✅ CONTAINER COM SCROLL HORIZONTAL ISOLADO */
+    width: 100%;
+    /* ✅ SOBRESCREVER A REGRA GLOBAL APENAS AQUI */
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    /* ✅ FORÇAR LARGURA MÁXIMA */
+    max-width: 100%;
+    /* ✅ SCROLLBAR PERSONALIZADA */
+    scrollbar-width: thin;
+    scrollbar-color: var(--titan-stroke) transparent;
+  }
+  
+  /* ✅ Estilização da scrollbar para webkit */
+  .clientesVinculadosWrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .clientesVinculadosWrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .clientesVinculadosWrapper::-webkit-scrollbar-thumb {
+    background: var(--titan-stroke);
+    border-radius: 4px;
+  }
+  
+  .clientesVinculadosWrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--titan-text-med);
+  }
+  
+  /* ===== HEADER SECTION ===== */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--titan-spacing-xl);
+    padding-bottom: var(--titan-spacing-md);
+    border-bottom: 1px solid var(--titan-stroke);
+  }
+  
+  .title {
+    font-size: var(--titan-font-size-3xl);
+    font-weight: var(--titan-font-weight-bold);
+    color: var(--titan-text-high);
+    margin: 0;
+    background: linear-gradient(135deg, var(--titan-text-high) 0%, var(--titan-text-ice) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .buttonNovo {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-sm);
+    background: linear-gradient(135deg, var(--titan-primary) 0%, var(--titan-primary-hover) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--titan-radius-md);
+    padding: var(--titan-spacing-md) var(--titan-spacing-lg);
+    font-weight: var(--titan-font-weight-semibold);
+    font-size: var(--titan-font-size-base);
+    cursor: pointer;
+    transition: all var(--titan-transition-normal);
+    box-shadow: var(--titan-shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .buttonNovo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .buttonNovo:hover::before {
+    left: 100%;
+  }
+  
+  .buttonNovo:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--titan-shadow-md), var(--titan-glow-primary);
+  }
+  
+  .buttonNovo:active {
+    transform: translateY(0);
+  }
+  
+  /* ===== SEARCH SECTION ===== */
+  .searchContainer {
+    margin-bottom: var(--titan-spacing-lg);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  
+  .searchInput {
+    width: 300px;
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    background: var(--titan-input-bg);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+    transition: all var(--titan-transition-fast);
+    outline: none;
+  }
+  
+  .searchInput::placeholder {
+    color: var(--titan-text-low);
+    opacity: 0.7;
+  }
+  
+  .searchInput:focus {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    outline: none;
+  }
+  
+  /* ===== FILTROS TRANSFERÊNCIA ===== */
+  .filtrosTransferencia {
+    margin-bottom: var(--titan-spacing-lg);
+    padding: var(--titan-spacing-md);
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .filtroRow {
+    display: flex;
+    gap: var(--titan-spacing-md);
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .filtroCol {
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-xs);
+    min-width: 250px;
+  }
+  
+  /* ✅ Coluna específica para o React Select */
+  
+  
+  /* ✅ Classe específica para a coluna do Select */
+  .filtroColSelect {
+    min-width: 400px !important;
+    max-width: 400px !important;
+    flex: 1;
+  }
+  
+  .filtroLabel {
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    color: var(--titan-text-high);
+    margin-bottom: var(--titan-spacing-xs);
+  }
+  
+  /* ✅ Mensagem de limite de usuários */
+  .limiteUsuarios {
+    font-size: var(--titan-font-size-xs);
+    color: var(--titan-text-med);
+    margin-bottom: var(--titan-spacing-xs);
+    font-style: italic;
+  }
+  
+  .filtroSelect,
+  .filtroInput {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    border-radius: var(--titan-radius-sm);
+    border: 1px solid var(--titan-stroke);
+    font-size: var(--titan-font-size-sm);
+    font-family: var(--titan-font-family);
+    background: var(--titan-input-bg);
+    color: var(--titan-text-high);
+    transition: all var(--titan-transition-fast);
+    outline: none;
+    height: 48px !important; /* ✅ Altura aumentada para simetria */
+    min-height: 48px !important;
+    max-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .filtroInput:hover,
+  .filtroInput:focus,
+  .filtroSelect:hover,
+  .filtroSelect:focus {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    background: var(--titan-input-bg);
+  }
+  
+  .filtroSelect option {
+    background: var(--titan-base-00);
+    color: var(--titan-text-high);
+    border: none;
+    padding: var(--titan-spacing-sm);
+  }
+  
+  .filtroSelect option:hover {
+    background: var(--titan-primary);
+    color: white;
+  }
+  
+  .botaoLimparFiltros {
+    background-color: var(--titan-card-bg);
+    color: var(--titan-text-high);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    cursor: pointer;
+    font-family: var(--titan-font-family);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    transition: all var(--titan-transition-fast);
+    box-shadow: var(--titan-shadow-sm);
+    height: 48px !important; /* ✅ Altura aumentada para simetria */
+    min-height: 48px !important;
+    max-height: 48px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .botaoLimparFiltros:hover {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    transform: translateY(-1px);
+  }
+  
+  .botaoLimparFiltros:active {
+    transform: translateY(0);
+  }
+  
+  /* ===== MENSAGENS E ESTADOS ===== */
+  .semResultados {
+    text-align: center;
+    padding: var(--titan-spacing-lg);
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-base);
+    font-style: italic;
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    margin: var(--titan-spacing-md) 0;
+  }
+  
+  .usuarioDepartamento {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-sm);
+    font-style: italic;
+    margin-left: var(--titan-spacing-xs);
+  }
+  
+  /* ===== CLIENTES VINCULADOS ===== */
+  .clienteItem {
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    padding: var(--titan-spacing-md);
+    margin-bottom: var(--titan-spacing-md);
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .clienteHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-md);
+    margin-bottom: var(--titan-spacing-sm);
+    padding-bottom: var(--titan-spacing-sm);
+    border-bottom: 1px solid var(--titan-stroke);
+  }
+  
+  .clienteNumero {
+    background: var(--titan-primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-bold);
+  }
+  
+  .clienteNome {
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-base);
+  }
+  
+  .clienteCnpj {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-sm);
+    font-family: monospace;
+  }
+  
+  .clienteResponsavel {
+    margin-bottom: var(--titan-spacing-sm);
+    padding: var(--titan-spacing-sm);
+    background: var(--titan-base-05);
+    border-radius: var(--titan-radius-sm);
+    border-left: 3px solid var(--titan-primary);
+  }
+  
+  .clienteResponsavel strong {
+    color: var(--titan-text-high);
+    margin-right: var(--titan-spacing-xs);
+  }
+  
+  .clienteObrigacoes {
+    margin-top: var(--titan-spacing-sm);
+  }
+  
+  .clienteObrigacoes strong {
+    color: var(--titan-text-high);
+    display: block;
+    margin-bottom: var(--titan-spacing-xs);
+  }
+  
+  .listaObrigacoes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .obrigacaoItem {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-sm);
+    padding: var(--titan-spacing-sm);
+    background: var(--titan-base-00);
+    border-radius: var(--titan-radius-sm);
+    border: 1px solid var(--titan-stroke);
+    flex-wrap: wrap;
+  }
+  
+  .obrigacaoNome {
+    font-weight: var(--titan-font-weight-medium);
+    color: var(--titan-text-high);
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .obrigacaoVencimento {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-sm);
+    background: var(--titan-base-05);
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    white-space: nowrap;
+  }
+  
+  .obrigacaoStatus {
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-xs);
+    font-weight: var(--titan-font-weight-medium);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  
+  .statusPENDENTE {
+    background: var(--titan-warning);
+    color: var(--titan-base-00);
+  }
+  
+  .statusCONCLUIDA {
+    background: var(--titan-success);
+    color: white;
+  }
+  
+  .statusATRASADA {
+    background: var(--titan-error);
+    color: white;
+  }
+  
+  .statusEM_ANDAMENTO {
+    background: var(--titan-primary);
+    color: white;
+  }
+  
+  .semObrigacoes {
+    color: var(--titan-text-med);
+    font-style: italic;
+    padding: var(--titan-spacing-sm);
+    text-align: center;
+    background: var(--titan-base-05);
+    border-radius: var(--titan-radius-sm);
+  }
+  
+  /* ===== CLIENTES VINCULADOS CONTAINER ===== */
+  .clientesVinculados {
+    margin-top: var(--titan-spacing-lg);
+    padding: var(--titan-spacing-lg);
+    background: var(--titan-base-0);
+    border-radius: var(--titan-radius-lg);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  .clientesVinculados h3 {
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-lg);
+    font-weight: var(--titan-font-weight-semibold);
+    margin-bottom: var(--titan-spacing-md);
+  }
+  
+  .loading {
+    text-align: center;
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-base);
+    padding: var(--titan-spacing-lg);
+  }
+  
+  .listaClientes {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  /* ===== LAYOUT EM COLUNAS ===== */
+  .layoutColunas {
+    display: flex;
+    gap: var(--titan-spacing-lg);
+    margin-top: var(--titan-spacing-md);
+    overflow-x: auto;
+    padding-bottom: var(--titan-spacing-md);
+    scrollbar-width: thin;
+    scrollbar-color: var(--titan-stroke) transparent;
+  }
+  
+  .layoutColunas::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .layoutColunas::-webkit-scrollbar-track {
+    background: var(--titan-base-10);
+    border-radius: var(--titan-radius-sm);
+  }
+  
+  .layoutColunas::-webkit-scrollbar-thumb {
+    background: var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+  }
+  
+  .layoutColunas::-webkit-scrollbar-thumb:hover {
+    background: var(--titan-primary);
+  }
+  
+  /* ===== COLUNA USUÁRIO ===== */
+  .colunaUsuario {
+    background: var(--titan-input-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-lg);
+    padding: var(--titan-spacing-lg);
+    box-shadow: var(--titan-shadow-md);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+    flex-shrink: 0;
+    min-width: 380px;
+  }
+  
+  .headerColuna {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-md);
+    margin-bottom: var(--titan-spacing-lg);
+    padding-bottom: var(--titan-spacing-md);
+    border-bottom: 2px solid var(--titan-stroke);
+    background: linear-gradient(135deg, var(--titan-base-05) 0%, var(--titan-base-00) 100%);
+    padding: var(--titan-spacing-md);
+    border-radius: var(--titan-radius-md);
+    margin: calc(-1 * var(--titan-spacing-lg)) calc(-1 * var(--titan-spacing-lg)) var(--titan-spacing-lg) calc(-1 * var(--titan-spacing-lg));
+  }
+  
+  .avatarUsuario {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--titan-primary) 0%, var(--titan-primary-hover) 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--titan-font-size-xl);
+    font-weight: var(--titan-font-weight-bold);
+    box-shadow: var(--titan-shadow-md);
+    flex-shrink: 0;
+  }
+  
+  .infoUsuario {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .nomeUsuario {
+    margin: 0;
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-lg);
+    font-weight: var(--titan-font-weight-semibold);
+  }
+  
+  
+  
+  .departamentoUsuario {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-xs);
+    font-weight: var(--titan-font-weight-medium);
+    background: var(--titan-base-05);
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    align-self: flex-start;
+  }
+  
+  .contadorClientes {
+    background: var(--titan-primary);
+    color: white;
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-md);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-semibold);
+    min-width: 60px;
+    text-align: center;
+  }
+  
+  .listaClientesColuna {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px;
+  }
+  
+  .clienteItemColuna {
+    background: var(--titan-input-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    padding: var(--titan-spacing-md);
+    margin-bottom: var(--titan-spacing-md);
+    box-shadow: var(--titan-shadow-sm);
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .clienteItemColuna:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--titan-shadow-md);
+    border-color: var(--titan-primary);
+  }
+  
+  .clienteHeaderColuna {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-sm);
+    margin-bottom: var(--titan-spacing-sm);
+    padding-bottom: var(--titan-spacing-sm);
+    border-bottom: 1px solid var(--titan-stroke);
+  }
+  
+  .clienteNumeroColuna {
+    background: var(--titan-secondary);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--titan-font-size-xs);
+    font-weight: var(--titan-font-weight-bold);
+    flex-shrink: 0;
+  }
+  
+  .clienteInfoColuna {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .clienteNomeColuna {
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+  }
+  
+  .clienteCnpjColuna {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-xs);
+    font-family: monospace;
+  }
+  
+  .clienteObrigacoesColuna {
+    margin-top: var(--titan-spacing-sm);
+  }
+  
+  .clienteObrigacoesColuna strong {
+    color: var(--titan-text-high);
+    display: block;
+    margin-bottom: var(--titan-spacing-xs);
+    font-size: var(--titan-font-size-sm);
+  }
+  
+  /* ✅ Estilos removidos - não mais utilizados */
+  
+  .infoObrigacoes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-sm);
+    margin-top: var(--titan-spacing-xs);
+  }
+  
+  .infoObrigacoesText {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-xs);
+    font-style: italic;
+    line-height: 1.4;
+  }
+  
+  .botaoVerCliente {
+    background: var(--titan-primary);
+    color: white;
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    font-size: var(--titan-font-size-xs);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    align-self: flex-start;
+  }
+  
+  .botaoVerCliente:hover {
+    background: var(--titan-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .botaoVerCliente:active {
+    transform: translateY(0);
+  }
+  
+  .semClientesColuna {
+    text-align: center;
+    padding: var(--titan-spacing-lg);
+    color: var(--titan-text-med);
+    font-style: italic;
+    background: var(--titan-base-05);
+    border-radius: var(--titan-radius-md);
+    border: 1px dashed var(--titan-stroke);
+    margin: var(--titan-spacing-md) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+  }
+  
+  .semClientesColuna span {
+    font-size: var(--titan-font-size-sm);
+    opacity: 0.7;
+  }
+  
+  /* ===== TABS SECTION ===== */
+  .tabsContainer {
+    display: flex;
+    gap: var(--titan-spacing-xs);
+    margin-bottom: var(--titan-spacing-lg);
+    border-bottom: 1px solid var(--titan-stroke);
+    padding-bottom: var(--titan-spacing-sm);
+  }
+  
+  .tab {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-lg);
+    background: transparent;
+    border: none;
+    border-radius: var(--titan-radius-md) var(--titan-radius-md) 0 0;
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    position: relative;
+  }
+  
+  .tab:hover {
+    color: var(--titan-text-high);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .tab.activeTab {
+    color: var(--titan-text-high);
+    background: var(--titan-card-bg);
+    border-bottom: 2px solid var(--titan-text-ice);
+  }
+  
+  .tab.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--titan-text-ice);
+    border-radius: 0 0 var(--titan-radius-md) var(--titan-radius-md);
+  }
+  
+  /* ===== TRANSFERENCIA SECTION ===== */
+  .transferenciaContainer {
+    background: var(--titan-card-bg);
+    border-radius: var(--titan-radius-lg);
+    border: 1px solid var(--titan-stroke);
+    padding: var(--titan-spacing-xl);
+    text-align: center;
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .transferenciaContainer h2 {
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-xl);
+    font-weight: var(--titan-font-weight-semibold);
+    margin-bottom: var(--titan-spacing-md);
+  }
+  
+  .transferenciaContainer p {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-base);
+  }
+  
+  /* ===== SELEÇÃO DE USUÁRIOS ===== */
+  .usuariosSelecao {
+    margin-top: var(--titan-spacing-lg);
+  }
+  
+  .selecaoHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--titan-spacing-md);
+    padding: var(--titan-spacing-md);
+    background: var(--titan-base-00);
+    border-radius: var(--titan-radius-md);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  /* ✅ Container do Select com tamanho fixo */
+  .selectContainer {
+    width: 100%;
+    max-width: 400px; /* ✅ Largura máxima fixa */
+    min-width: 300px; /* ✅ Largura mínima para responsividade */
+  }
+  
+  
+  
+  
+  
+  /* ✅ Ações de busca integradas */
+  .acoesBusca {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--titan-spacing-md);
+    padding: var(--titan-spacing-md);
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .infoSelecao {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-sm);
+  }
+  
+  .contadorSelecionados {
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+  }
+  
+  .botoesAcao {
+    display: flex;
+    gap: var(--titan-spacing-sm);
+  }
+  
+  /* ✅ Estilos dos botões de ação */
+  .acoesSelecao {
+    display: flex;
+    gap: var(--titan-spacing-md);
+    justify-content: center;
+    padding: var(--titan-spacing-md);
+    background: var(--titan-base-00);
+    border-radius: var(--titan-radius-md);
+    border: 1px solid var(--titan-stroke);
+  }
+  
+  /* ✅ Estilos removidos - não mais utilizados */
+  
+  .botaoBuscar {
+    background: var(--titan-primary);
+    color: white;
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .botaoBuscar:hover {
+    background: var(--titan-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--titan-shadow-md);
+  }
+  
+  .botaoBuscar:disabled {
+    background: var(--titan-base-10);
+    color: var(--titan-text-med);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .botaoLimpar {
+    background: var(--titan-card-bg);
+    color: var(--titan-text-high);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .botaoLimpar:hover {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    transform: translateY(-1px);
+  }
+  
+  /* ===== TABLE SECTION ===== */
+  .tableContainer {
+    background: var(--titan-card-bg);
+    border-radius: var(--titan-radius-lg);
+    border: 1px solid var(--titan-stroke);
+    overflow: hidden;
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+  }
+  
+  .table thead {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .table thead tr {
+    background: var(--titan-base-00);
+  }
+  
+  .th {
+    padding: var(--titan-spacing-sm);
+    font-weight: var(--titan-font-weight-semibold);
+    font-size: var(--titan-font-size-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--titan-stroke);
+    color: var(--titan-text-high);
+    background: var(--titan-base-00);
+  }
+  
+  .td {
+    padding: var(--titan-spacing-sm);
+    font-size: var(--titan-font-size-sm);
+    border-bottom: 1px solid var(--titan-stroke);
+    color: var(--titan-text-med);
+    transition: background-color var(--titan-transition-fast);
+  }
+  
+  .table tbody tr {
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.082);
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.038);
+  }
+  
+  .table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.048);
+    border-left: 2px solid var(--titan-primary);
+    box-shadow: inset 0 0 0 1px var(--titan-grid-line);
+  }
+  
+  .linkTd {
+    color: var(--titan-primary);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    position: relative;
+  }
+  
+  .linkTd::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--titan-primary);
+    transition: width var(--titan-transition-normal);
+  }
+  
+  .linkTd:hover {
+    color: var(--titan-primary-hover);
+  }
+  
+  .linkTd:hover::after {
+    width: 100%;
+  }
+  
+  /* ===== PAGINAÇÃO ===== */
+  .pagination {
+    margin-top: var(--titan-spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--titan-spacing-md);
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-md);
+    color: var(--titan-text-med);
+    box-shadow: var(--titan-shadow-md);
+  }
+  
+  .paginationSelect {
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    border: 1px solid var(--titan-stroke);
+    font-size: var(--titan-font-size-xs);
+    height: 28px;
+    min-width: 28px;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.1;
+    background: var(--titan-input-bg);
+    color: var(--titan-text-high);
+    transition: all var(--titan-transition-fast);
+    font-family: var(--titan-font-family);
+  }
+  
+  .paginationSelect:focus {
+    border-color: var(--titan-primary);
+    outline: none;
+    box-shadow: var(--titan-glow-primary);
+  }
+  
+  .paginationButtons {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .paginationArrow,
+  .paginationButtonActive {
+    background: var(--titan-input-bg);
+    border: 1px solid var(--titan-stroke);
+    color: var(--titan-text-med);
+    border-radius: var(--titan-radius-sm);
+    min-width: 28px;
+    height: 28px;
+    font-size: var(--titan-font-size-xs);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    font-family: var(--titan-font-family);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .paginationArrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .paginationArrow:hover:not(:disabled) {
+    background: var(--titan-card-bg);
+    color: var(--titan-text-high);
+    border-color: var(--titan-primary-hover);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: var(--titan-glow-primary), 0 4px 15px rgba(0, 0, 0, 0.25);
+  }
+  
+  .paginationButtonActive {
+    background: rgba(0, 76, 255, 0.18);
+    color: var(--titan-text-high);
+    font-weight: var(--titan-font-weight-semibold);
+    border: 1px solid var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    transform: scale(1.02);
+  }
+  
+  /* ===== MODAL SECTION ===== */
+  .modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(400px);
+    -webkit-backdrop-filter: blur(400px);
+    z-index: var(--titan-z-modal-backdrop);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--titan-spacing-md);
+    isolation: isolate;
+  }
+  
+  .modalContent {
+    background: rgba(11, 11, 17, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--titan-radius-lg);
+    padding: var(--titan-spacing-xl);
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--titan-shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modalContentSmaller {
+    max-width: 420px;
+    padding: var(--titan-spacing-lg);
+  }
+  
+  .modalTitle {
+    font-size: var(--titan-font-size-xl);
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    margin: 0 0 var(--titan-spacing-lg) 0;
+    text-align: center;
+  }
+  
+  .modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-md);
+  }
+  
+  .inputRow {
+    display: flex;
+    gap: var(--titan-spacing-md);
+  }
+  
+  .inputCol {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .label {
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    color: var(--titan-text-high);
+    margin-bottom: var(--titan-spacing-xs);
+    display: block;
+  }
+  
+  .inputGroup {
+    width: 100%;
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background: var(--titan-input-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-high);
+    transition: all var(--titan-transition-fast);
+    outline: none;
+  }
+  
+  .inputGroup:focus {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  
+  .inputGroup::placeholder {
+    color: var(--titan-text-low);
+  }
+  
+  .inputFull {
+    width: 100%;
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background: var(--titan-input-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-high);
+    transition: all var(--titan-transition-fast);
+    outline: none;
+  }
+  
+  .inputFull:focus {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  
+  .passwordInputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .passwordToggleButton {
+    position: absolute;
+    right: var(--titan-spacing-sm);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--titan-spacing-xs);
+    border-radius: var(--titan-radius-sm);
+    transition: all var(--titan-transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .passwordToggleButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .buttonGenerateSmall {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background: var(--titan-primary);
+    color: white;
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .buttonGenerateSmall:hover {
+    background: var(--titan-primary-hover);
+    transform: scale(1.02);
+  }
+  
+  .errorText {
+    color: var(--titan-error);
+    font-size: var(--titan-font-size-sm);
+    margin-top: var(--titan-spacing-xs);
+    padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+    background: rgba(255, 92, 92, 0.1);
+    border-radius: var(--titan-radius-sm);
+    border-left: 3px solid var(--titan-error);
+  }
+  
+  .modalFooter {
+    margin-top: var(--titan-spacing-lg);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--titan-spacing-sm);
+  }
+  
+  .buttonSalvar {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background: var(--titan-primary);
+    color: white;
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    opacity: 1;
+  }
+  
+  .buttonSalvar:hover {
+    background: var(--titan-primary-hover);
+    transform: scale(1.02);
+  }
+  
+  .buttonCancelar {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--titan-text-high);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .buttonCancelar:hover {
+    background: var(--titan-input-bg);
+    border-color: var(--titan-primary);
+  }
+  
+  /* ===== ANIMATIONS ===== */
+  .fadeInOverlay { 
+    animation: fadeIn var(--titan-transition-slow) ease forwards; 
+  }
+  
+  .fadeOutOverlay { 
+    animation: fadeOut var(--titan-transition-slow) ease forwards; 
+  }
+  
+  .fadeInContent { 
+    animation: fadeIn var(--titan-transition-slow) ease forwards; 
+  }
+  
+  .fadeOutContent { 
+    animation: fadeOut var(--titan-transition-slow) ease forwards; 
+  }
+  
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95) translateY(-10px);
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  @keyframes fadeOut {
+    from { 
+      opacity: 1; 
+      transform: scale(1) translateY(0);
+    }
+    to { 
+      opacity: 0; 
+      transform: scale(0.95) translateY(-10px);
+    }
+  }
+  
+  /* ✅ Responsividade para telas menores */
+  @media (max-width: 768px) {
+    .container {
+      padding: var(--titan-spacing-md);
+    }
+    
+    .header {
+      flex-direction: column;
+      gap: var(--titan-spacing-md);
+      align-items: stretch;
+    }
+    
+    .title {
+      text-align: center;
+      font-size: var(--titan-font-size-2xl);
+    }
+    
+    .inputRow {
+      flex-direction: column;
+    }
+    
+    .modalContent,
+    .modalContentSmaller {
+      margin: var(--titan-spacing-md);
+      padding: var(--titan-spacing-md);
+    }
+    
+    /* Responsividade da paginação */
+    .pagination {
+      flex-direction: column;
+      gap: var(--titan-spacing-md);
+      text-align: center;
+    }
+    
+    .paginationButtons {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+  
+  /* ✅ Responsividade para telas menores */
+  @media (max-width: 1200px) {
+    .filtroRow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--titan-spacing-md);
+    }
+    
+    .filtroCol {
+      min-width: auto;
+    }
+    
+  
+    
+    .acoesBusca {
+      flex-direction: column;
+      gap: var(--titan-spacing-md);
+      align-items: stretch;
+    }
+    
+    .botoesAcao {
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .colunaUsuario {
+      width: 100%;
+      min-height: 350px;
+      padding: var(--titan-spacing-md);
+    }
+    
+    .filtrosTransferencia {
+      padding: var(--titan-spacing-sm);
+    }
+  }
+  
+  /* ===== TRANSFERÊNCIA SECTION ===== */
+  .transferenciaContainer {
+    overflow: visible;
+    max-width: 100%;
+    /* ✅ GARANTIR QUE O DROPDOWN POSSA APARECER */
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+  
+  .transferenciaContainer h2 {
+    font-size: var(--titan-font-size-xl);
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    margin-bottom: var(--titan-spacing-lg);
+  }
+  
+  /* ===== FILTROS TRANSFERÊNCIA ===== */
+  .filtrosTransferencia {
+    margin-bottom: var(--titan-spacing-xl);
+    /* ✅ GARANTIR QUE O DROPDOWN POSSA APARECER */
+    overflow: visible !important;
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+  
+  /* ✅ CONTAINER ESPECÍFICO PARA O REACT SELECT */
+  .filtroColSelect {
+    min-width: 400px !important;
+    max-width: 400px !important;
+    flex: 1;
+    /* ✅ FORÇAR CONTEXTO DE POSICIONAMENTO */
+    position: relative !important;
+    z-index: 9999 !important;
+    /* ✅ GARANTIR QUE NÃO CORTE O DROPDOWN */
+    overflow: visible !important;
+  }
+  
+  .filtroRow {
+    display: flex;
+    gap: var(--titan-spacing-lg);
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .filtroCol {
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .filtroColSelect {
+    min-width: 400px !important;
+    max-width: 400px !important;
+    flex: 1;
+  }
+  
+  .filtroLabel {
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    color: var(--titan-text-high);
+    margin-bottom: var(--titan-spacing-xs);
+  }
+  
+  .filtroSelect, .filtroInput {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .filtroSelect {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    background: var(--titan-input-bg);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+    outline: none;
+    transition: all var(--titan-transition-fast);
+    min-width: 200px;
+  }
+  
+  .filtroSelect:focus {
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+  }
+  
+  .botaoLimparFiltros {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: var(--titan-spacing-sm) var(--titan-spacing-lg);
+    background: var(--titan-error);
+    color: white;
+    border: none;
+    border-radius: var(--titan-radius-sm);
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--titan-transition-fast);
+    white-space: nowrap;
+  }
+  
+  .botaoLimparFiltros:hover {
+    background: var(--titan-error-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--titan-shadow-md);
+  }
+  
+  
+  
+  
+  /* ✅ ESTILOS ESPECÍFICOS PARA O MENU NA TRANSFERÊNCIA */
+  
+  /* ✅ FORÇAR O DROPDOWN A FICAR ABAIXO DO MODAL */
+  .reactSelect .react-select__menu {
+    z-index: 1 !important;
+    position: relative !important;
+  }
+  
+  /* ✅ SOBRESCREVER QUALQUER Z-INDEX GLOBAL DO REACT SELECT */
+  .reactSelect .react-select__menu,
+  .reactSelect .react-select__menu-portal,
+  .reactSelect .react-select__menu-list {
+    z-index: 1 !important;
+    position: relative !important;
+  }
+  
+  /* ✅ GARANTIR QUE O MODAL TENHA PRIORIDADE MÁXIMA */
+  .modalOverlay {
+    z-index: 9999 !important;
+  }
+  
+  .modalContent {
+    z-index: 10000 !important;
+  }
+  
+  .limiteUsuarios {
+    font-size: var(--titan-font-size-xs);
+    color: var(--titan-text-med);
+    margin-bottom: var(--titan-spacing-xs);
+    font-style: italic;
+  }
+  
+  /* ===== CLIENTES VINCULADOS SECTION ===== */
+  .clientesVinculados {
+    overflow: visible;
+    max-width: 100%;
+  }
+  
+  .clientesVinculados h3 {
+    font-size: var(--titan-font-size-lg);
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    margin-bottom: var(--titan-spacing-lg);
+  }
+  
+  .loading {
+    text-align: center;
+    padding: var(--titan-spacing-xl);
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-base);
+  }
+  
+  /* ===== LAYOUT COLUNAS SEM SCROLL (AGORA NO WRAPPER) ===== */
+  .layoutColunas {
+    display: flex;
+    gap: var(--titan-spacing-lg);
+    margin-top: var(--titan-spacing-md);
+    /* ✅ SEM SCROLL AQUI - AGORA ESTÁ NO WRAPPER */
+    overflow: visible;
+    /* ✅ CONTAINER COM LARGURA MÁXIMA */
+    max-width: 100%;
+    /* ✅ FORÇAR LARGURA MÍNIMA PARA CONTEÚDO */
+    min-width: max-content;
+  }
+  
+  /* =====================================================
+     ANIMAÇÕES
+     ===================================================== */
+  
+  @keyframes spin {
+    0% { 
+      transform: rotate(0deg); 
+    }
+    100% { 
+      transform: rotate(360deg); 
+    }
+  }
+  
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  
+  
+  
+  
