@@ -1,10 +1,4 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import { supabase } from '../lib/supabase';
-
-// Configure PDF.js worker
-if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-}
+// Removido: import { supabase } from '../lib/supabase';
 
 /**
  * Extrai informações detalhadas do PDF do Simples Nacional
@@ -12,6 +6,11 @@ if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
  * @returns Dados estruturados extraídos do PDF
  */
 export const extractSimplesDadosPDF = async (file) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   console.log('=== CHAMOU extractSimplesDadosPDF ===', file);
   try {
     // Carregar o PDF
@@ -295,7 +294,7 @@ export const extractSimplesDadosPDF = async (file) => {
  * @returns true se a empresa tem atividades de comércio
  */
 export const hasCommerceActivities = (
-  atividades: Array<{ descricao }>
+  atividades
 ) => {
   return atividades.some(
     (atividade) =>
@@ -312,8 +311,8 @@ export const hasCommerceActivities = (
  * @returns Objeto com percentuais de ICMS e PIS/COFINS
  */
 export const calcularPercentuaisImpostos = (
-  data: SimplesNacionalData
-): { icms ; pisCofins  } => {
+  data
+) => {
   if (!data.receitaBrutaPA || data.receitaBrutaPA === 0) {
     return { icms: null, pisCofins: null };
   }
@@ -341,7 +340,13 @@ export const calcularPercentuaisImpostos = (
  * @returns CNPJ extraído ou null se não encontrado
  */
 export const extractCnpjFromPdf = async (
-  file)string > => {
+  file
+) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -362,7 +367,12 @@ export const extractCnpjFromPdf = async (
  * @param file Arquivo PDF
  * @returns Valor da folha de salários ou null se não encontrado
  */
-export const extractFolhaSalariosFromPdf = async (file)number > => {
+export const extractFolhaSalariosFromPdf = async (file) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -424,7 +434,12 @@ export const extractFolhaSalariosFromPdf = async (file)number > => {
   }
 };
 
-export const extractFatorRFromPdf = async (file)string> => {
+export const extractFatorRFromPdf = async (file) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -456,7 +471,13 @@ export const extractFatorRFromPdf = async (file)string> => {
  * Retorna apenas os pares { competencia: 'MM/AAAA', valor }
  */
 export const extractFolhasAnterioresFromPdf = async (
-  file)Array<{ competencia; valor }>> => {
+  file
+) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -486,9 +507,9 @@ export const extractFolhasAnterioresFromPdf = async (
     const section = endMatch !== -1 ? afterStart.slice(0, endMatch) : afterStart.slice(0, 1200);
 
     // Extrair pares MM/AAAA e valor (inclui 0,00)
-    const resultados: Array<{ competencia; valor }> = [];
+    const resultados = [];
     const regex = /(\d{2}\/\d{4})[^0-9]*([\d\.]+,[\d]{2}|0,00)/g;
-    let match: RegExpExecArray ;
+    let match;
     while ((match = regex.exec(section)) !== null) {
       const competencia = match[1];
       const valor = parseFloat(match[2].replace(/\./g, '').replace(',', '.')) || 0;
@@ -507,7 +528,12 @@ export const extractFolhasAnterioresFromPdf = async (
  * @param file Arquivo PDF
  * @returns Valor do DAS ou null se não encontrado
  */
-export const extractDasValueFromPdf = async (file)number > => {
+export const extractDasValueFromPdf = async (file) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -555,7 +581,12 @@ export const extractDasValueFromPdf = async (file)number > => {
  * @param file Arquivo PDF
  * @returns Data de pagamento no formato DD/MM/AAAA ou null se não encontrado
  */
-export const extractDataPagamentoFromPdf = async (file)string > => {
+export const extractDataPagamentoFromPdf = async (file) => {
+  if (typeof window === 'undefined') throw new Error('Função só pode rodar no client/browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -623,133 +654,12 @@ export const extractDataPagamentoFromPdf = async (file)string > => {
   }
 };
 
-/**
- * Salva ou atualiza o perfil da empresa na tabela clientes via API
- */
-export async function saveEmpresaSimplesNacionalToSupabase({
-  cnpj,
-  nome,
-  atividade_principal,
-  uf,
-  cnae_empresa
-}: {
-  cnpj;
-  nome;
-  atividade_principal?;
-  uf?;
-  cnae_empresa?;
-}) {
-  try {
-    // Validação dos campos obrigatórios
-    const cleanCnpj = cnpj ? cnpj.replace(/[^\d]/g, '') : '';
-    if (!cleanCnpj || cleanCnpj.length !== 14 || cleanCnpj === '00000000000000' || cleanCnpj === 'NAOIDENTIFICADO') {
-      console.error('CNPJ inválido ao tentar salvar empresa no Supabase:', cnpj);
-      return;
-    }
-    if (!nome || typeof nome !== 'string' || nome.trim().length < 3) {
-      console.error('Nome da empresa inválido ao tentar salvar empresa no Supabase:', nome);
-      return;
-    }
-
-    console.log('Tentando salvar empresa SN:', {
-      cnpj: cleanCnpj,
-      nome,
-      atividade_principal,
-      uf,
-      cnae_empresa,
-      regime_tributario: 'simples_nacional',
-    });
-
-    // Buscar company_id do usuário logado (assumindo que está disponível no contexto)
-    // Por enquanto, vamos usar o Supabase diretamente para buscar o company_id
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
-      console.error('Usuário não autenticado:', userError);
-      return;
-    }
-
-    // Buscar company_id do usuário
-    const { data: userCompany, error: companyError } = await supabase
-      .from('user-company')
-      .select('company_id')
-      .eq('user_id', userData.user.id)
-      .single();
-
-    if (companyError || !userCompany) {
-      console.error('Company não encontrada para o usuário:', companyError);
-      return;
-    }
-
-    // Usar a nova API para criar/atualizar cliente
-    const clienteData = {
-      company_id: userCompany.company_id,
-      cnpj: cleanCnpj,
-      nome: nome.trim(),
-      atividade_principal: atividade_principal |,
-      uf: uf |,
-      regime_tributario: 'simples_nacional',
-      // Adicionar CNAEs se disponível
-      ...(cnae_empresa && { cnaes: cnae_empresa })
-    };
-
-    // Tentar criar/atualizar via API
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/clientes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(clienteData)
-      });
-
-      if (response.ok) {
-        console.log('Cliente salvo/atualizado via API:', cleanCnpj);
-      } else {
-        // Se falhar, tentar atualizar (PUT) se já existir
-        const updateResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/clientes/por-cnpj/${cleanCnpj}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          },
-          body: JSON.stringify(clienteData)
-        });
-
-        if (updateResponse.ok) {
-          console.log('Cliente atualizado via API:', cleanCnpj);
-        } else {
-          console.error('Erro ao atualizar cliente via API:', updateResponse.statusText);
-          // Fallback para o método antigo se necessário
-          await fallbackToOldMethod(clienteData);
-        }
-      }
-    } catch (apiError) {
-      console.error('Erro na API, usando fallback:', apiError);
-      // Fallback para o método antigo
-      await fallbackToOldMethod(clienteData);
-    }
-
-  } catch (err) {
-    console.error('Erro inesperado ao salvar empresa simples nacional:', err);
+export async function ensurePdfjsLib() {
+  if (typeof window === 'undefined') throw new Error('Só pode ser usado no browser!');
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
   }
+  return pdfjsLib;
 }
-
-/**
- * Método de fallback para compatibilidade temporária
- */
-async function fallbackToOldMethod(clienteData) {
-  try {
-    const { error } = await supabase.from('clientes').upsert([clienteData], {
-      onConflict: 'cnpj',
-    });
-    
-    if (error) {
-      console.error('Erro ao salvar cliente na tabela clientes (fallback):', error);
-    } else {
-      console.log('Cliente salvo/atualizado na tabela clientes (fallback):', clienteData.cnpj);
-    }
-  } catch (fallbackError) {
-    console.error('Erro no fallback:', fallbackError);
-  }
-}
+ 
