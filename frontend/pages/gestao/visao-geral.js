@@ -37,6 +37,7 @@ const getEmpresaId = () => {
     return sessionStorage.getItem("empresaId") || "";
 };
 
+
 // Helper simples de API baseado em fetch que retorna { data }
 const normalizeUrl = (u) => `${BASE_URL}${u.startsWith('/') ? '' : '/'}${u}`;
 const api = {
@@ -2301,7 +2302,7 @@ export default function VisaoGeralPage() {
                                     </h2>
                                     {dadosPesquisas?.isFranqueadora && hasPermissao("anjos", "visualizar") && (
                                         <button
-                                            onClick={() => window.open('/dashboard/satisfacao-franqueados', '_blank')}
+                                            onClick={() => window.open('/gestao/satisfacao-franqueados', '_blank')}
                                             className={styles.pesquisaLinkBtn}
                                             title="Ver Dashboard de Satisfação dos Franqueados"
                                         >

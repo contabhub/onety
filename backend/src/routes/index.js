@@ -120,6 +120,8 @@ const gestaoObrigacoesClientesRoutes = require('./gestao/obrigacoesClientesRoute
 const gestaoParcelamentoRoutes = require('./gestao/parcelamentoRoutes');
 const gestaoPdfLayoutRoutes = require('./gestao/pdfLayoutRoutes');
 const gestaoPesquisaRoutes = require('./gestao/pesquisaRoutes');
+const gestaoPesquisasFranqueadosRoutes = require('./gestao/pesquisasFranqueadosRoutes');
+const gestaoPesquisasFranqueadosAlertRoutes = require('./gestao/pesquisasFranqueadosAlertRoutes');
 const gestaoRelatoriosRoutes = require('./gestao/relatoriosRoutes');
 const gestaoSerproRoutes = require('./gestao/serproRoutes');
 const gestaoSitfisRoutes = require('./gestao/sitfisRoutes');
@@ -270,6 +272,8 @@ router.use('/gestao/obrigacoes-clientes', gestaoObrigacoesClientesRoutes);
 router.use('/gestao/parcelamento', gestaoParcelamentoRoutes);
 router.use('/gestao/pdf-layout', gestaoPdfLayoutRoutes);
 router.use('/gestao/pesquisa', gestaoPesquisaRoutes);
+router.use('/gestao/pesquisas-franqueados', gestaoPesquisasFranqueadosRoutes);
+router.use('/gestao/pesquisas-franqueados-alertas', gestaoPesquisasFranqueadosAlertRoutes);
 router.use('/gestao/relatorios', gestaoRelatoriosRoutes);
 router.use('/gestao/serpro', gestaoSerproRoutes);
 router.use('/gestao/sitfis', gestaoSitfisRoutes);
