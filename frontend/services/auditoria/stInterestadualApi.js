@@ -25,8 +25,8 @@ export const OPTANTE_CREDITO_PRESUMIDO = {
 
 // Configuração da API
 const API_BASE_URL = 'https://www.legisweb.com.br/api/st-interestadual/';
-const API_TOKEN = process.env.LEGISWEB_TOKEN;
-const API_CLIENT_ID = process.env.LEGISWEB_USER_ID;
+const API_TOKEN = process.env.NEXT_PUBLIC_LEGISWEB_TOKEN;
+const API_CLIENT_ID = process.env.NEXT_PUBLIC_LEGISWEB_USER_ID;
 
 /**
  * Valida se pelo menos um dos parâmetros obrigatórios foi fornecido

@@ -79,6 +79,10 @@ const mapRowToApi = (row) => ({
   cst_icms: row.cst_icms ?? row.cat_icms ?? null,
 });
 
+const getCompanyIdFromRequest = (req) => {
+  // Prioriza query, depois body
+  return req.query.company_id || req.body.company_id || null;
+};
 
 // POST /notas-fiscais - Criar nova nota fiscal
 router.post("/", verifyToken, async (req, res) => {
@@ -118,6 +122,10 @@ router.post("/", verifyToken, async (req, res) => {
       cfop,
       descricao_produto
     } = req.body;
+    const company_id = getCompanyIdFromRequest(req);
+    if (!company_id) {
+      return res.status(400).json({ error: "company_id é obrigatório" });
+    }
     
     // Validações obrigatórias
     if (!clientes_id || !chave_nfe || !numero_nfe || !serie || !data_emissao || 
@@ -170,9 +178,8 @@ router.post("/", verifyToken, async (req, res) => {
       });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado ao cliente" });
+    if (Number(clienteRow.empresa_id) !== Number(company_id)) {
+      return res.status(403).json({ error: "Acesso negado ao cliente para a empresa informada" });
     }
 
     const [[duplicateRow]] = await pool.query(
@@ -343,11 +350,9 @@ router.get("/", verifyToken, async (req, res) => {
       sort_order = 'desc'
     } = req.query;
 
-    // clientes_id é obrigatório para segurança
-    if (!clientes_id) {
-      return res.status(400).json({ 
-        error: "clientes_id é obrigatório" 
-      });
+    const company_id = getCompanyIdFromRequest(req);
+    if (!clientes_id || !company_id) {
+      return res.status(400).json({ error: "clientes_id e company_id são obrigatórios" });
     }
 
     const clienteId = Number.parseInt(clientes_id, 10);
@@ -369,9 +374,8 @@ router.get("/", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Cliente não encontrado" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado ao cliente" });
+    if (Number(clienteRow.empresa_id) !== Number(company_id)) {
+      return res.status(403).json({ error: "Acesso negado ao cliente para a empresa informada" });
     }
 
     const filtros = ["nf.cliente_id = ?"];
@@ -516,9 +520,9 @@ router.get("/periodo", verifyToken, async (req, res) => {
 
     let cliente;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.length) {
-      return res.status(403).json({ error: "Usuário não possui empresas associadas" });
+    const company_id = getCompanyIdFromRequest(req);
+    if (!company_id) {
+      return res.status(400).json({ error: "company_id é obrigatório" });
     }
 
     if (clientes_id) {
@@ -541,8 +545,8 @@ router.get("/periodo", verifyToken, async (req, res) => {
         return res.status(404).json({ error: "Cliente não encontrado" });
       }
 
-      if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-        return res.status(403).json({ error: "Acesso negado ao cliente" });
+      if (Number(clienteRow.empresa_id) !== Number(company_id)) {
+        return res.status(403).json({ error: "Acesso negado ao cliente para a empresa informada" });
       }
 
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
@@ -552,17 +556,17 @@ router.get("/periodo", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "CNPJ emitente inválido" });
       }
 
-      const placeholders = companyIdsUser.map(() => "?").join(",");
+      const placeholders = company_id.toString(); // Assuming company_id is a single value
 
       const [[clienteRow]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
           WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
-            AND empresa_id IN (${placeholders})
+            AND empresa_id = ?
           LIMIT 1
         `,
-        [cleanCnpj, ...companyIdsUser]
+        [cleanCnpj, company_id]
       );
 
       if (!clienteRow) {
@@ -572,8 +576,8 @@ router.get("/periodo", verifyToken, async (req, res) => {
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
     }
 
-    if (!companyIdsUser.includes(cliente.company_id)) {
-      return res.status(403).json({ error: "Acesso negado ao cliente" });
+    if (Number(cliente.company_id) !== Number(company_id)) {
+      return res.status(403).json({ error: "Acesso negado ao cliente para a empresa informada" });
     }
 
     // Validar e processar o parâmetro select
@@ -713,9 +717,9 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
 
     let cliente;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.length) {
-      return res.status(403).json({ error: "Usuário não possui empresas associadas" });
+    const company_id = getCompanyIdFromRequest(req);
+    if (!company_id) {
+      return res.status(400).json({ error: "company_id é obrigatório" });
     }
 
     if (clientes_id) {
@@ -738,8 +742,8 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         return res.status(404).json({ error: "Cliente não encontrado" });
       }
 
-      if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-        return res.status(403).json({ error: "Acesso negado ao cliente" });
+      if (Number(clienteRow.empresa_id) !== Number(company_id)) {
+        return res.status(403).json({ error: "Acesso negado ao cliente para a empresa informada" });
       }
 
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
@@ -749,17 +753,17 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "CNPJ emitente inválido" });
       }
 
-      const placeholders = companyIdsUser.map(() => "?").join(",");
+      const placeholders = company_id.toString(); // Assuming company_id is a single value
 
       const [[clienteRow]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
           WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
-            AND empresa_id IN (${placeholders})
+            AND empresa_id = ?
           LIMIT 1
         `,
-        [cleanCnpj, ...companyIdsUser]
+        [cleanCnpj, company_id]
       );
 
       if (!clienteRow) {
@@ -769,8 +773,8 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
     }
 
-    if (!companyIdsUser.includes(cliente.company_id)) {
-      return res.status(403).json({ error: "Acesso negado ao cliente" });
+    if (Number(cliente.company_id) !== Number(company_id)) {
+      return res.status(403).json({ error: "Acesso negado ao cliente para a empresa informada" });
     }
 
     const filtros = [
@@ -821,12 +825,12 @@ router.get("/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.length) {
-      return res.status(403).json({ error: "Usuário não possui empresas associadas" });
+    const company_id = getCompanyIdFromRequest(req);
+    if (!company_id) {
+      return res.status(400).json({ error: "company_id é obrigatório" });
     }
 
-    const placeholders = companyIdsUser.map(() => "?").join(",");
+    const placeholders = company_id.toString();
 
     const [[notaRow]] = await pool.query(
       `
@@ -870,10 +874,10 @@ router.get("/:id", verifyToken, async (req, res) => {
         FROM notas_fiscais AS nf
         INNER JOIN clientes AS c ON c.id = nf.cliente_id
         WHERE nf.id = ?
-          AND c.empresa_id IN (${placeholders})
+          AND c.empresa_id = ?
         LIMIT 1
       `,
-      [notaId, ...companyIdsUser]
+      [notaId, company_id]
     );
 
     if (!notaRow) {
@@ -963,8 +967,8 @@ router.put("/:id", verifyToken, async (req, res) => {
       [existingNota.cliente_id]
     );
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!clienteRow || !companyIdsUser.includes(clienteRow.empresa_id)) {
+    const company_id = getCompanyIdFromRequest(req);
+    if (!clienteRow || Number(clienteRow.empresa_id) !== Number(company_id)) {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
@@ -1145,8 +1149,11 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Nota fiscal não encontrada." });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.includes(existingNota.empresa_id)) {
+    const company_id = getCompanyIdFromRequest(req);
+    if (!company_id) {
+      return res.status(400).json({ error: "company_id é obrigatório" });
+    }
+    if (Number(existingNota.empresa_id) !== Number(company_id)) {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
@@ -1190,7 +1197,10 @@ router.post("/bulk", verifyToken, async (req, res) => {
     const erros = [];
     let sucessosCount = 0;
     const duplicadas = [];
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const company_id = getCompanyIdFromRequest(req);
+    if (!company_id) {
+      return res.status(400).json({ error: "company_id é obrigatório" });
+    }
 
     // Validar cada nota fiscal
     for (let i = 0; i < notas_fiscais.length; i++) {
@@ -1253,8 +1263,8 @@ router.post("/bulk", verifyToken, async (req, res) => {
         has_access: Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids.includes(clienteRow.empresa_id) : false
       });
 
-      if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-        erros.push(`Nota ${i + 1}: Acesso negado ao cliente`);
+      if (Number(clienteRow.empresa_id) !== Number(company_id)) {
+        erros.push(`Nota ${i + 1}: Acesso negado ao cliente para a empresa informada`);
         continue;
       }
 
