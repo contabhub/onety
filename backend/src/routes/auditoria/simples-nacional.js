@@ -16,6 +16,139 @@ const parseJSONSafely = (value) => {
   }
 };
   
+const toNumberOrNull = (value) => {
+  if (value === null || value === undefined) return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const collectCandidateIds = (...values) => {
+  const flattened = values.flat();
+  const isObject = flattened.length === 1 && typeof flattened[0] === "object";
+
+  if (isObject) {
+    try {
+      const parsed = JSON.parse(JSON.stringify(flattened[0]));
+      return Object.values(parsed)
+        .map(toNumberOrNull)
+        .filter((value) => value !== null);
+    } catch {
+      return [];
+    }
+  }
+
+  return flattened
+    .filter((value) => value !== undefined && value !== null)
+    .map(toNumberOrNull)
+    .filter((value) => value !== null);
+};
+
+const resolveUserCompanyIds = async (req) => {
+  if (req.userCompanyIds) {
+    return req.userCompanyIds;
+  }
+
+  const ids = new Set();
+  const { user = {}, usuario = {} } = req;
+
+  collectCandidateIds(
+    Array.isArray(user.all_company_ids) ? user.all_company_ids : [],
+    user.company_id,
+    user.companyId,
+    user.empresaId,
+    user.EmpresaId,
+    user.empresa_id,
+    usuario?.empresaId,
+    usuario?.empresa_id,
+    usuario?.EmpresaId
+  ).forEach((id) => ids.add(id));
+
+  const userId = user.id || usuario.id;
+
+  if (!ids.size && userId) {
+    try {
+      const [rows] = await pool.query(
+        `
+          SELECT empresa_id
+          FROM usuarios_empresas
+          WHERE usuario_id = ?
+        `,
+        [userId]
+      );
+      rows.forEach((row) => {
+        const parsed = toNumberOrNull(row.empresa_id);
+        if (parsed !== null) ids.add(parsed);
+      });
+    } catch (error) {
+      console.error("Erro ao buscar vínculos de empresas do usuário:", error);
+    }
+  }
+
+  const fallbackIds = collectCandidateIds(user.company_id, usuario?.empresaId);
+  fallbackIds.forEach((id) => ids.add(id));
+
+  const resolved = Array.from(ids);
+  req.userCompanyIds = resolved;
+  return resolved;
+};
+
+const ensureCompanyAccess = async (req, companyId) => {
+  const normalized = toNumberOrNull(companyId);
+  if (normalized === null) {
+    return false;
+  }
+
+  const companyIds = await resolveUserCompanyIds(req);
+  if (companyIds.includes(normalized)) {
+    return true;
+  }
+
+  const userId = req.user?.id || req.usuario?.id;
+  if (!userId) {
+    return false;
+  }
+
+  try {
+    const [[row]] = await pool.query(
+      `
+        SELECT 1
+        FROM usuarios_empresas
+        WHERE usuario_id = ?
+          AND empresa_id = ?
+        LIMIT 1
+      `,
+      [userId, normalized]
+    );
+
+    if (row) {
+      req.userCompanyIds = [...companyIds, normalized];
+      return true;
+    }
+  } catch (error) {
+    console.error("Erro ao validar vínculo usuário-empresa:", error);
+  }
+
+  return false;
+};
+
+// Utilitário para fator_r
+function mapFatorRToDecimal(fatorR) {
+  if (typeof fatorR === 'number') return fatorR;
+  if (/se aplica/i.test(fatorR)) return 1;
+  if (/não se aplica/i.test(fatorR)) return 0;
+  return 0;
+}
+// Utilitário para formatar data_pag
+function formatDataPagToMySQL(dataPag) {
+  if (!dataPag) return null;
+  if (dataPag instanceof Date) return dataPag.toISOString().slice(0, 10);
+  if (typeof dataPag === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dataPag)) {
+    const [dia, mes, ano] = dataPag.split('/');
+    return `${ano}-${mes}-${dia}`;
+  }
+  return null;
+}
+
 // ===== ROTAS PARA SIMPLES NACIONAL =====
 
 // POST /simples-nacional/upload - Upload de PDF do Simples Nacional
@@ -64,15 +197,16 @@ router.post("/upload", verifyToken, async (req, res) => {
 
     let clienteId;
     try {
-      const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+      const companyIdsUser = await resolveUserCompanyIds(req);
       let targetCompanyId = company_id ? Number.parseInt(company_id, 10) : null;
 
       if (targetCompanyId) {
-        if (!companyIdsUser.includes(targetCompanyId)) {
+        const hasAccess = await ensureCompanyAccess(req, targetCompanyId);
+        if (!hasAccess) {
           return res.status(403).json({ error: "Acesso negado a esta empresa" });
         }
       } else if (req.user.company_id) {
-        targetCompanyId = req.user.company_id;
+        targetCompanyId = Number.parseInt(req.user.company_id, 10) || null;
       } else if (companyIdsUser.length === 1) {
         targetCompanyId = companyIdsUser[0];
       } else {
@@ -155,7 +289,7 @@ router.post("/upload", verifyToken, async (req, res) => {
                   cnae.codigo,
                   cnae.descricao,
                   cnae.anexo,
-                  cnae.fator_r,
+                  mapFatorRToDecimal(cnae.fator_r),
                   cnae.aliquota,
                   req.user.userId,
                   req.user.userId,
@@ -195,6 +329,7 @@ router.post("/upload", verifyToken, async (req, res) => {
         ? JSON.stringify(folha_de_salarios_anteriores)
         : folha_de_salarios_anteriores || null;
 
+      const dataPagMySQL = formatDataPagToMySQL(date_pag); // ou variavel que contém o valor bruto
       const [insertAnalise] = await pool.query(
         `
           INSERT INTO analises_simples_nacional (
@@ -248,7 +383,7 @@ router.post("/upload", verifyToken, async (req, res) => {
           anexosJSON,
           valor_folha,
           folhaAnteriorJSON,
-          date_pag || null,
+          dataPagMySQL,
           req.user.userId,
           req.user.userId,
         ]
@@ -293,7 +428,7 @@ router.get("/", verifyToken, async (req, res) => {
     const limitNumber = Number.parseInt(limit, 10) || 50;
     const offset = (pageNumber - 1) * limitNumber;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
@@ -301,7 +436,8 @@ router.get("/", verifyToken, async (req, res) => {
     let companiesToFilter = [...companyIdsUser];
     if (company_id) {
       const companyIdParsed = Number.parseInt(company_id, 10);
-      if (!companyIdsUser.includes(companyIdParsed)) {
+      const hasAccess = await ensureCompanyAccess(req, companyIdParsed);
+      if (!hasAccess) {
         return res.status(403).json({ error: "Acesso negado a esta empresa" });
       }
       companiesToFilter = [companyIdParsed];
@@ -475,7 +611,7 @@ router.get("/comparacao-anexos", verifyToken, async (req, res) => {
   try {
     const { clientes_id, cnpj, ano, mes, company_id } = req.query;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
@@ -502,7 +638,12 @@ router.get("/comparacao-anexos", verifyToken, async (req, res) => {
         [clienteId]
       );
 
-      if (!clienteRows.length || !companyIdsUser.includes(clienteRows[0].empresa_id)) {
+      if (!clienteRows.length) {
+        return res.status(404).json({ error: "Cliente não encontrado ou não está no Simples Nacional" });
+      }
+
+      const hasAccess = await ensureCompanyAccess(req, clienteRows[0].empresa_id);
+      if (!hasAccess) {
         return res.status(404).json({ error: "Cliente não encontrado ou não está no Simples Nacional" });
       }
 
@@ -510,12 +651,14 @@ router.get("/comparacao-anexos", verifyToken, async (req, res) => {
     } else if (cnpj) {
       const cleanCnpj = cnpj.replace(/\D/g, "");
 
-      const companiesFilter = company_id
-        ? [Number.parseInt(company_id, 10)]
-        : companyIdsUser;
-
-      if (companiesFilter.some((id) => !companyIdsUser.includes(id))) {
-        return res.status(403).json({ error: "Acesso negado a esta empresa" });
+      let companiesFilter = [...companyIdsUser];
+      if (company_id) {
+        const requestedCompanyId = Number.parseInt(company_id, 10);
+        const hasAccess = await ensureCompanyAccess(req, requestedCompanyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Acesso negado a esta empresa" });
+        }
+        companiesFilter = [requestedCompanyId];
       }
 
       const [clienteRows] = await pool.query(
@@ -662,7 +805,7 @@ router.get("/clientes", verifyToken, async (req, res) => {
     const limitNumber = Number.parseInt(limit, 10) || 50;
     const offset = (pageNumber - 1) * limitNumber;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
@@ -796,7 +939,7 @@ router.get("/das-mensais", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Ano inválido" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
@@ -820,7 +963,12 @@ router.get("/das-mensais", verifyToken, async (req, res) => {
         [clienteIdParsed]
       );
 
-      if (!clienteRows.length || !companyIdsUser.includes(clienteRows[0].empresa_id)) {
+      if (!clienteRows.length) {
+        return res.status(404).json({ error: "Cliente não encontrado" });
+      }
+
+      const hasAccess = await ensureCompanyAccess(req, clienteRows[0].empresa_id);
+      if (!hasAccess) {
         return res.status(404).json({ error: "Cliente não encontrado" });
       }
 
@@ -834,7 +982,8 @@ router.get("/das-mensais", verifyToken, async (req, res) => {
 
       if (company_id) {
         const companyIdParsed = Number.parseInt(company_id, 10);
-        if (Number.isNaN(companyIdParsed) || !companyIdsUser.includes(companyIdParsed)) {
+        const hasAccess = await ensureCompanyAccess(req, companyIdParsed);
+        if (Number.isNaN(companyIdParsed) || !hasAccess) {
           return res.status(403).json({ error: "Acesso negado a esta empresa" });
         }
         companiesToFilter = [companyIdParsed];
@@ -942,7 +1091,7 @@ router.get("/folhas-mensais", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Ano inválido" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
@@ -965,7 +1114,12 @@ router.get("/folhas-mensais", verifyToken, async (req, res) => {
         [clienteIdParsed]
       );
 
-      if (!clienteRows.length || !companyIdsUser.includes(clienteRows[0].empresa_id)) {
+      if (!clienteRows.length) {
+        return res.status(404).json({ error: "Cliente não encontrado" });
+      }
+
+      const hasAccess = await ensureCompanyAccess(req, clienteRows[0].empresa_id);
+      if (!hasAccess) {
         return res.status(404).json({ error: "Cliente não encontrado" });
       }
 
@@ -979,7 +1133,8 @@ router.get("/folhas-mensais", verifyToken, async (req, res) => {
       let companiesToFilter = [...companyIdsUser];
       if (company_id) {
         const companyIdParsed = Number.parseInt(company_id, 10);
-        if (Number.isNaN(companyIdParsed) || !companyIdsUser.includes(companyIdParsed)) {
+        const hasAccess = await ensureCompanyAccess(req, companyIdParsed);
+        if (Number.isNaN(companyIdParsed) || !hasAccess) {
           return res.status(403).json({ error: "Acesso negado a esta empresa" });
         }
         companiesToFilter = [companyIdParsed];
@@ -1077,7 +1232,7 @@ router.get("/folhas-anteriores", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Ano inválido" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
@@ -1265,7 +1420,7 @@ router.get("/folhas-anteriores-por-mes", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Ano inválido" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
+    const companyIdsUser = await resolveUserCompanyIds(req);
     if (!companyIdsUser.length) {
       return res.status(403).json({ error: "Usuário não possui empresas associadas" });
     }
