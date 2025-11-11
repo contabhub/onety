@@ -5,30 +5,60 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useDropzone } from 'react-dropzone';
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker?url';
 import { toast, ToastContainer, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useCompany } from '../src/contexts/CompanyContext';
-import { apiService } from '../src/lib/api';
-import { extractDasValueFromPdf, extractFolhaSalariosFromPdf, extractDataPagamentoFromPdf, extractFolhasAnterioresFromPdf } from '../src/services/pdf-extractor';
-import styles from '../styles/rct-sn/rct-sn.module.css';
+import { ensurePdfjsLib, extractDasValueFromPdf, extractFolhaSalariosFromPdf, extractDataPagamentoFromPdf, extractFolhasAnterioresFromPdf } from '../../services/auditoria/pdf-extractor';
+import styles from '../../styles/auditoria/rct-sn.module.css';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+
+const resolveSelectedCompanyId = () => {
+  if (typeof window === 'undefined') return null;
+
+  const storedCompanyId = localStorage.getItem('selected_company_id');
+  if (storedCompanyId) {
+    return storedCompanyId;
+  }
+
+  const rawUserData = localStorage.getItem('userData');
+  if (!rawUserData) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawUserData);
+    const fallbackId =
+      parsed?.EmpresaId ??
+      parsed?.empresaId ??
+      parsed?.empresa_id ??
+      parsed?.companyId ??
+      parsed?.company_id ??
+      null;
+
+    if (fallbackId) {
+      const normalized = String(fallbackId);
+      localStorage.setItem('selected_company_id', normalized);
+      return normalized;
+    }
+  } catch (error) {
+    console.error('Erro ao interpretar userData para obter empresaId:', error);
+  }
+
+  return null;
+};
 
 export default function RctSn() {
   const [loading, setLoading] = useState(false);
   const [analyses, setAnalyses] = useState([]);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
-  const { setSelectedCompany } = useCompany();
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
-
   // Removido: setSelectedCompany(null) para evitar redirecionamento para /companies
 
   const extractCnpjFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = '';
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -59,6 +89,7 @@ export default function RctSn() {
   const extractFatorRFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
       let fullText = '';
@@ -117,6 +148,7 @@ export default function RctSn() {
   const extractTaxDataFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
       let fullText = '';
@@ -187,6 +219,7 @@ export default function RctSn() {
   const extractCompanyNameFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
       let fullText = '';
@@ -237,11 +270,12 @@ export default function RctSn() {
   const extractUfFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       const page = await pdf.getPage(1);
-      const textContent = await page.getTextContent();
-      const text = textContent.items
-        .filter((item): item is { str: string } => 'str' in item && typeof (item as any).str === 'string')
+        const textContent = await page.getTextContent();
+        const text = textContent.items
+          .filter((item) => item && typeof item === 'object' && 'str' in item && typeof item.str === 'string')
         .map((item) => item.str)
         .join(' ');
 
@@ -264,6 +298,7 @@ export default function RctSn() {
   const extractPeriodFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
       let fullText = '';
@@ -322,6 +357,7 @@ export default function RctSn() {
   const extractActivityFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
       let fullText = '';
@@ -443,6 +479,7 @@ export default function RctSn() {
   const extractAnexoFromPdf = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await ensurePdfjsLib();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
       let fullText = '';
@@ -687,8 +724,26 @@ export default function RctSn() {
   // Função para deletar análise
   const deleteAnalysis = async (id) => {
     try {
-      const response = await apiService.deleteSimplesNacionalAnalise(id);
-      if (response.error) throw new Error(response.error);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        toast.error('Token de autenticação não encontrado. Faça login novamente.', {
+          autoClose: 4000,
+        });
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/auditoria/simples-nacional/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.error || 'Erro ao excluir análise');
+      }
+
       toast.success('Análise excluída com sucesso!', {
         autoClose: 4000,
       });
@@ -704,8 +759,7 @@ export default function RctSn() {
   const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length === 0) return;
 
-    // Obter company_id do localStorage para garantir isolamento correto
-    const selectedCompanyId = localStorage.getItem('selected_company_id');
+    const selectedCompanyId = resolveSelectedCompanyId();
     if (!selectedCompanyId) {
       toast.error('Nenhuma empresa selecionada. Selecione uma empresa antes de fazer upload.', {
         autoClose: 5000,
@@ -754,34 +808,47 @@ export default function RctSn() {
           [mes, ano] = periodoDocumento.split('/').map(Number);
         }
 
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) {
+          throw new Error('Token de autenticação não encontrado.');
+        }
+
         // Usar a nova API do Simples Nacional
-        const response = await apiService.uploadSimplesNacional({
-          cnpj: cnpj.replace(/[^\d]/g, ''),
-          nome_empresa: apiData.nome_fantasia || apiData.razao_social,
-          atividade_principal: apiData.cnae_fiscal_descricao || apiData.atividade_principal || 'Não identificada',
-          uf: apiData.uf || 'SP',
-          fator_r_status: fatorR,
-          periodo_documento: periodoDocumento,
-          icms_percentage: icmsPercentage,
-          pis_cofins_percentage: pisCofinsPercentage,
-          receita_total: taxData?.receita_total,
-          icms_total: taxData?.icms_total,
-          pis_total: taxData?.pis_total,
-          cofins_total: taxData?.cofins_total,
-          valor_das: dasValue || undefined,
-          anexos_simples: anexoFromPdf,
-          valor_folha: valorFolha || undefined,
-          folha_de_salarios_anteriores: folhasAnteriores && folhasAnteriores.length > 0 ? folhasAnteriores : undefined,
-          date_pag: dataPagamento || undefined,
-          resultado_api: apiData,
-          arquivo_nome: file.name,
-          mes,
-          ano,
-          company_id: selectedCompanyId // Enviar company_id explícito
+        const response = await fetch(`${API_BASE}/auditoria/simples-nacional/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            cnpj: cnpj.replace(/[^\d]/g, ''),
+            nome_empresa: apiData.nome_fantasia || apiData.razao_social,
+            atividade_principal: apiData.cnae_fiscal_descricao || apiData.atividade_principal || 'Não identificada',
+            uf: apiData.uf || 'SP',
+            fator_r_status: fatorR,
+            periodo_documento: periodoDocumento,
+            icms_percentage: icmsPercentage,
+            pis_cofins_percentage: pisCofinsPercentage,
+            receita_total: taxData?.receita_total,
+            icms_total: taxData?.icms_total,
+            pis_total: taxData?.pis_total,
+            cofins_total: taxData?.cofins_total,
+            valor_das: dasValue || undefined,
+            anexos_simples: anexoFromPdf,
+            valor_folha: valorFolha || undefined,
+            folha_de_salarios_anteriores: folhasAnteriores && folhasAnteriores.length > 0 ? folhasAnteriores : undefined,
+            date_pag: dataPagamento || undefined,
+            resultado_api: apiData,
+            arquivo_nome: file.name,
+            mes,
+            ano,
+            company_id: selectedCompanyId // Enviar company_id explícito
+          }),
         });
 
-        if (response.error) throw new Error(response.error);
-        return response.data;
+        const result = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(result?.error || 'Erro ao salvar análise');
+        return result?.data;
       } catch (error) {
         console.error('Error saving analysis:', error);
         throw error;
@@ -838,7 +905,12 @@ export default function RctSn() {
       // Nota: A criação do cliente e análise será feita pela API do Simples Nacional
 
       // Usar o nome extraído do PDF se a API não retornar
-      const finalCompanyName = (apiData?.nome_fantasia as string) || (apiData?.razao_social as string) || companyName;
+      const finalCompanyName =
+        typeof apiData?.nome_fantasia === 'string'
+          ? apiData.nome_fantasia
+          : typeof apiData?.razao_social === 'string'
+            ? apiData.razao_social
+            : companyName;
       const finalActivity = activityFromPdf !== 'Não identificada' 
         ? activityFromPdf 
         : (apiData?.cnae_fiscal_descricao || apiData?.atividade_principal || 'Não identificada');
@@ -899,17 +971,32 @@ export default function RctSn() {
 
   const loadAnalyses = async () => {
     try {
-      // Obter company_id do localStorage para filtrar análises
-      const selectedCompanyId = localStorage.getItem('selected_company_id');
+      const selectedCompanyId = resolveSelectedCompanyId();
       if (!selectedCompanyId) {
         console.warn('Nenhuma empresa selecionada');
         setAnalyses([]);
         return;
       }
 
-      const response = await apiService.getSimplesNacionalAnalises({ company_id: selectedCompanyId });
-      if (response.error) throw new Error(response.error);
-      setAnalyses(response.data?.data || []);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado.');
+      }
+
+      const url = new URL(`${API_BASE}/auditoria/simples-nacional`);
+      url.searchParams.set('company_id', selectedCompanyId);
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.error || 'Erro ao carregar análises');
+      }
+      setAnalyses(result?.data || []);
     } catch (error) {
       console.error('Error loading analyses:', error);
       toast.error('Erro ao carregar análises. Verifique sua conexão e tente novamente.', {
@@ -918,7 +1005,7 @@ export default function RctSn() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadAnalyses();
   }, []);
 
@@ -1057,16 +1144,16 @@ export default function RctSn() {
                 <div className={styles.analysisItem}>
                   <dt className={styles.analysisLabel}>% ICMS</dt>
                   <dd className={styles.analysisValue}>
-                    {currentAnalysis.icms_percentage 
-                      ? `${currentAnalysis.icms_percentage.toFixed(2)}%` 
+                    {Number.isFinite(Number(currentAnalysis.icms_percentage))
+                      ? `${Number(currentAnalysis.icms_percentage).toFixed(2)}%`
                       : 'N/A'}
                   </dd>
                 </div>
                 <div className={styles.analysisItem}>
                   <dt className={styles.analysisLabel}>% PIS/COFINS</dt>
                   <dd className={styles.analysisValue}>
-                    {currentAnalysis.pis_cofins_percentage 
-                      ? `${currentAnalysis.pis_cofins_percentage.toFixed(2)}%` 
+                    {Number.isFinite(Number(currentAnalysis.pis_cofins_percentage))
+                      ? `${Number(currentAnalysis.pis_cofins_percentage).toFixed(2)}%`
                       : 'N/A'}
                   </dd>
                 </div>
@@ -1123,69 +1210,73 @@ export default function RctSn() {
                   </tr>
                   </thead>
                   <tbody>
-                    {filteredAnalyses.map((analysis) => (
-                      <tr
-                        key={analysis.id}
-                        className={styles.tableRow}
-                      >
-
-                        <td className={styles.tableCell}>
-                          {analysis.clientes?.nome || analysis.nome_empresa || 'Nome não encontrado'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          {analysis.cnpj ? analysis.cnpj.replace(
+                    {filteredAnalyses.map((analysis) => {
+                      const formattedCnpj = analysis.cnpj
+                        ? analysis.cnpj.replace(
                             /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
                             '$1.$2.$3/$4-$5'
-                          ) : 'CNPJ não encontrado'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          {analysis.atividade_principal || 'Não identificada'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          {analysis.data_extracao ? new Date(analysis.data_extracao).toLocaleDateString('pt-BR') : 'Data não encontrada'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          {analysis.periodo_documento || 'Não identificado'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          <span className={getFatorBadgeClass(analysis.fator_r_status)}>
-                            {analysis.fator_r_status || 'Não identificado'}
-                          </span>
-                        </td>
+                          )
+                        : 'CNPJ não encontrado';
 
-                        <td className={styles.tableCell}>
-                          {analysis.icms_percentage
-                            ? `${analysis.icms_percentage.toFixed(2)}%`
-                            : 'N/A'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          {analysis.pis_cofins_percentage
-                            ? `${analysis.pis_cofins_percentage.toFixed(2)}%`
-                            : 'N/A'}
-                        </td>
-                        <td className={styles.tableCell}>
-                          <div className={styles.tableActions}>
-                            <span className={styles.tableCellSecondary}>Ver detalhes</span>
-                            <span className={styles.tableCellSecondary}>(Em breve)</span>
-                            <button
-                              type="button"
-                              className={styles.actionDanger}
-                              title="Excluir análise"
-                              onClick={e => {
-                                e.stopPropagation();
-                                if (window.confirm('Tem certeza que deseja excluir esta análise?')) {
-                                  deleteAnalysis(analysis.id);
-                                }
-                              }}
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                        </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      return (
+                        <tr key={analysis.id} className={styles.tableRow}>
+                          <td className={styles.tableCell}>
+                            {analysis.clientes?.nome ||
+                              analysis.nome_empresa ||
+                              'Nome não encontrado'}
+                          </td>
+                          <td className={styles.tableCell}>{formattedCnpj}</td>
+                          <td className={styles.tableCell}>
+                            {analysis.atividade_principal || 'Não identificada'}
+                          </td>
+                          <td className={styles.tableCell}>
+                            {analysis.data_extracao
+                              ? new Date(analysis.data_extracao).toLocaleDateString('pt-BR')
+                              : 'Data não encontrada'}
+                          </td>
+                          <td className={styles.tableCell}>
+                            {analysis.periodo_documento || 'Não identificado'}
+                          </td>
+                          <td className={styles.tableCell}>
+                            <span className={getFatorBadgeClass(analysis.fator_r_status)}>
+                              {analysis.fator_r_status || 'Não identificado'}
+                            </span>
+                          </td>
+                          <td className={styles.tableCell}>
+                            {Number.isFinite(Number(analysis.icms_percentage))
+                              ? `${Number(analysis.icms_percentage).toFixed(2)}%`
+                              : 'N/A'}
+                          </td>
+                          <td className={styles.tableCell}>
+                            {Number.isFinite(Number(analysis.pis_cofins_percentage))
+                              ? `${Number(analysis.pis_cofins_percentage).toFixed(2)}%`
+                              : 'N/A'}
+                          </td>
+                          <td className={styles.tableCell}>
+                            <div className={styles.tableActions}>
+                              <span className={styles.tableCellSecondary}>Ver detalhes</span>
+                              <span className={styles.tableCellSecondary}>(Em breve)</span>
+                              <button
+                                type="button"
+                                className={styles.actionDanger}
+                                title="Excluir análise"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  if (window.confirm('Tem certeza que deseja excluir esta análise?')) {
+                                    deleteAnalysis(analysis.id);
+                                  }
+                                }}
+                              >
+                                Excluir
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
