@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { database } = require("../../config/database");
+const db = require("../../config/database");
 const verifyToken = require("../../middlewares/auth");
 
 // ===== ROTAS PARA TABELA CLIENTES =====
@@ -90,148 +90,134 @@ router.post("/", verifyToken, async (req, res) => {
 // GET /clientes - Listar clientes com filtros
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { 
-      company_id, 
-      cnpj, 
-      uf, 
-      nome, 
+    const {
+      company_id,
+      cnpj,
+      uf,
+      nome,
       simples_nacional,
       regime_tributario,
-      mes, 
-      ano,
       page = 1,
       limit = 50,
       sort_by = 'created_at',
       sort_order = 'desc'
     } = req.query;
 
-    // Se não tem company_id mas tem cnpj e regime_tributario, buscar por CNPJ
-    if (!company_id && cnpj && regime_tributario) {
-      let query = supabase
-        .from('clientes')
-        .select('*')
-        .eq('cnpj', cnpj)
-        .eq('regime_tributario', regime_tributario);
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Erro ao buscar cliente por CNPJ:', error);
-        return res.status(500).json({ error: "Erro ao buscar cliente." });
-      }
-
-      return res.json({
-        data: data || [],
-        pagination: {
-          page: 1,
-          limit: data?.length || 0,
-          total: data?.length || 0,
-          total_pages: 1
-        }
-      });
-    }
-
-    // company_id é obrigatório para outras consultas
     if (!company_id) {
-      return res.status(400).json({ 
-        error: "company_id é obrigatório" 
+      return res.status(400).json({
+        error: "company_id é obrigatório"
       });
     }
 
-    // Verificar se o usuário tem acesso à empresa solicitada
-    console.log('🔍 [Clientes] Verificando acesso à empresa:', {
-      requested_company_id: company_id,
-      user_company_ids: req.user.all_company_ids,
-      has_access: req.user.all_company_ids.includes(company_id)
-    });
-    
-    if (!req.user.all_company_ids.includes(company_id)) {
-      return res.status(403).json({ 
-        error: "Acesso negado à empresa" 
+    const companyIdNumber = Number(company_id);
+    if (Number.isNaN(companyIdNumber)) {
+      return res.status(400).json({
+        error: "company_id deve ser numérico"
       });
     }
 
-    let query = supabase
-      .from('clientes')
-      .select('*')
-      .eq('company_id', company_id);
+    const userCompanies = Array.isArray(req.user?.all_company_ids)
+      ? req.user.all_company_ids.map(Number)
+      : null;
 
-    // Aplicar filtros
+    if (
+      userCompanies &&
+      userCompanies.length > 0 &&
+      !userCompanies.includes(companyIdNumber)
+    ) {
+      return res.status(403).json({
+        error: "Acesso negado à empresa"
+      });
+    }
+
+    const filters = ["empresa_id = ?"];
+    const params = [companyIdNumber];
+
     if (cnpj) {
-      query = query.eq('cnpj', cnpj);
+      const sanitizedCnpj = cnpj.replace(/\D/g, "");
+      filters.push("cpf_cnpj = ?");
+      params.push(sanitizedCnpj);
     }
 
     if (uf) {
-      query = query.eq('uf', uf.toUpperCase());
+      filters.push("estado = ?");
+      params.push(uf.toUpperCase());
     }
 
     if (nome) {
-      query = query.ilike('nome', `%${nome}%`);
+      filters.push("(nome_fantasia LIKE ? OR razao_social LIKE ?)");
+      params.push(`%${nome}%`, `%${nome}%`);
     }
 
-    // Filtrar por regime tributário
-    if (simples_nacional !== undefined) {
+    if (regime_tributario) {
+      filters.push("regime_tributario = ?");
+      params.push(regime_tributario);
+    } else if (simples_nacional !== undefined) {
       if (simples_nacional === 'true' || simples_nacional === 'sim') {
-        query = query.eq('regime_tributario', 'simples_nacional');
+        filters.push("regime_tributario = ?");
+        params.push('simples_nacional');
       } else if (simples_nacional === 'false' || simples_nacional === 'nao') {
-        query = query.eq('regime_tributario', 'regime_normal');
+        filters.push("regime_tributario <> ?");
+        params.push('simples_nacional');
       }
     }
 
-    // Aplicar ordenação
-    if (sort_by && ['nome', 'cnpj', 'uf', 'created_at', 'updated_at'].includes(sort_by)) {
-      query = query.order(sort_by, { ascending: sort_order === 'asc' });
-    } else {
-      query = query.order('created_at', { ascending: false });
-    }
+    const allowedSorts = {
+      nome: "nome_fantasia",
+      cnpj: "cpf_cnpj",
+      uf: "estado",
+      created_at: "criado_em",
+      updated_at: "atualizado_em"
+    };
 
-    // Aplicar paginação
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    query = query.range(offset, offset + parseInt(limit) - 1);
+    const sortField = allowedSorts[sort_by] || "criado_em";
+    const sortDirection = sort_order === 'asc' ? 'ASC' : 'DESC';
 
-    const { data, error, count } = await query;
+    const limitNumber = Math.max(parseInt(limit, 10) || 50, 1);
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const offset = (pageNumber - 1) * limitNumber;
 
-    if (error) {
-      console.error('Erro ao buscar clientes:', error);
-      return res.status(500).json({ error: "Erro ao buscar clientes." });
-    }
+    const baseQuery = `
+      SELECT
+        id,
+        nome_fantasia AS nome,
+        razao_social,
+        cpf_cnpj AS cnpj,
+        estado AS uf,
+        regime_tributario,
+        empresa_id
+      FROM clientes
+      WHERE ${filters.join(" AND ")}
+      ORDER BY ${sortField} ${sortDirection}
+      LIMIT ?
+      OFFSET ?
+    `;
 
-    // Buscar total de registros para paginação (considerando filtros aplicados)
-    let countQuery = supabase
-      .from('clientes')
-      .select('*', { count: 'exact', head: true })
-      .eq('company_id', company_id);
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM clientes
+      WHERE ${filters.join(" AND ")}
+    `;
 
-    // Aplicar os mesmos filtros na contagem
-    if (cnpj) {
-      countQuery = countQuery.eq('cnpj', cnpj);
-    }
+    const [rows] = await db.query(baseQuery, [...params, limitNumber, offset]);
+    const [[{ total }]] = await db.query(countQuery, params);
 
-    if (uf) {
-      countQuery = countQuery.eq('uf', uf.toUpperCase());
-    }
+    const data = rows.map((row) => ({
+      id: row.id,
+      nome: row.nome || row.razao_social || '',
+      cnpj: row.cnpj,
+      uf: row.uf,
+      regime_tributario: row.regime_tributario,
+      company_id: row.empresa_id
+    }));
 
-    if (nome) {
-      countQuery = countQuery.ilike('nome', `%${nome}%`);
-    }
-
-    if (simples_nacional !== undefined) {
-      if (simples_nacional === 'true' || simples_nacional === 'sim') {
-        countQuery = countQuery.eq('regime_tributario', 'simples_nacional');
-      } else if (simples_nacional === 'false' || simples_nacional === 'nao') {
-        countQuery = countQuery.eq('regime_tributario', 'regime_normal');
-      }
-    }
-
-    const { count: totalCount } = await countQuery;
-
-    res.json({
-      data: data || [],
+    return res.json({
+      data,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalCount || 0,
-        total_pages: Math.ceil((totalCount || 0) / parseInt(limit))
+        page: pageNumber,
+        limit: limitNumber,
+        total: total || 0,
+        total_pages: Math.ceil((total || 0) / limitNumber)
       }
     });
   } catch (err) {
