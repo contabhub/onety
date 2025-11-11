@@ -1,0 +1,302 @@
+/* Estilos para a página de Satisfação dos Franqueados */
+
+.dashboardContainer {
+    padding: var(--titan-spacing-lg);
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--titan-spacing-2xl);
+  }
+  
+  .headerContent h1 {
+    font-size: var(--titan-font-size-2xl);
+    font-weight: var(--titan-font-weight-bold);
+    color: var(--titan-text-high);
+    margin: 0;
+    margin-bottom: var(--titan-spacing-sm);
+  }
+  
+  .headerContent p {
+    font-size: var(--titan-font-size-base);
+    color: var(--titan-text-med);
+    margin: 0;
+  }
+  
+  .backButton {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-md);
+    background: var(--titan-base-00);
+    color: var(--titan-text-high);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-sm);
+    cursor: pointer;
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-medium);
+    transition: all var(--titan-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-sm);
+  }
+  
+  .backButton:hover {
+    background: var(--titan-input-bg);
+    border-color: var(--titan-primary);
+  }
+  
+  .cardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--titan-spacing-lg);
+    margin-bottom: var(--titan-spacing-2xl);
+  }
+  
+  .card {
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-lg);
+    padding: var(--titan-spacing-xl);
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-lg);
+  }
+  
+  .cardIcon {
+    border-radius: var(--titan-radius-full);
+    padding: var(--titan-spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cardContent {
+    flex: 1;
+  }
+  
+  .cardLabel {
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-med);
+    margin-bottom: var(--titan-spacing-xs);
+  }
+  
+  .cardValue {
+    font-size: var(--titan-font-size-2xl);
+    font-weight: var(--titan-font-weight-bold);
+    color: var(--titan-text-high);
+  }
+  
+  .chartSection {
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-lg);
+    padding: var(--titan-spacing-xl);
+    margin-bottom: var(--titan-spacing-2xl);
+  }
+  
+  .chartTitle {
+    font-size: var(--titan-font-size-lg);
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    margin: 0 0 var(--titan-spacing-lg) 0;
+  }
+  
+  .barsContainer {
+    display: flex;
+    align-items: center;
+    gap: var(--titan-spacing-lg);
+  }
+  
+  .barGroup {
+    flex: 1;
+  }
+  
+  .barHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--titan-spacing-sm);
+  }
+  
+  .barLabel {
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-med);
+  }
+  
+  .barValue {
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-semibold);
+  }
+  
+  .bar {
+    height: 8px;
+    border-radius: var(--titan-radius-full);
+  }
+  
+  .tableSection {
+    background: var(--titan-card-bg);
+    border: 1px solid var(--titan-stroke);
+    border-radius: var(--titan-radius-lg);
+    padding: var(--titan-spacing-xl);
+  }
+  
+  .tableTitle {
+    font-size: var(--titan-font-size-lg);
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    margin: 0 0 var(--titan-spacing-lg) 0;
+  }
+  
+  .tableContainer {
+    overflow-x: auto;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .tableHeader {
+    border-bottom: 1px solid var(--titan-stroke);
+  }
+  
+  .tableHeader th {
+    padding: var(--titan-spacing-md);
+    text-align: left;
+    font-size: var(--titan-font-size-sm);
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-med);
+  }
+  
+  .tableHeader th.center {
+    text-align: center;
+  }
+  
+.tableCellNome {
+  padding: var(--titan-spacing-md);
+  font-size: var(--titan-font-size-sm);
+  color: var(--titan-text-high);
+}
+
+.nomeLink {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--titan-text-high);
+  font-size: var(--titan-font-size-sm);
+  font-weight: var(--titan-font-weight-medium);
+  text-decoration: none;
+  padding: 0;
+  text-align: left;
+  transition: color var(--titan-transition-fast);
+}
+
+.nomeLink:hover,
+.nomeLink:focus {
+  color: var(--titan-text-high);
+  text-decoration: underline;
+}
+
+.tableCell.center {
+  text-align: center;
+}
+
+.destacado {
+  color: var(--titan-text-high);
+  font-weight: var(--titan-font-weight-semibold);
+}
+
+  .tableRow {
+    border-bottom: 1px solid var(--titan-stroke);
+  }
+  
+  .tableCell {
+    padding: var(--titan-spacing-md);
+    font-size: var(--titan-font-size-sm);
+    color: var(--titan-text-high);
+  }
+  
+  .tableCell.center {
+    text-align: center;
+  }
+  
+  .classificacaoBadge {
+  padding: var(--titan-spacing-xs) var(--titan-spacing-sm);
+  border-radius: var(--titan-radius-sm);
+  font-size: var(--titan-font-size-xs);
+  font-weight: var(--titan-font-weight-medium);
+  color: var(--titan-text-ice);
+  background: var(--titan-primary);
+}
+
+.classificacaoBadgeVerde {
+  background: var(--titan-success);
+  color: var(--titan-text-ice);
+}
+
+.classificacaoBadgeAmarela {
+  background: var(--titan-warning);
+  color: var(--titan-text-ice);
+}
+
+.classificacaoBadgeVermelha {
+  background: var(--titan-error);
+  color: var(--titan-text-ice);
+}
+
+.comentarioButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--titan-primary);
+    font-size: var(--titan-font-size-sm);
+    text-decoration: underline;
+  }
+  
+  .comentarioButton:hover {
+    color: var(--titan-primary-hover);
+  }
+  
+  .semComentario {
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-sm);
+  }
+  
+  .emptyState {
+    text-align: center;
+    padding: var(--titan-spacing-2xl);
+    color: var(--titan-text-med);
+  }
+  
+  .loadingState {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .loadingText {
+    font-size: 18px;
+    color: var(--titan-text-med);
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .cardsGrid {
+      grid-template-columns: 1fr;
+    }
+    
+    .barsContainer {
+      flex-direction: column;
+      gap: var(--titan-spacing-md);
+    }
+    
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--titan-spacing-md);
+    }
+    
+    .backButton {
+      align-self: flex-end;
+    }
+  }
+  
