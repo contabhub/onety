@@ -767,6 +767,71 @@ router.post('/:id/months', verifyToken, async (req, res) => {
   }
 });
 
+// GET /api/department-goals/:id/months - Buscar metas mensais de uma meta departamental
+router.get('/:id/months', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: 'ID da meta departamental é obrigatório' });
+    }
+
+    const [goalRows] = await db.query(
+      'SELECT empresa_id FROM metas_departamentais WHERE id = ?',
+      [id]
+    );
+
+    if (!goalRows || goalRows.length === 0) {
+      return res.status(404).json({ error: 'Meta departamental não encontrada' });
+    }
+
+    const empresaId = goalRows[0].empresa_id;
+
+    const [userAccess] = await db.query(
+      'SELECT 1 FROM usuarios_empresas WHERE usuario_id = ? AND empresa_id = ?',
+      [req.user.id, empresaId]
+    );
+
+    if (!userAccess || userAccess.length === 0) {
+      return res.status(403).json({ error: 'Acesso negado a esta empresa' });
+    }
+
+    const [monthlyGoals] = await db.query(
+      `SELECT 
+         id,
+         id_metas_departamentais,
+         data_inicio,
+         data_fim,
+         valor_alvo,
+         valor_alcancado,
+         status,
+         criado_em,
+         atualizado_em
+       FROM metas_mensais_departamentais
+       WHERE id_metas_departamentais = ?
+       ORDER BY data_inicio ASC`,
+      [id]
+    );
+
+    const formatted = (monthlyGoals || []).map((goal) => ({
+      id: goal.id,
+      meta_departamental_id: goal.id_metas_departamentais,
+      start_date: goal.data_inicio,
+      end_date: goal.data_fim,
+      value_goal: goal.valor_alvo,
+      value_achieved: goal.valor_alcancado,
+      status: goal.status,
+      created_at: goal.criado_em,
+      updated_at: goal.atualizado_em,
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Erro ao buscar metas mensais departamentais:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // PUT /api/department-goals/monthly-goals/:monthId - Atualizar meta mensal departamental (USADO EM: MonthlyGoalRow.js)
 router.put('/monthly-goals/:monthId', verifyToken, async (req, res) => {
   try {

@@ -82,21 +82,26 @@ export function KpiMetaPercentualDepartamento({ goals = [], departmentId, compan
 
       try {
         // Buscar o título do departamento atual
-        const departmentDetails = await apiFetch(`/departments/${departmentId}`);
-        setDepartmentTitle(departmentDetails.title);
+        const departmentDetails = await apiFetch(`/estrategico/departamentos/${departmentId}?companyId=${companyId}`);
+        setDepartmentTitle(departmentDetails?.title || departmentDetails?.name || '');
         
         // Buscar departamentos filhos
-        const allDepartments = await apiFetch(`/departments?companyId=${companyId}`);
+        const allDepartments = await apiFetch(`/estrategico/departamentos?companyId=${companyId}`);
         const children = allDepartments.filter((dept) => dept.parent_id === departmentId);
         
         // Para cada filho, buscar suas metas
         const childrenWithGoals = await Promise.all(
           children.map(async (child) => {
-            const childGoals = await apiFetch(`/department-goals/department/${child.id}?companyId=${companyId}`);
+            const childGoalsResponse = await apiFetch(`/estrategico/metas-departamentais?departmentId=${child.id}&companyId=${companyId}`);
+            const childGoals = Array.isArray(childGoalsResponse?.data)
+              ? childGoalsResponse.data
+              : Array.isArray(childGoalsResponse)
+                ? childGoalsResponse
+                : [];
             const goalsWithMonths = await Promise.all(
               childGoals.map(async (goal) => ({
                 ...goal,
-                monthlyGoals: await apiFetch(`/department-goals/${goal.id}/months`)
+                monthlyGoals: await apiFetch(`/estrategico/metas-departamentais/${goal.id}/months`)
               }))
             );
             
@@ -135,12 +140,17 @@ const [allGoals, setAllGoals] = useState([]);
       
       try {
         // Buscar TODAS as metas do departamento (sem filtros)
-        const deptGoals = await apiFetch(`/department-goals/department/${departmentId}?companyId=${companyId}`);
+        const deptGoalsResponse = await apiFetch(`/estrategico/metas-departamentais?departmentId=${departmentId}&companyId=${companyId}`);
+        const deptGoals = Array.isArray(deptGoalsResponse?.data)
+          ? deptGoalsResponse.data
+          : Array.isArray(deptGoalsResponse)
+            ? deptGoalsResponse
+            : [];
         
         // Para cada meta, buscar os meses
         const goalsWithMonths = await Promise.all(
           deptGoals.map(async (goal) => {
-            const monthlyGoals = await apiFetch(`/department-goals/${goal.id}/months`);
+            const monthlyGoals = await apiFetch(`/estrategico/metas-departamentais/${goal.id}/months`);
             return {
               ...goal,
               monthlyGoals

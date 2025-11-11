@@ -397,6 +397,124 @@ WHERE t.empresa_id = ? AND t.status != 'cancelada'`;
 });
 
 
+router.get(
+  "/empresa/:empresaId/departamentos/:departamentoId",
+  verifyToken,
+  async (req, res) => {
+    const { empresaId, departamentoId } = req.params;
+
+    if (!empresaId || !departamentoId) {
+      return res.status(400).json({ erro: "empresaId e departamentoId são obrigatórios." });
+    }
+
+    try {
+      const [tarefas] = await db.query(
+        `SELECT
+          t.*,
+          d.nome AS departamento,
+          u.nome AS responsavel,
+          COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS cliente_nome,
+          c.status AS status_cliente
+        FROM tarefas t
+        LEFT JOIN departamentos d ON t.departamento_id = d.id
+        LEFT JOIN usuarios u ON t.responsavel_id = u.id
+        LEFT JOIN clientes c ON t.cliente_id = c.id
+        WHERE
+          t.empresa_id = ?
+          AND t.departamento_id = ?
+          AND t.status != 'cancelada'`,
+        [empresaId, departamentoId]
+      );
+
+      const tarefasComAtividades = await Promise.all(
+        tarefas.map(async (tarefa) => {
+          const [atividades] = await db.query(
+            `SELECT
+              at.id,
+              at.concluido,
+              at.cancelado,
+              ap.tipo,
+              ap.texto,
+              ap.descricao,
+              ap.tipo_cancelamento
+            FROM atividades_tarefas at
+            LEFT JOIN atividades_processo ap ON at.atividade_id = ap.id
+            WHERE at.tarefa_id = ?`,
+            [tarefa.id]
+          );
+
+          return { ...tarefa, atividades };
+        })
+      );
+
+      res.json(tarefasComAtividades);
+    } catch (err) {
+      console.error("Erro ao buscar tarefas do departamento:", err);
+      res.status(500).json({ erro: "Erro ao buscar tarefas do departamento." });
+    }
+  }
+);
+
+
+router.get(
+  "/empresa/:empresaId/usuarios/:usuarioId",
+  verifyToken,
+  async (req, res) => {
+    const { empresaId, usuarioId } = req.params;
+
+    if (!empresaId || !usuarioId) {
+      return res.status(400).json({ erro: "empresaId e usuarioId são obrigatórios." });
+    }
+
+    try {
+      const [tarefas] = await db.query(
+        `SELECT
+          t.*,
+          d.nome AS departamento,
+          u.nome AS responsavel,
+          COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS cliente_nome,
+          c.status AS status_cliente
+        FROM tarefas t
+        LEFT JOIN departamentos d ON t.departamento_id = d.id
+        LEFT JOIN usuarios u ON t.responsavel_id = u.id
+        LEFT JOIN clientes c ON t.cliente_id = c.id
+        WHERE
+          t.empresa_id = ?
+          AND t.responsavel_id = ?
+          AND t.status != 'cancelada'`,
+        [empresaId, usuarioId]
+      );
+
+      const tarefasComAtividades = await Promise.all(
+        tarefas.map(async (tarefa) => {
+          const [atividades] = await db.query(
+            `SELECT
+              at.id,
+              at.concluido,
+              at.cancelado,
+              ap.tipo,
+              ap.texto,
+              ap.descricao,
+              ap.tipo_cancelamento
+            FROM atividades_tarefas at
+            LEFT JOIN atividades_processo ap ON at.atividade_id = ap.id
+            WHERE at.tarefa_id = ?`,
+            [tarefa.id]
+          );
+
+          return { ...tarefa, atividades };
+        })
+      );
+
+      res.json(tarefasComAtividades);
+    } catch (err) {
+      console.error("Erro ao buscar tarefas do usuário:", err);
+      res.status(500).json({ erro: "Erro ao buscar tarefas do usuário." });
+    }
+  }
+);
+
+
 // =================== ROTAS COMUNS ===================
 
 router.post("/", verifyToken,  tarefaController.criarTarefa);

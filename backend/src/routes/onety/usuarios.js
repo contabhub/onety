@@ -98,6 +98,44 @@ router.get("/recentes", async (req, res) => {
   }
 });
 
+// Usuários vinculados a uma empresa específica
+router.get("/empresa/:empresaId", async (req, res) => {
+  try {
+    const { empresaId } = req.params;
+    if (!empresaId) {
+      return res.status(400).json({ error: "ID da empresa é obrigatório." });
+    }
+
+    const [rows] = await pool.query(
+      `
+        SELECT
+          u.id,
+          u.nome,
+          u.email,
+          u.telefone,
+          u.avatar_url,
+          ue.departamento_id,
+          d.nome AS departamento_nome,
+          ue.cargo_id,
+          c.nome AS cargo_nome,
+          ue.empresa_id
+        FROM usuarios_empresas ue
+        INNER JOIN usuarios u ON u.id = ue.usuario_id
+        LEFT JOIN departamentos d ON ue.departamento_id = d.id
+        LEFT JOIN cargos c ON ue.cargo_id = c.id
+        WHERE ue.empresa_id = ?
+        ORDER BY u.nome ASC
+      `,
+      [empresaId]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar usuários da empresa." });
+  }
+});
+
 // Empresas vinculadas a um usuário
 router.get("/:id/empresas", async (req, res) => {
   try {
