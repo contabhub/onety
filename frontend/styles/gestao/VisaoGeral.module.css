@@ -476,6 +476,12 @@
   .cardResumoTitulo { font-size: var(--onity-font-size-base); color: var(--onity-text-high); }
   .cardResumoValor { font-size: var(--onity-font-size-2xl); font-weight: var(--onity-font-weight-bold); color: var(--onity-text-high); }
   .cardResumoValorCarregando { font-size: var(--onity-font-size-lg); color: var(--onity-text-med); }
+.cardResumoLoader {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
   .cardResumoSubtitulo { font-size: var(--onity-font-size-sm); color: var(--onity-text-med); }
   
   /* --- GestÃ£o de Documentos ------------------------------------------- */

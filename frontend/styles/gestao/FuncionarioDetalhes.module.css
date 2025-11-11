@@ -1,0 +1,175 @@
+/* =====================================================
+   FUNCIONARIO DETALHES STYLES - SISTEMA TITAN
+   ===================================================== */
+
+   .container {
+    padding: var(--titan-spacing-lg);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .formCard {
+    background: var(--titan-card-bg);
+    backdrop-filter: blur(20px);
+    padding: var(--titan-spacing-xl);
+    border-radius: var(--titan-radius-md);
+    border: 1px solid var(--titan-stroke);
+    box-shadow: var(--titan-shadow-sm);
+  }
+  
+  .formGrid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--titan-spacing-xl);
+    row-gap: var(--titan-spacing-md);
+  }
+  
+  .formField {
+    display: flex;
+    flex-direction: column;
+    gap: var(--titan-spacing-xs);
+  }
+  
+  .formField span {
+    grid-column: span 6;
+  }
+  
+  .formField.span6 {
+    grid-column: span 6;
+  }
+  
+  .formField.span3 {
+    grid-column: span 3;
+  }
+  
+  .formLabel {
+    font-weight: var(--titan-font-weight-semibold);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+    margin-bottom: var(--titan-spacing-xs);
+  }
+  
+  .formInput,
+  .formSelect {
+    width: 100%;
+    padding: var(--titan-spacing-sm);
+    border-radius: var(--titan-radius-sm);
+    border: 1px solid var(--titan-stroke);
+    background: var(--titan-input-bg);
+    color: var(--titan-text-high);
+    font-size: var(--titan-font-size-sm);
+    transition: all var(--titan-transition-fast);
+  }
+  
+  .formInput:focus,
+  .formSelect:focus {
+    outline: none;
+    border-color: var(--titan-primary);
+    box-shadow: var(--titan-glow-primary);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  
+  .formInput::placeholder {
+    color: var(--titan-text-low);
+  }
+  
+  .formSelect option {
+    background: var(--titan-card-bg);
+    color: var(--titan-text-high);
+  }
+  
+  .actionsContainer {
+    margin-top: var(--titan-spacing-xl);
+    display: flex;
+    gap: var(--titan-spacing-md);
+    justify-content: flex-end;
+  }
+  
+  .button {
+    padding: var(--titan-spacing-sm) var(--titan-spacing-lg);
+    border-radius: var(--titan-radius-sm);
+    border: none;
+    cursor: pointer;
+    font-weight: var(--titan-font-weight-medium);
+    font-size: var(--titan-font-size-sm);
+    transition: all var(--titan-transition-normal);
+    min-width: 120px;
+  }
+  
+  .buttonVoltar {
+    background: var(--titan-text-low);
+    color: var(--titan-text-high);
+  }
+  
+  .buttonVoltar:hover {
+    background: var(--titan-text-med);
+    transform: translateY(-1px);
+  }
+  
+  .buttonSalvar {
+    background: var(--titan-success);
+    color: var(--titan-text-high);
+  }
+  
+  .buttonSalvar:hover {
+    background: #1db954;
+    box-shadow: var(--titan-glow-success);
+    transform: translateY(-1px);
+  }
+  
+  .buttonSalvar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .loadingContainer {
+    padding: var(--titan-spacing-xl);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--titan-text-med);
+    font-size: var(--titan-font-size-lg);
+  }
+  
+  /* ===== RESPONSIVE ===== */
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: var(--titan-spacing-md);
+    }
+    
+    .formCard {
+      padding: var(--titan-spacing-lg);
+    }
+    
+    .formGrid {
+      grid-template-columns: 1fr;
+      column-gap: 0;
+    }
+    
+    .formField.span6,
+    .formField.span3 {
+      grid-column: span 1;
+    }
+    
+    .actionsContainer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .button {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .formCard {
+      padding: var(--titan-spacing-md);
+    }
+    
+    .formGrid {
+      gap: var(--titan-spacing-sm);
+    }
+  }
+  
