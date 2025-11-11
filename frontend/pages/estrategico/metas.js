@@ -561,9 +561,14 @@ export default function GlobalGoals() {
         
         console.log('🔍 [GlobalGoals] IDs dos departamentos permitidos:', allowedDepartmentIds);
         
-        filteredDepartments = allDepartments.filter((dept) => 
-          allowedDepartmentIds.includes(dept.id)
-        );
+        if (allowedDepartmentIds.length > 0) {
+          filteredDepartments = allDepartments.filter((dept) => 
+            allowedDepartmentIds.includes(dept.id)
+          );
+        } else {
+          console.log('🔍 [GlobalGoals] Nenhum departamento permitido encontrado; mantendo lista completa.');
+          filteredDepartments = allDepartments;
+        }
         
         console.log('🔍 [GlobalGoals] Departamentos filtrados:', filteredDepartments);
         
