@@ -169,7 +169,9 @@ const DashboardSimples = () => {
 
   // Filtrar clientes baseado no termo de busca
   const filteredClientes = clientes.filter(cliente =>
-    getClienteNome(cliente).toLowerCase().includes(searchTerm.toLowerCase())
+    (cliente.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (cliente.cnpj_exibicao || cliente.cnpj || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (cliente.regime_tributario || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   useEffect(() => {
@@ -320,36 +322,45 @@ const DashboardSimples = () => {
                 </thead>
                 <tbody>
                   {filteredClientes.length > 0 ? (
-                    filteredClientes.map((cliente) => (
-                      <tr key={cliente.id} className={styles.tableRow}>
-                        <td className={styles.tableCell}>{getClienteNome(cliente)}</td>
-                        <td className={styles.tableCell}>{formatCNPJ(cliente.cnpj)}</td>
-                        <td className={styles.tableCell}>{getRegimeTributario(cliente)}</td>
+                    filteredClientes.map((analysis) => (
+                      <tr key={analysis.id} className={styles.tableRow}>
+                        <td className={styles.tableCell}>
+                          {analysis.nome || "Nome não encontrado"}
+                          {analysis.tipo_cadastro === "pre_cliente" && (
+                            <span className={styles.badge}>Pré-Cliente</span>
+                          )}
+                        </td>
+                        <td className={styles.tableCell}>
+                          {analysis.cnpj_exibicao ? formatCNPJ(analysis.cnpj_exibicao) : formatCNPJ(analysis.cnpj) || 'N/A'}
+                        </td>
+                        <td className={styles.tableCell}>
+                          {getRegimeTributario(analysis)}
+                        </td>
                         <td className={`${styles.tableCell} ${styles.tableCellActions}`}>
                           <div className={styles.dropdownContainer}>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleDropdown(cliente.id);
+                                toggleDropdown(analysis.id);
                               }}
                               className={styles.dropdownButton}
-                              disabled={deletingCliente === cliente.id}
+                              disabled={deletingCliente === analysis.id}
                             >
-                              {deletingCliente === cliente.id ? (
+                              {deletingCliente === analysis.id ? (
                                 <div className={styles.dropdownSpinner}></div>
                               ) : (
                                 <MoreVertical className={styles.dropdownIcon} />
                               )}
                             </button>
-                            {dropdownOpen === cliente.id && (
+                            {dropdownOpen === analysis.id && (
                               <div className={styles.dropdownMenu}>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setDropdownOpen(null);
-                                    localStorage.setItem('selected_client_id', cliente.id);
-                                    localStorage.setItem('selected_client_name', getClienteNome(cliente));
-                                    localStorage.setItem('selected_client_cnpj', cliente.cnpj);
+                                    localStorage.setItem('selected_client_id', analysis.id);
+                                    localStorage.setItem('selected_client_name', analysis.nome || 'Sem nome');
+                                    localStorage.setItem('selected_client_cnpj', analysis.cnpj_exibicao || analysis.cnpj || '');
                                     router.push('/consolidado-simples');
                                   }}
                                   className={styles.dropdownItem}
@@ -360,7 +371,7 @@ const DashboardSimples = () => {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteCliente(cliente.id, getClienteNome(cliente));
+                                    handleDeleteCliente(analysis.id, analysis.nome || 'Sem nome');
                                   }}
                                   className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
                                 >

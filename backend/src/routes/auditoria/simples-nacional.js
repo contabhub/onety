@@ -149,12 +149,29 @@ function formatDataPagToMySQL(dataPag) {
   return null;
 }
 
+// Utilitário para garantir formato YYYY-MM-DD mysql
+function convertToMySQLDate(dateStr) {
+  if (!dateStr) return null;
+  // Já está no formato YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  // DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    const [dia, mes, ano] = dateStr.split('/');
+    return `${ano}-${mes}-${dia}`;
+  }
+  // Caso venha Date, formata
+  if (dateStr instanceof Date) {
+    return dateStr.toISOString().slice(0, 10);
+  }
+  return null;
+}
+
 // ===== ROTAS PARA SIMPLES NACIONAL =====
 
 // POST /simples-nacional/upload - Upload de PDF do Simples Nacional
 router.post("/upload", verifyToken, async (req, res) => {
   try {
-    const { 
+    const {
       cnpj,
       nome_empresa,
       atividade_principal,
@@ -176,30 +193,31 @@ router.post("/upload", verifyToken, async (req, res) => {
       arquivo_nome,
       mes,
       ano,
-      company_id // Adicionar company_id do body
+      company_id
     } = req.body;
 
     // Validações obrigatórias
     if (!cnpj || !nome_empresa || !fator_r_status) {
-      return res.status(400).json({ 
-        error: "Campos obrigatórios: cnpj, nome_empresa, fator_r_status" 
+      return res.status(400).json({
+        error: "Campos obrigatórios: cnpj, nome_empresa, fator_r_status"
       });
     }
 
     // Validar formato do CNPJ (14 dígitos)
     if (!/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
-      return res.status(400).json({ 
-        error: "CNPJ deve ter 14 dígitos" 
+      return res.status(400).json({
+        error: "CNPJ deve ter 14 dígitos"
       });
     }
 
     const cleanCnpj = cnpj.replace(/\D/g, '');
 
-    let clienteId;
+    let clienteId = null;
+    let preClienteId = null;
     try {
+      // Identificação empresa
       const companyIdsUser = await resolveUserCompanyIds(req);
       let targetCompanyId = company_id ? Number.parseInt(company_id, 10) : null;
-
       if (targetCompanyId) {
         const hasAccess = await ensureCompanyAccess(req, targetCompanyId);
         if (!hasAccess) {
@@ -213,47 +231,41 @@ router.post("/upload", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "Company ID não fornecido" });
       }
 
+      // 1. Buscar cliente...
       const [clienteRows] = await pool.query(
-        `
-          SELECT id, cpf_cnpj, empresa_id
-          FROM clientes
-          WHERE empresa_id = ?
-            AND REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
-            AND regime_tributario = 'simples_nacional'
-        `,
+        `SELECT id FROM clientes WHERE empresa_id = ? AND REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?`,
         [targetCompanyId, cleanCnpj]
       );
-
       if (clienteRows.length) {
-        const cliente = clienteRows[0];
-        clienteId = cliente.id;
+        clienteId = clienteRows[0].id;
+      } else {
+        // 2. Buscar/Criar pré-cliente
+        const [preRows] = await pool.query(
+          `SELECT id FROM pre_clientes WHERE empresa_id = ? AND REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?`,
+          [targetCompanyId, cleanCnpj]
+        );
+        if (preRows.length) {
+          preClienteId = preRows[0].id;
+        } else {
+          // Ao criar o pré-cliente, insira o campo tributacao com valor adequado
+          const tributacao = 'simples_nacional'; // ou derive do contexto da análise
+          const [insertPre] = await pool.query(
+            `INSERT INTO pre_clientes (tipo, nome, cpf_cnpj, empresa_id, criado_em, tributacao)
+             VALUES ('empresa', ?, ?, ?, NOW(), ?)`,
+            [nome_empresa, cleanCnpj, targetCompanyId, tributacao]
+          );
+          preClienteId = insertPre.insertId;
+        }
+      }
+      // ... UPDATE/INSERT cliente como antes se clienteId
+      if (clienteId) {
+        // Atualiza nome/uf no cliente se quiser
         await pool.query(
-          `
-            UPDATE clientes
-            SET nome_fantasia = ?, razao_social = ?, estado = ?, atualizado_em = NOW()
-            WHERE id = ?
-          `,
+          `UPDATE clientes SET nome_fantasia = ?, razao_social = ?, estado = ?, atualizado_em = NOW() WHERE id = ?`,
           [nome_empresa, nome_empresa, uf || "SP", clienteId]
         );
-      } else {
-        const [insertCliente] = await pool.query(
-          `
-            INSERT INTO clientes (
-              empresa_id,
-              cpf_cnpj,
-              nome_fantasia,
-              razao_social,
-              estado,
-              regime_tributario,
-              criado_em,
-              atualizado_em
-            ) VALUES (?, ?, ?, ?, ?, 'simples_nacional', NOW(), NOW())
-          `,
-          [targetCompanyId, cleanCnpj, nome_empresa, nome_empresa, uf || "SP"]
-        );
-        clienteId = insertCliente.insertId;
       }
-
+      // ... cnae logic, etc, pode ficar igual
       try {
         const resultado = await consultaCnaeService.consultarCnaes(cleanCnpj);
 
@@ -271,28 +283,30 @@ router.post("/upload", verifyToken, async (req, res) => {
             );
 
             if (!existingCnae.length) {
+              const cnaeClienteId = clienteId || null;
+              const cnaePreClienteId = clienteId ? null : preClienteId;
               await pool.query(
-                `
-                  INSERT INTO cnae_info (
-                    cliente_id,
-                    cnae,
-                    descricao,
-                    anexo,
-                    fator_r,
-                    aliquota,
-                    criado_por,
-                    atualizado_por
-                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                `,
+                `INSERT INTO cnae_info (
+                  cliente_id,
+                  pre_cliente_id,
+                  cnae,
+                  descricao,
+                  anexo,
+                  fator_r,
+                  aliquota,
+                  criado_por,
+                  atualizado_por
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                  clienteId,
+                  cnaeClienteId,
+                  cnaePreClienteId,
                   cnae.codigo,
                   cnae.descricao,
                   cnae.anexo,
                   mapFatorRToDecimal(cnae.fator_r),
                   cnae.aliquota,
                   req.user.userId,
-                  req.user.userId,
+                  req.user.userId
                 ]
               );
             }
@@ -301,9 +315,10 @@ router.post("/upload", verifyToken, async (req, res) => {
       } catch (error) {
         console.error("[Simples Nacional] Erro ao consultar CNAEs:", error);
       }
+
     } catch (error) {
-      console.error("Erro ao processar cliente:", error);
-      return res.status(500).json({ error: "Erro ao processar cliente" });
+      console.error("Erro ao processar cliente/pré-cliente:", error);
+      return res.status(500).json({ error: "Erro ao processar cliente/pré-cliente" });
     }
 
     try {
@@ -330,45 +345,46 @@ router.post("/upload", verifyToken, async (req, res) => {
         : folha_de_salarios_anteriores || null;
 
       const dataPagMySQL = formatDataPagToMySQL(date_pag); // ou variavel que contém o valor bruto
-      const [insertAnalise] = await pool.query(
-        `
-          INSERT INTO analises_simples_nacional (
-            cliente_id,
-            cnpj,
-            arquivo_nome,
-            tipo,
-            mes,
-            ano,
-            resumo,
-            data_extracao,
-            resultado_api,
-            fator_r_status,
-            atividade_principal,
-            canes,
-            icms_porcentagem,
-            pis_cofins_porcentagem,
-            receita_total,
-            icms_total,
-            pis_total,
-            cofins_total,
-            periodo_documento,
-            valor_das,
-            anexos_simples,
-            valor_folha,
-            folha_de_salarios_anteriores,
-            data_pag,
-            criado_por,
-            atualizado_por
-          ) VALUES (?, ?, ?, 'PGDAS', ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `,
-        [
+      await pool.query(
+        `INSERT INTO analises_simples_nacional (
+           cliente_id,
+           pre_cliente_id,
+           cnpj,
+           arquivo_nome,
+           tipo,
+           mes,
+           ano,
+           resumo,
+           data_extracao,
+           resultado_api,
+           fator_r_status,
+           atividade_principal,
+           canes,
+           icms_porcentagem,
+           pis_cofins_porcentagem,
+           receita_total,
+           icms_total,
+           pis_total,
+           cofins_total,
+           periodo_documento,
+           valor_das,
+           anexos_simples,
+           valor_folha,
+           folha_de_salarios_anteriores,
+           data_pag,
+           criado_por,
+           atualizado_por
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        , [
           clienteId,
+          preClienteId,
           cleanCnpj,
           arquivo_nome || "PDF Simples Nacional",
+          'PGDAS',
           mes || null,
           ano || null,
           JSON.stringify(resumo),
-          resultadoApiJSON,
+          JSON.stringify(resultado_api && typeof resultado_api === "object" ? resultado_api : {}),
           fator_r_status,
           atividade_principal || "Não identificada",
           JSON.stringify(resultado_api?.cnaes_secundarios || []),
@@ -380,32 +396,22 @@ router.post("/upload", verifyToken, async (req, res) => {
           cofins_total,
           periodo_documento,
           valor_das,
-          anexosJSON,
+          JSON.stringify(anexos_simples || null),
           valor_folha,
-          folhaAnteriorJSON,
-          dataPagMySQL,
+          folha_de_salarios_anteriores ? JSON.stringify(folha_de_salarios_anteriores) : null,
+          convertToMySQLDate(date_pag), // Corrigido aqui!
           req.user.userId,
-          req.user.userId,
+          req.user.userId
         ]
       );
-
-      res.status(201).json({
-        success: true,
-        message: "Análise do Simples Nacional criada com sucesso",
-        data: {
-          cliente_id: clienteId,
-          analise_id: insertAnalise.insertId,
-          cnpj: cleanCnpj,
-          nome_empresa,
-        },
-      });
+      return res.status(201).json({ success: true, message: "Análise do Simples Nacional criada", data: {} });
     } catch (error) {
       console.error("Erro ao criar análise:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json({ error: "Erro ao salvar análise" });
     }
 
   } catch (err) {
-    console.error('Erro no upload do Simples Nacional:', err);
+    console.error('Erro geral no upload do Simples Nacional:', err);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
@@ -413,7 +419,7 @@ router.post("/upload", verifyToken, async (req, res) => {
 // GET /simples-nacional - Listar análises do Simples Nacional
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { 
+    const {
       clientes_id,
       cnpj,
       company_id,
@@ -445,51 +451,39 @@ router.get("/", verifyToken, async (req, res) => {
 
     const companyPlaceholders = companiesToFilter.map(() => "?").join(",");
 
+    // Buscar clientes e pré-clientes da(s) empresa(s) do usuário
     const [clientesRows] = await pool.query(
-      `
-        SELECT id
-        FROM clientes
-        WHERE empresa_id IN (${companyPlaceholders})
-      `,
+      `SELECT id FROM clientes WHERE empresa_id IN (${companyPlaceholders})`,
       companiesToFilter
     );
-
-    if (!clientesRows.length) {
-      return res.json({
-        data: [],
-        pagination: {
-          page: pageNumber,
-          limit: limitNumber,
-          total: 0,
-          total_pages: 0,
-        },
-      });
+    const [preClientesRows] = await pool.query(
+      `SELECT id FROM pre_clientes WHERE empresa_id IN (${companyPlaceholders})`,
+      companiesToFilter
+    );
+    const clientesIds = clientesRows.map(r => r.id);
+    const preClientesIds = preClientesRows.map(r => r.id);
+    
+    // Ajuste do WHERE para ambos os tipos
+    let filtros = [];
+    let params = [];
+    if (clientesIds.length) {
+      filtros.push(`asn.cliente_id IN (${clientesIds.map(() => '?').join(',')})`);
+      params = params.concat(clientesIds);
     }
-
-    const clientesIds = clientesRows.map((row) => row.id);
-    const clientesPlaceholders = clientesIds.map(() => "?").join(",");
-
-    const filtros = [`asn.cliente_id IN (${clientesPlaceholders})`];
-    const params = [...clientesIds];
-
-    if (clientes_id) {
-      filtros.push("asn.cliente_id = ?");
-      params.push(Number.parseInt(clientes_id, 10));
+    if (preClientesIds.length) {
+      filtros.push(`asn.pre_cliente_id IN (${preClientesIds.map(() => '?').join(',')})`);
+      params = params.concat(preClientesIds);
     }
+    let whereClauseFinal = filtros.length ? `WHERE (${filtros.join(' OR ')})` : '';
 
-    if (cnpj) {
-      const cleanCnpj = cnpj.replace(/\D/g, "");
-      filtros.push("asn.cnpj = ?");
-      params.push(cleanCnpj);
-    }
-
-    if (ano) {
-      filtros.push("asn.ano = ?");
-      params.push(Number.parseInt(ano, 10));
-    }
-
-    const whereClause = filtros.length ? `WHERE ${filtros.join(" AND ")}` : "";
-
+    // Regime no WHERE (cliente ou pre-cliente simples_nacional)
+    whereClauseFinal += whereClauseFinal ? " AND " : "WHERE ";
+    whereClauseFinal += "(c.regime_tributario = 'simples_nacional' OR pc.tributacao = 'simples_nacional')";
+    
+    // console/log debug
+    console.log('[GET /simples-nacional] whereClauseFinal:', whereClauseFinal);
+    console.log('[GET /simples-nacional] params:', params);
+    
     const camposOrdenacao = {
       cnpj: "asn.cnpj",
       data_extracao: "asn.data_extracao",
@@ -504,6 +498,7 @@ router.get("/", verifyToken, async (req, res) => {
       SELECT
         asn.id,
         asn.cliente_id AS clientes_id,
+        asn.pre_cliente_id,
         asn.cnpj,
         asn.arquivo_nome,
         asn.tipo,
@@ -532,10 +527,16 @@ router.get("/", verifyToken, async (req, res) => {
         c.cpf_cnpj AS cliente_cnpj,
         c.estado AS cliente_uf,
         c.empresa_id AS cliente_company_id,
-        c.regime_tributario AS regime_tributario -- AQUI!
+        c.regime_tributario AS regime_tributario,
+        pc.nome AS pre_cliente_nome,
+        pc.cpf_cnpj AS pre_cliente_cnpj,
+        pc.estado AS pre_cliente_uf,
+        pc.empresa_id AS pre_cliente_company_id,
+        pc.tributacao AS pre_cliente_tributacao
       FROM analises_simples_nacional AS asn
-      INNER JOIN clientes AS c ON c.id = asn.cliente_id
-      ${whereClause}
+      LEFT JOIN clientes AS c ON c.id = asn.cliente_id
+      LEFT JOIN pre_clientes AS pc ON pc.id = asn.pre_cliente_id
+      ${whereClauseFinal}
       ORDER BY ${sortColumn} ${sortDirection}
       LIMIT ?
       OFFSET ?
@@ -547,8 +548,9 @@ router.get("/", verifyToken, async (req, res) => {
       `
         SELECT COUNT(*) AS total
         FROM analises_simples_nacional AS asn
-        INNER JOIN clientes AS c ON c.id = asn.cliente_id
-        ${whereClause}
+        LEFT JOIN clientes AS c ON c.id = asn.cliente_id
+        LEFT JOIN pre_clientes AS pc ON pc.id = asn.pre_cliente_id
+        ${whereClauseFinal}
       `,
       params
     );
@@ -556,10 +558,10 @@ router.get("/", verifyToken, async (req, res) => {
     const total = countRow?.total || 0;
 
     const data = rows.map((row) => {
-      // Removido console.log de debug
       return {
         id: row.id,
         clientes_id: row.clientes_id,
+        pre_clientes_id: row.pre_cliente_id,
         cnpj: row.cnpj,
         arquivo_nome: row.arquivo_nome,
         tipo: row.tipo,
@@ -583,18 +585,16 @@ router.get("/", verifyToken, async (req, res) => {
         valor_folha: row.valor_folha,
         folha_de_salarios_anteriores: parseJSONSafely(row.folha_de_salarios_anteriores),
         date_pag: row.data_pag,
-        regime_tributario: row.regime_tributario || '', // string do banco
-        clientes: row.cliente_id
-          ? {
-              id: row.cliente_id,
-              nome: row.cliente_nome,
-              cnpj: row.cliente_cnpj,
-              uf: row.cliente_uf,
-              company_id: row.cliente_company_id,
-            }
-          : null,
+        regime_tributario: row.regime_tributario || row.pre_cliente_tributacao || '',
+        nome: row.cliente_nome || row.pre_cliente_nome,
+        uf: row.cliente_uf || row.pre_cliente_uf,
+        company_id: row.cliente_company_id || row.pre_cliente_company_id,
+        cnpj_exibicao: row.cliente_cnpj || row.pre_cliente_cnpj,
+        tipo_cadastro: row.cliente_id ? 'cliente' : 'pre_cliente',
       };
     });
+    // LOG para debug do retorno da API
+    console.log('[GET /simples-nacional] data:', JSON.stringify(data, null, 2));
 
     res.json({
       data,
@@ -1038,7 +1038,7 @@ router.get("/das-mensais", verifyToken, async (req, res) => {
 
     for (let mes = 1; mes <= 12; mes++) {
       const analise = analisesRows?.find((a) => a.mes === mes);
-      
+
       let status = "importacao_pendente";
       let dataPagamento = null;
       let valorDas = null;
@@ -1075,9 +1075,9 @@ router.get("/das-mensais", verifyToken, async (req, res) => {
 
   } catch (err) {
     console.error('Erro ao buscar DAS mensais:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Erro interno do servidor ao buscar DAS mensais",
-      details: err.message 
+      details: err.message
     });
   }
 });
@@ -1191,7 +1191,7 @@ router.get("/folhas-mensais", verifyToken, async (req, res) => {
     for (let mes = 1; mes <= 12; mes++) {
       const analise = analisesRows?.find((a) => a.mes === mes);
       const valorFolha = analise?.valor_folha ? parseFloat(analise.valor_folha) : 0;
-      
+
       if (valorFolha > 0) {
         valorTotal += valorFolha;
       }
@@ -1215,9 +1215,9 @@ router.get("/folhas-mensais", verifyToken, async (req, res) => {
 
   } catch (err) {
     console.error('Erro ao buscar folhas mensais:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Erro interno do servidor ao buscar folhas mensais",
-      details: err.message 
+      details: err.message
     });
   }
 });
@@ -1639,8 +1639,8 @@ router.get("/pulos-detectados", verifyToken, async (req, res) => {
       if (!notasPorSerie[serie]) {
         notasPorSerie[serie] = [];
       }
-      const numero = typeof nota.numero_nfe === "string" 
-        ? parseInt(nota.numero_nfe, 10) 
+      const numero = typeof nota.numero_nfe === "string"
+        ? parseInt(nota.numero_nfe, 10)
         : nota.numero_nfe;
       notasPorSerie[serie].push({
         numero: numero,
@@ -1714,9 +1714,9 @@ router.get("/pulos-detectados", verifyToken, async (req, res) => {
 
   } catch (err) {
     console.error('Erro ao detectar pulos:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Erro interno do servidor ao detectar pulos",
-      details: err.message 
+      details: err.message
     });
   }
 });

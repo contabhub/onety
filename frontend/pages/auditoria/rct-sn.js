@@ -9,6 +9,7 @@ import { toast, ToastContainer, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ensurePdfjsLib, extractDasValueFromPdf, extractFolhaSalariosFromPdf, extractDataPagamentoFromPdf, extractFolhasAnterioresFromPdf } from '../../services/auditoria/pdf-extractor';
 import styles from '../../styles/auditoria/rct-sn.module.css';
+import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
@@ -766,8 +767,17 @@ export default function RctSn() {
       });
       return;
     }
-
     const file = acceptedFiles[0];
+    // Checagem: Arquivo já existe para esta empresa?
+    const alreadyExists = analyses.some((a) => a.arquivo_nome === file.name && String(a.company_id) === String(selectedCompanyId));
+    if (alreadyExists) {
+      toast.error('Já existe uma análise com este nome de arquivo para esta empresa. Renomeie o arquivo antes de enviar.', {
+        autoClose: 5000,
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     
     // Toast informativo durante o processamento
@@ -1029,7 +1039,7 @@ export default function RctSn() {
     const termo = searchTerm.toLowerCase();
     return (
       (analysis.cnpj && analysis.cnpj.toLowerCase().includes(termo)) ||
-      ((analysis.clientes?.nome || analysis.nome_empresa) && (analysis.clientes?.nome || analysis.nome_empresa).toLowerCase().includes(termo)) ||
+      ((analysis.nome || analysis.nome_empresa) && (analysis.nome || analysis.nome_empresa).toLowerCase().includes(termo)) ||
       (analysis.atividade_principal && analysis.atividade_principal.toLowerCase().includes(termo)) ||
       (analysis.periodo_documento && analysis.periodo_documento.toLowerCase().includes(termo))
     );
@@ -1047,254 +1057,263 @@ export default function RctSn() {
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>
-            Analisador RCT do Simples Nacional
-          </h1>
-          <p className={styles.subtitle}>
-            Faça upload do extrato do Simples Nacional para análise do Fator R e
-            tributação
-          </p>
-        </div>
-
-        <div className={styles.sectionCard}>
-          <div className={styles.sectionInner}>
-            <div
-              {...getRootProps()}
-              className={dropzoneClassName}
-            >
-              <input {...getInputProps()} />
-              <Upload className={dropzoneIconClass} />
-              <p className={styles.dropzoneText}>
-                {isDragActive
-                  ? 'Solte o arquivo aqui'
-                  : 'Arraste ou clique para fazer upload do extrato do Simples Nacional'}
-              </p>
-              <p className={styles.dropzoneHint}>Apenas arquivos PDF</p>
-            </div>
-
-            {loading && (
-              <div className={styles.loadingWrapper}>
-                <div className={styles.loadingSpinner}></div>
-                <p className={styles.loadingText}>
-                  Processando arquivo...
-                </p>
-              </div>
-            )}
+    <>
+      <PrincipalSidebar />
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>
+              Analisador RCT do Simples Nacional
+            </h1>
+            <p className={styles.subtitle}>
+              Faça upload do extrato do Simples Nacional para análise do Fator R e
+              tributação
+            </p>
           </div>
-        </div>
 
-        {currentAnalysis && (
-          <div className={`${styles.sectionCard} ${styles.highlightCard}`}>
-            <div className={styles.sectionHeader}>
-              <div className={styles.sectionHeaderRow}>
-                <h3 className={styles.sectionTitle}>
-                  Resultado da Análise Recente
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setCurrentAnalysis(null)}
-                  className={styles.iconButton}
-                  title="Fechar"
-                >
-                  <X className={styles.iconButtonIcon} />
-                </button>
-              </div>
-            </div>
-            <div className={styles.sectionInner}>
-              <dl className={styles.analysisGrid}>
-                <div className={styles.analysisItem}>
-                  <dt className={styles.analysisLabel}>CNPJ</dt>
-                  <dd className={styles.analysisValue}>
-                    {currentAnalysis.cnpj ? currentAnalysis.cnpj.replace(
-                      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-                      '$1.$2.$3/$4-$5'
-                    ) : 'CNPJ não encontrado'}
-                  </dd>
-                </div>
-                <div className={`${styles.analysisItem} ${styles.analysisItemWide}`}>
-                  <dt className={styles.analysisLabel}>Nome da Empresa</dt>
-                  <dd className={styles.analysisValue}>
-                    {currentAnalysis.clientes?.nome || currentAnalysis.nome_empresa || 'Nome não encontrado'}
-                  </dd>
-                </div>
-                <div className={styles.analysisItem}>
-                  <dt className={styles.analysisLabel}>Data da Análise</dt>
-                  <dd className={styles.analysisValue}>
-                    {currentAnalysis.data_extracao ? new Date(currentAnalysis.data_extracao).toLocaleDateString('pt-BR') : 'Data não encontrada'}
-                  </dd>
-                </div>
-                <div className={styles.analysisItem}>
-                  <dt className={styles.analysisLabel}>Período do Documento</dt>
-                  <dd className={styles.analysisValue}>
-                    {currentAnalysis.periodo_documento || 'Não identificado'}
-                  </dd>
-                </div>
-                <div className={styles.analysisItem}>
-                  <dt className={styles.analysisLabel}>Fator R</dt>
-                  <dd className={styles.analysisValue}>
-                    <span className={getFatorBadgeClass(currentAnalysis.fator_r_status)}>
-                      {currentAnalysis.fator_r_status || 'Não identificado'}
-                    </span>
-                  </dd>
-                </div>
-
-                <div className={styles.analysisItem}>
-                  <dt className={styles.analysisLabel}>% ICMS</dt>
-                  <dd className={styles.analysisValue}>
-                    {Number.isFinite(Number(currentAnalysis.icms_percentage))
-                      ? `${Number(currentAnalysis.icms_percentage).toFixed(2)}%`
-                      : 'N/A'}
-                  </dd>
-                </div>
-                <div className={styles.analysisItem}>
-                  <dt className={styles.analysisLabel}>% PIS/COFINS</dt>
-                  <dd className={styles.analysisValue}>
-                    {Number.isFinite(Number(currentAnalysis.pis_cofins_percentage))
-                      ? `${Number(currentAnalysis.pis_cofins_percentage).toFixed(2)}%`
-                      : 'N/A'}
-                  </dd>
-                </div>
-                <div className={`${styles.analysisItem} ${styles.analysisItemWide}`}>
-                  <dt className={styles.analysisLabel}>Atividade Principal</dt>
-                  <dd className={styles.analysisValue}>
-                    {currentAnalysis.atividade_principal || 'Não identificada'}
-                  </dd>
-                </div>
-              </dl>
-              <div className={styles.analysisActions}>
-                <button
-                  type="button"
-                  onClick={() => viewAnalysisDetails(currentAnalysis)}
-                  className={styles.primaryButton}
-                >
-                  Ver Análise Detalhada
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {analyses.length > 0 && (
           <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <div className={styles.sectionHeaderRow}>
-                <h3 className={styles.sectionTitle}>
-                  Análises Anteriores
-                </h3>
-                <input
-                  type="text"
-                  placeholder="Pesquisar por CNPJ, empresa, atividade ou período..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className={styles.searchInput}
-                />
-              </div>
-            </div>
             <div className={styles.sectionInner}>
-              <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                  <thead className={styles.tableHead}>
-                  <tr>
-                      <th className={styles.tableHeadCell}>Nome da Empresa</th>
-                      <th className={styles.tableHeadCell}>CNPJ</th>
-                      <th className={styles.tableHeadCell}>Atividade Principal</th>
-                      <th className={styles.tableHeadCell}>Data da Análise</th>
-                      <th className={styles.tableHeadCell}>Período do Documento</th>
-                      <th className={styles.tableHeadCell}>Fator R</th>
-                      <th className={styles.tableHeadCell}>% ICMS</th>
-                      <th className={styles.tableHeadCell}>% PIS/COFINS</th>
-                      <th className={styles.tableHeadCell}>Ações</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                    {filteredAnalyses.map((analysis) => {
-                      const formattedCnpj = analysis.cnpj
-                        ? analysis.cnpj.replace(
-                            /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-                            '$1.$2.$3/$4-$5'
-                          )
-                        : 'CNPJ não encontrado';
-
-                      return (
-                        <tr key={analysis.id} className={styles.tableRow}>
-                          <td className={styles.tableCell}>
-                            {analysis.clientes?.nome ||
-                              analysis.nome_empresa ||
-                              'Nome não encontrado'}
-                          </td>
-                          <td className={styles.tableCell}>{formattedCnpj}</td>
-                          <td className={styles.tableCell}>
-                            {analysis.atividade_principal || 'Não identificada'}
-                          </td>
-                          <td className={styles.tableCell}>
-                            {analysis.data_extracao
-                              ? new Date(analysis.data_extracao).toLocaleDateString('pt-BR')
-                              : 'Data não encontrada'}
-                          </td>
-                          <td className={styles.tableCell}>
-                            {analysis.periodo_documento || 'Não identificado'}
-                          </td>
-                          <td className={styles.tableCell}>
-                            <span className={getFatorBadgeClass(analysis.fator_r_status)}>
-                              {analysis.fator_r_status || 'Não identificado'}
-                            </span>
-                          </td>
-                          <td className={styles.tableCell}>
-                            {Number.isFinite(Number(analysis.icms_percentage))
-                              ? `${Number(analysis.icms_percentage).toFixed(2)}%`
-                              : 'N/A'}
-                          </td>
-                          <td className={styles.tableCell}>
-                            {Number.isFinite(Number(analysis.pis_cofins_percentage))
-                              ? `${Number(analysis.pis_cofins_percentage).toFixed(2)}%`
-                              : 'N/A'}
-                          </td>
-                          <td className={styles.tableCell}>
-                            <div className={styles.tableActions}>
-                              <span className={styles.tableCellSecondary}>Ver detalhes</span>
-                              <span className={styles.tableCellSecondary}>(Em breve)</span>
-                              <button
-                                type="button"
-                                className={styles.actionDanger}
-                                title="Excluir análise"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  if (window.confirm('Tem certeza que deseja excluir esta análise?')) {
-                                    deleteAnalysis(analysis.id);
-                                  }
-                                }}
-                              >
-                                Excluir
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div
+                {...getRootProps()}
+                className={dropzoneClassName}
+              >
+                <input {...getInputProps()} />
+                <Upload className={dropzoneIconClass} />
+                <p className={styles.dropzoneText}>
+                  {isDragActive
+                    ? 'Solte o arquivo aqui'
+                    : 'Arraste ou clique para fazer upload do extrato do Simples Nacional'}
+                </p>
+                <p className={styles.dropzoneHint}>Apenas arquivos PDF</p>
               </div>
+
+              {loading && (
+                <div className={styles.loadingWrapper}>
+                  <div className={styles.loadingSpinner}></div>
+                  <p className={styles.loadingText}>
+                    Processando arquivo...
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce}
-      />
-    </div>
+          {currentAnalysis && (
+            <div className={`${styles.sectionCard} ${styles.highlightCard}`}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.sectionHeaderRow}>
+                  <h3 className={styles.sectionTitle}>
+                    Resultado da Análise Recente
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentAnalysis(null)}
+                    className={styles.iconButton}
+                    title="Fechar"
+                  >
+                    <X className={styles.iconButtonIcon} />
+                  </button>
+                </div>
+              </div>
+              <div className={styles.sectionInner}>
+                <dl className={styles.analysisGrid}>
+                  <div className={styles.analysisItem}>
+                    <dt className={styles.analysisLabel}>CNPJ</dt>
+                    <dd className={styles.analysisValue}>
+                      {currentAnalysis.cnpj ? currentAnalysis.cnpj.replace(
+                        /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+                        '$1.$2.$3/$4-$5'
+                      ) : 'CNPJ não encontrado'}
+                    </dd>
+                  </div>
+                  <div className={`${styles.analysisItem} ${styles.analysisItemWide}`}>
+                    <dt className={styles.analysisLabel}>Nome da Empresa</dt>
+                    <dd className={styles.analysisValue}>
+                      {currentAnalysis.nome || 'Nome não encontrado'}
+                      {currentAnalysis.tipo_cadastro === 'pre_cliente' && (
+                        <span className={styles.badge}>Pré-Cliente</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div className={styles.analysisItem}>
+                    <dt className={styles.analysisLabel}>Data da Análise</dt>
+                    <dd className={styles.analysisValue}>
+                      {currentAnalysis.data_extracao ? new Date(currentAnalysis.data_extracao).toLocaleDateString('pt-BR') : 'Data não encontrada'}
+                    </dd>
+                  </div>
+                  <div className={styles.analysisItem}>
+                    <dt className={styles.analysisLabel}>Período do Documento</dt>
+                    <dd className={styles.analysisValue}>
+                      {currentAnalysis.periodo_documento || 'Não identificado'}
+                    </dd>
+                  </div>
+                  <div className={styles.analysisItem}>
+                    <dt className={styles.analysisLabel}>Fator R</dt>
+                    <dd className={styles.analysisValue}>
+                      <span className={getFatorBadgeClass(currentAnalysis.fator_r_status)}>
+                        {currentAnalysis.fator_r_status || 'Não identificado'}
+                      </span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.analysisItem}>
+                    <dt className={styles.analysisLabel}>% ICMS</dt>
+                    <dd className={styles.analysisValue}>
+                      {Number.isFinite(Number(currentAnalysis.icms_percentage))
+                        ? `${Number(currentAnalysis.icms_percentage).toFixed(2)}%`
+                        : 'N/A'}
+                    </dd>
+                  </div>
+                  <div className={styles.analysisItem}>
+                    <dt className={styles.analysisLabel}>% PIS/COFINS</dt>
+                    <dd className={styles.analysisValue}>
+                      {Number.isFinite(Number(currentAnalysis.pis_cofins_percentage))
+                        ? `${Number(currentAnalysis.pis_cofins_percentage).toFixed(2)}%`
+                        : 'N/A'}
+                    </dd>
+                  </div>
+                  <div className={`${styles.analysisItem} ${styles.analysisItemWide}`}>
+                    <dt className={styles.analysisLabel}>Atividade Principal</dt>
+                    <dd className={styles.analysisValue}>
+                      {currentAnalysis.atividade_principal || 'Não identificada'}
+                    </dd>
+                  </div>
+                </dl>
+                <div className={styles.analysisActions}>
+                  <button
+                    type="button"
+                    onClick={() => viewAnalysisDetails(currentAnalysis)}
+                    className={styles.primaryButton}
+                  >
+                    Ver Análise Detalhada
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {analyses.length > 0 && (
+            <div className={styles.sectionCard}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.sectionHeaderRow}>
+                  <h3 className={styles.sectionTitle}>
+                    Análises Anteriores
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder="Pesquisar por CNPJ, empresa, atividade ou período..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                </div>
+              </div>
+              <div className={styles.sectionInner}>
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead className={styles.tableHead}>
+                    <tr>
+                        <th className={styles.tableHeadCell}>Nome da Empresa</th>
+                        <th className={styles.tableHeadCell}>CNPJ</th>
+                        <th className={styles.tableHeadCell}>Atividade Principal</th>
+                        <th className={styles.tableHeadCell}>Data da Análise</th>
+                        <th className={styles.tableHeadCell}>Período do Documento</th>
+                        <th className={styles.tableHeadCell}>Fator R</th>
+                        <th className={styles.tableHeadCell}>% ICMS</th>
+                        <th className={styles.tableHeadCell}>% PIS/COFINS</th>
+                        <th className={styles.tableHeadCell}>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      {filteredAnalyses.map((analysis) => {
+                        const formattedCnpj = analysis.cnpj
+                          ? analysis.cnpj.replace(
+                              /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+                              '$1.$2.$3/$4-$5'
+                            )
+                          : 'CNPJ não encontrado';
+
+                        return (
+                          <tr key={analysis.id} className={styles.tableRow}>
+                            <td className={styles.tableCell}>
+                              {analysis.nome ||
+                                analysis.nome_empresa ||
+                                'Nome não encontrado'}
+                              {analysis.tipo_cadastro === 'pre_cliente' && (
+                                <span className={styles.badge}>Pré-Cliente</span>
+                              )}
+                            </td>
+                            <td className={styles.tableCell}>{formattedCnpj}</td>
+                            <td className={styles.tableCell}>
+                              {analysis.atividade_principal || 'Não identificada'}
+                            </td>
+                            <td className={styles.tableCell}>
+                              {analysis.data_extracao
+                                ? new Date(analysis.data_extracao).toLocaleDateString('pt-BR')
+                                : 'Data não encontrada'}
+                            </td>
+                            <td className={styles.tableCell}>
+                              {analysis.periodo_documento || 'Não identificado'}
+                            </td>
+                            <td className={styles.tableCell}>
+                              <span className={getFatorBadgeClass(analysis.fator_r_status)}>
+                                {analysis.fator_r_status || 'Não identificado'}
+                              </span>
+                            </td>
+                            <td className={styles.tableCell}>
+                              {Number.isFinite(Number(analysis.icms_percentage))
+                                ? `${Number(analysis.icms_percentage).toFixed(2)}%`
+                                : 'N/A'}
+                            </td>
+                            <td className={styles.tableCell}>
+                              {Number.isFinite(Number(analysis.pis_cofins_percentage))
+                                ? `${Number(analysis.pis_cofins_percentage).toFixed(2)}%`
+                                : 'N/A'}
+                            </td>
+                            <td className={styles.tableCell}>
+                              <div className={styles.tableActions}>
+                                <span className={styles.tableCellSecondary}>Ver detalhes</span>
+                                <span className={styles.tableCellSecondary}>(Em breve)</span>
+                                <button
+                                  type="button"
+                                  className={styles.actionDanger}
+                                  title="Excluir análise"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    if (window.confirm('Tem certeza que deseja excluir esta análise?')) {
+                                      deleteAnalysis(analysis.id);
+                                    }
+                                  }}
+                                >
+                                  Excluir
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+          transition={Bounce}
+        />
+      </div>
+    </>
   );
 }
