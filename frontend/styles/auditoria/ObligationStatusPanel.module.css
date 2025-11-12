@@ -1,0 +1,38 @@
+.panel {
+  border-radius: var(--onity-radius-m, 0.75rem);
+  padding: var(--onity-space-xs, 0.5rem);
+  text-align: center;
+  font-weight: var(--onity-font-weight-bold, 700);
+  font-size: var(--onity-type-caption-size, 0.75rem);
+  color: var(--onity-color-text-invert, #f9fafb);
+  transition: transform var(--onity-transition-fast, 0.2s ease);
+}
+
+.panel:hover {
+  transform: translateY(-1px);
+}
+
+.imported {
+  background: linear-gradient(90deg, var(--onity-success, #22c55e) 0%, #16a34a 100%);
+}
+
+.missing {
+  background: linear-gradient(90deg, var(--onity-color-error, #f87171) 0%, #dc2626 100%);
+}
+
+.label {
+  margin-top: var(--onity-space-xxs, 0.35rem);
+  font-size: var(--onity-type-micro-size, 0.65rem);
+  font-weight: var(--onity-font-weight-regular, 400);
+  color: rgba(255, 255, 255, 0.85); /* Se houver token translúcido, substituir depois */
+}
+
+@media (min-width: 768px) {
+  .panel {
+    font-size: var(--onity-type-body-size, 0.85rem);
+  }
+
+  .label {
+    font-size: var(--onity-type-caption-size, 0.75rem);
+  }
+}
