@@ -531,7 +531,8 @@ router.get("/", verifyToken, async (req, res) => {
         COALESCE(c.nome_fantasia, c.razao_social, c.apelido) AS cliente_nome,
         c.cpf_cnpj AS cliente_cnpj,
         c.estado AS cliente_uf,
-        c.empresa_id AS cliente_company_id
+        c.empresa_id AS cliente_company_id,
+        c.regime_tributario AS regime_tributario -- AQUI!
       FROM analises_simples_nacional AS asn
       INNER JOIN clientes AS c ON c.id = asn.cliente_id
       ${whereClause}
@@ -554,42 +555,46 @@ router.get("/", verifyToken, async (req, res) => {
 
     const total = countRow?.total || 0;
 
-    const data = rows.map((row) => ({
-      id: row.id,
-      clientes_id: row.clientes_id,
-      cnpj: row.cnpj,
-      arquivo_nome: row.arquivo_nome,
-      tipo: row.tipo,
-      mes: row.mes,
-      ano: row.ano,
-      resumo: parseJSONSafely(row.resumo),
-      data_extracao: row.data_extracao,
-      resultado_api: parseJSONSafely(row.resultado_api),
-      fator_r_status: row.fator_r_status,
-      atividade_principal: row.atividade_principal,
-      cnaes: parseJSONSafely(row.canes),
-      icms_percentage: row.icms_porcentagem,
-      pis_cofins_percentage: row.pis_cofins_porcentagem,
-      receita_total: row.receita_total,
-      icms_total: row.icms_total,
-      pis_total: row.pis_total,
-      cofins_total: row.cofins_total,
-      periodo_documento: row.periodo_documento,
-      valor_das: row.valor_das,
-      anexos_simples: parseJSONSafely(row.anexos_simples),
-      valor_folha: row.valor_folha,
-      folha_de_salarios_anteriores: parseJSONSafely(row.folha_de_salarios_anteriores),
-      date_pag: row.data_pag,
-      clientes: row.cliente_id
-        ? {
-            id: row.cliente_id,
-            nome: row.cliente_nome,
-            cnpj: row.cliente_cnpj,
-            uf: row.cliente_uf,
-            company_id: row.cliente_company_id,
-          }
-        : null,
-    }));
+    const data = rows.map((row) => {
+      // Removido console.log de debug
+      return {
+        id: row.id,
+        clientes_id: row.clientes_id,
+        cnpj: row.cnpj,
+        arquivo_nome: row.arquivo_nome,
+        tipo: row.tipo,
+        mes: row.mes,
+        ano: row.ano,
+        resumo: parseJSONSafely(row.resumo),
+        data_extracao: row.data_extracao,
+        resultado_api: parseJSONSafely(row.resultado_api),
+        fator_r_status: row.fator_r_status,
+        atividade_principal: row.atividade_principal,
+        cnaes: parseJSONSafely(row.canes),
+        icms_percentage: row.icms_porcentagem,
+        pis_cofins_percentage: row.pis_cofins_porcentagem,
+        receita_total: row.receita_total,
+        icms_total: row.icms_total,
+        pis_total: row.pis_total,
+        cofins_total: row.cofins_total,
+        periodo_documento: row.periodo_documento,
+        valor_das: row.valor_das,
+        anexos_simples: parseJSONSafely(row.anexos_simples),
+        valor_folha: row.valor_folha,
+        folha_de_salarios_anteriores: parseJSONSafely(row.folha_de_salarios_anteriores),
+        date_pag: row.data_pag,
+        regime_tributario: row.regime_tributario || '', // string do banco
+        clientes: row.cliente_id
+          ? {
+              id: row.cliente_id,
+              nome: row.cliente_nome,
+              cnpj: row.cliente_cnpj,
+              uf: row.cliente_uf,
+              company_id: row.cliente_company_id,
+            }
+          : null,
+      };
+    });
 
     res.json({
       data,

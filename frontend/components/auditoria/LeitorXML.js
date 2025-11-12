@@ -192,6 +192,21 @@ export default function LeitorXML() {
       return { error: 'Autenticação necessária' };
     }
 
+    // Garantia de array, log e validação
+    const companyIdToSend = selectedCompanyId;
+    if (!companyIdToSend) {
+      return { error: 'company_id não encontrado no estado do componente' };
+    }
+    if (!Array.isArray(notasFiscais) || notasFiscais.length === 0) {
+      console.error('[LeitorXML] Lote vazio enviado para a API:', { company_id: companyIdToSend, notas: notasFiscais });
+      return { error: 'Notas fiscais para envio em lote precisam ser um array não vazio.' };
+    }
+
+    const payload = {
+      company_id: companyIdToSend,
+      notas: notasFiscais
+    };
+    console.log('[LeitorXML] Enviando para API (POST /bulk):', payload);
     try {
       const response = await fetch(`${API_BASE_URL}/auditoria/notas-fiscais/bulk`, {
         method: 'POST',
@@ -199,16 +214,16 @@ export default function LeitorXML() {
           'Content-Type': 'application/json',
           ...headers,
         },
-        body: JSON.stringify({ notas_fiscais: notasFiscais }),
+        body: JSON.stringify(payload),
       });
 
-      const payload = await response.json();
+      const resPayload = await response.json();
 
       if (!response.ok) {
-        return { error: payload?.error || 'Erro ao salvar notas fiscais', data: payload };
+        return { error: resPayload?.error || 'Erro ao salvar notas fiscais', data: resPayload };
       }
 
-      return { data: payload };
+      return { data: resPayload };
     } catch (error) {
       console.error('[LeitorXML] Erro ao salvar notas fiscais via API:', error);
       return { error: error instanceof Error ? error.message : 'Erro desconhecido' };
