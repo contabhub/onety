@@ -30,7 +30,9 @@ import {
   TrendingUp,
   Upload,
   FileBarChart,
-  Package
+  Package,
+  FolderOpen, 
+  BarChart3
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -325,16 +327,22 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
-        id: 'logs',
-        label: 'Logs',
-        icon: <Shield size={18} />,
-        route: '/auditoria/logs'
+        id: 'dashboard-simples',
+        label: 'Dashboard Simples Nacional',
+        icon: <BarChart3 size={18} />,
+        route: '/auditoria/dashboard-simples'
       },
       {
-        id: 'relatorios',
-        label: 'Relatórios',
+        id: 'extrato',
+        label: 'Extrato',
         icon: <FileText size={18} />,
-        route: '/auditoria/relatorios'
+        route: '/auditoria/rct-sn'
+      },
+      {
+        id: 'notas-fiscais',
+        label: 'Notas Fiscais',
+        icon: <FolderOpen size={18} />,
+        route: '/auditoria/leitor-xml'
       }
     ]
   },
