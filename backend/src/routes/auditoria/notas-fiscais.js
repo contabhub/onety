@@ -5,6 +5,12 @@ const verifyToken = require("../../middlewares/auth");
 
 const sanitizeCnpj = (value) => (value ? value.replace(/\D/g, "") : null);
 
+function toMySQLDatetime(val) {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 const allowedColumns = [
   "id",
   "clientes_id",
@@ -170,11 +176,6 @@ router.post("/", verifyToken, async (req, res) => {
       });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado ao cliente" });
-    }
-
     const [[duplicateRow]] = await pool.query(
       `
         SELECT id
@@ -199,7 +200,7 @@ router.post("/", verifyToken, async (req, res) => {
       serie,
       data_emissao,
       data_saida_entrada || null,
-      data_importacao || null,
+      toMySQLDatetime(data_importacao),
       cleanCnpjEmitente,
       razao_social_emitente || null,
       cleanCnpjDestinatario,
@@ -369,11 +370,6 @@ router.get("/", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Cliente não encontrado" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado ao cliente" });
-    }
-
     const filtros = ["nf.cliente_id = ?"];
     const params = [clienteRow.id];
 
@@ -516,11 +512,6 @@ router.get("/periodo", verifyToken, async (req, res) => {
 
     let cliente;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.length) {
-      return res.status(403).json({ error: "Usuário não possui empresas associadas" });
-    }
-
     if (clientes_id) {
       const clienteIdParsed = Number.parseInt(clientes_id, 10);
       if (Number.isNaN(clienteIdParsed)) {
@@ -541,10 +532,6 @@ router.get("/periodo", verifyToken, async (req, res) => {
         return res.status(404).json({ error: "Cliente não encontrado" });
       }
 
-      if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-        return res.status(403).json({ error: "Acesso negado ao cliente" });
-      }
-
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
     } else {
       const cleanCnpj = sanitizeCnpj(cnpj_emitente);
@@ -552,17 +539,15 @@ router.get("/periodo", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "CNPJ emitente inválido" });
       }
 
-      const placeholders = companyIdsUser.map(() => "?").join(",");
-
       const [[clienteRow]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
           WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
-            AND empresa_id IN (${placeholders})
+            AND empresa_id IN (?)
           LIMIT 1
         `,
-        [cleanCnpj, ...companyIdsUser]
+        [cleanCnpj, req.user.all_company_ids]
       );
 
       if (!clienteRow) {
@@ -572,7 +557,7 @@ router.get("/periodo", verifyToken, async (req, res) => {
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
     }
 
-    if (!companyIdsUser.includes(cliente.company_id)) {
+    if (!req.user.all_company_ids.includes(cliente.company_id)) {
       return res.status(403).json({ error: "Acesso negado ao cliente" });
     }
 
@@ -713,11 +698,6 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
 
     let cliente;
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.length) {
-      return res.status(403).json({ error: "Usuário não possui empresas associadas" });
-    }
-
     if (clientes_id) {
       const clienteIdParsed = Number.parseInt(clientes_id, 10);
       if (Number.isNaN(clienteIdParsed)) {
@@ -738,10 +718,6 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         return res.status(404).json({ error: "Cliente não encontrado" });
       }
 
-      if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-        return res.status(403).json({ error: "Acesso negado ao cliente" });
-      }
-
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
     } else {
       const cleanCnpj = sanitizeCnpj(cnpj_emitente);
@@ -749,17 +725,15 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "CNPJ emitente inválido" });
       }
 
-      const placeholders = companyIdsUser.map(() => "?").join(",");
-
       const [[clienteRow]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
           WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
-            AND empresa_id IN (${placeholders})
+            AND empresa_id IN (?)
           LIMIT 1
         `,
-        [cleanCnpj, ...companyIdsUser]
+        [cleanCnpj, req.user.all_company_ids]
       );
 
       if (!clienteRow) {
@@ -769,7 +743,7 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
       cliente = { id: clienteRow.id, company_id: clienteRow.empresa_id, cnpj: clienteRow.cpf_cnpj };
     }
 
-    if (!companyIdsUser.includes(cliente.company_id)) {
+    if (!req.user.all_company_ids.includes(cliente.company_id)) {
       return res.status(403).json({ error: "Acesso negado ao cliente" });
     }
 
@@ -821,13 +795,6 @@ router.get("/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.length) {
-      return res.status(403).json({ error: "Usuário não possui empresas associadas" });
-    }
-
-    const placeholders = companyIdsUser.map(() => "?").join(",");
-
     const [[notaRow]] = await pool.query(
       `
         SELECT
@@ -870,10 +837,10 @@ router.get("/:id", verifyToken, async (req, res) => {
         FROM notas_fiscais AS nf
         INNER JOIN clientes AS c ON c.id = nf.cliente_id
         WHERE nf.id = ?
-          AND c.empresa_id IN (${placeholders})
+          AND c.empresa_id IN (?)
         LIMIT 1
       `,
-      [notaId, ...companyIdsUser]
+      [notaId, req.user.all_company_ids]
     );
 
     if (!notaRow) {
@@ -963,9 +930,8 @@ router.put("/:id", verifyToken, async (req, res) => {
       [existingNota.cliente_id]
     );
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!clienteRow || !companyIdsUser.includes(clienteRow.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado." });
+    if (!clienteRow) {
+      return res.status(400).json({ error: "Cliente não encontrado" });
     }
 
     const [[duplicateNota]] = await pool.query(
@@ -995,7 +961,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       serie,
       data_emissao,
       data_saida_entrada || null,
-      data_importacao || null,
+      toMySQLDatetime(data_importacao),
       cleanCnpjEmitente,
       razao_social_emitente || null,
       cleanCnpjDestinatario,
@@ -1145,11 +1111,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Nota fiscal não encontrada." });
     }
 
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-    if (!companyIdsUser.includes(existingNota.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado." });
-    }
-
     const [deleteResult] = await pool.query(
       `
         DELETE FROM notas_fiscais
@@ -1190,7 +1151,6 @@ router.post("/bulk", verifyToken, async (req, res) => {
     const erros = [];
     let sucessosCount = 0;
     const duplicadas = [];
-    const companyIdsUser = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
 
     // Validar cada nota fiscal
     for (let i = 0; i < notas_fiscais.length; i++) {
@@ -1244,20 +1204,6 @@ router.post("/bulk", verifyToken, async (req, res) => {
         continue;
       }
 
-      console.log('🔍 [Notas Fiscais] Verificando acesso ao cliente:', {
-        nota_index: i + 1,
-        clientes_id: nota.clientes_id,
-        cliente_company_id: clienteRow.empresa_id,
-        user_company_id: req.user.company_id,
-        user_all_company_ids: req.user.all_company_ids,
-        has_access: Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids.includes(clienteRow.empresa_id) : false
-      });
-
-      if (!companyIdsUser.includes(clienteRow.empresa_id)) {
-        erros.push(`Nota ${i + 1}: Acesso negado ao cliente`);
-        continue;
-      }
-
       // Verificar se NFe já existe para este cliente (evitar duplicatas)
       const [[existingNFe]] = await pool.query(
         `
@@ -1286,7 +1232,7 @@ router.post("/bulk", verifyToken, async (req, res) => {
         ...nota,
         clientes_id: clienteRow.id,
         cliente_id: clienteRow.id,
-        data_importacao: new Date().toISOString(),
+        data_importacao: toMySQLDatetime(new Date()),
         cnpj_emitente: cleanCnpjEmitente,
         cnpj_destinatario: cleanCnpjDestinatario,
         uf_origem: nota.uf_origem ? nota.uf_origem.toUpperCase() : null,

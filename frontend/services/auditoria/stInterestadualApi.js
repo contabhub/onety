@@ -102,7 +102,9 @@ export const consultarSTInterestadual = async (
     });
     
     if (!response.ok) {
-      throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+      const rawText = await response.text();
+      console.error('[ST Interestadual] Erro detalhado da API LegisWeb:', rawText);
+      throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}\n${rawText}`);
     }
     
     const data = await response.json();

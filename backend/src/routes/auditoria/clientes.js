@@ -116,19 +116,7 @@ router.get("/", verifyToken, async (req, res) => {
       });
     }
 
-    const userCompanies = Array.isArray(req.user?.all_company_ids)
-      ? req.user.all_company_ids.map(Number)
-      : null;
-
-    if (
-      userCompanies &&
-      userCompanies.length > 0 &&
-      !userCompanies.includes(companyIdNumber)
-    ) {
-      return res.status(403).json({
-        error: "Acesso negado à empresa"
-      });
-    }
+    // Apenas validação de existência de company_id segue normalmente.
 
     const filters = ["empresa_id = ?"];
     const params = [companyIdNumber];
