@@ -168,7 +168,9 @@ router.post("/", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "clientes_id inválido" });
     }
 
-    const [[clienteRow]] = await pool.query(
+    let clienteRow = null;
+    let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+    const [[cliente]] = await pool.query(
       `
         SELECT id, empresa_id
         FROM clientes
@@ -178,9 +180,28 @@ router.post("/", verifyToken, async (req, res) => {
       [clienteId]
     );
 
+    if (cliente) {
+      clienteRow = cliente;
+      clienteOrigem = 'cliente';
+    } else {
+      const [[preCliente]] = await pool.query(
+        `
+          SELECT id, empresa_id
+          FROM pre_clientes
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [clienteId]
+      );
+      if (preCliente) {
+        clienteRow = preCliente;
+        clienteOrigem = 'pre_cliente';
+      }
+    }
+
     if (!clienteRow) {
       return res.status(400).json({ 
-        error: "Cliente não encontrado" 
+        error: "Cliente ou pré-cliente não encontrado" 
       });
     }
 
@@ -361,12 +382,14 @@ router.get("/", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "clientes_id e company_id são obrigatórios" });
     }
 
-    const clienteId = Number.parseInt(clientes_id, 10);
+    let clienteId = Number.parseInt(clientes_id, 10);
     if (Number.isNaN(clienteId)) {
       return res.status(400).json({ error: "clientes_id inválido" });
     }
 
-    const [[clienteRow]] = await pool.query(
+    let clienteRow = null;
+    let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+    const [[cliente]] = await pool.query(
       `
         SELECT id, empresa_id
         FROM clientes
@@ -375,6 +398,25 @@ router.get("/", verifyToken, async (req, res) => {
       `,
       [clienteId]
     );
+
+    if (cliente) {
+      clienteRow = cliente;
+      clienteOrigem = 'cliente';
+    } else {
+      const [[preCliente]] = await pool.query(
+        `
+          SELECT id, empresa_id
+          FROM pre_clientes
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [clienteId]
+      );
+      if (preCliente) {
+        clienteRow = preCliente;
+        clienteOrigem = 'pre_cliente';
+      }
+    }
 
     if (!clienteRow) {
       return res.status(404).json({ error: "Cliente não encontrado" });
@@ -537,7 +579,9 @@ router.get("/periodo", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "clientes_id inválido" });
       }
 
-      const [[clienteRow]] = await pool.query(
+      let clienteRow = null;
+      let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+      const [[cliente]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
@@ -546,6 +590,25 @@ router.get("/periodo", verifyToken, async (req, res) => {
         `,
         [clienteIdParsed]
       );
+
+      if (cliente) {
+        clienteRow = cliente;
+        clienteOrigem = 'cliente';
+      } else {
+        const [[preCliente]] = await pool.query(
+          `
+            SELECT id, empresa_id, cpf_cnpj
+            FROM pre_clientes
+            WHERE id = ?
+            LIMIT 1
+          `,
+          [clienteIdParsed]
+        );
+        if (preCliente) {
+          clienteRow = preCliente;
+          clienteOrigem = 'pre_cliente';
+        }
+      }
 
       if (!clienteRow) {
         return res.status(404).json({ error: "Cliente não encontrado" });
@@ -562,7 +625,9 @@ router.get("/periodo", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "CNPJ emitente inválido" });
       }
 
-      const [[clienteRow]] = await pool.query(
+      let clienteRow = null;
+      let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+      const [[cliente]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
@@ -572,6 +637,26 @@ router.get("/periodo", verifyToken, async (req, res) => {
         `,
         [cleanCnpj, company_id]
       );
+
+      if (cliente) {
+        clienteRow = cliente;
+        clienteOrigem = 'cliente';
+      } else {
+        const [[preCliente]] = await pool.query(
+          `
+            SELECT id, empresa_id, cpf_cnpj
+            FROM pre_clientes
+            WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
+              AND empresa_id = ?
+            LIMIT 1
+          `,
+          [cleanCnpj, company_id]
+        );
+        if (preCliente) {
+          clienteRow = preCliente;
+          clienteOrigem = 'pre_cliente';
+        }
+      }
 
       if (!clienteRow) {
         return res.status(404).json({ error: "Cliente não encontrado" });
@@ -732,7 +817,9 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "clientes_id inválido" });
       }
 
-      const [[clienteRow]] = await pool.query(
+      let clienteRow = null;
+      let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+      const [[cliente]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
@@ -741,6 +828,25 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         `,
         [clienteIdParsed]
       );
+
+      if (cliente) {
+        clienteRow = cliente;
+        clienteOrigem = 'cliente';
+      } else {
+        const [[preCliente]] = await pool.query(
+          `
+            SELECT id, empresa_id, cpf_cnpj
+            FROM pre_clientes
+            WHERE id = ?
+            LIMIT 1
+          `,
+          [clienteIdParsed]
+        );
+        if (preCliente) {
+          clienteRow = preCliente;
+          clienteOrigem = 'pre_cliente';
+        }
+      }
 
       if (!clienteRow) {
         return res.status(404).json({ error: "Cliente não encontrado" });
@@ -757,7 +863,9 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         return res.status(400).json({ error: "CNPJ emitente inválido" });
       }
 
-      const [[clienteRow]] = await pool.query(
+      let clienteRow = null;
+      let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+      const [[cliente]] = await pool.query(
         `
           SELECT id, empresa_id, cpf_cnpj
           FROM clientes
@@ -767,6 +875,26 @@ router.get("/iss-retido", verifyToken, async (req, res) => {
         `,
         [cleanCnpj, company_id]
       );
+
+      if (cliente) {
+        clienteRow = cliente;
+        clienteOrigem = 'cliente';
+      } else {
+        const [[preCliente]] = await pool.query(
+          `
+            SELECT id, empresa_id, cpf_cnpj
+            FROM pre_clientes
+            WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
+              AND empresa_id = ?
+            LIMIT 1
+          `,
+          [cleanCnpj, company_id]
+        );
+        if (preCliente) {
+          clienteRow = preCliente;
+          clienteOrigem = 'pre_cliente';
+        }
+      }
 
       if (!clienteRow) {
         return res.status(404).json({ error: "Cliente não encontrado" });
@@ -832,7 +960,9 @@ router.get("/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "company_id é obrigatório" });
     }
 
-    const [[notaRow]] = await pool.query(
+    let clienteRow = null;
+    let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+    const [[nota]] = await pool.query(
       `
         SELECT
           nf.id,
@@ -880,11 +1010,11 @@ router.get("/:id", verifyToken, async (req, res) => {
       [notaId, company_id]
     );
 
-    if (!notaRow) {
+    if (!nota) {
       return res.status(404).json({ error: "Nota fiscal não encontrada." });
     }
 
-    res.json(mapRowToApi(notaRow));
+    res.json(mapRowToApi(nota));
   } catch (err) {
     console.error('Erro ao buscar nota fiscal:', err);
     res.status(500).json({ error: "Erro interno do servidor." });
@@ -943,32 +1073,84 @@ router.put("/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    const [[existingNota]] = await pool.query(
+    let existingNota = null;
+    let existingClienteRow = null;
+    let existingClienteOrigem = null; // 'cliente' ou 'pre_cliente'
+    const [[nota]] = await pool.query(
       `
-        SELECT id, cliente_id
-        FROM notas_fiscais
-        WHERE id = ?
+        SELECT nf.id, nf.cliente_id
+        FROM notas_fiscais AS nf
+        INNER JOIN clientes AS c ON c.id = nf.cliente_id
+        WHERE nf.id = ?
+          AND c.empresa_id = ?
         LIMIT 1
       `,
-      [notaId]
+      [notaId, company_id]
     );
+
+    if (nota) {
+      existingNota = nota;
+      existingClienteRow = nota.cliente_id;
+      existingClienteOrigem = 'cliente';
+    } else {
+      const [[preNota]] = await pool.query(
+        `
+          SELECT nf.id, nf.cliente_id
+          FROM notas_fiscais AS nf
+          INNER JOIN pre_clientes AS c ON c.id = nf.cliente_id
+          WHERE nf.id = ?
+            AND c.empresa_id = ?
+          LIMIT 1
+        `,
+        [notaId, company_id]
+      );
+      if (preNota) {
+        existingNota = preNota;
+        existingClienteRow = preNota.cliente_id;
+        existingClienteOrigem = 'pre_cliente';
+      }
+    }
 
     if (!existingNota) {
       return res.status(404).json({ error: "Nota fiscal não encontrada." });
     }
 
-    const [[clienteRow]] = await pool.query(
+    let clienteRow = null;
+    let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
+    const [[cliente]] = await pool.query(
       `
-        SELECT empresa_id
+        SELECT id, empresa_id
         FROM clientes
         WHERE id = ?
         LIMIT 1
       `,
-      [existingNota.cliente_id]
+      [existingClienteRow]
     );
 
-    const company_id = getCompanyIdFromRequest(req);
-    if (!clienteRow || Number(clienteRow.empresa_id) !== Number(company_id)) {
+    if (cliente) {
+      clienteRow = cliente;
+      clienteOrigem = 'cliente';
+    } else {
+      const [[preCliente]] = await pool.query(
+        `
+          SELECT id, empresa_id
+          FROM pre_clientes
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [existingClienteRow]
+      );
+      if (preCliente) {
+        clienteRow = preCliente;
+        clienteOrigem = 'pre_cliente';
+      }
+    }
+
+    if (!clienteRow) {
+      return res.status(400).json({ error: "Cliente ou pré-cliente não encontrado" });
+    }
+
+    if (Number(clienteRow.empresa_id) !== Number(company_id)) {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
@@ -981,7 +1163,7 @@ router.put("/:id", verifyToken, async (req, res) => {
           AND id <> ?
         LIMIT 1
       `,
-      [existingNota.cliente_id, chave_nfe, notaId]
+      [existingClienteRow, chave_nfe, notaId]
     );
 
     if (duplicateNota) {
@@ -1134,7 +1316,10 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    const [[existingNota]] = await pool.query(
+    let existingNota = null;
+    let existingClienteRow = null;
+    let existingClienteOrigem = null; // 'cliente' ou 'pre_cliente'
+    const [[nota]] = await pool.query(
       `
         SELECT nf.id, nf.cliente_id, c.empresa_id
         FROM notas_fiscais AS nf
@@ -1144,6 +1329,28 @@ router.delete("/:id", verifyToken, async (req, res) => {
       `,
       [notaId]
     );
+
+    if (nota) {
+      existingNota = nota;
+      existingClienteRow = nota.cliente_id;
+      existingClienteOrigem = 'cliente';
+    } else {
+      const [[preNota]] = await pool.query(
+        `
+          SELECT nf.id, nf.cliente_id, c.empresa_id
+          FROM notas_fiscais AS nf
+          INNER JOIN pre_clientes AS c ON c.id = nf.cliente_id
+          WHERE nf.id = ?
+          LIMIT 1
+        `,
+        [notaId]
+      );
+      if (preNota) {
+        existingNota = preNota;
+        existingClienteRow = preNota.cliente_id;
+        existingClienteOrigem = 'pre_cliente';
+      }
+    }
 
     if (!existingNota) {
       return res.status(404).json({ error: "Nota fiscal não encontrada." });
@@ -1233,13 +1440,15 @@ router.post("/bulk", verifyToken, async (req, res) => {
         continue;
       }
 
+      let clienteRow = null;
+      let clienteOrigem = null; // 'cliente' ou 'pre_cliente'
       const clienteIdParsed = Number.parseInt(nota.clientes_id, 10);
       if (Number.isNaN(clienteIdParsed)) {
         erros.push(`Nota ${i + 1}: clientes_id inválido`);
         continue;
       }
 
-      const [[clienteRow]] = await pool.query(
+      const [[cliente]] = await pool.query(
         `
           SELECT id, empresa_id
           FROM clientes
@@ -1248,6 +1457,25 @@ router.post("/bulk", verifyToken, async (req, res) => {
         `,
         [clienteIdParsed]
       );
+
+      if (cliente) {
+        clienteRow = cliente;
+        clienteOrigem = 'cliente';
+      } else {
+        const [[preCliente]] = await pool.query(
+          `
+            SELECT id, empresa_id
+            FROM pre_clientes
+            WHERE id = ?
+            LIMIT 1
+          `,
+          [clienteIdParsed]
+        );
+        if (preCliente) {
+          clienteRow = preCliente;
+          clienteOrigem = 'pre_cliente';
+        }
+      }
 
       if (!clienteRow) {
         erros.push(`Nota ${i + 1}: Cliente não encontrado`);
