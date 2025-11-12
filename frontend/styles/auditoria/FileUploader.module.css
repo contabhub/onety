@@ -1,0 +1,168 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.dropzone {
+  border: 2px dashed var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--onity-transition-fast), background-color var(--onity-transition-fast), transform var(--onity-transition-fast);
+  background-color: var(--onity-color-bg);
+}
+
+.dropzone:hover {
+  border-color: var(--onity-success);
+}
+
+.dropzoneActive {
+  border-color: var(--onity-success);
+  background-color: rgba(52, 211, 153, 0.15); /* Manter rgba, caso não exista token equivalente translúcido */
+  transform: translateY(-1px);
+}
+
+.dropzoneIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--onity-icon-secondary);
+  margin: 0 auto;
+  transition: color var(--onity-transition-fast);
+}
+
+.dropzoneIconActive {
+  color: var(--onity-success);
+}
+
+.dropzoneTitle {
+  margin-top: var(--onity-space-xs);
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.dropzoneHint {
+  margin-top: var(--onity-space-xxs);
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.fileCard {
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-m);
+  padding: var(--onity-space-m);
+  background-color: var(--onity-color-surface);
+  box-shadow: var(--onity-shadow-sm);
+}
+
+.fileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-m);
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+}
+
+.fileIcon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--onity-success);
+}
+
+.fileIconSmall {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.fileName {
+  max-width: 200px;
+  font-size: var(--onity-type-body-size);
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  font-size: var(--onity-type-caption-size);
+  color: var(--onity-icon-secondary);
+}
+
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--onity-icon-secondary);
+  cursor: pointer;
+  transition: color var(--onity-transition-fast), background-color var(--onity-transition-fast);
+}
+
+.removeButton:hover {
+  color: var(--onity-color-text);
+  background-color: var(--onity-color-bg);
+}
+
+.progressContainer {
+  margin-top: var(--onity-space-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xxs);
+}
+
+.progressTrack {
+  width: 100%;
+  height: 0.4rem;
+  background-color: var(--onity-color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--onity-success) 0%, #059669 100%); /* Exemplo: degradê usando um token e fallback */
+  border-radius: 999px;
+  transition: width var(--onity-transition-normal);
+}
+
+.progressText {
+  font-size: var(--onity-type-caption-size);
+  text-align: center;
+  color: var(--onity-icon-secondary);
+}
+
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xxs);
+  padding: var(--onity-space-xs) var(--onity-space-s);
+  border-radius: var(--onity-radius-s);
+  background-color: rgba(254, 226, 226, 0.75); /* Caso não haja token equivalente translúcido */
+  color: var(--onity-color-error);
+  font-size: var(--onity-type-body-size);
+}
+
+.errorIcon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--onity-color-error);
+}
