@@ -417,10 +417,6 @@ export const extractFolhaSalariosFromPdf = async (file) => {
             
 
             
-
-            
-
-            
             console.log('Nenhum valor da folha encontrado para fator r:', fatorR);
           }
         }
