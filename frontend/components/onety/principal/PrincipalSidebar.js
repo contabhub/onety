@@ -328,52 +328,25 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
-        id: 'dashboard-simples',
-        label: 'Dashboard Simples Nacional',
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: <LayoutDashboard size={18} />,
+        route: '/auditoria/dashboard'
+      },
+      {
+        id: 'simples-nacional',
+        label: 'Simples Nacional',
         icon: <BarChart3 size={18} />,
-        route: '/auditoria/dashboard-simples'
+        route: '/auditoria/dashboard-simples',
+        isGroup: true
       },
       {
-        id: 'extrato',
-        label: 'Extrato',
-        icon: <FileText size={18} />,
-        route: '/auditoria/rct-sn'
-      },
-      {
-        id: 'notas-fiscais',
-        label: 'Notas Fiscais',
-        icon: <FolderOpen size={18} />,
-        route: '/auditoria/leitor-xml'
-      },
-      // Novos atalhos
-
-      {
-        id: 'dashboard-normal',
-        label: 'Dashboard Regime Normal',
+        id: 'regime-normal',
+        label: 'Regime Normal',
         icon: <Building2 size={18} />,
-        route: '/auditoria/dashboard-normal'
-      },
-
-      {
-        id: 'analisador-entregas',
-        label: 'Analisador de Entregas',
-        icon: <FileText size={18} />,
-        route: '/auditoria/analisador-entregas'
-      },
-      {
-        id: 'analise-obrigacoes',
-        label: 'Análise de Obrigações',
-        icon: <BarChart2 size={18} />,
-        route: '/auditoria/analise-obrigacoes'
-      },
-
-      {
-        id: 'consolidado',
-        label: 'Consolidado Anual',
-        icon: <BarChart3 size={18} />,
-        route: '/auditoria/consolidado'
-      },
-
+        route: '/auditoria/dashboard-normal',
+        isGroup: true
+      }
     ]
   },
   estratégico: {
@@ -449,6 +422,8 @@ export default function PrincipalSidebar() {
   const [vendasExpanded, setVendasExpanded] = useState(false);
   const [financeiroExpanded, setFinanceiroExpanded] = useState(false);
   const [cadastrosExpanded, setCadastrosExpanded] = useState(false);
+  const [simplesNacionalExpanded, setSimplesNacionalExpanded] = useState(false);
+  const [regimeNormalExpanded, setRegimeNormalExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
@@ -863,6 +838,29 @@ export default function PrincipalSidebar() {
     }
   }, [router.pathname]);
 
+  // Detectar seção ativa do submenu de Simples Nacional
+  useEffect(() => {
+    if (
+      router.pathname === '/auditoria/dashboard-simples' ||
+      router.pathname === '/auditoria/rct-sn' ||
+      router.pathname === '/auditoria/leitor-xml'
+    ) {
+      setSimplesNacionalExpanded(true);
+    }
+  }, [router.pathname]);
+
+  // Detectar seção ativa do submenu de Regime Normal
+  useEffect(() => {
+    if (
+      router.pathname === '/auditoria/dashboard-normal' ||
+      router.pathname === '/auditoria/analisador-entregas' ||
+      router.pathname === '/auditoria/analise-obrigacoes' ||
+      router.pathname === '/auditoria/consolidado'
+    ) {
+      setRegimeNormalExpanded(true);
+    }
+  }, [router.pathname]);
+
   const handleModuleChange = (moduleId) => {
     const module = modules.find(m => m.id === moduleId);
     if (module && module.id !== currentModule?.id) {
@@ -971,6 +969,14 @@ export default function PrincipalSidebar() {
     setCadastrosExpanded(!cadastrosExpanded);
   };
 
+  const toggleSimplesNacional = () => {
+    setSimplesNacionalExpanded(!simplesNacionalExpanded);
+  };
+
+  const toggleRegimeNormal = () => {
+    setRegimeNormalExpanded(!regimeNormalExpanded);
+  };
+
   // Itens de ajustes
   const ajustesItems = [
     {
@@ -1064,6 +1070,63 @@ export default function PrincipalSidebar() {
       description: 'Gerencie produtos e serviços',
       icon: Package,
       route: '/financeiro/produtos'
+    }
+  ];
+
+  // Itens de Simples Nacional
+  const simplesNacionalItems = [
+    {
+      id: 'dashboard-simples',
+      title: 'Dashboard Simples Nacional',
+      description: 'Dashboard do Simples Nacional',
+      icon: BarChart3,
+      route: '/auditoria/dashboard-simples'
+    },
+    {
+      id: 'extrato',
+      title: 'Extrato',
+      description: 'Extrato do Simples Nacional',
+      icon: FileText,
+      route: '/auditoria/rct-sn'
+    },
+    {
+      id: 'notas-fiscais',
+      title: 'Notas Fiscais',
+      description: 'Leitor de XML e Notas Fiscais',
+      icon: FolderOpen,
+      route: '/auditoria/leitor-xml'
+    }
+  ];
+
+  // Itens de Regime Normal
+  const regimeNormalItems = [
+    {
+      id: 'dashboard-normal',
+      title: 'Dashboard Regime Normal',
+      description: 'Dashboard do Regime Normal',
+      icon: Building2,
+      route: '/auditoria/dashboard-normal'
+    },
+    {
+      id: 'analisador-entregas',
+      title: 'Analisador de Entregas',
+      description: 'Analisador de entregas fiscais',
+      icon: FileText,
+      route: '/auditoria/analisador-entregas'
+    },
+    {
+      id: 'analise-obrigacoes',
+      title: 'Análise de Obrigações',
+      description: 'Análise de obrigações fiscais',
+      icon: BarChart2,
+      route: '/auditoria/analise-obrigacoes'
+    },
+    {
+      id: 'consolidado',
+      title: 'Consolidado Anual',
+      description: 'Consolidado anual de dados fiscais',
+      icon: BarChart3,
+      route: '/auditoria/consolidado'
     }
   ];
 
@@ -1422,6 +1485,133 @@ export default function PrincipalSidebar() {
                             <div className={styles.submenuContent}>
                               <span className={styles.submenuTitle}>{financeiroItem.title}</span>
                               <span className={styles.submenuDescription}>{financeiroItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Se for o item "simples-nacional", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'simples-nacional') {
+              const isSimplesNacionalItemActive = 
+                router.pathname === '/auditoria/dashboard-simples' ||
+                router.pathname === '/auditoria/rct-sn' ||
+                router.pathname === '/auditoria/leitor-xml';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isSimplesNacionalItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      router.push('/auditoria/dashboard-simples');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSimplesNacional();
+                        }}
+                        title={simplesNacionalExpanded ? "Fechar Simples Nacional" : "Abrir Simples Nacional"}
+                      >
+                        {simplesNacionalExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de Simples Nacional */}
+                  {simplesNacionalExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {simplesNacionalItems.map((simplesItem) => {
+                        const IconComponent = simplesItem.icon;
+                        const isActive = router.pathname === simplesItem.route;
+                        return (
+                          <button
+                            key={simplesItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(simplesItem.route)}
+                            title={simplesItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{simplesItem.title}</span>
+                              <span className={styles.submenuDescription}>{simplesItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Se for o item "regime-normal", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'regime-normal') {
+              const isRegimeNormalItemActive = 
+                router.pathname === '/auditoria/dashboard-normal' ||
+                router.pathname === '/auditoria/analisador-entregas' ||
+                router.pathname === '/auditoria/analise-obrigacoes' ||
+                router.pathname === '/auditoria/consolidado';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isRegimeNormalItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      router.push('/auditoria/dashboard-normal');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRegimeNormal();
+                        }}
+                        title={regimeNormalExpanded ? "Fechar Regime Normal" : "Abrir Regime Normal"}
+                      >
+                        {regimeNormalExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de Regime Normal */}
+                  {regimeNormalExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {regimeNormalItems.map((regimeItem) => {
+                        const IconComponent = regimeItem.icon;
+                        const isActive = router.pathname === regimeItem.route;
+                        return (
+                          <button
+                            key={regimeItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(regimeItem.route)}
+                            title={regimeItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{regimeItem.title}</span>
+                              <span className={styles.submenuDescription}>{regimeItem.description}</span>
                             </div>
                           </button>
                         );
