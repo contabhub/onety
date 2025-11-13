@@ -21,7 +21,7 @@
 .loadingCard {
   background-color: var(--onity-color-surface);
   border-radius: var(--onity-radius-xl);
-  box-shadow: var(--onity-shadow-md, 0 6px 24px -9px rgba(15,23,42,0.12));
+  box-shadow: var(--onity-shadow-md);
   padding: var(--onity-space-xl);
   display: flex;
   flex-direction: column;
@@ -57,8 +57,8 @@
 .spinner {
   width: 64px;
   height: 64px;
-  border-radius: 999px;
-  border: 4px solid rgba(16, 185, 129, 0.2); /* fallback */
+  border-radius: var(--onity-radius-full, 999px);
+  border: 4px solid rgba(16, 185, 129, 0.2);
   border-bottom-color: var(--onity-success);
   margin: 0 auto var(--onity-space-lg);
   animation: spin 1s linear infinite;
@@ -110,34 +110,34 @@
   margin-top: var(--onity-space-md);
   padding: var(--onity-space-md);
   border-radius: var(--onity-radius-lg);
-  background-color: rgba(30, 64, 175, 0.25); /* adaptar para token se existente */
-  border: 1px solid var(--onity-color-primary, rgba(96,165,250,0.4));
+  background-color: rgba(30, 64, 175, 0.25);
+  border: 1px solid var(--onity-color-primary);
 }
 
 .clientCardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--onity-color-primary, #bfdbfe);
+  color: var(--onity-color-primary);
 }
 
 .clientCardTitle {
   font-size: var(--onity-type-body-size, 0.95rem);
   font-weight: var(--onity-font-weight-semibold, 600);
-  color: var(--onity-color-primary, #93c5fd);
+  color: var(--onity-color-primary);
 }
 
 .clientMeta {
   margin-top: 4px;
   font-size: var(--onity-type-caption-size, 0.8rem);
-  color: var(--onity-color-primary, #bfdbfe);
+  color: var(--onity-color-primary);
 }
 
 .clientClearButton {
   margin-top: var(--onity-space-sm);
   font-size: var(--onity-type-caption-size, 0.85rem);
   font-weight: var(--onity-font-weight-semibold, 600);
-  color: var(--onity-color-primary, #60a5fa);
+  color: var(--onity-color-primary);
   background: none;
   border: none;
   cursor: pointer;
@@ -187,7 +187,7 @@
   padding: 10px 18px;
   border-radius: var(--onity-radius-md);
   border: none;
-  background-color: #16a34a;
+  background-color: var(--onity-success);
   color: #ffffff;
   font-size: 0.9rem;
   font-weight: 600;
@@ -215,7 +215,7 @@
 .spinnerSmall {
   width: 16px;
   height: 16px;
-  border-radius: 999px;
+  border-radius: var(--onity-radius-full, 999px);
   border: 3px solid rgba(255, 255, 255, 0.35);
   border-bottom-color: #ffffff;
   animation: spin 1s linear infinite;
@@ -232,7 +232,7 @@
   background-color: var(--onity-color-surface);
   border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-xl);
-  box-shadow: 0 12px 30px -18px rgba(15, 23, 42, 0.65);
+  box-shadow: var(--onity-shadow-md);
   overflow: hidden;
 }
 
@@ -274,8 +274,8 @@
 .filterSelect {
   width: 100%;
   padding: 10px 16px;
-  background-color: #1f2937;
-  border: 1px solid #334155;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-md);
   color: var(--onity-color-text);
   font-size: 0.9rem;
@@ -286,8 +286,8 @@
 .yearSelect:focus,
 .filterSelect:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-hover);
 }
 
 .statusBadge {
@@ -295,14 +295,14 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--onity-radius-full, 999px);
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .statusBadgeReady {
   background-color: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  color: var(--onity-success);
 }
 
 .statusBadgeMissing {
@@ -311,8 +311,8 @@
 }
 
 .statusBadgeLoading {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background-color: var(--onity-color-primary-hover);
+  color: var(--onity-color-primary);
 }
 
 .tableWrapper {
@@ -325,7 +325,7 @@
 }
 
 .tableHead {
-  background-color: rgba(15, 23, 42, 0.85);
+  background-color: var(--onity-color-surface);
 }
 
 .tableHeadCell {
@@ -333,7 +333,7 @@
   text-align: left;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--onity-color-primary-hover);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -343,7 +343,7 @@
 }
 
 .tableRow:hover {
-  background-color: rgba(148, 163, 184, 0.12);
+  background-color: var(--onity-color-primary-hover);
 }
 
 .tableCell {
@@ -358,15 +358,15 @@
 
 .tableCellMono {
   font-family: 'Fira Code', 'Roboto Mono', monospace;
-  color: #93c5fd;
+  color: var(--onity-color-primary-hover);
 }
 
 .emptyStateCard {
-  background-color: #ffffff;
+  background-color: var(--onity-color-surface);
   border-radius: var(--onity-radius-xl);
   padding: var(--onity-space-xl);
   text-align: center;
-  color: #0f172a;
+  color: var(--onity-color-text);
 }
 
 .emptyStateTitle {
@@ -377,15 +377,15 @@
 .emptyStateText {
   margin-top: var(--onity-space-sm);
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--onity-icon-secondary);
 }
 
 .infoCard {
-  background-color: rgba(30, 64, 175, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background-color: var(--onity-color-bg);
+  border: 1px solid var(--onity-color-primary-hover);
   border-radius: var(--onity-radius-lg);
   padding: var(--onity-space-md);
-  color: #bfdbfe;
+  color: var(--onity-color-text);
 }
 
 .infoSection {
@@ -399,7 +399,7 @@
   margin-top: var(--onity-space-sm);
   text-align: left;
   font-size: 0.9rem;
-  color: #bfdbfe;
+  color: var(--onity-color-text);
 }
 
 .infoList li {
@@ -407,7 +407,7 @@
 }
 
 .detailCard {
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: var(--onity-color-surface);
   border-radius: var(--onity-radius-lg);
   padding: var(--onity-space-lg);
   border: 1px solid var(--onity-color-border);
@@ -422,7 +422,7 @@
 .detailValue {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #34d399;
+  color: var(--onity-success);
   margin-top: var(--onity-space-xs);
 }
 
@@ -439,16 +439,16 @@
 }
 
 .metricCard {
-  background-color: #1f2937;
+  background-color: var(--onity-color-surface);
   border-radius: var(--onity-radius-lg);
   padding: var(--onity-space-md);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: var(--onity-shadow-sm);
 }
 
 .metricLabel {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--onity-icon-secondary);
 }
 
 .metricValue {
@@ -461,12 +461,12 @@
 .metricTrend {
   margin-top: 6px;
   font-size: 0.8rem;
-  color: #34d399;
+  color: var(--onity-success);
 }
 
 .highlightCard {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.15));
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, var(--onity-success) 0%, var(--onity-color-primary-hover) 100%);
+  border: 1px solid var(--onity-success);
   border-radius: var(--onity-radius-lg);
   padding: var(--onity-space-md);
 }
@@ -480,13 +480,13 @@
 .highlightText {
   margin-top: 4px;
   font-size: 0.85rem;
-  color: #bfdbfe;
+  color: var(--onity-color-primary);
 }
 
 .toggleButton {
   background: none;
   border: none;
-  color: #60a5fa;
+  color: var(--onity-color-primary);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -494,7 +494,7 @@
 }
 
 .toggleButton:hover {
-  color: #93c5fd;
+  color: var(--onity-color-primary-hover);
 }
 
 .skeletonGrid {
@@ -505,7 +505,7 @@
 .skeletonCard {
   height: 140px;
   border-radius: var(--onity-radius-lg);
-  background: linear-gradient(90deg, rgba(30, 41, 59, 0.6), rgba(30, 41, 59, 0.4), rgba(30, 41, 59, 0.6));
+  background: linear-gradient(90deg, var(--onity-color-bg) 0%, var(--onity-color-surface) 50%, var(--onity-color-bg) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -518,8 +518,8 @@
 .numberInput {
   width: 140px;
   padding: 8px 12px;
-  background-color: #1f2937;
-  border: 1px solid #334155;
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
   border-radius: var(--onity-radius-md);
   color: var(--onity-color-text);
   font-size: 0.9rem;
@@ -528,8 +528,8 @@
 
 .numberInput:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  border-color: var(--onity-color-primary);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-hover);
 }
 
 .infoSectionTitle {
@@ -568,15 +568,8 @@
 .timelineHeaderCell {
   text-align: center;
   font-weight: 600;
-  color: #cbd5f5;
+  color: var(--onity-color-primary);
   font-size: 0.9rem;
-}
-
-.highlightCard {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.15));
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  border-radius: var(--onity-radius-lg);
-  padding: var(--onity-space-md);
 }
 
 .tableActions {

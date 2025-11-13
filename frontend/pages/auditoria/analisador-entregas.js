@@ -26,45 +26,56 @@ export default function FileAnalyzer() {
   const [icmsLoading, setIcmsLoading] = useState(false);
   const [icmsExpanded, setIcmsExpanded] = useState(false);
   const [selectedAnalysisInfo, setSelectedAnalysisInfo] = useState(null);
+  const [clientesList, setClientesList] = useState([]); // lista de clientes
+  const [clienteSelecionadoId, setClienteSelecionadoId] = useState(''); // id do dropdown
+
+  const user = getUserData();
+  const empresaId = user.EmpresaId;
+
+  // Carregar clientes ao montar
+  useEffect(() => {
+    if (!empresaId) return;
+    async function fetchClientes() {
+      try {
+        const token = getUserToken();
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const resp = await fetch(`${baseUrl}/auditoria/clientes?empresa_id=${empresaId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await resp.json();
+        // Filtra apenas regime_normal
+        const clientesRegimeNormal = (Array.isArray(data.data) ? data.data : data).filter(cli => (cli.regime_tributario || cli.regimeTributario) === 'regime_normal');
+        setClientesList(clientesRegimeNormal);
+      } catch (err) {
+        setClientesList([]);
+      }
+    }
+    fetchClientes();
+  }, [empresaId]);
 
   const loadAvailableYears = useCallback(async () => {
-    // Verificar se há cliente específico selecionado
-    const selectedClientId = localStorage.getItem('selected_client_id');
-    
-    if (!selectedClientId) {
-      console.log('Nenhum cliente específico selecionado');
-      // Se não há cliente, mostrar anos padrão
+    if (!clienteSelecionadoId) {
       setAvailableYears([2023, 2024, 2025]);
       return;
     }
-
     setYearsLoading(true);
     try {
-      console.log('Carregando anos disponíveis para cliente ID:', selectedClientId);
-
       const token = getUserToken();
-      if (!token) {
-        console.error('Token de autenticação não encontrado');
-        setAvailableYears([2023, 2024, 2025]);
-        return;
-      }
-
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       
       // Buscar análises do regime normal
-      const regimeResponse = await fetch(`${baseUrl}/regime-normal?clientes_id=${selectedClientId}`, {
+      const regimeResponse = await fetch(`${baseUrl}/auditoria/regime-normal?clientes_id=${clienteSelecionadoId}&empresa_id=${empresaId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       // Buscar análises do simples nacional
-      const simplesResponse = await fetch(`${baseUrl}/simples-nacional?clientes_id=${selectedClientId}`, {
+      const simplesResponse = await fetch(`${baseUrl}/auditoria/simples-nacional?clientes_id=${clienteSelecionadoId}&empresa_id=${empresaId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
       let allYears = [];
 
       // Processar resposta do regime normal
@@ -113,7 +124,7 @@ export default function FileAnalyzer() {
     } finally {
       setYearsLoading(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, clienteSelecionadoId, empresaId]);
 
   const initializeEmptyTimeline = useCallback(() => {
     const emptyTimeline = Array.from({ length: 12 }, (_, index) => ({
@@ -128,19 +139,13 @@ export default function FileAnalyzer() {
   }, [selectedYear]);
 
   const loadTimelineData = useCallback(async () => {
-    // Sistema multi-tenant - usar clientes_id
-    const clientId = localStorage.getItem('selected_client_id');
-    
-    if (!clientId) {
-      initializeEmptyTimeline();
-      return;
-    }
+    if (!clienteSelecionadoId) return initializeEmptyTimeline();
 
     setTimelineLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       // Usar clientes_id em vez de CNPJ para melhor segurança multi-tenant
-      const url = `${baseUrl}/regime-normal/status-obrigacoes?clientes_id=${clientId}&ano=${selectedYear}`;
+      const url = `${baseUrl}/auditoria/regime-normal/status-obrigacoes?clientes_id=${clienteSelecionadoId}&ano=${selectedYear}&empresa_id=${empresaId}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -190,12 +195,12 @@ export default function FileAnalyzer() {
     } finally {
       setTimelineLoading(false);
     }
-  }, [selectedYear, initializeEmptyTimeline]);
+  }, [selectedYear, initializeEmptyTimeline, clienteSelecionadoId, empresaId]);
 
   const loadSpecificAnalysis = useCallback(async (analysisId) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
-      const url = `${baseUrl}/regime-normal/${analysisId}`;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const url = `${baseUrl}/auditoria/regime-normal/${analysisId}?empresa_id=${empresaId}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -236,7 +241,7 @@ export default function FileAnalyzer() {
       // Fallback para carregar timeline normal
       loadTimelineData();
     }
-  }, [loadTimelineData]);
+  }, [loadTimelineData, empresaId]);
 
   useEffect(() => {
     console.log('🔍 [DEBUG] FileAnalyzer useEffect executado:', {
@@ -299,13 +304,13 @@ export default function FileAnalyzer() {
         return null;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const cleanCnpj = cnpj.replace(/[^\d]/g, '');
 
       // Primeiro, tentar buscar cliente existente por CNPJ
       console.log('🔍 [DEBUG] Buscando cliente existente por CNPJ:', cleanCnpj);
       const searchResponse = await fetch(
-        `${baseUrl}/clientes/por-cnpj/${cleanCnpj}?company_id=${empresaId}`,
+        `${baseUrl}/auditoria/clientes/por-cpf-cnpj/${cleanCnpj}?empresa_id=${empresaId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -324,14 +329,14 @@ export default function FileAnalyzer() {
       // Se não encontrou, criar novo cliente
       console.log('🔄 [INFO] Cliente não encontrado, criando novo...');
       const clienteData = {
-        company_id: empresaId,
+        empresa_id: empresaId,
         nome: nome || 'Cliente',
-        cnpj: cleanCnpj,
+        cpf_cnpj: cleanCnpj,
         uf: 'RJ',
         regime_tributario: 'regime_normal'
       };
 
-      const createResponse = await fetch(`${baseUrl}/clientes`, {
+      const createResponse = await fetch(`${baseUrl}/auditoria/clientes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +352,7 @@ export default function FileAnalyzer() {
         if (createResponse.status === 400 && errorData.error?.includes('já existe')) {
           console.log('🔄 [INFO] Cliente já existe, buscando novamente...');
           const retryResponse = await fetch(
-            `${baseUrl}/clientes/por-cnpj/${cleanCnpj}?company_id=${empresaId}`,
+            `${baseUrl}/auditoria/clientes/por-cpf-cnpj/${cleanCnpj}?empresa_id=${empresaId}`,
             {
               headers: {
                 'Authorization': `Bearer ${token}`
@@ -377,133 +382,147 @@ export default function FileAnalyzer() {
     }
   };
 
+  // Função helper, centraliza a garantia de cliente válido para o contexto multi-tenant
+  async function garantirClienteValido(results) {
+    let clientId = clienteSelecionadoId; // Usar o novo state
+    const user = getUserData();
+    const empresaId = user?.EmpresaId;
+    if (!clientId && results && results.length > 0) {
+      const firstResult = results[0];
+      if (firstResult.cnpj) {
+        // Cria/associa cliente com empresaId correto
+        const newClientId = await createOrFindClient(firstResult.cnpj, firstResult.nomeEmpresa || 'Cliente');
+        if (newClientId) {
+          setClienteSelecionadoId(newClientId);
+          localStorage.setItem('selected_client_name', firstResult.nomeEmpresa || 'Cliente');
+          localStorage.setItem('selected_client_cnpj', firstResult.cnpj);
+          console.log('[DEBUG] Cliente criado/associado automaticamente:', newClientId);
+          return newClientId;
+        } else {
+          throw new Error('Falha ao criar/associar cliente.');
+        }
+      }
+    }
+    if (!clientId) {
+      throw new Error('Nenhum cliente válido associado à empresa.');
+    }
+    // Opcional: validar empresaId do cliente aqui se quiser segurança máxima
+    return clientId;
+  }
+
   const handleFileProcessed = async (file) => {
+    console.log('[DEBUG] handleFileProcessed CHAMADO', file);
+    const user = getUserData();
+    const empresaId = user.EmpresaId != null ? user.EmpresaId : '';
     setProcessing(true);
     try {
-      // Se for um arquivo PDF, processar como análise do regime normal
-      if (
-        file.type === 'application/pdf' ||
-        file.name.toLowerCase().endsWith('.pdf')
-      ) {
-        console.log('Processando arquivo PDF do Regime Normal:', file.name);
-        
-        // Upload para a rota /regime-normal/upload
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await fetch(`${baseUrl}/regime-normal/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${getUserToken()}`,
-          },
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Erro ${response.status}: ${errorText}`);
-        }
-
-        toast.success('Arquivo do Regime Normal processado com sucesso');
-        await loadTimelineData();
-      } else {
-        // Para outros tipos de arquivo, usar o processamento padrão
-        const { results, duplicateError } = await processInvoiceZip(file);
-
-        // Verificar se houve erro de duplicação
-        if (duplicateError) {
-          toast.error(duplicateError, {
-            duration: 7000,
-            style: {
-              background: '#fef2f2',
-              color: '#dc2626',
-              border: '1px solid #fecaca',
-              maxWidth: '500px'
+      let cnpjExtraido = '';
+      let nomeExtraido = '';
+      let tipoExtraido = '';
+      let mesExtraido = '';
+      let anoExtraido = '';
+      let resumoExtraido = '';
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        // Supondo que processInvoiceZip traz essas infos no primeiro result
+        const { results } = await processInvoiceZip(file);
+        console.log('[DEBUG] Resultado completo do ZIP:', results);
+        if (results && Array.isArray(results)) {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+          for (const item of results) {
+            const cnpj = item.cnpj || '';
+            const nome = item.nomeEmpresa || 'Cliente';
+            const tipo = item.type || item.tipo || 'tipo_padrao';
+            const mes = item.period?.month || '';
+            const ano = item.period?.year || '';
+            const arquivoNome = item.fileName || file.name;
+            const resumoEnviado = item.resumo || item.data?.resumo || item.data || {};
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('empresa_id', empresaId);
+            formData.append('cnpj', cnpj);
+            formData.append('arquivo_nome', arquivoNome);
+            formData.append('tipo', tipo);
+            formData.append('mes', mes);
+            formData.append('ano', ano);
+            formData.append('resumo', JSON.stringify(resumoEnviado));
+            formData.append('nome', nome);
+            for (let [key, value] of formData.entries()) {
+              console.log(`[UPLOAD DEBUG FOR SPED] ${arquivoNome} – ${key}:`, value);
             }
-          });
+            try {
+              const response = await fetch(`${baseUrl}/auditoria/regime-normal/upload`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${getUserToken()}`,
+                },
+                body: formData
+              });
+              if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erro ${response.status}: ${errorText}`);
+              }
+              toast.success(`Arquivo ${arquivoNome} processado com sucesso`);
+            } catch (err) {
+              console.error(`[UPLOAD ERROR] ${arquivoNome}:`, err);
+              toast.error(`Erro ao processar ${arquivoNome}`);
+            }
+          }
+          await loadTimelineData();
+          setProcessing(false);
           return;
         }
-
-        const validResults = results.filter(
-          (result) => result && result.period && result.cnpj
-        );
-
-        if (validResults.length > 0) {
-          // Se não há cliente selecionado, mas temos resultados válidos, 
-          // tentar criar/associar cliente automaticamente
-          const clientId = localStorage.getItem('selected_client_id');
-          
-          if (!clientId && validResults.length > 0) {
-            const firstResult = validResults[0];
-            if (firstResult.cnpj) {
-              console.log('🔄 [INFO] Nenhum cliente selecionado, tentando criar/associar automaticamente...');
-              
-              const newClientId = await createOrFindClient(
-                firstResult.cnpj, 
-                firstResult.nomeEmpresa || 'Cliente'
-              );
-              
-              if (newClientId) {
-                // Salvar informações do cliente no localStorage para futuras operações
-                localStorage.setItem('selected_client_id', newClientId);
-                localStorage.setItem('selected_client_name', firstResult.nomeEmpresa || 'Cliente');
-                localStorage.setItem('selected_client_cnpj', firstResult.cnpj);
-                
-                toast.success(`Cliente ${firstResult.nomeEmpresa || 'Cliente'} associado automaticamente!`);
-                
-                // Recarregar dados com o novo cliente
-                await loadAvailableYears();
-                await loadTimelineData();
-              }
-            }
-          } else {
-            await loadTimelineData();
-          }
-          
-          toast.success(
-            `${validResults.length} arquivo(s) processado(s) com sucesso`
-          );
-        } else {
-          // Verificar se houve processamento mas sem resultados válidos
-          // Isso pode acontecer se o arquivo foi processado mas não tinha dados válidos
-          toast.error('Arquivo processado, mas não foi possível salvar a análise.');
-        }
+        // Não há mais upload para results[0] fora do for!
+      } else if (file.type === 'application/pdf') {
+        // Caso queira tratar PDF no futuro
       }
+      const arquivoNome = file.name;
+      console.log('[DEBUG FRONT-END] Enviando:', {
+        empresaId, cnpjExtraido, nomeExtraido, tipoExtraido, mesExtraido, anoExtraido, arquivoNome, resumoExtraido
+      });
+      // Validar todos os campos antes do envio
+      if (!empresaId || !cnpjExtraido || !arquivoNome || !tipoExtraido || !mesExtraido || !anoExtraido) {
+        toast.error('Arquivo ou dados insuficientes: preencha todos os campos obrigatórios.');
+        setProcessing(false);
+        return;
+      }
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('empresa_id', empresaId); // <-- campo fundamental!
+      formData.append('cnpj', cnpjExtraido);
+      formData.append('arquivo_nome', arquivoNome);
+      formData.append('tipo', tipoExtraido);
+      formData.append('mes', mesExtraido);
+      formData.append('ano', anoExtraido);
+      formData.append('resumo', JSON.stringify(resumoExtraido || {}));
+      formData.append('nome', nomeExtraido);
+      console.log('[UPLOAD DEBUG] resumoExtraido:', resumoExtraido);
+      console.log('[UPLOAD DEBUG] resumo enviado:', JSON.stringify(resumoExtraido || {}));
+      for (let [key, value] of formData.entries()) {
+        console.log(`[UPLOAD DEBUG FORMDATA] ${key}:`, value);
+      }
+      const response = await fetch(`${baseUrl}/auditoria/regime-normal/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getUserToken()}`,
+        },
+        body: formData
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText}`);
+      }
+      toast.success('Arquivo do Regime Normal processado com sucesso');
+      await loadTimelineData();
     } catch (error) {
       console.error('Error processing file:', error);
-      
-      // Tratar erro de duplicata especificamente (vem do backend com status 409)
-      if (error instanceof Error && error.message?.includes('Já existe uma análise')) {
-        toast.error(error.message.replace('Erro ao criar análise: ', ''), {
-          duration: 7000,
-          style: {
-            background: '#fef2f2',
-            color: '#dc2626',
-            border: '1px solid #fecaca',
-            maxWidth: '500px'
-          }
-        });
-      } else if (error instanceof Error && error.message?.includes('Erro ao criar análise:')) {
-        // Tratar outros erros de criação de análise
-        toast.error(error.message.replace('Erro ao criar análise: ', ''), {
-          duration: 5000,
-          style: {
-            background: '#fef2f2',
-            color: '#dc2626',
-            border: '1px solid #fecaca'
-          }
-        });
-      } else {
-        toast.error('Erro ao processar arquivo. Verifique o formato e tente novamente.');
-      }
+      toast.error('Erro ao processar arquivo. Verifique o formato e tente novamente.');
     } finally {
       setProcessing(false);
     }
   };
 
   const handleMonthSelect = (monthData) => {
-    const clientId = localStorage.getItem('selected_client_id');
+    const clientId = clienteSelecionadoId;
     
     if (monthData.status === 'done' && clientId) {
       // Sistema multi-tenant - usar dados do cliente selecionado
@@ -520,7 +539,7 @@ export default function FileAnalyzer() {
 
   const handleCadastrarNovaEmpresa = () => {
     // Limpar dados do cliente no localStorage
-    localStorage.removeItem('selected_client_id');
+    setClienteSelecionadoId('');
     localStorage.removeItem('selected_client_name');
     localStorage.removeItem('selected_client_cnpj');
     
@@ -558,7 +577,7 @@ export default function FileAnalyzer() {
   // Carregar valores de ICMS usando a nova API
   useEffect(() => {
     const loadIcmsValues = async () => {
-      const clientId = localStorage.getItem('selected_client_id');
+      const clientId = clienteSelecionadoId;
       
       if (!clientId) {
         setIcmsValues(Array(12).fill(0));
@@ -567,7 +586,7 @@ export default function FileAnalyzer() {
       
       setIcmsLoading(true);
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
         const token = getUserToken();
         
         if (!token) {
@@ -578,7 +597,7 @@ export default function FileAnalyzer() {
 
         // GET - Buscar registros de ICMS recolhido por cliente e ano
         const response = await fetch(
-          `${baseUrl}/icms-recolhido/cliente/${clientId}?ano=${selectedYear}`,
+          `${baseUrl}/auditoria/icms-recolhido/cliente/${clientId}?ano=${selectedYear}&empresa_id=${empresaId}`,
           {
             method: 'GET',
             headers: {
@@ -613,11 +632,11 @@ export default function FileAnalyzer() {
       }
     };
     loadIcmsValues();
-  }, [selectedYear]);
+  }, [selectedYear, clienteSelecionadoId, empresaId]);
 
   // Salvar valores de ICMS usando a nova API (POST/PUT)
   const handleSaveIcms = async () => {
-    const clientId = localStorage.getItem('selected_client_id');
+    const clientId = clienteSelecionadoId;
     
     if (!clientId) {
       toast.error('Nenhum cliente selecionado');
@@ -626,7 +645,7 @@ export default function FileAnalyzer() {
     
     setIcmsLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const token = getUserToken();
       
       if (!token) {
@@ -636,7 +655,7 @@ export default function FileAnalyzer() {
 
       // Primeiro, buscar registros existentes para este cliente e ano
       const getResponse = await fetch(
-        `${baseUrl}/icms-recolhido/cliente/${clientId}?ano=${selectedYear}`,
+        `${baseUrl}/icms-recolhido/cliente/${clientId}?ano=${selectedYear}&empresa_id=${empresaId}`,
         {
           method: 'GET',
           headers: {
@@ -708,7 +727,7 @@ export default function FileAnalyzer() {
       const loadIcmsValues = async () => {
         try {
           const response = await fetch(
-            `${baseUrl}/icms-recolhido/cliente/${clientId}?ano=${selectedYear}`,
+            `${baseUrl}/icms-recolhido/cliente/${clientId}?ano=${selectedYear}&empresa_id=${empresaId}`,
             {
               method: 'GET',
               headers: {
@@ -774,6 +793,22 @@ export default function FileAnalyzer() {
     <div className={styles.layoutWrapper}>
       <PrincipalSidebar />
       <div className={styles.pageContent}>
+        <div style={{ margin: '16px 0 24px 0' }}>
+          <label htmlFor="selectCliente"><b>Cliente:</b>{' '}</label>
+          <select
+            id="selectCliente"
+            value={clienteSelecionadoId}
+            onChange={(e) => setClienteSelecionadoId(e.target.value)}
+            style={{ minWidth: 240, padding: 4 }}
+          >
+            <option value="">Selecione um cliente</option>
+            {clientesList.map(cli => (
+              <option key={cli.id} value={cli.id}>
+                {cli.nome || cli.razao_social} ({cli.cpf_cnpj})
+              </option>
+            ))}
+          </select>
+        </div>
         <div className={styles.page}>
           <div className={styles.container}>
             <div className={styles.sectionSpacing}>
@@ -856,7 +891,7 @@ export default function FileAnalyzer() {
                 </p>
               </div>
               <div className={styles.sectionBody}>
-                <FileUploader onUpload={handleFileProcessed} processing={processing} />
+                <FileUploader onFileProcessed={handleFileProcessed} processing={processing} />
                 <div className={styles.infoSection}>
                   <h3 className={styles.clientCardTitle}>
                     <Info className={styles.buttonIcon} />

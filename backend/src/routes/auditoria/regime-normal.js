@@ -2,173 +2,74 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../config/database");
 const verifyToken = require("../../middlewares/auth");
+const multer = require('multer');
+const upload = multer();
 
 // ===== ROTAS PARA REGIME NORMAL =====
 
 // POST /regime-normal/upload - Upload de análise do Regime Normal
-router.post("/upload", verifyToken, async (req, res) => {
+router.post("/upload", verifyToken, upload.single('file'), async (req, res) => {
   try {
-    const { 
+    const {
       cnpj,
       arquivo_nome,
       tipo,
       mes,
       ano,
-      resumo,
-      clientes_id
+      empresa_id,
+      nome // opcional
     } = req.body;
 
-    // Validações obrigatórias
-    if (!cnpj || !arquivo_nome || !tipo || !mes || !ano || !resumo || !clientes_id) {
-      return res.status(400).json({ 
-        error: "Campos obrigatórios: cnpj, arquivo_nome, tipo, mes, ano, resumo, clientes_id" 
-      });
-    }
-
-    // Validar formato do CNPJ (14 dígitos)
-    if (!/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
-      return res.status(400).json({ 
-        error: "CNPJ deve ter 14 dígitos" 
-      });
-    }
-
-    // Validar mês (1-12)
-    const mesNumero = parseInt(mes);
-    if (isNaN(mesNumero) || mesNumero < 1 || mesNumero > 12) {
-      return res.status(400).json({ 
-        error: "Mês deve ser um número entre 1 e 12" 
-      });
-    }
-
-    // Validar ano
-    const anoNumero = parseInt(ano);
-    if (isNaN(anoNumero) || anoNumero < 1900 || anoNumero > 2100) {
-      return res.status(400).json({ 
-        error: "Ano deve ser um número válido entre 1900 e 2100" 
-      });
-    }
-
-    const cleanCnpj = cnpj.replace(/\D/g, '');
-
-    const clientesId = Number.parseInt(clientes_id, 10);
-    if (Number.isNaN(clientesId)) {
-      return res.status(400).json({ error: "clientes_id inválido" });
-    }
-
-    const companyIds = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-
+    let resumo = {};
     try {
-    const [clienteRows] = await pool.query(
-      `
-        SELECT id, cpf_cnpj, empresa_id
-        FROM clientes
-        WHERE id = ?
-      `,
-        [clientesId]
+      resumo = JSON.parse(req.body.resumo || '{}');
+    } catch {
+      resumo = {};
+    }
+
+    // Validação obrigatória
+    if (!cnpj || !arquivo_nome || !tipo || !mes || !ano || !empresa_id) {
+      return res.status(400).json({ error: 'Campos obrigatórios: cnpj, arquivo_nome, tipo, mes, ano, resumo, empresa_id' });
+    }
+
+    // --- Buscar ou criar cliente ---
+    const cleanCnpj = cnpj.replace(/\D/g, '');
+    let clienteId;
+    const [rows] = await pool.query(
+      'SELECT id FROM clientes WHERE cpf_cnpj = ? AND empresa_id = ? LIMIT 1',
+      [cleanCnpj, empresa_id]
     );
-
-    if (!clienteRows.length) {
-      return res.status(404).json({ error: "Cliente não encontrado" });
+    if (rows.length) {
+      clienteId = rows[0].id;
+    } else {
+      // Cria cliente se não existe
+      const [resultInsert] = await pool.query(
+        'INSERT INTO clientes (cpf_cnpj, empresa_id, nome, uf, regime_tributario) VALUES (?, ?, ?, ?, ?)',
+        [cleanCnpj, empresa_id, nome || 'Cliente', 'RJ', 'regime_normal']
+      );
+      clienteId = resultInsert.insertId;
     }
 
-    const cliente = clienteRows[0];
-
-    if (!companyIds.includes(cliente.empresa_id)) {
-      return res.status(403).json({ error: "Acesso negado a este cliente" });
-    }
-
-      const clienteCnpjLimpo = (cliente.cpf_cnpj || "").replace(/\D/g, "");
-      if (clienteCnpjLimpo !== cleanCnpj) {
-        return res.status(400).json({
-          error: "CNPJ fornecido não corresponde ao CNPJ do cliente",
-        });
-    }
-
-      const [duplicadoRows] = await pool.query(
-      `
-          SELECT id, tipo, mes, ano
-        FROM analises_regime_normal
-        WHERE cliente_id = ?
-          AND tipo = ?
-          AND mes = ?
-          AND ano = ?
-        LIMIT 1
-      `,
-        [clientesId, tipo, mesNumero, anoNumero]
+    // --- Insere na analises_regime_normal ---
+    console.log('[BACKEND DEBUG] PREPARANDO PARA INSERIR', {clienteId, empresa_id, resumo});
+    const [insertResult] = await pool.query(
+      `INSERT INTO analises_regime_normal
+      (cliente_id, cnpj, arquivo_nome, tipo, mes, ano, resumo, criado_em)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        clienteId,
+        cleanCnpj,
+        arquivo_nome,
+        tipo,
+        mes,
+        ano,
+        JSON.stringify(resumo)
+      ]
     );
-
-      if (duplicadoRows.length) {
-        const existente = duplicadoRows[0];
-        const nomesMeses = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-];
-        const mesNome = nomesMeses[existente.mes - 1] || `Mês ${existente.mes}`;
-
-      return res.status(409).json({
-          error: `Já existe uma análise do tipo "${existente.tipo}" para ${mesNome}/${existente.ano}`,
-        duplicate: true,
-          tipo: existente.tipo,
-          mes: existente.mes,
-          ano: existente.ano,
-        mesNome,
-      });
-    }
-
-      const [insertResult] = await pool.query(
-      `
-        INSERT INTO analises_regime_normal (
-          cliente_id,
-          cnpj,
-          arquivo_nome,
-          tipo,
-          mes,
-          ano,
-          resumo,
-          criado_por,
-          atualizado_por
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-        [
-          clientesId,
-          cleanCnpj,
-          arquivo_nome,
-          tipo,
-          mesNumero,
-          anoNumero,
-          resumo,
-          req.user.userId,
-          req.user.userId,
-        ]
-    );
-
-    res.status(201).json({
-      success: true,
-      message: "Análise do Regime Normal criada com sucesso",
-      data: {
-          cliente_id: clientesId,
-          analise_id: insertResult.insertId,
-        cnpj: cleanCnpj,
-      },
-    });
-    } catch (error) {
-      console.error("Erro ao criar análise:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-
-  } catch (err) {
-    console.error('Erro no upload do Regime Normal:', err);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    return res.json({ success: true, id: insertResult.insertId });
+  } catch (error) {
+    console.error('Erro no upload de regime normal:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
@@ -471,73 +372,14 @@ router.get("/clientes", verifyToken, async (req, res) => {
 // GET /regime-normal/status-obrigacoes - Buscar status das obrigações por cliente e ano
 router.get("/status-obrigacoes", verifyToken, async (req, res) => {
   try {
-    const { cnpj, clientes_id, ano } = req.query;
-
-    const companyIds = Array.isArray(req.user.all_company_ids) ? req.user.all_company_ids : [];
-
-    if (!clientes_id && !cnpj) {
-      return res.status(400).json({ error: "CNPJ ou clientes_id é obrigatório" });
-    }
-
-    if (!ano) {
-      return res.status(400).json({ error: "Ano é obrigatório" });
-    }
+    const { cnpj, clientes_id, ano, empresa_id } = req.query;
+    if (!clientes_id || !empresa_id) return res.status(400).json({ error: 'clientes_id e empresa_id são obrigatórios'});
+    const [clienteRows] = await pool.query('SELECT * FROM clientes WHERE id = ? AND empresa_id = ?', [clientes_id, empresa_id]);
+    if (!clienteRows.length) return res.status(404).json({ error: 'Cliente não encontrado' });
 
     const anoInt = Number.parseInt(ano, 10);
     if (Number.isNaN(anoInt)) {
       return res.status(400).json({ error: "Ano inválido" });
-    }
-
-    let clienteRow = null;
-
-    if (clientes_id) {
-      const clienteId = Number.parseInt(clientes_id, 10);
-      if (Number.isNaN(clienteId)) {
-        return res.status(400).json({ error: "clientes_id inválido" });
-      }
-
-      const [clienteRows] = await pool.query(
-        `
-          SELECT id, empresa_id
-          FROM clientes
-          WHERE id = ?
-            AND regime_tributario = 'regime_normal'
-        `,
-        [clienteId]
-      );
-
-      if (!clienteRows.length || !companyIds.includes(clienteRows[0].empresa_id)) {
-        return res.status(404).json({ error: "Cliente não encontrado" });
-      }
-
-      clienteRow = clienteRows[0];
-    } else if (cnpj) {
-      const cleanCnpj = cnpj.replace(/\D/g, "");
-      if (!cleanCnpj) {
-        return res.status(400).json({ error: "CNPJ inválido" });
-      }
-
-      if (!companyIds.length) {
-        return res.status(404).json({ error: "Cliente não encontrado" });
-      }
-
-      const [clienteRows] = await pool.query(
-        `
-          SELECT id, empresa_id
-          FROM clientes
-          WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ?
-            AND regime_tributario = 'regime_normal'
-            AND empresa_id IN (${companyIds.map(() => "?").join(",")})
-          LIMIT 1
-        `,
-        [cleanCnpj, ...companyIds]
-      );
-
-      if (!clienteRows.length) {
-        return res.status(404).json({ error: "Cliente não encontrado" });
-      }
-
-      clienteRow = clienteRows[0];
     }
 
     const [analisesRows] = await pool.query(
@@ -555,7 +397,7 @@ router.get("/status-obrigacoes", verifyToken, async (req, res) => {
           AND c.empresa_id = ?
         ORDER BY arn.mes ASC
       `,
-      [clienteRow.id, anoInt, clienteRow.empresa_id]
+      [clienteRows[0].id, anoInt, clienteRows[0].empresa_id]
     );
 
     // Criar array com todos os 12 meses

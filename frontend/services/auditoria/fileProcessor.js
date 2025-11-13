@@ -1,5 +1,4 @@
 import JSZip from 'jszip';
-import * as pdfjsLib from 'pdfjs-dist';
 
 // Function to read text file with proper encoding
 const readTextFile = (file) => {
@@ -221,7 +220,7 @@ const saveCompanyToSupabase = async (cnpj, nome) => {
   try {
     console.log('🔍 [DEBUG] Salvando empresa via API do backend:', { cnpj, nome });
     
-    const token = getAuthToken();
+    const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
     if (!token) {
       throw new Error('Token de autenticação não encontrado');
     }
@@ -233,16 +232,16 @@ const saveCompanyToSupabase = async (cnpj, nome) => {
 
     // Preparar dados para a API
     const clienteData = {
-      company_id: companyId,
-      nome: nome || 'Cliente',
-      cnpj: cnpj.replace(/[^\d]/g, ''),
-      uf: 'RJ',
+      empresa_id: companyId,
+      razao_social: nome || 'Cliente',
+      cpf_cnpj: cnpj.replace(/[^\d]/g, ''),
+      estado: 'RJ',
       regime_tributario: 'regime_normal'
     };
 
     console.log('🔍 [DEBUG] Dados do cliente:', clienteData);
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     const response = await fetch(`${baseUrl}/auditoria/clientes`, {
       method: 'POST',
       headers: {
@@ -279,7 +278,7 @@ const getExistingClient = async (cnpj, companyId, token, baseUrl) => {
   try {
     console.log('🔍 [DEBUG] Buscando cliente existente:', { cnpj, companyId });
     
-    const response = await fetch(`${baseUrl}/auditoria/clientes?cnpj=${cnpj}&company_id=${companyId}`, {
+    const response = await fetch(`${baseUrl}/auditoria/clientes?cnpj=${cnpj}&empresa_id=${companyId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -1128,7 +1127,7 @@ const saveAnalysisToSupabase = async (
   try {
     console.log('🔍 [DEBUG] Salvando análise via API do backend:', { cnpj, mes, ano, tipo, fileName });
     
-    const token = getAuthToken();
+    const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
     if (!token) {
       throw new Error('Token de autenticação não encontrado');
     }
@@ -1166,9 +1165,9 @@ const saveAnalysisToSupabase = async (
       cliente = { id: clientesId };
     } else {
       console.log('🔍 [DEBUG] Buscando cliente por CNPJ:', cleanCnpj);
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const clienteResponse = await fetch(
-        `${baseUrl}/auditoria/clientes/por-cnpj/${cleanCnpj}?company_id=${getSelectedCompanyId()}`,
+        `${baseUrl}/auditoria/clientes/por-cnpj/${cleanCnpj}?empresa_id=${getSelectedCompanyId()}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1321,34 +1320,37 @@ const saveAnalysisToSupabase = async (
 
     // Preparar dados para a análise
     const analiseData = {
-      clientes_id: cliente.id,
-            cnpj: cleanCnpj,
-            arquivo_nome: fileName,
+      empresa_id: getSelectedCompanyId(), // campo fundamental!
+      cnpj: cleanCnpj,
+      arquivo_nome: fileName,
       tipo,
       mes,
       ano,
       resumo
     };
-
     console.log('🔍 [DEBUG] Dados da análise:', analiseData);
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/auditoria/regime-normal/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(analiseData)
-    });
+    // Remove/Desabilita o POST; processamento segue sem upload direto aqui
+    // const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    // const response = await fetch(`${baseUrl}/auditoria/regime-normal/upload`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${token}`
+    //   },
+    //   body: JSON.stringify(analiseData)
+    // });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Erro ao criar análise: ${errorData.error || response.statusText}`);
-    }
+    // if (!response.ok) {
+    //   const errorData = await response.json();
+    //   throw new Error(`Erro ao criar análise: ${errorData.error || response.statusText}`);
+    // }
 
-    const result = await response.json();
-    console.log('✅ [SUCCESS] Análise criada com sucesso:', result);
+    // const result = await response.json();
+    // console.log('✅ [SUCCESS] Análise criada com sucesso:', result);
+    // return true;
+
+    // Só retorna true por completude
     return true;
 
   } catch (error) {
@@ -1369,6 +1371,9 @@ export const processInvoiceZip = async (file) => {
       file.type === 'application/pdf' ||
       file.name.toLowerCase().endsWith('.pdf')
     ) {
+      if (typeof window === 'undefined') {
+        throw new Error('Função PDF só pode rodar no browser/client!');
+      }
       console.log('[PROCESSOR] Processing direct PDF file:', file.name);
       try {
         // --- INTEGRAÇÃO PARA SIMPLES NACIONAL ---
@@ -1929,11 +1934,11 @@ export const processInvoiceZip = async (file) => {
                 console.log(`[ZIP] CNPJ encontrado no PDF eCAC: ${cnpj}`);
                 
                 // Buscar cliente por CNPJ
-                const token = getAuthToken();
+                const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
                 if (token) {
-                  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                   const clienteResponse = await fetch(
-                    `${baseUrl}/auditoria/clientes/por-cnpj/${cnpj}?company_id=${getSelectedCompanyId()}`,
+                    `${baseUrl}/auditoria/clientes/por-cnpj/${cnpj}?empresa_id=${getSelectedCompanyId()}`,
                     {
                       headers: {
                         'Authorization': `Bearer ${token}`
@@ -2042,11 +2047,11 @@ export const processInvoiceZip = async (file) => {
                   console.log(`[ZIP] CNPJ encontrado no PDF: ${cnpj}`);
                   
                   // Buscar cliente por CNPJ
-                  const token = getAuthToken();
+                  const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
                   if (token) {
-                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                     const clienteResponse = await fetch(
-                      `${baseUrl}/auditoria/clientes/por-cnpj/${cnpj}?company_id=${getSelectedCompanyId()}`,
+                      `${baseUrl}/auditoria/clientes/por-cnpj/${cnpj}?empresa_id=${getSelectedCompanyId()}`,
                       {
                         headers: {
                           'Authorization': `Bearer ${token}`
@@ -2106,3 +2111,25 @@ export const processInvoiceZip = async (file) => {
     return { results }; // Retornar resultados parciais em vez de lançar erro
   }
 };
+
+// Função utilitária para pegar companyId de forma segura
+function getSelectedCompanyId() {
+  if (typeof window === 'undefined') return null;
+  const storedCompanyId = localStorage.getItem('selected_company_id');
+  if (storedCompanyId) return storedCompanyId;
+  const rawUserData = localStorage.getItem('userData');
+  if (!rawUserData) return null;
+  try {
+    const parsed = JSON.parse(rawUserData);
+    return (
+      parsed?.EmpresaId ??
+      parsed?.empresaId ??
+      parsed?.empresa_id ??
+      parsed?.companyId ??
+      parsed?.company_id ??
+      null
+    );
+  } catch {
+    return null;
+  }
+}

@@ -12,29 +12,29 @@ const REGIME_TRIBUTARIO_OPTIONS = ['simples_nacional', 'regime_normal'];
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { 
-      company_id, 
-      nome, 
-      cnpj, 
-      uf, 
+      empresa_id, 
+      razao_social, 
+      cpf_cnpj, 
+      estado, 
       regime_tributario
     } = req.body;
     
     // Validações obrigatórias
-    if (!company_id || !nome || !cnpj || !uf) {
+    if (!empresa_id || !razao_social || !cpf_cnpj || !estado) {
       return res.status(400).json({ 
-        error: "Todos os campos são obrigatórios: company_id, nome, cnpj, uf" 
+        error: "Todos os campos são obrigatórios: empresa_id, razao_social, cpf_cnpj, estado" 
       });
     }
 
     // Validar formato do CNPJ (14 dígitos)
-    if (!/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
+    if (!/^\d{14}$/.test(cpf_cnpj.replace(/\D/g, ''))) {
       return res.status(400).json({ 
         error: "CNPJ deve ter 14 dígitos" 
       });
     }
 
     // Validar UF (2 caracteres)
-    if (!/^[A-Z]{2}$/.test(uf)) {
+    if (!/^[A-Z]{2}$/.test(estado)) {
       return res.status(400).json({ 
         error: "UF deve ter 2 caracteres maiúsculos" 
       });
@@ -47,37 +47,19 @@ router.post("/", verifyToken, async (req, res) => {
       });
     }
 
-    // Verificar se cliente já existe para este company_id e cnpj
-    const { data: existingCliente } = await supabase
-      .from('clientes')
-      .select('id')
-      .eq('company_id', company_id)
-      .eq('cnpj', cnpj)
-      .single();
+    // Verificar se cliente já existe para este empresa_id e cnpj
+    const [rows] = await db.query('SELECT id FROM clientes WHERE empresa_id = ? AND cpf_cnpj = ? LIMIT 1', [empresa_id, cpf_cnpj]);
 
-    if (existingCliente) {
+    if (rows.length > 0) {
       return res.status(400).json({ 
         error: "Cliente já existe para este CNPJ" 
       });
     }
 
-    const { data, error } = await supabase
-      .from('clientes')
-      .insert({
-        company_id,
-        nome,
-        cnpj,
-        uf,
-        regime_tributario,
-        created_by: req.user.userId,
-        updated_by: req.user.userId
-      })
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error('Erro ao criar cliente:', error);
-      return res.status(500).json({ error: "Erro ao criar cliente." });
+    const [result] = await db.query('INSERT INTO clientes (empresa_id, razao_social, cpf_cnpj, estado, regime_tributario) VALUES (?, ?, ?, ?, ?)', [empresa_id, razao_social, cpf_cnpj, estado, regime_tributario]);
+    let data = null;
+    if (result && result.insertId) {
+      [[data]] = await db.query('SELECT * FROM clientes WHERE id = ?', [result.insertId]);
     }
 
     res.status(201).json(data);
@@ -91,9 +73,9 @@ router.post("/", verifyToken, async (req, res) => {
 router.get("/", verifyToken, async (req, res) => {
   try {
     const {
-      company_id,
-      cnpj,
-      uf,
+      empresa_id,
+      cpf_cnpj,
+      estado,
       nome,
       simples_nacional,
       regime_tributario,
@@ -103,33 +85,33 @@ router.get("/", verifyToken, async (req, res) => {
       sort_order = 'desc'
     } = req.query;
 
-    if (!company_id) {
+    if (!empresa_id) {
       return res.status(400).json({
-        error: "company_id é obrigatório"
+        error: "empresa_id é obrigatório"
       });
     }
 
-    const companyIdNumber = Number(company_id);
-    if (Number.isNaN(companyIdNumber)) {
+    const empresaIdNumber = Number(empresa_id);
+    if (Number.isNaN(empresaIdNumber)) {
       return res.status(400).json({
-        error: "company_id deve ser numérico"
+        error: "empresa_id deve ser numérico"
       });
     }
 
-    // Apenas validação de existência de company_id segue normalmente.
+    // Apenas validação de existência de empresa_id segue normalmente.
 
     const filters = ["empresa_id = ?"];
-    const params = [companyIdNumber];
+    const params = [empresaIdNumber];
 
-    if (cnpj) {
-      const sanitizedCnpj = cnpj.replace(/\D/g, "");
+    if (cpf_cnpj) {
+      const sanitizedCnpj = cpf_cnpj.replace(/\D/g, "");
       filters.push("cpf_cnpj = ?");
       params.push(sanitizedCnpj);
     }
 
-    if (uf) {
+    if (estado) {
       filters.push("estado = ?");
-      params.push(uf.toUpperCase());
+      params.push(estado.toUpperCase());
     }
 
     if (nome) {
@@ -152,8 +134,8 @@ router.get("/", verifyToken, async (req, res) => {
 
     const allowedSorts = {
       nome: "nome_fantasia",
-      cnpj: "cpf_cnpj",
-      uf: "estado",
+      cpf_cnpj: "cpf_cnpj",
+      estado: "estado",
       created_at: "criado_em",
       updated_at: "atualizado_em"
     };
@@ -170,8 +152,8 @@ router.get("/", verifyToken, async (req, res) => {
         id,
         nome_fantasia AS nome,
         razao_social,
-        cpf_cnpj AS cnpj,
-        estado AS uf,
+        cpf_cnpj AS cpf_cnpj,
+        estado AS estado,
         regime_tributario,
         empresa_id
       FROM clientes
@@ -193,10 +175,10 @@ router.get("/", verifyToken, async (req, res) => {
     const data = rows.map((row) => ({
       id: row.id,
       nome: row.nome || row.razao_social || '',
-      cnpj: row.cnpj,
-      uf: row.uf,
+      cpf_cnpj: row.cpf_cnpj,
+      estado: row.estado,
       regime_tributario: row.regime_tributario,
-      company_id: row.empresa_id
+      empresa_id: row.empresa_id
     }));
 
     return res.json({
@@ -218,9 +200,9 @@ router.get("/", verifyToken, async (req, res) => {
 router.get("/simples-nacional", verifyToken, async (req, res) => {
   try {
     const { 
-      company_id, 
-      cnpj, 
-      uf, 
+      empresa_id, 
+      cpf_cnpj, 
+      estado, 
       nome, 
       page = 1,
       limit = 50,
@@ -228,25 +210,21 @@ router.get("/simples-nacional", verifyToken, async (req, res) => {
       sort_order = 'desc'
     } = req.query;
 
-    if (!company_id) {
+    if (!empresa_id) {
       return res.status(400).json({ 
-        error: "company_id é obrigatório" 
+        error: "empresa_id é obrigatório" 
       });
     }
 
-    let query = supabase
-      .from('clientes')
-      .select('*')
-      .eq('company_id', company_id)
-      .eq('regime_tributario', 'simples_nacional');
+    let query = db.query('SELECT * FROM clientes WHERE empresa_id = ? AND regime_tributario = ?', [empresa_id, 'simples_nacional']);
 
     // Aplicar filtros adicionais
-    if (cnpj) {
-      query = query.eq('cnpj', cnpj);
+    if (cpf_cnpj) {
+      query = query.eq('cpf_cnpj', cpf_cnpj);
     }
 
-    if (uf) {
-      query = query.eq('uf', uf.toUpperCase());
+    if (estado) {
+      query = query.eq('estado', estado.toUpperCase());
     }
 
     if (nome) {
@@ -254,7 +232,7 @@ router.get("/simples-nacional", verifyToken, async (req, res) => {
     }
 
     // Aplicar ordenação
-    if (sort_by && ['nome', 'cnpj', 'uf', 'created_at', 'updated_at'].includes(sort_by)) {
+    if (sort_by && ['nome', 'cpf_cnpj', 'estado', 'created_at', 'updated_at'].includes(sort_by)) {
       query = query.order(sort_by, { ascending: sort_order === 'asc' });
     } else {
       query = query.order('created_at', { ascending: false });
@@ -272,19 +250,15 @@ router.get("/simples-nacional", verifyToken, async (req, res) => {
     }
 
     // Buscar total de registros para paginação
-    let countQuery = supabase
-      .from('clientes')
-      .select('*', { count: 'exact', head: true })
-      .eq('company_id', company_id)
-      .eq('regime_tributario', 'simples_nacional');
+    let countQuery = db.query('SELECT COUNT(*) AS total FROM clientes WHERE empresa_id = ? AND regime_tributario = ?', [empresa_id, 'simples_nacional']);
 
     // Aplicar os mesmos filtros na contagem
-    if (cnpj) {
-      countQuery = countQuery.eq('cnpj', cnpj);
+    if (cpf_cnpj) {
+      countQuery = countQuery.eq('cpf_cnpj', cpf_cnpj);
     }
 
-    if (uf) {
-      countQuery = countQuery.eq('uf', uf.toUpperCase());
+    if (estado) {
+      countQuery = countQuery.eq('estado', estado.toUpperCase());
     }
 
     if (nome) {
@@ -312,9 +286,9 @@ router.get("/simples-nacional", verifyToken, async (req, res) => {
 router.get("/regime-normal", verifyToken, async (req, res) => {
   try {
     const { 
-      company_id, 
-      cnpj, 
-      uf, 
+      empresa_id, 
+      cpf_cnpj, 
+      estado, 
       nome, 
       page = 1,
       limit = 50,
@@ -323,20 +297,20 @@ router.get("/regime-normal", verifyToken, async (req, res) => {
     } = req.query;
 
     console.log('🔍 [DEBUG] Query params recebidos:', req.query);
-    console.log('🔍 [DEBUG] company_id:', company_id, 'tipo:', typeof company_id);
+    console.log('🔍 [DEBUG] empresa_id:', empresa_id, 'tipo:', typeof empresa_id);
 
-    if (!company_id) {
+    if (!empresa_id) {
       return res.status(400).json({ 
-        error: "company_id é obrigatório" 
+        error: "empresa_id é obrigatório" 
       });
     }
 
     // Validar formato UUID
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(company_id)) {
+    if (!uuidRegex.test(empresa_id)) {
       return res.status(400).json({ 
-        error: "company_id deve ser um UUID válido",
-        received: company_id
+        error: "empresa_id deve ser um UUID válido",
+        received: empresa_id
       });
     }
 
@@ -345,20 +319,9 @@ router.get("/regime-normal", verifyToken, async (req, res) => {
     // SOLUÇÃO ROBUSTA: Buscar todos os clientes da empresa e filtrar manualmente
     // Isso evita problemas com tipos ENUM e interpretação incorreta de parâmetros
     console.log('🔍 [DEBUG] Buscando todos os clientes da empresa...');
-    const { data: allClients, error: fetchError } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('company_id', company_id);
+    const [allClients] = await db.query('SELECT * FROM clientes WHERE empresa_id = ?', [empresa_id]);
         
-    console.log('🔍 [DEBUG] Consulta executada - data length:', allClients?.length, 'error:', fetchError);
-    
-    if (fetchError) {
-      console.error('🔍 [DEBUG] Erro ao buscar clientes:', fetchError);
-      return res.status(500).json({ 
-        error: "Erro ao buscar clientes do Regime Normal.",
-        details: fetchError.message
-      });
-    }
+    console.log('🔍 [DEBUG] Consulta executada - data length:', allClients?.length, 'error:', null);
     
     // Filtrar por regime_tributario = 'regime_normal'
     const regimeNormalClients = allClients?.filter(cliente => 
@@ -371,14 +334,14 @@ router.get("/regime-normal", verifyToken, async (req, res) => {
     // Aplicar filtros adicionais manualmente
     let finalData = regimeNormalClients;
     
-    if (cnpj) {
-      finalData = finalData.filter(cliente => cliente.cnpj === cnpj);
-      console.log('🔍 [DEBUG] Filtro CNPJ aplicado:', cnpj, '- restantes:', finalData.length);
+    if (cpf_cnpj) {
+      finalData = finalData.filter(cliente => cliente.cpf_cnpj === cpf_cnpj);
+      console.log('🔍 [DEBUG] Filtro CNPJ aplicado:', cpf_cnpj, '- restantes:', finalData.length);
     }
 
-    if (uf) {
-      finalData = finalData.filter(cliente => cliente.uf === uf.toUpperCase());
-      console.log('🔍 [DEBUG] Filtro UF aplicado:', uf.toUpperCase(), '- restantes:', finalData.length);
+    if (estado) {
+      finalData = finalData.filter(cliente => cliente.estado === estado.toUpperCase());
+      console.log('🔍 [DEBUG] Filtro UF aplicado:', estado.toUpperCase(), '- restantes:', finalData.length);
     }
 
     if (nome) {
@@ -389,7 +352,7 @@ router.get("/regime-normal", verifyToken, async (req, res) => {
     }
 
     // Aplicar ordenação manualmente
-    if (sort_by && ['nome', 'cnpj', 'uf', 'created_at', 'updated_at'].includes(sort_by)) {
+    if (sort_by && ['nome', 'cpf_cnpj', 'estado', 'created_at', 'updated_at'].includes(sort_by)) {
       finalData.sort((a, b) => {
         const aVal = a[sort_by];
         const bVal = b[sort_by];
@@ -427,26 +390,18 @@ router.get("/regime-normal", verifyToken, async (req, res) => {
 // GET /clientes/:id - Buscar cliente por ID
 router.get("/:id", verifyToken, async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('id', req.params.id)
-      .single();
+    const [data] = await db.query('SELECT * FROM clientes WHERE id = ?', [req.params.id]);
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: "Cliente não encontrado." });
-      }
-      console.error('Erro ao buscar empresa:', error);
-      return res.status(500).json({ error: "Erro ao buscar empresa." });
+    if (data.length === 0) {
+      return res.status(404).json({ error: "Cliente não encontrado." });
     }
 
-    // Verificar se a empresa pertence ao company_id do usuário
-    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(data.company_id)) {
+    // Verificar se a empresa pertence ao empresa_id do usuário
+    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(data[0].empresa_id)) {
       return res.status(403).json({ error: "Acesso negado a esta empresa." });
     }
 
-    res.json(data);
+    res.json(data[0]);
   } catch (err) {
     console.error('Erro ao buscar empresa:', err);
     res.status(500).json({ error: "Erro interno do servidor." });
@@ -458,28 +413,20 @@ router.put("/:id", verifyToken, async (req, res) => {
   try {
     const { 
       nome, 
-      cnpj, 
-      uf,
+      cpf_cnpj, 
+      estado,
       regime_tributario
     } = req.body;
 
     // Buscar empresa existente para validações
-    const { data: existingEmpresa, error: fetchError } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('id', req.params.id)
-      .single();
+    const [existingEmpresa] = await db.query('SELECT * FROM clientes WHERE id = ?', [req.params.id]);
 
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        return res.status(404).json({ error: "Empresa não encontrada." });
-      }
-      console.error('Erro ao buscar empresa:', fetchError);
-      return res.status(500).json({ error: "Erro ao buscar empresa." });
+    if (existingEmpresa.length === 0) {
+      return res.status(404).json({ error: "Empresa não encontrada." });
     }
 
-    // Verificar se a empresa pertence ao company_id do usuário
-    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(existingEmpresa.company_id)) {
+    // Verificar se a empresa pertence ao empresa_id do usuário
+    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(existingEmpresa[0].empresa_id)) {
       return res.status(403).json({ error: "Acesso negado a esta empresa." });
     }
 
@@ -488,11 +435,11 @@ router.put("/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Nome não pode estar vazio" });
     }
 
-    if (cnpj && !/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
+    if (cpf_cnpj && !/^\d{14}$/.test(cpf_cnpj.replace(/\D/g, ''))) {
       return res.status(400).json({ error: "CNPJ deve ter 14 dígitos" });
     }
 
-    if (uf && !/^[A-Z]{2}$/.test(uf)) {
+    if (estado && !/^[A-Z]{2}$/.test(estado)) {
       return res.status(400).json({ error: "UF deve ter 2 caracteres maiúsculos" });
     }
 
@@ -504,16 +451,10 @@ router.put("/:id", verifyToken, async (req, res) => {
     }
 
     // Verificar se já existe outra empresa com mesmo cnpj
-    if (cnpj) {
-      const { data: duplicateEmpresa } = await supabase
-        .from('clientes')
-        .select('id')
-        .eq('company_id', existingEmpresa.company_id)
-        .eq('cnpj', cnpj)
-        .neq('id', req.params.id)
-        .single();
+    if (cpf_cnpj) {
+      const [duplicateEmpresa] = await db.query('SELECT id FROM clientes WHERE empresa_id = ? AND cpf_cnpj = ? AND id <> ?', [existingEmpresa[0].empresa_id, cpf_cnpj, req.params.id]);
 
-      if (duplicateEmpresa) {
+      if (duplicateEmpresa.length > 0) {
         return res.status(400).json({ 
           error: "Já existe empresa com este CNPJ" 
         });
@@ -523,25 +464,19 @@ router.put("/:id", verifyToken, async (req, res) => {
     // Preparar dados para atualização
     const updateData = {};
     if (nome !== undefined) updateData.nome = nome;
-    if (cnpj !== undefined) updateData.cnpj = cnpj;
-    if (uf !== undefined) updateData.uf = uf;
+    if (cpf_cnpj !== undefined) updateData.cpf_cnpj = cpf_cnpj;
+    if (estado !== undefined) updateData.estado = estado;
     if (regime_tributario !== undefined) updateData.regime_tributario = regime_tributario;
     
     updateData.updated_by = req.user.userId;
 
-    const { data, error } = await supabase
-      .from('clientes')
-      .update(updateData)
-      .eq('id', req.params.id)
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error('Erro ao atualizar empresa:', error);
-      return res.status(500).json({ error: "Erro ao atualizar empresa." });
+    const [updateResult] = await db.query('UPDATE clientes SET ? WHERE id = ?', [updateData, req.params.id]);
+    let updatedData = null;
+    if (updateResult && updateResult.affectedRows) {
+      [[updatedData]] = await db.query('SELECT * FROM clientes WHERE id = ?', [req.params.id]);
     }
 
-    res.json(data);
+    res.json(updatedData);
   } catch (err) {
     console.error('Erro ao atualizar empresa:', err);
     res.status(500).json({ error: "Erro interno do servidor." });
@@ -552,38 +487,22 @@ router.put("/:id", verifyToken, async (req, res) => {
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     // Buscar empresa para verificar permissões
-    const { data: existingEmpresa, error: fetchError } = await supabase
-      .from('clientes')
-      .select('company_id')
-      .eq('id', req.params.id)
-      .single();
+    const [existingEmpresa] = await db.query('SELECT empresa_id FROM clientes WHERE id = ?', [req.params.id]);
 
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        return res.status(404).json({ error: "Empresa não encontrada." });
-      }
-      console.error('Erro ao buscar empresa:', fetchError);
-      return res.status(500).json({ error: "Erro ao buscar empresa." });
+    if (existingEmpresa.length === 0) {
+      return res.status(404).json({ error: "Empresa não encontrada." });
     }
 
-    // Verificar se a empresa pertence ao company_id do usuário
-    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(existingEmpresa.company_id)) {
+    // Verificar se a empresa pertence ao empresa_id do usuário
+    if (!req.user.all_company_ids || !req.user.all_company_ids.includes(existingEmpresa[0].empresa_id)) {
       return res.status(403).json({ 
         error: "Acesso negado a esta empresa.",
         user_company_ids: req.user.all_company_ids,
-        empresa_company_id: existingEmpresa.company_id
+        empresa_company_id: existingEmpresa[0].empresa_id
       });
     }
 
-    const { error } = await supabase
-      .from('clientes')
-      .delete()
-      .eq('id', req.params.id);
-
-    if (error) {
-      console.error('Erro ao deletar empresa:', error);
-      return res.status(500).json({ error: "Erro ao deletar empresa." });
-    }
+    await db.query('DELETE FROM clientes WHERE id = ?', [req.params.id]);
 
     res.json({ 
       success: true, 
@@ -600,18 +519,15 @@ router.delete("/:id", verifyToken, async (req, res) => {
 // GET /empresas/estatisticas - Estatísticas das empresas
 router.get("/estatisticas", verifyToken, async (req, res) => {
   try {
-    const { company_id } = req.query;
+    const { empresa_id } = req.query;
 
-    if (!company_id) {
+    if (!empresa_id) {
       return res.status(400).json({ 
-        error: "company_id é obrigatório" 
+        error: "empresa_id é obrigatório" 
       });
     }
 
-    let query = supabase
-      .from('clientes')
-      .select('*')
-      .eq('company_id', company_id);
+    let query = db.query('SELECT * FROM clientes WHERE empresa_id = ?');
 
     const { data, error } = await query;
 
@@ -626,12 +542,12 @@ router.get("/estatisticas", verifyToken, async (req, res) => {
     const estatisticas = {
       total_empresas: empresas.length,
       por_uf: {},
-      cnpjs_unicos: new Set(empresas.map(e => e.cnpj)).size
+      cnpjs_unicos: new Set(empresas.map(e => e.cpf_cnpj)).size
     };
 
     empresas.forEach(empresa => {
       // Por UF
-      estatisticas.por_uf[empresa.uf] = (estatisticas.por_uf[empresa.uf] || 0) + 1;
+      estatisticas.por_uf[empresa.estado] = (estatisticas.por_uf[empresa.estado] || 0) + 1;
     });
 
     // Converter Sets para números
@@ -648,34 +564,28 @@ router.get("/estatisticas", verifyToken, async (req, res) => {
 // GET /clientes/por-cnpj/:cnpj - Buscar empresas por CNPJ
 router.get("/por-cnpj/:cnpj", verifyToken, async (req, res) => {
   try {
-    const { company_id } = req.query;
-    const { cnpj } = req.params;
+    const { empresa_id } = req.query;
+    const { cpf_cnpj } = req.params;
 
-    if (!company_id) {
+    if (!empresa_id) {
       return res.status(400).json({ 
-        error: "company_id é obrigatório" 
+        error: "empresa_id é obrigatório" 
       });
     }
 
-    if (!cnpj || !/^\d{14}$/.test(cnpj.replace(/\D/g, ''))) {
+    if (!cpf_cnpj || !/^\d{14}$/.test(cpf_cnpj.replace(/\D/g, ''))) {
       return res.status(400).json({ 
         error: "CNPJ inválido" 
       });
     }
 
-    const { data, error } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('company_id', company_id)
-      .eq('cnpj', cnpj)
-      .order('created_at', { ascending: false });
+    const [data] = await db.query('SELECT * FROM clientes WHERE empresa_id = ? AND cpf_cnpj = ? ORDER BY created_at DESC', [empresa_id, cpf_cnpj]);
 
-    if (error) {
-      console.error('Erro ao buscar empresas por CNPJ:', error);
-      return res.status(500).json({ error: "Erro ao buscar empresas por CNPJ." });
+    if (data.length === 0) {
+      return res.status(404).json({ error: "Empresa não encontrada." });
     }
 
-    res.json(data || []);
+    res.json(data);
   } catch (err) {
     console.error('Erro ao buscar empresas por CNPJ:', err);
     res.status(500).json({ error: "Erro interno do servidor." });
@@ -706,7 +616,7 @@ router.post("/bulk", verifyToken, async (req, res) => {
     for (let i = 0; i < empresas.length; i++) {
       const empresa = empresas[i];
       
-      if (!empresa.company_id || !empresa.nome || !empresa.cnpj || !empresa.uf) {
+      if (!empresa.empresa_id || !empresa.nome || !empresa.cpf_cnpj || !empresa.estado) {
         erros.push(`Empresa ${i + 1}: Todos os campos são obrigatórios`);
         continue;
       }
@@ -717,12 +627,12 @@ router.post("/bulk", verifyToken, async (req, res) => {
         continue;
       }
 
-      if (!/^\d{14}$/.test(empresa.cnpj.replace(/\D/g, ''))) {
+      if (!/^\d{14}$/.test(empresa.cpf_cnpj.replace(/\D/g, ''))) {
         erros.push(`Empresa ${i + 1}: CNPJ inválido`);
         continue;
       }
 
-      if (!/^[A-Z]{2}$/.test(empresa.uf)) {
+      if (!/^[A-Z]{2}$/.test(empresa.estado)) {
         erros.push(`Empresa ${i + 1}: UF inválida`);
         continue;
       }
@@ -741,19 +651,12 @@ router.post("/bulk", verifyToken, async (req, res) => {
       });
     }
 
-    const { data, error } = await supabase
-      .from('clientes')
-      .insert(empresasValidadas)
-      .select('*');
-
-    if (error) {
-      console.error('Erro ao criar empresas em lote:', error);
-      return res.status(500).json({ error: "Erro ao criar empresas em lote." });
-    }
+    const [insertResult] = await db.query('INSERT INTO clientes (empresa_id, nome, cpf_cnpj, estado, regime_tributario, created_by, updated_by) VALUES ?', [empresasValidadas]);
+    // Se necessário buscar os registros, faça um SELECT depois.
 
     res.status(201).json({
-      message: `${data.length} empresas criadas com sucesso`,
-      data: data
+      message: `${insertResult.affectedRows} empresas criadas com sucesso`,
+      data: insertResult.insertId ? await db.query('SELECT * FROM clientes WHERE id = ?', [insertResult.insertId]) : []
     });
   } catch (err) {
     console.error('Erro ao criar empresas em lote:', err);
@@ -787,26 +690,18 @@ router.get("/:id/dados-consolidados", verifyToken, async (req, res) => {
       });
     }
 
-    // Verificar se o cliente existe e pertence ao company_id do usuário
-    const { data: cliente, error: clienteError } = await supabase
-      .from('clientes')
-      .select('id, company_id')
-      .eq('id', id)
-      .single();
+    // Verificar se o cliente existe e pertence ao empresa_id do usuário
+    const [cliente] = await db.query('SELECT id, empresa_id FROM clientes WHERE id = ?', [id]);
 
-    if (clienteError) {
-      if (clienteError.code === 'PGRST116') {
-        return res.status(404).json({ error: "Cliente não encontrado." });
-      }
-      console.error('Erro ao buscar cliente:', clienteError);
-      return res.status(500).json({ error: "Erro ao buscar cliente." });
+    if (cliente.length === 0) {
+      return res.status(404).json({ error: "Cliente não encontrado." });
     }
 
     // Verificar se o cliente pertence a qualquer uma das empresas do usuário
     console.log('🔍 [DEBUG] Verificando acesso ao cliente:', {
       cliente_id: id,
-      cliente_company_id: cliente.company_id,
-      user_company_id: req.user.company_id,
+      cliente_empresa_id: cliente[0].empresa_id,
+      user_empresa_id: req.user.empresa_id,
       user_all_company_ids: req.user.all_company_ids,
       user_id: req.user.id
     });
@@ -816,35 +711,16 @@ router.get("/:id/dados-consolidados", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Usuário não possui empresas associadas." });
     }
 
-    if (!req.user.all_company_ids.includes(cliente.company_id)) {
+    if (!req.user.all_company_ids.includes(cliente[0].empresa_id)) {
       console.error('❌ [DEBUG] Cliente não pertence a nenhuma empresa do usuário');
       return res.status(403).json({ error: "Acesso negado a este cliente." });
     }
 
     // Buscar dados das notas fiscais para o ano especificado
-    const { data: notasFiscais, error: notasError } = await supabase
-      .from('notas_fiscais')
-      .select('valor_total_nfe, data_emissao')
-      .eq('clientes_id', id)
-      .gte('data_emissao', `${ano}-01-01`)
-      .lt('data_emissao', `${ano + 1}-01-01`);
-
-    if (notasError) {
-      console.error('Erro ao buscar notas fiscais:', notasError);
-      return res.status(500).json({ error: "Erro ao buscar notas fiscais." });
-    }
+    const [notasFiscais] = await db.query('SELECT valor_total_nfe, data_emissao FROM notas_fiscais WHERE clientes_id = ? AND data_emissao >= ? AND data_emissao < ?', [id, `${ano}-01-01`, `${ano + 1}-01-01`]);
 
     // Buscar dados das análises do Simples Nacional para o ano especificado
-    const { data: analisesSimples, error: analisesError } = await supabase
-      .from('analises_simples_nacional')
-      .select('valor_das, receita_total, mes, ano')
-      .eq('clientes_id', id)
-      .eq('ano', anoNumero);
-
-    if (analisesError) {
-      console.error('Erro ao buscar análises do Simples Nacional:', analisesError);
-      return res.status(500).json({ error: "Erro ao buscar análises do Simples Nacional." });
-    }
+    const [analisesSimples] = await db.query('SELECT valor_das, receita_total, mes, ano FROM analises_simples_nacional WHERE clientes_id = ? AND ano = ?', [id, anoNumero]);
 
     // Processar dados das notas fiscais por mês
     const dadosPorMes = {
