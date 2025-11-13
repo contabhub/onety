@@ -32,7 +32,8 @@ import {
   FileBarChart,
   Package,
   FolderOpen, 
-  BarChart3
+  BarChart3,
+  BarChart2
 } from 'lucide-react';
 import styles from './PrincipalSidebar.module.css';
 import ThemeToggle from '../menu/ThemeToggle';
@@ -343,7 +344,36 @@ const MODULE_REGISTRY = {
         label: 'Notas Fiscais',
         icon: <FolderOpen size={18} />,
         route: '/auditoria/leitor-xml'
-      }
+      },
+      // Novos atalhos
+
+      {
+        id: 'dashboard-normal',
+        label: 'Dashboard Regime Normal',
+        icon: <Building2 size={18} />,
+        route: '/auditoria/dashboard-normal'
+      },
+
+      {
+        id: 'analisador-entregas',
+        label: 'Analisador de Entregas',
+        icon: <FileText size={18} />,
+        route: '/auditoria/analisador-entregas'
+      },
+      {
+        id: 'analise-obrigacoes',
+        label: 'Análise de Obrigações',
+        icon: <BarChart2 size={18} />,
+        route: '/auditoria/analise-obrigacoes'
+      },
+
+      {
+        id: 'consolidado',
+        label: 'Consolidado Anual',
+        icon: <BarChart3 size={18} />,
+        route: '/auditoria/consolidado'
+      },
+
     ]
   },
   estratégico: {

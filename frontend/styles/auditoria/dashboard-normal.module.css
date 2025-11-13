@@ -1,0 +1,510 @@
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pageWrapper {
+  min-height: 100vh;
+  background-color: var(--onity-color-bg);
+}
+
+.headerBar {
+  background-color: var(--onity-color-surface);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.headerInner {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 var(--onity-space-md, 16px);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-md, 16px);
+}
+
+.headerIcon {
+  width: 32px;
+  height: 32px;
+  color: var(--onity-color-primary, #3b82f6);
+}
+
+.headerTitle {
+  font-size: var(--onity-type-h2-size, 20px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+}
+
+.headerSubtitle {
+  font-size: var(--onity-type-body-size, 14px);
+  color: var(--onity-icon-secondary);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-md, 16px);
+}
+
+.headerButton {
+  color: var(--onity-icon-secondary, #cbd5f5);
+  background: transparent;
+  border: none;
+  padding: var(--onity-space-xs, 8px) var(--onity-space-sm, 12px);
+  border-radius: var(--onity-radius-md, 8px);
+  font-size: var(--onity-type-body-size, 14px);
+  font-weight: var(--onity-font-weight-medium, 500);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.headerButton:hover {
+  color: var(--onity-color-inverse, #fff);
+  background-color: var(--onity-color-hover, rgba(148,163,184,0.2));
+}
+
+.mainContent {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: var(--onity-space-2xl, 32px) var(--onity-space-md, 16px);
+}
+
+.filtersCard {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-lg, 16px);
+  padding: var(--onity-space-xl, 24px);
+  margin-bottom: var(--onity-space-2xl, 32px);
+}
+
+.filtersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--onity-space-xl, 24px);
+}
+
+.filterTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 8px);
+  font-size: var(--onity-type-h3-size, 18px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+}
+
+.filterIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-info, #38bdf8);
+}
+
+.refreshButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 8px);
+  color: var(--onity-color-primary, #60a5fa);
+  font-size: var(--onity-type-body-size, 14px);
+  font-weight: var(--onity-font-weight-medium, 500);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.refreshButton:hover {
+  color: var(--onity-color-primary-tint1, #93c5fd);
+}
+
+.refreshIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.filterGrid {
+  display: grid;
+  gap: var(--onity-space-md, 16px);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .filterGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--onity-space-sm, 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--onity-icon-secondary);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--onity-space-xss, 10px) var(--onity-space-md, 16px) var(--onity-space-xss, 10px) 40px;
+  background-color: var(--onity-color-bg-secondary, #1f2937);
+  border: 1px solid var(--onity-color-border-secondary, #334155);
+  border-radius: var(--onity-radius-md, 12px);
+  color: var(--onity-color-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchInput::placeholder {
+  color: var(--onity-icon-secondary);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--onity-color-primary, #2563eb);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-shadow, rgba(37,99,235,0.35));
+}
+
+.selectField {
+  width: 100%;
+  padding: var(--onity-space-xss, 10px) var(--onity-space-md, 16px);
+  background-color: var(--onity-color-bg-secondary, #1f2937);
+  border: 1px solid var(--onity-color-border-secondary, #334155);
+  border-radius: var(--onity-radius-md, 12px);
+  color: var(--onity-color-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.selectField:focus {
+  outline: none;
+  border-color: var(--onity-color-primary, #2563eb);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-shadow, rgba(37,99,235,0.35));
+}
+
+.statsRow {
+  margin-top: var(--onity-space-md, 16px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--onity-space-xl, 24px);
+  font-size: var(--onity-type-body-size, 14px);
+  color: var(--onity-icon-secondary);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statHighlight {
+  color: var(--onity-color-text);
+  font-weight: var(--onity-font-weight-semibold, 600);
+}
+
+.listCard {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-lg, 16px);
+  overflow: hidden;
+}
+
+.listHeader {
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.listTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-xs, 8px);
+  font-size: var(--onity-type-h3-size, 18px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+}
+
+.listIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--onity-color-info, #38bdf8);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--onity-space-2xl, 48px) 0;
+}
+
+.emptyIconLarge {
+  width: 64px;
+  height: 64px;
+  color: var(--onity-icon-secondary, #64748b);
+  margin: 0 auto var(--onity-space-md, 16px);
+}
+
+.emptyTitle {
+  font-size: var(--onity-type-h2-size, 20px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-icon-secondary, #cbd5f5);
+  margin-bottom: var(--onity-space-xs, 8px);
+}
+
+.emptySubtitle {
+  color: var(--onity-icon-secondary);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeadRow {
+  border-bottom: 1px solid var(--onity-color-border);
+}
+
+.tableHeadCell {
+  text-align: left;
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+  font-size: var(--onity-type-body-size, 14px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-icon-secondary);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--onity-color-border);
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background-color: var(--onity-color-hover, rgba(148,163,184,0.12));
+}
+
+.tableCellPrimary {
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+  color: var(--onity-color-text);
+  font-weight: var(--onity-font-weight-semibold, 600);
+}
+
+.tableCellMono {
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+  color: var(--onity-icon-secondary, #cbd5f5);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: var(--onity-type-body-size, 14px);
+}
+
+.badgeBlue {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px var(--onity-space-xss, 10px);
+  border-radius: 999px;
+  background-color: var(--onity-color-primary-lift, rgba(59,130,246,0.15));
+  color: var(--onity-color-primary-tint2, #bfdbfe);
+  font-size: var(--onity-type-caption-size, 12px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+}
+
+.badgeGreen {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px var(--onity-space-xss, 10px);
+  border-radius: 999px;
+  background-color: var(--onity-success-lift, rgba(34,197,94,0.15));
+  color: var(--onity-success-tint, #bbf7d0);
+  font-size: var(--onity-type-caption-size, 12px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+}
+
+.tableCellMuted {
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+  color: var(--onity-icon-secondary);
+  font-size: var(--onity-type-body-size, 14px);
+}
+
+.actionCell {
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+}
+
+.actionLink {
+  color: var(--onity-color-primary, #60a5fa);
+  font-size: var(--onity-type-body-size, 14px);
+  font-weight: var(--onity-font-weight-medium, 500);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.actionLink:hover {
+  color: var(--onity-color-primary-tint1, #93c5fd);
+}
+
+.secondaryActionsCard {
+  margin-top: var(--onity-space-xl, 24px);
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-lg, 16px);
+  padding: var(--onity-space-xl, 24px);
+}
+
+.secondaryActionsTitle {
+  font-size: var(--onity-type-h3-size, 18px);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-md, 16px);
+}
+
+.secondaryActionsGrid {
+  display: grid;
+  gap: var(--onity-space-md, 16px);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.actionButtonOrange {
+  background-color: var(--onity-color-warning, #f97316);
+}
+
+.actionButtonOrange:hover {
+  background-color: var(--onity-color-warning-dark, #ea580c);
+}
+
+.loadingPage {
+  min-height: 100vh;
+  background-color: var(--onity-color-bg);
+  padding: var(--onity-space-xl, 24px);
+}
+
+.loadingContent {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.skeletonLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xl, 24px);
+}
+
+.skeletonBar {
+  height: 32px;
+  background-color: var(--onity-color-border-lift, rgba(148,163,184,0.18));
+  border-radius: var(--onity-radius-md, 12px);
+  width: 33%;
+}
+
+.skeletonCard {
+  height: 256px;
+  background-color: var(--onity-color-bg-secondary, rgba(15,23,42,0.65));
+  border-radius: var(--onity-radius-lg, 16px);
+}
+
+.errorWrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--onity-color-bg);
+}
+
+.errorCard {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: var(--onity-space-xl, 24px);
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-lg);
+  border: 1px solid var(--onity-color-border);
+  text-align: center;
+}
+
+.errorIcon {
+  width: 64px;
+  height: 64px;
+  color: var(--onity-color-error, #ef4444);
+  margin: 0 auto var(--onity-space-md, 16px);
+}
+
+.errorTitle {
+  font-size: var(--onity-type-h1-size, 24px);
+  font-weight: var(--onity-font-weight-bold, 700);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-xs, 8px);
+}
+
+.errorMessage {
+  color: var(--onity-icon-secondary, #cbd5f5);
+  margin-bottom: var(--onity-space-xl, 24px);
+}
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-sm, 12px);
+  padding: var(--onity-space-md, 16px);
+  border-radius: var(--onity-radius-md);
+  border: none;
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-inverse, #fff);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.actionButton:active {
+  transform: translateY(1px);
+}
+
+.tableCell {
+  padding: var(--onity-space-md, 16px) var(--onity-space-xl, 24px);
+  color: var(--onity-icon-secondary, #cbd5f5);
+  font-size: var(--onity-type-body-size, 14px);
+}
+
+.tableCellActions {
+  position: relative;
+}
+
+.dropdownContainer {
+  position: relative;
+}
+
+.actionButtonGreen { 
+  background-color: var(--onity-success, #16a34a); 
+}
+.actionButtonGreen:hover { 
+  background-color: var(--onity-success-dark, #15803d); 
+}
+
+.actionButtonPurple { 
+  background-color: var(--onity-color-primary, #7c3aed); 
+}
+.actionButtonPurple:hover { 
+  background-color: var(--onity-color-primary-dark, #6d28d9); 
+}
+
+.actionButtonBlue { 
+  background-color: var(--onity-color-primary, #2563eb); 
+}
+.actionButtonBlue:hover { 
+  background-color: var(--onity-color-primary-dark, #1d4ed8); 
+}
+
+.actionButtonOrange { 
+  background-color: var(--onity-color-warning, #f97316); 
+}
+.actionButtonOrange:hover { 
+  background-color: var(--onity-color-warning-dark, #ea580c); 
+}
+
+.actionIcon {
+  width: 20px;
+  height: 20px;
+}
+
