@@ -1,0 +1,511 @@
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.page {
+  min-height: 100vh;
+  background-color: var(--onity-color-bg);
+  padding: var(--onity-space-xl);
+}
+
+.container {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.pdfContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-2xl);
+}
+
+.headerRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-lg);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+@media (min-width: 640px) {
+  .headerRow {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--onity-space-xs);
+  font-size: var(--onity-type-body-size);
+  color: var(--onity-icon-secondary);
+  transition: color 0.2s ease;
+}
+.backButton:hover {
+  color: var(--onity-color-text);
+}
+.backIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.headerTitle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-sm);
+}
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-sm);
+  font-size: var(--onity-type-h1-size, 1.75rem);
+  font-weight: var(--onity-font-weight-bold, 700);
+  color: var(--onity-color-text);
+}
+.yearBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--onity-space-xss, 6px) var(--onity-space-sm, 12px);
+  border-radius: 999px;
+  background-color: var(--onity-color-primary-lift, rgba(96,165,250,0.15)); /* fallback */
+  color: var(--onity-color-info);
+  font-size: var(--onity-type-body-size, 0.875rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+}
+.selectedClientCard {
+  margin-top: var(--onity-space-md);
+  padding: var(--onity-space-md);
+  border-radius: var(--onity-radius-lg);
+  background-color: rgba(30, 64, 175, 0.25); /* fallback */
+  border: 1px solid var(--onity-color-primary, rgba(96,165,250,0.4));
+}
+.selectedClientTitle {
+  font-size: var(--onity-type-body-size, 0.95rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-primary, #93c5fd);
+}
+.selectedClientMeta {
+  margin-top: 4px;
+  font-size: var(--onity-type-caption-size, 0.8rem);
+  color: var(--onity-color-primary-tint2, #bfdbfe);
+}
+.clearSelectionButton {
+  margin-top: var(--onity-space-sm);
+  font-size: var(--onity-type-caption-size, 0.85rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-primary, #60a5fa);
+  transition: color 0.2s ease;
+}
+.clearSelectionButton:hover {
+  color: #bae6fd;
+}
+.companyName {
+  margin-top: 4px;
+  font-size: var(--onity-type-h3-size, 1.125rem);
+  color: var(--onity-icon-secondary);
+}
+.companyMeta {
+  font-size: var(--onity-type-body-size, 0.875rem);
+  color: var(--onity-icon-secondary);
+}
+.sectionSubtitle {
+  font-size: var(--onity-type-body-size, 0.9rem);
+  color: var(--onity-icon-secondary);
+}
+.headerActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .headerActions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+.selectWrapper {
+  position: relative;
+  min-width: 180px;
+}
+.selectIcon {
+  position: absolute;
+  left: 12px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  color: var(--onity-icon-secondary);
+}
+.yearSelect {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  background-color: var(--onity-color-bg-secondary, #1f2937);
+  border: 1px solid var(--onity-color-border-secondary, #334155);
+  border-radius: var(--onity-radius-md);
+  color: var(--onity-color-text);
+  font-size: var(--onity-type-body-size, 0.9rem);
+  appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.yearSelect:focus {
+  outline: none;
+  border-color: var(--onity-color-primary, #3b82f6);
+  box-shadow: 0 0 0 2px var(--onity-color-primary-shadow, rgba(59,130,246,0.35));
+}
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-xs, 8px);
+  padding: var(--onity-space-xss, 10px) var(--onity-space-sm, 18px);
+  border-radius: var(--onity-radius-md);
+  border: none;
+  background-color: var(--onity-color-primary, #2563eb);
+  color: var(--onity-color-inverse, #fff);
+  font-size: var(--onity-type-body-size, 0.9rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.primaryButton:hover {
+  background-color: var(--onity-color-primary-dark, #1d4ed8);
+  transform: translateY(-1px);
+}
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--onity-space-xs, 8px);
+  padding: var(--onity-space-xss, 10px) var(--onity-space-sm, 18px);
+  border-radius: var(--onity-radius-md);
+  border: 1px solid var(--onity-color-border-secondary, #475569);
+  background-color: var(--onity-color-bg-secondary, #1f2937);
+  color: var(--onity-icon-secondary, #cbd5f5);
+  font-size: var(--onity-type-body-size, 0.9rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.secondaryButton:hover {
+  background-color: var(--onity-color-surface-hover, #2a3647);
+}
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+}
+.card {
+  background-color: var(--onity-color-surface);
+  border: 1px solid var(--onity-color-border);
+  border-radius: var(--onity-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--onity-shadow-lg, 0 12px 30px -18px rgba(15, 23, 42, 0.65));
+}
+.cardHeader {
+  padding: var(--onity-space-xl, 24px);
+  border-bottom: 1px solid var(--onity-color-border);
+}
+.cardTitle {
+  font-size: var(--onity-type-h3-size, 1.125rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+}
+.cardBody {
+  padding: var(--onity-space-xl, 24px);
+}
+.summaryGrid {
+  display: grid;
+  gap: var(--onity-space-lg);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+@media (min-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.summaryCard {
+  background-color: var(--onity-color-bg-secondary, #1f2937);
+  border-radius: var(--onity-radius-lg);
+  padding: var(--onity-space-md);
+  box-shadow: var(--onity-shadow-xs, inset 0 1px 0 rgba(255,255,255,0.03));
+}
+.summaryLabel {
+  font-size: var(--onity-type-body-size, 0.85rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-icon-secondary);
+  margin-bottom: 6px;
+}
+.summaryValue {
+  font-size: var(--onity-type-h1-size, 1.75rem);
+  font-weight: var(--onity-font-weight-bold, 700);
+  color: var(--onity-color-text);
+}
+.analysisActions {
+  margin-top: var(--onity-space-lg);
+}
+.analysisActions button {
+  width: 100%;
+}
+.chartCard {
+  background-color: var(--onity-color-inverse, #ffffff);
+  border-radius: var(--onity-radius-xl);
+  box-shadow: var(--onity-shadow-lg, 0 25px 50px -12px rgba(15, 23, 42, 0.25));
+  overflow: hidden;
+}
+.sectionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-2xl);
+}
+.sectionSpacing {
+  margin-top: var(--onity-space-2xl);
+}
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-xl, 24px);
+  border-bottom: 1px solid var(--onity-color-border-light, #e2e8f0);
+}
+.chartTitle {
+  font-size: var(--onity-type-h3-size, 1.125rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text-strong, #0f172a);
+}
+.toggleButton {
+  font-size: var(--onity-type-body-size, 0.875rem);
+  color: var(--onity-icon-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.toggleButton:hover {
+  color: var(--onity-color-text-strong, #0f172a);
+}
+.chartBody {
+  padding: var(--onity-space-xl, 24px);
+}
+.chartContainer {
+  width: 100%;
+  height: 400px;
+}
+.tableCard {
+  background-color: var(--onity-color-inverse, #fff);
+  border-radius: var(--onity-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--onity-shadow-lg, 0 20px 45px -18px rgba(15, 23, 42, 0.25));
+}
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--onity-space-xl, 24px);
+  border-bottom: 1px solid var(--onity-color-border-light, #e2e8f0);
+}
+.tableHeaderInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-md);
+}
+.tableHeaderIcon {
+  padding: var(--onity-space-xss, 10px);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--onity-color-primary-tint1, rgba(168,85,247,0.15)), var(--onity-color-primary-lift, rgba(59,130,246,0.15)) );
+  color: var(--onity-color-primary, #7c3aed);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tableHeaderIcon svg {
+  width: 24px;
+  height: 24px;
+}
+.tableHeaderTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tableHeaderTitle h3 {
+  font-size: var(--onity-type-h3-size, 1.1rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text-strong, #0f172a);
+}
+.tableHeaderTitle p {
+  font-size: var(--onity-type-body-size, 0.9rem);
+  color: var(--onity-icon-secondary, #64748b);
+}
+.tableWrapper {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tableHeadRow {
+  background: linear-gradient(135deg, var(--onity-color-primary, #7c3aed), var(--onity-color-secondary, #6366f1));
+  color: var(--onity-color-inverse, #fff);
+}
+.tableHeadCell {
+  padding: var(--onity-space-sm, 12px) var(--onity-space-md, 16px);
+  text-align: left;
+  font-size: var(--onity-type-caption-size, 0.85rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  letter-spacing: 0.05em;
+}
+.tableBody {
+  background-color: var(--onity-color-inverse, #fff);
+}
+.tableRow {
+  transition: background-color 0.2s ease;
+}
+.tableRow:hover {
+  background-color: var(--onity-color-primary-lift, rgba(124,58,237,0.08));
+}
+.tableCell {
+  padding: var(--onity-space-sm, 12px) var(--onity-space-md, 16px);
+  font-size: var(--onity-type-body-size, 0.9rem);
+  color: var(--onity-color-text-strong, #0f172a);
+}
+.tableCellStrong {
+  font-weight: var(--onity-font-weight-semibold, 600);
+}
+.tableFooter {
+  background-color: var(--onity-color-bg-light, #f8fafc);
+}
+.tableFooterCell {
+  padding: var(--onity-space-sm, 12px) var(--onity-space-md, 16px);
+  font-size: var(--onity-type-h3-size, 0.95rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-primary, #7c3aed);
+}
+.tableActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--onity-space-xss, 6px);
+}
+.tableCellSecondary {
+  color: var(--onity-icon-secondary, #64748b);
+  font-size: var(--onity-type-body-size, 0.875rem);
+}
+.actionDanger {
+  color: var(--onity-color-error, #ef4444);
+  background: none;
+  border: none;
+  font-size: var(--onity-type-body-size, 0.875rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.actionDanger:hover {
+  color: var(--onity-color-error-dark, #dc2626);
+}
+.emptyCard {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-xl);
+  padding: var(--onity-space-xl);
+  text-align: center;
+  color: var(--onity-icon-secondary);
+  border: 1px solid var(--onity-color-border);
+}
+.emptyTitle {
+  font-size: var(--onity-type-h3-size, 1.1rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-icon-secondary);
+}
+.emptyText {
+  margin-top: var(--onity-space-sm);
+  font-size: var(--onity-type-body-size, 0.9rem);
+  color: var(--onity-icon-secondary);
+}
+.loadingPage {
+  min-height: 100vh;
+  background-color: var(--onity-color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-2xl);
+}
+.loadingCard {
+  text-align: center;
+  color: var(--onity-icon-secondary);
+}
+.spinner {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  border: 4px solid var(--onity-color-primary-lift, rgba(59,130,246,0.2));
+  border-bottom-color: var(--onity-color-primary, rgba(59,130,246,1));
+  margin: 0 auto var(--onity-space-lg);
+  animation: spin 1s linear infinite;
+}
+.loadingTitle {
+  font-size: var(--onity-type-h4-size, 1.25rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+}
+.loadingSubtitle {
+  font-size: var(--onity-type-body-size, 0.95rem);
+  color: var(--onity-icon-secondary);
+}
+.emptyCompanyWrapper {
+  padding: var(--onity-space-xl);
+}
+.emptyCompanyCard {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--onity-color-inverse, #fff);
+  border-radius: var(--onity-radius-xl);
+  padding: var(--onity-space-xl);
+  text-align: center;
+  box-shadow: var(--onity-shadow-lg, 0 20px 45px -18px rgba(15,23,42,0.25));
+}
+.emptyCompanyTitle {
+  font-size: var(--onity-type-h2-size, 1.2rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text-strong, #0f172a);
+}
+.emptyCompanyText {
+  margin-top: var(--onity-space-sm);
+  font-size: var(--onity-type-body-size, 0.95rem);
+  color: var(--onity-icon-secondary);
+}
+.emptyCompanyButton {
+  margin-top: var(--onity-space-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--onity-space-xss, 10px) var(--onity-space-sm, 20px);
+  border-radius: var(--onity-radius-md);
+  border: none;
+  background-color: var(--onity-success, #059669);
+  color: var(--onity-color-inverse, #fff);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.emptyCompanyButton:hover {
+  background-color: var(--onity-success-dark, #047857);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.chartLegend {
+  font-size: var(--onity-type-body-size, 0.85rem);
+  color: var(--onity-icon-secondary);
+}
+.chartToggleGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--onity-space-sm);
+}
