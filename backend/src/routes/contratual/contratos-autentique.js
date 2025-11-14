@@ -173,12 +173,50 @@ async function criarVendasDeProdutosDados(contratoId, connection) {
 
     // 5. Iterar sobre cada produto e criar vendas para cada parcela
     let vendasCriadas = 0;
+    let recorenciasCriadas = 0;
+    
     for (const produto of produtosDados) {
       if (!produto.parcelas_detalhadas || !Array.isArray(produto.parcelas_detalhadas)) {
         console.log(`⚠️ Produto ${produto.id || produto.nome} não tem parcelas_detalhadas válidas`);
         continue;
       }
 
+      // Calcular intervalo baseado na diferença entre a primeira e segunda parcela (se houver)
+      let tipoIntervalo = 'meses';
+      let intervalo = 1;
+      
+      if (produto.parcelas_detalhadas.length > 1) {
+        const primeiraParcela = produto.parcelas_detalhadas[0];
+        const segundaParcela = produto.parcelas_detalhadas[1];
+        
+        if (primeiraParcela.data_vencimento && segundaParcela.data_vencimento) {
+          const data1 = new Date(primeiraParcela.data_vencimento.split('T')[0]);
+          const data2 = new Date(segundaParcela.data_vencimento.split('T')[0]);
+          const diffMs = data2 - data1;
+          const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          
+          if (diffDias >= 365) {
+            tipoIntervalo = 'anos';
+            intervalo = Math.floor(diffDias / 365);
+          } else if (diffDias >= 30) {
+            tipoIntervalo = 'meses';
+            intervalo = Math.floor(diffDias / 30);
+          } else if (diffDias >= 7) {
+            tipoIntervalo = 'semanas';
+            intervalo = Math.floor(diffDias / 7);
+          } else {
+            tipoIntervalo = 'dias';
+            intervalo = diffDias;
+          }
+        }
+      }
+
+      // Determinar se é indeterminado (se não tem total_ciclos definido)
+      const indeterminado = !produto.total_parcelas || produto.total_parcelas === 0 ? 1 : 0;
+      const totalCiclos = indeterminado ? null : (produto.total_parcelas || produto.parcelas || null);
+
+      // Criar vendas para cada parcela
+      const vendaIds = [];
       for (const parcela of produto.parcelas_detalhadas) {
         if (!parcela.data_vencimento || !parcela.valor) {
           console.log(`⚠️ Parcela ${parcela.numero} não tem data_vencimento ou valor válidos`);
@@ -193,7 +231,7 @@ async function criarVendasDeProdutosDados(contratoId, connection) {
         const anoReferencia = parseInt(anoStr, 10);
 
         // Criar venda
-        await connection.query(`
+        const [vendaResult] = await connection.query(`
           INSERT INTO vendas (
             cliente_id, 
             empresa_id, 
@@ -223,11 +261,44 @@ async function criarVendasDeProdutosDados(contratoId, connection) {
           contrato.subcategoria_id || null
         ]);
 
+        const vendaId = vendaResult.insertId;
+        vendaIds.push(vendaId);
         vendasCriadas++;
+      }
+
+      // Criar recorrência vinculada ao contrato e à primeira venda do produto
+      // (ou criar uma recorrência por venda, dependendo da necessidade)
+      if (vendaIds.length > 0) {
+        // Criar uma recorrência para cada venda (para permitir controle individual)
+        for (const vendaId of vendaIds) {
+          await connection.query(`
+            INSERT INTO recorrencias_vendas (
+              contrato_id,
+              venda_id,
+              tipo_intervalo,
+              intervalo,
+              indeterminado,
+              total_ciclos,
+              status,
+              tipo_origem
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            contratoId,
+            vendaId,
+            tipoIntervalo,
+            intervalo,
+            indeterminado,
+            totalCiclos,
+            'ativo',
+            'venda'
+          ]);
+
+          recorenciasCriadas++;
+        }
       }
     }
 
-    console.log(`✅ ${vendasCriadas} venda(s) criada(s) para contrato ${contratoId}`);
+    console.log(`✅ ${vendasCriadas} venda(s) criada(s) e ${recorenciasCriadas} recorrência(s) criada(s) para contrato ${contratoId}`);
   } catch (error) {
     console.error("❌ Erro ao criar vendas de produtos_dados:", error);
     // Não falha o processo de assinatura por erro na criação de vendas
@@ -1323,5 +1394,14 @@ router.get("/:id/download", verifyToken, async (req, res) => {
 
 
 
+
+// Exportar router e funções auxiliares
+const exportedFunctions = {
+  converterPreClienteParaCliente,
+  criarVendasDeProdutosDados
+};
+
+// Adicionar funções ao router para permitir importação
+Object.assign(router, exportedFunctions);
 
 module.exports = router;
