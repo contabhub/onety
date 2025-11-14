@@ -198,6 +198,8 @@ export default function Dashboard() {
       <PrincipalSidebar />
       <div className={styles.pageContent}>
         <div className={styles.container}>
+          <h1 className={styles.pageTitle}>Dashboard</h1>
+          
           {error && (
             <div className={styles.errorAlert}>
               <AlertCircle className={styles.errorIcon} />
@@ -243,7 +245,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className={styles.statCard}>
+          {/* <div className={styles.statCard}>
             <div className={styles.statCardContent}>
               <div className={`${styles.statIconWrapper} ${styles.statIconWrapperYellow}`}>
                 <TrendingUp className={styles.statIcon} />
@@ -253,7 +255,8 @@ export default function Dashboard() {
                 <p className={styles.statValue}>{stats?.totalEcac || 0}</p>
               </div>
             </div>
-          </div>
+          </div> */}
+
         </div>
 
         {/* Funcionalidades Principais */}
@@ -318,7 +321,7 @@ export default function Dashboard() {
                 <span className={styles.featureButtonSubtext}>Análises específicas</span>
               </button>
               
-              <button
+              {/* <button
                 onClick={() => router.push('/auditoria/ecac')}
                 className={styles.featureButton}
               >
@@ -327,7 +330,7 @@ export default function Dashboard() {
                   <span className={styles.featureButtonText}>eCAC</span>
                 </div>
                 <span className={styles.featureButtonSubtext}>Pagamentos e análise</span>
-              </button>
+              </button> */}
               
               <button
                 onClick={() => router.push('/auditoria/rct-sn')}
@@ -363,13 +366,6 @@ export default function Dashboard() {
               <span>Importar Notas Fiscais</span>
             </button>
 
-            <button
-              onClick={() => router.push('/auditoria/dashboard-simples')}
-              className={`${styles.quickActionButton} ${styles.quickActionButtonBlue}`}
-            >
-              <BarChart3 className={styles.quickActionButtonIcon} />
-              <span>Planejamento Tributário</span>
-            </button>
           </div>
         </div>
         <div className={`${styles.quickActionsCard} ${styles.quickActionsCardMargin}`}>

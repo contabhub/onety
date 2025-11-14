@@ -24,6 +24,13 @@
     padding: var(--onity-space-xl) var(--onity-space-md);
 }
 
+.pageTitle {
+    font-size: var(--onity-type-h1-size, 2rem);
+    font-weight: var(--onity-font-weight-bold, 700);
+    color: var(--onity-color-inverse, #fff);
+    margin-bottom: var(--onity-space-xl);
+}
+
 @media (min-width: 640px) {
     .container {
         padding-left: var(--onity-space-lg);
@@ -236,12 +243,13 @@
 }
 
 .statIconWrapper {
-    padding: var(--onity-space-xs);
-    border-radius: var(--onity-radius-lg);
+    padding: 10px;
+    border-radius: 8px;
+    margin-right: 10px;
 }
 
 .statIconWrapperBlue {
-    background-color: var(--onity-color-primary, #3b82f6);
+    background-color: #3b82f6;
 }
 
 .statIconWrapperGreen {
@@ -249,7 +257,7 @@
 }
 
 .statIconWrapperPurple {
-    background-color: var(--onity-color-primary, #7c3aed);
+    background-color: #7c3aed;
 }
 
 .statIconWrapperYellow {
@@ -270,12 +278,14 @@
     font-size: var(--onity-type-body-size, 0.875rem);
     font-weight: var(--onity-font-weight-medium, 500);
     color: var(--onity-icon-secondary);
+    margin-bottom: var(--onity-space-quarck, 0.25rem);
 }
 
 .statValue {
-    font-size: var(--onity-type-h1-size, 1.5rem);
-    font-weight: var(--onity-font-weight-bold, 700);
-    color: var(--onity-color-inverse, #fff);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--onity-color-text);
+    margin-top: 0;
 }
 
 /* Features Grid */
@@ -350,6 +360,7 @@
     display: flex;
     align-items: center;
     gap: var(--onity-space-m);
+    padding: 10px 20px;
 }
 
 .featureButtonIcon {
@@ -402,9 +413,10 @@
 }
 
 .quickActionsGrid {
+    margin: 10px;
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--onity-space-md);
+    gap: 10px;
 }
 
 @media (min-width: 768px) {
@@ -414,9 +426,9 @@
 }
 
 .quickActionButton {
-    padding: var(--onity-space-md);
+    padding: 10px;
     border-radius: var(--onity-radius-lg);
-    color: var(--onity-color-inverse, #fff);
+    color: var(--onity-color-inverse);
     font-weight: var(--onity-font-weight-medium, 500);
     border: none;
     cursor: pointer;
@@ -424,7 +436,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--onity-space-xs);
+    gap: 10px;
 }
 
 .quickActionButtonGreen {
