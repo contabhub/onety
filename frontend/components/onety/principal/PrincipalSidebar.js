@@ -244,16 +244,10 @@ const MODULE_REGISTRY = {
     },
     items: [
       {
-        id: 'departamentos',
-        label: 'Departamentos',
-        icon: <Building2 size={18} />,
-        route: '/gestao/departamentos'
-      },
-      {
-        id: 'cargos',
-        label: 'Cargos',
-        icon: <Users size={18} />,
-        route: '/gestao/cargos'
+        id: 'visao-geral',
+        label: 'Visão Geral',
+        icon: <LayoutDashboard size={18} />,
+        route: '/gestao/visao-geral'
       },
       {
         id: 'clientes-gestao',
@@ -268,16 +262,22 @@ const MODULE_REGISTRY = {
         route: '/gestao/obrigacoes'
       },
       {
+        id: 'situacao-fiscal',
+        label: 'Situação Fiscal Federal',
+        icon: <Shield size={18} />,
+        route: '/gestao/situacao-fiscal'
+      },
+      {
+        id: 'parcelamento',
+        label: 'Parcelamentos Federais',
+        icon: <FileBarChart size={18} />,
+        route: '/gestao/parcelamento'
+      },
+      {
         id: 'processos',
         label: 'Processos',
         icon: <FileText size={18} />,
         route: '/gestao/processos'
-      },
-      {
-        id: 'processos-globais',
-        label: 'Processos Globais',
-        icon: <FileText size={18} />,
-        route: '/gestao/processos-globais'
       },
       {
         id: 'enquete',
@@ -286,36 +286,25 @@ const MODULE_REGISTRY = {
         route: '/gestao/enquete'
       },
       {
-        id: 'parcelamento',
-        label: 'Parcelamento',
-        icon: <FileBarChart size={18} />,
-        route: '/gestao/parcelamento'
-      },
-      {
-        id: 'situacao-fiscal',
-        label: 'Situação Fiscal',
-        icon: <Shield size={18} />,
-        route: '/gestao/situacao-fiscal'
-      },
-      {
-        id: 'certificados',
-        label: 'Certificados',
-        icon: <FileText size={18} />,
-        route: '/gestao/certificados'
-      },
-      {
         id: 'pdf-layout',
         label: 'PDF Layout',
         icon: <FileText size={18} />,
         route: '/gestao/pdf-layout'
       },
       {
-        id: 'relatorios',
+        id: 'cadastros-gestao',
+        label: 'Cadastro',
+        icon: <Users size={18} />,
+        route: '/gestao/certificados',
+        isGroup: true
+      },
+      {
+        id: 'relatorios-gestao',
         label: 'Relatórios',
         icon: <FileBarChart size={18} />,
-        route: '/gestao/relatorios'
-      },
-
+        route: '/gestao/relatorios',
+        isGroup: true
+      }
     ]
   },
   auditoria: {
@@ -424,6 +413,8 @@ export default function PrincipalSidebar() {
   const [cadastrosExpanded, setCadastrosExpanded] = useState(false);
   const [simplesNacionalExpanded, setSimplesNacionalExpanded] = useState(false);
   const [regimeNormalExpanded, setRegimeNormalExpanded] = useState(false);
+  const [cadastrosGestaoExpanded, setCadastrosGestaoExpanded] = useState(false);
+  const [relatoriosGestaoExpanded, setRelatoriosGestaoExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
@@ -861,6 +852,24 @@ export default function PrincipalSidebar() {
     }
   }, [router.pathname]);
 
+  // Detectar seção ativa do submenu de Cadastros Gestão
+  useEffect(() => {
+    if (
+      router.pathname === '/gestao/certificados' ||
+      router.pathname === '/gestao/departamentos' ||
+      router.pathname === '/gestao/cargos'
+    ) {
+      setCadastrosGestaoExpanded(true);
+    }
+  }, [router.pathname]);
+
+  // Detectar seção ativa do submenu de Relatórios Gestão
+  useEffect(() => {
+    if (router.pathname === '/gestao/relatorios') {
+      setRelatoriosGestaoExpanded(true);
+    }
+  }, [router.pathname]);
+
   const handleModuleChange = (moduleId) => {
     const module = modules.find(m => m.id === moduleId);
     if (module && module.id !== currentModule?.id) {
@@ -975,6 +984,14 @@ export default function PrincipalSidebar() {
 
   const toggleRegimeNormal = () => {
     setRegimeNormalExpanded(!regimeNormalExpanded);
+  };
+
+  const toggleCadastrosGestao = () => {
+    setCadastrosGestaoExpanded(!cadastrosGestaoExpanded);
+  };
+
+  const toggleRelatoriosGestao = () => {
+    setRelatoriosGestaoExpanded(!relatoriosGestaoExpanded);
   };
 
   // Itens de ajustes
@@ -1127,6 +1144,42 @@ export default function PrincipalSidebar() {
       description: 'Consolidado anual de dados fiscais',
       icon: BarChart3,
       route: '/auditoria/consolidado'
+    }
+  ];
+
+  // Itens de Cadastros Gestão
+  const cadastrosGestaoItems = [
+    {
+      id: 'certificados',
+      title: 'Certificados',
+      description: 'Gerencie certificados digitais',
+      icon: FileText,
+      route: '/gestao/certificados'
+    },
+    {
+      id: 'departamentos',
+      title: 'Departamentos',
+      description: 'Gerencie departamentos',
+      icon: Building2,
+      route: '/gestao/departamentos'
+    },
+    {
+      id: 'cargos',
+      title: 'Cargos',
+      description: 'Gerencie cargos',
+      icon: Users,
+      route: '/gestao/cargos'
+    }
+  ];
+
+  // Itens de Relatórios Gestão
+  const relatoriosGestaoItems = [
+    {
+      id: 'relatorios',
+      title: 'Relatórios',
+      description: 'Visualize relatórios gerenciais',
+      icon: FileBarChart,
+      route: '/gestao/relatorios'
     }
   ];
 
@@ -1612,6 +1665,129 @@ export default function PrincipalSidebar() {
                             <div className={styles.submenuContent}>
                               <span className={styles.submenuTitle}>{regimeItem.title}</span>
                               <span className={styles.submenuDescription}>{regimeItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Se for o item "cadastros-gestao", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'cadastros-gestao') {
+              const isCadastrosGestaoItemActive = 
+                router.pathname === '/gestao/certificados' ||
+                router.pathname === '/gestao/departamentos' ||
+                router.pathname === '/gestao/cargos';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isCadastrosGestaoItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      router.push('/gestao/certificados');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCadastrosGestao();
+                        }}
+                        title={cadastrosGestaoExpanded ? "Fechar Cadastro" : "Abrir Cadastro"}
+                      >
+                        {cadastrosGestaoExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de Cadastros Gestão */}
+                  {cadastrosGestaoExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {cadastrosGestaoItems.map((cadastroItem) => {
+                        const IconComponent = cadastroItem.icon;
+                        const isActive = router.pathname === cadastroItem.route;
+                        return (
+                          <button
+                            key={cadastroItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(cadastroItem.route)}
+                            title={cadastroItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{cadastroItem.title}</span>
+                              <span className={styles.submenuDescription}>{cadastroItem.description}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Se for o item "relatorios-gestao", adicionar funcionalidade de expandir/colapsar
+            if (item.id === 'relatorios-gestao') {
+              const isRelatoriosGestaoItemActive = router.pathname === '/gestao/relatorios';
+              
+              return (
+                <div key={item.id}>
+                  <motion.button
+                    variants={item}
+                    className={`${styles.navItem} ${isRelatoriosGestaoItemActive ? styles.active : ''}`}
+                    onClick={() => {
+                      router.push('/gestao/relatorios');
+                    }}
+                  >
+                    <div className={styles.navItemIcon}>
+                      {item.icon}
+                    </div>
+                    {!collapsed && <span className={styles.navItemLabel}>{item.label}</span>}
+                    {!collapsed && (
+                      <div 
+                        className={styles.expandButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRelatoriosGestao();
+                        }}
+                        title={relatoriosGestaoExpanded ? "Fechar Relatórios" : "Abrir Relatórios"}
+                      >
+                        {relatoriosGestaoExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    )}
+                  </motion.button>
+                  
+                  {/* Submenu de Relatórios Gestão */}
+                  {relatoriosGestaoExpanded && !collapsed && (
+                    <div className={styles.submenu}>
+                      {relatoriosGestaoItems.map((relatorioItem) => {
+                        const IconComponent = relatorioItem.icon;
+                        const isActive = router.pathname === relatorioItem.route;
+                        return (
+                          <button
+                            key={relatorioItem.id}
+                            className={`${styles.submenuItem} ${isActive ? styles.active : ''}`}
+                            onClick={() => router.push(relatorioItem.route)}
+                            title={relatorioItem.description}
+                          >
+                            <div className={styles.submenuIcon}>
+                              <IconComponent size={16} />
+                            </div>
+                            <div className={styles.submenuContent}>
+                              <span className={styles.submenuTitle}>{relatorioItem.title}</span>
+                              <span className={styles.submenuDescription}>{relatorioItem.description}</span>
                             </div>
                           </button>
                         );

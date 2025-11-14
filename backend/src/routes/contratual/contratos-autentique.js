@@ -964,10 +964,18 @@ router.post("/webhook-dados-assinatura", async (req, res) => {
     
     let contratoCompletamenteAssinado = false;
     if (assinados === total) {
-      await connection.query(
-        `UPDATE ${scope.table} SET status = 'assinado' WHERE id = ?`,
-        [recordId]
-      );
+      // Se for tabela contratos, atualiza também a data_assinatura
+      if (scope.table === 'contratos') {
+        await connection.query(
+          `UPDATE ${scope.table} SET status = 'assinado', data_assinatura = NOW() WHERE id = ?`,
+          [recordId]
+        );
+      } else {
+        await connection.query(
+          `UPDATE ${scope.table} SET status = 'assinado' WHERE id = ?`,
+          [recordId]
+        );
+      }
       contratoCompletamenteAssinado = true;
     }
 

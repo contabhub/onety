@@ -12,12 +12,14 @@ import {
   X,
   Calendar,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import SpaceLoader from '../../components/onety/menu/SpaceLoader';
 import styles from '../../styles/financeiro/contratos.module.css';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
 import { useContratos } from "../../hooks/financeiro/useContratos";
+import { DetalhesContratoDrawer } from '../../components/financeiro/DetalhesContratoDrawer';
 
 
 
@@ -40,6 +42,10 @@ export default function ContratosPage() {
   
   // Estados para dropdown de ações
   const [activeDropdown, setActiveDropdown] = useState(null);
+  
+  // Estados para o drawer de detalhes
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [contratoSelecionado, setContratoSelecionado] = useState(null);
 
   // Usar o hook personalizado
   const { contratos, isLoading, error, buscarContratos } =
@@ -918,6 +924,19 @@ export default function ContratosPage() {
                                     className={styles.dropdownItem}
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      setContratoSelecionado(contrato.id);
+                                      setIsDrawerOpen(true);
+                                      handleCloseDropdown();
+                                    }}
+                                  >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Editar Contrato
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    className={styles.dropdownItem}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       handleCloseDropdown();
                                     }}
                                   >
@@ -1038,6 +1057,16 @@ export default function ContratosPage() {
       </div>
 
       <PrincipalSidebar />
+      
+      {/* Drawer de Detalhes do Contrato */}
+      <DetalhesContratoDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setContratoSelecionado(null);
+        }}
+        contratoId={contratoSelecionado}
+      />
     </div>
   );
 }

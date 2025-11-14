@@ -176,7 +176,7 @@ export default function Dashboard() {
               <div className={`${styles.skeletonSpacing} ${styles.skeletonPulse}`}>
                 <div className={styles.skeletonBar}></div>
                 <div className={styles.skeletonGrid}>
-                  {[...Array(4)].map((_, i) => (
+                  {[...Array(3)].map((_, i) => (
                     <div key={i} className={styles.skeletonCard}></div>
                   ))}
                 </div>
@@ -184,6 +184,22 @@ export default function Dashboard() {
                   {[...Array(2)].map((_, i) => (
                     <div key={i} className={styles.skeletonCardLarge}></div>
                   ))}
+                </div>
+                <div className={styles.skeletonQuickActions}>
+                  <div className={styles.skeletonQuickActionsTitle}></div>
+                  <div className={styles.skeletonQuickActionsGrid}>
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className={styles.skeletonQuickActionButton}></div>
+                    ))}
+                  </div>
+                </div>
+                <div className={styles.skeletonQuickActions}>
+                  <div className={styles.skeletonQuickActionsTitle}></div>
+                  <div className={styles.skeletonQuickActionsGrid}>
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className={styles.skeletonQuickActionButton}></div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

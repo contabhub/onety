@@ -81,9 +81,12 @@ router.post("/:access_token/sign", async (req, res) => {
       [contract[0].contract_id]
     );
 
-    // 🔹 8. Se TODOS os signatários assinaram, marcar o contrato como "assinado"
+    // 🔹 8. Se TODOS os signatários assinaram, marcar o contrato como "assinado" e preencher data_assinatura
     if (assinados === total) {
-      await connection.query("UPDATE contratos SET status = 'assinado' WHERE id = ?", [contract[0].contract_id]);
+      await connection.query(
+        "UPDATE contratos SET status = 'assinado', data_assinatura = NOW() WHERE id = ?", 
+        [contract[0].contract_id]
+      );
     }
 
 
