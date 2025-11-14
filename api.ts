@@ -1013,31 +1013,6 @@ class ApiService {
 
   // ===== MÉTODOS DE COMPARAÇÃO DE ANEXOS =====
 
-  /**
-   * Busca comparação de anexos do Simples Nacional
-   */
-  async getComparacaoAnexos(params: {
-    clientes_id?: string;
-    cnpj?: string;
-    ano?: number;
-    mes?: number;
-  }): Promise<ApiResponse<any>> {
-    const queryParams = new URLSearchParams();
-    
-    // Priorizar clientes_id para segurança multi-tenant
-    if (params.clientes_id) {
-      queryParams.append('clientes_id', params.clientes_id);
-    } else if (params.cnpj) {
-      queryParams.append('cnpj', params.cnpj);
-    }
-    
-    if (params.ano) queryParams.append('ano', params.ano.toString());
-    if (params.mes) queryParams.append('mes', params.mes.toString());
-
-    const endpoint = `/simples-nacional/comparacao-anexos?${queryParams.toString()}`;
-    return this.request(endpoint);
-  }
-
   // ===== MÉTODOS DE ICMS RECOLHIDO =====
 
   /**

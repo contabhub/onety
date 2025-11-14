@@ -1,0 +1,23 @@
+.card {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-lg);
+  padding: var(--onity-space-xl);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-shadow-md);
+}
+
+.title {
+  font-size: var(--onity-type-h4-size, 1.35rem);
+  font-weight: var(--onity-font-weight-semibold, 600);
+  color: var(--onity-color-text);
+  margin-bottom: var(--onity-space-m);
+}
+
+.loading {
+  text-align: center;
+  color: var(--onity-icon-secondary);
+  padding: var(--onity-space-xl) 0;
+  font-size: var(--onity-type-body-size, 1rem);
+}
+
+

@@ -1,0 +1,147 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--onity-spacing-lg);
+  padding: var(--onity-spacing-lg);
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-lg);
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 20%, transparent);
+  color: var(--onity-color-text);
+}
+
+.details {
+  flex: 1 1 320px;
+  min-width: 280px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: var(--onity-font-weight-bold);
+  margin: 0;
+  color: var(--onity-color-text);
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 50%, transparent);
+  font-size: 0.875rem;
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-text-med);
+  background: color-mix(in oklab, var(--onity-color-border) 20%, transparent);
+}
+
+.companyName {
+  font-size: 1.125rem;
+  font-weight: var(--onity-font-weight-semibold);
+  margin-bottom: 0.25rem;
+  color: var(--onity-text-med);
+}
+
+.infoText {
+  font-size: 0.95rem;
+  color: var(--onity-text-med);
+  margin-bottom: 0.2rem;
+}
+
+.subtitle {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--onity-text-med);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.yearSelect {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--onity-radius-sm);
+  border: 1px solid color-mix(in oklab, var(--onity-color-border) 40%, transparent);
+  background: color-mix(in oklab, var(--onity-color-surface) 80%, transparent);
+  color: var(--onity-color-text);
+  font-weight: var(--onity-font-weight-semibold);
+  min-width: 110px;
+  cursor: pointer;
+}
+
+.yearSelect:focus {
+  outline: 2px solid color-mix(in oklab, var(--onity-info) 60%, transparent);
+  border-color: transparent;
+}
+
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: var(--onity-radius-sm);
+  border: 1px solid transparent;
+  font-weight: var(--onity-font-weight-semibold);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.exportButton:hover {
+  transform: translateY(-1px);
+}
+
+.exportPrimary {
+  background: var(--onity-info);
+  color: var(--onity-color-text);
+  border-color: color-mix(in oklab, var(--onity-info) 80%, transparent);
+  box-shadow: 0 0 18px color-mix(in oklab, var(--onity-info) 35%, transparent);
+}
+
+.exportPrimary:hover {
+  background: var(--onity-primary-hover);
+}
+
+.exportSecondary {
+  background: transparent;
+  color: var(--onity-text-med);
+  border-color: color-mix(in oklab, var(--onity-color-border) 40%, transparent);
+}
+
+.exportSecondary:hover {
+  background: color-mix(in oklab, var(--onity-color-border) 15%, transparent);
+}
+
+.exportIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .exportButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .yearSelect {
+    width: 100%;
+  }
+}
+

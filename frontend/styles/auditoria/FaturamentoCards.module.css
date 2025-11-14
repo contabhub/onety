@@ -1,0 +1,92 @@
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--onity-space-xl);
+  margin-bottom: var(--onity-space-xl);
+}
+
+@media (min-width: 768px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  background: var(--onity-color-surface);
+  border-radius: var(--onity-radius-lg);
+  padding: var(--onity-space-xl);
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-m);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-space-m);
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-space-xs);
+}
+
+.cardLabel {
+  font-size: var(--onity-type-body-size, 1rem);
+  font-weight: var(--onity-font-weight-medium);
+  color: var(--onity-icon-secondary);
+}
+
+.cardValue {
+  font-size: var(--onity-type-h3-size, 1.75rem);
+  font-weight: var(--onity-font-weight-bold);
+  color: var(--onity-color-text);
+}
+
+.valueGreen {
+  color: var(--onity-success);
+}
+
+.valueBlue {
+  color: var(--onity-info, #60a5fa);
+}
+
+.valueOrange {
+  color: var(--onity-warning, #fbbf24);
+}
+
+.iconWrapper {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--onity-radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--onity-color-surface-strong, rgba(255, 255, 255, 0.04));
+}
+
+.iconGreen {
+  background: color-mix(in srgb, var(--onity-success) 18%, transparent);
+  color: var(--onity-success);
+}
+
+.iconBlue {
+  background: color-mix(in srgb, var(--onity-info, #60a5fa) 18%, transparent);
+  color: var(--onity-info, #60a5fa);
+}
+
+.iconOrange {
+  background: color-mix(in srgb, var(--onity-warning, #fbbf24) 18%, transparent);
+  color: var(--onity-warning, #fbbf24);
+}
+
+.statusIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+
