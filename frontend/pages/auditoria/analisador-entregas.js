@@ -29,6 +29,10 @@ export default function FileAnalyzer() {
   const [clientesList, setClientesList] = useState([]); // lista de clientes
   const [clienteSelecionadoId, setClienteSelecionadoId] = useState(''); // id do dropdown
 
+  const handleToggleIcmsSection = useCallback(() => {
+    setIcmsExpanded((prev) => !prev);
+  }, []);
+
   const user = getUserData();
   const empresaId = user.EmpresaId;
 
@@ -527,14 +531,23 @@ export default function FileAnalyzer() {
     if (monthData.status === 'done' && clientId) {
       // Sistema multi-tenant - usar dados do cliente selecionado
       router.push(
-        `/obligations?month=${monthData.month}&year=${monthData.year}&client_id=${clientId}`
+        `/auditoria/analise-obrigacoes?month=${monthData.month}&year=${monthData.year}&client_id=${clientId}`
       );
     }
   };
 
-  const handleYearChange = (e) => {
-    const year = parseInt(e.target.value);
-    setSelectedYear(year);
+  const handleTimelineClick = (item) => {
+    if (item.status === 'done' && clienteSelecionadoId) {
+      router.push(
+        `/auditoria/analise-obrigacoes?month=${item.month}&year=${item.year}&client_id=${clienteSelecionadoId}`
+      );
+    }
+  };
+
+  const handleIcmsValueChange = (index, value) => {
+    const newValues = [...icmsValues];
+    newValues[index] = parseFloat(value) || 0;
+    setIcmsValues(newValues);
   };
 
   const handleCadastrarNovaEmpresa = () => {
@@ -936,28 +949,37 @@ export default function FileAnalyzer() {
               <div className={styles.sectionSpacing}>
                 <ObligationStatusPanel
                   selectedAnalysisInfo={selectedAnalysisInfo}
-                  reloadTimeline={() => loadTimelineData()}
+                  reloadTimeline={() => loadTimelineData() }
                 />
               </div>
 
               <div className={styles.sectionCard}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>
+                <button
+                  type="button"
+                  className={styles.accordionTrigger}
+                  onClick={handleToggleIcmsSection}
+                  aria-expanded={icmsExpanded}
+                  aria-controls="icms-accordion-panel"
+                >
+                  <span className={styles.accordionTriggerContent}>
                     <FileText className={styles.buttonIcon} />
                     Controle de ICMS Recolhido
-                  </h2>
-                  <div className={styles.actionsRow}>
-                    <span className={styles.subtitle}>Ano: {selectedYear}</span>
-                    <button
-                      onClick={() => handleToggleIcmsSection()}
-                      className={styles.toggleButton}
-                    >
-                      {icmsExpanded ? 'Fechar' : 'Editar Valores'}
-                    </button>
-                  </div>
-                </div>
+                  </span>
+                  <span className={styles.accordionTriggerActions}>
+                    <span>
+                      {icmsExpanded ? 'Fechar' : 'Editar Valores'} • Ano: {selectedYear}
+                    </span>
+                    <ChevronDown
+                      className={
+                        icmsExpanded
+                          ? `${styles.accordionTriggerChevron} ${styles.accordionTriggerChevronOpen}`
+                          : styles.accordionTriggerChevron
+                      }
+                    />
+                  </span>
+                </button>
                 {icmsExpanded && (
-                  <div className={styles.sectionBody}>
+                  <div id="icms-accordion-panel" className={styles.sectionBody}>
                     <div className={styles.tableWrapper}>
                       <table className={styles.table}>
                         <thead className={styles.tableHead}>
@@ -996,7 +1018,9 @@ export default function FileAnalyzer() {
                   </div>
                 )}
               </div>
+            </div>
 
+            <div className={styles.timelineSection}>
               <div className={styles.sectionCard}>
                 <div className={styles.sectionBody}>
                   <div className={styles.tableWrapper}>
@@ -1041,38 +1065,40 @@ export default function FileAnalyzer() {
                 </div>
               </div>
 
-              <div className={styles.tableWrapper}>
-                <div className={styles.timelineGrid}>
-                  <div></div>
-                  {months.map((month) => (
-                    <div key={month.month} className={styles.timelineHeaderCell}>
-                      {month.month}
-                    </div>
-                  ))}
-                  <div className={styles.timelineRowTitle}>SPED Fiscal</div>
-                  {months.map((month) => (
-                    <div key={`sped-${month.month}`} className={styles.timelineCell}>
-                      {month.spedFiscal || '—'}
-                    </div>
-                  ))}
-                  <div className={styles.timelineRowTitle}>SPED Contribuições</div>
-                  {months.map((month) => (
-                    <div key={`contrib-${month.month}`} className={styles.timelineCell}>
-                      {month.spedContribuicoes || '—'}
-                    </div>
-                  ))}
-                  <div className={styles.timelineRowTitle}>DCTF</div>
-                  {months.map((month) => (
-                    <div key={`dctf-${month.month}`} className={styles.timelineCell}>
-                      {month.dctf || '—'}
-                    </div>
-                  ))}
-                  <div className={styles.timelineRowTitle}>DARFs Pagas</div>
-                  {months.map((month) => (
-                    <div key={`darf-${month.month}`} className={styles.timelineCell}>
-                      {month.darf || '—'}
-                    </div>
-                  ))}
+              <div className={styles.timelineMatrixCard}>
+                <div className={styles.tableWrapper}>
+                  <div className={styles.timelineGrid}>
+                    <div></div>
+                    {months.map((month) => (
+                      <div key={month.month} className={styles.timelineHeaderCell}>
+                        {month.month}
+                      </div>
+                    ))}
+                    <div className={styles.timelineRowTitle}>SPED Fiscal</div>
+                    {months.map((month) => (
+                      <div key={`sped-${month.month}`} className={styles.timelineCell}>
+                        {month.spedFiscal || '—'}
+                      </div>
+                    ))}
+                    <div className={styles.timelineRowTitle}>SPED Contribuições</div>
+                    {months.map((month) => (
+                      <div key={`contrib-${month.month}`} className={styles.timelineCell}>
+                        {month.spedContribuicoes || '—'}
+                      </div>
+                    ))}
+                    <div className={styles.timelineRowTitle}>DCTF</div>
+                    {months.map((month) => (
+                      <div key={`dctf-${month.month}`} className={styles.timelineCell}>
+                        {month.dctf || '—'}
+                      </div>
+                    ))}
+                    <div className={styles.timelineRowTitle}>DARFs Pagas</div>
+                    {months.map((month) => (
+                      <div key={`darf-${month.month}`} className={styles.timelineCell}>
+                        {month.darf || '—'}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
