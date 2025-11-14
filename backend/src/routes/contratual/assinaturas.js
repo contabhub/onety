@@ -82,11 +82,45 @@ router.post("/:access_token/sign", async (req, res) => {
     );
 
     // 🔹 8. Se TODOS os signatários assinaram, marcar o contrato como "assinado" e preencher data_assinatura
+    let contratoCompletamenteAssinado = false;
     if (assinados === total) {
       await connection.query(
         "UPDATE contratos SET status = 'assinado', data_assinatura = NOW() WHERE id = ?", 
         [contract[0].contract_id]
       );
+      contratoCompletamenteAssinado = true;
+    }
+
+    // 🎯 CONVERTER PRE_CLIENTE EM CLIENTE E ATUALIZAR CONTRATO (se straton = 1)
+    if (contratoCompletamenteAssinado) {
+      const [[contrato]] = await connection.query(
+        `SELECT c.pre_cliente_id, c.cliente_id, c.modelos_contrato_id, mc.straton
+         FROM contratos c
+         LEFT JOIN modelos_contrato mc ON c.modelos_contrato_id = mc.id
+         WHERE c.id = ?`,
+        [contract[0].contract_id]
+      );
+
+      if (contrato?.pre_cliente_id && !contrato.cliente_id) {
+        console.log("🔄 Convertendo pre_cliente para cliente...");
+        // Importar função dinamicamente para evitar dependência circular
+        const { converterPreClienteParaCliente } = require('./contratos-autentique');
+        const clienteId = await converterPreClienteParaCliente(contrato.pre_cliente_id, connection);
+        
+        if (clienteId) {
+          await connection.query(
+            `UPDATE contratos SET cliente_id = ? WHERE id = ?`,
+            [clienteId, contract[0].contract_id]
+          );
+          console.log("✅ Contrato atualizado com cliente_id:", clienteId);
+        }
+      }
+
+      // 🎯 CRIAR VENDAS BASEADAS EM PRODUTOS_DADOS SE STRATON = 1
+      if (contrato?.straton === 1) {
+        const { criarVendasDeProdutosDados } = require('./contratos-autentique');
+        await criarVendasDeProdutosDados(contract[0].contract_id, connection);
+      }
     }
 
 
