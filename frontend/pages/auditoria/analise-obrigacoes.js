@@ -193,7 +193,6 @@ const ObligationsAnalysis = () => {
       if (filteredAnalyses.length > 0) {
         const periodData = {};
         filteredAnalyses.forEach((analysis) => {
-          // ... mesmo processamento de antes
           let parsedResumo = analysis.resumo;
           if (typeof analysis.resumo === 'string') {
             try {
@@ -203,57 +202,36 @@ const ObligationsAnalysis = () => {
             }
           }
 
+          // Substitua os blocos que traduzem parsedResumo para os dados do período
+          // SPED_FISCAL
           if (analysis.tipo === 'SPED_FISCAL') {
-            if (parsedResumo && Object.keys(parsedResumo).length > 0) {
-              const resumo = parsedResumo;
-              periodData.sped_fiscal = {
-                summary: {
-                  totalRevenue: Number(resumo.faturamento) || 0,
-                  totalSaidas: Number(resumo.faturamento) || 0,
-                  icms: {
-                    debits: typeof resumo.icms === 'object' && resumo.icms !== null 
-                      ? Number((resumo.icms).debits) || 0 
-                      : Number(resumo.icms) || 0,
-                    credits: typeof resumo.icms === 'object' && resumo.icms !== null 
-                      ? Number((resumo.icms).credits) || 0 
-                      : 0
-                  }
+            const resumo = parsedResumo.totais || {};
+            periodData.sped_fiscal = {
+              summary: {
+                totalRevenue: Number(resumo.faturamento) || 0,
+                totalSaidas: Number(resumo.faturamento) || 0,
+                icms: {
+                  debits: Number(resumo.icms?.valor) || 0,
+                  credits: 0
                 }
-              };
-            } else {
-              if (!periodData.sped_fiscal) {
-                periodData.sped_fiscal = {
-                  summary: {
-                    totalRevenue: 0,
-                    totalSaidas: 0,
-                    icms: { debits: 0, credits: 0 }
-                  }
-                };
               }
-            }
-          } else if (analysis.tipo === 'SPED_CONTRIBUICOES') {
-            if (parsedResumo && Object.keys(parsedResumo).length > 0) {
-              const resumo = parsedResumo;
-              periodData.sped_contribuicoes = {
-                summary: {
-                  totalRevenue: Number(resumo.totalRevenue) || 0,
-                  pisCofins: {
-                    pis: Number((resumo.pisCofins || {}).pis) || 0,
-                    cofins: Number((resumo.pisCofins || {}).cofins) || 0
-                  }
+            };
+          }
+          // SPED_CONTRIBUICOES
+          if (analysis.tipo === 'SPED_CONTRIBUICOES') {
+            const resumo = parsedResumo.totais || {};
+            periodData.sped_contribuicoes = {
+              summary: {
+                totalRevenue: Number(resumo.receita) || 0,
+                pisCofins: {
+                  pis: Number(resumo.pis?.valor) || 0,
+                  cofins: Number(resumo.cofins?.valor) || 0
                 }
-              };
-            } else {
-              if (!periodData.sped_contribuicoes) {
-                periodData.sped_contribuicoes = {
-                  summary: {
-                    totalRevenue: 0,
-                    pisCofins: { pis: 0, cofins: 0 }
-                  }
-                };
               }
-            }
-          } else if (analysis.tipo === 'DCTF') {
+            };
+          }
+          // DCTF – sem alterações (já considera resumo.tributos)
+          if (analysis.tipo === 'DCTF') {
             if (parsedResumo && Object.keys(parsedResumo).length > 0) {
               const resumo = parsedResumo;
               if (resumo.tributos) {
@@ -453,7 +431,7 @@ const ObligationsAnalysis = () => {
 
               {/* Botão Filtros com dropdown */}
               <div className={styles.filterDropdownWrapper}>
-                <label className={styles.filterLabel} style={{ visibility: 'hidden' }}>
+                <label className={`${styles.filterLabel} ${styles.filterLabelHidden}`}>
                   <Filter size={16} className={styles.filterLabelIcon} />
                   Filtros
                 </label>
@@ -681,7 +659,7 @@ const ObligationsAnalysis = () => {
 
                 {/* Botão Filtros com dropdown */}
                 <div className={styles.filterDropdownWrapper}>
-                  <label className={styles.filterLabel} style={{ visibility: 'hidden' }}>
+                  <label className={`${styles.filterLabel} ${styles.filterLabelHidden}`}>
                     <Filter size={16} className={styles.filterLabelIcon} />
                     Filtros
                   </label>
