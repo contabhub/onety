@@ -270,6 +270,7 @@ router.get("/form-data", verifyToken, async (req, res) => {
 });
 
 // ✅ READ - Listar todos os contratos (com filtro opcional por empresa)
+// Inclui contratos financeiros (modelos_contrato_id IS NULL) e contratos contratuais (straton = 1)
 router.get("/", verifyToken, async (req, res) => {
   try {
     const { empresa_id } = req.query;
@@ -279,22 +280,42 @@ router.get("/", verifyToken, async (req, res) => {
         c.*, 
         co.nome AS empresa_nome,
         cc.nome AS centro_custo_nome,
-        cl.nome_fantasia AS cliente_nome
+        cl.nome_fantasia AS cliente_nome,
+        mc.straton AS modelo_straton
       FROM contratos c
       LEFT JOIN empresas co ON c.empresa_id = co.id
       LEFT JOIN centro_custo cc ON c.centro_custo_id = cc.id
       LEFT JOIN clientes cl ON c.cliente_id = cl.id
+      LEFT JOIN modelos_contrato mc ON c.modelos_contrato_id = mc.id
     `;
 
     let params = [];
+    let whereConditions = [];
+    
+    // Filtrar apenas contratos financeiros (modelos_contrato_id IS NULL) ou contratos contratuais (straton = 1)
+    // A condição garante que:
+    // 1. Contratos sem modelo (modelos_contrato_id IS NULL) sejam incluídos
+    // 2. Contratos com modelo onde straton = 1 sejam incluídos
+    // Usar ISNULL para tratar casos onde o modelo não existe
+    whereConditions.push(`(c.modelos_contrato_id IS NULL OR (mc.id IS NOT NULL AND mc.straton = 1))`);
+    
     if (empresa_id) {
-      query += " WHERE c.empresa_id = ?";
+      whereConditions.push("c.empresa_id = ?");
       params.push(empresa_id);
+    }
+
+    if (whereConditions.length > 0) {
+      query += " WHERE " + whereConditions.join(" AND ");
     }
 
     query += " ORDER BY c.criado_em DESC";
 
+    console.log("🔍 Query de contratos:", query);
+    console.log("🔍 Parâmetros:", params);
+
     const [contratos] = await pool.query(query, params);
+    
+    console.log(`✅ Total de contratos encontrados: ${contratos.length}`);
     
     // ✅ Buscar produtos relacionados para cada contrato
     const contratosComProdutos = await Promise.all(
@@ -769,15 +790,26 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     const { id } = req.params;
     // Conta corrente será pega do numero_conta (contas) ou inter_conta_corrente (contas)
 
-    // 🔍 1. Buscar dados completos do contrato + conta corrente
+    // 🔍 1. Buscar dados completos do contrato + conta corrente + dados do cliente
     const [contratos] = await pool.query(`
       SELECT 
         c.*,
-        contas_origem.numero_conta as conta_corrente_contas,
-        contas_api.inter_conta_corrente as conta_corrente_api
+        contas_api.numero_conta as conta_corrente_contas,
+        contas_api.inter_conta_corrente as conta_corrente_api,
+        cl.email_principal as email,
+        cl.cpf_cnpj,
+        cl.nome_fantasia,
+        cl.tipo_pessoa,
+        cl.endereco,
+        cl.numero,
+        cl.complemento,
+        cl.bairro,
+        cl.cidade,
+        cl.estado as uf,
+        cl.cep
       FROM contratos c
-      LEFT JOIN contas contas_origem ON c.conta_id = contas_origem.id
       LEFT JOIN contas contas_api ON c.conta_api_id = contas_api.id
+      LEFT JOIN clientes cl ON c.cliente_id = cl.id
       WHERE c.id = ?
     `, [id]);
 
@@ -787,19 +819,215 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
 
     const contrato = contratos[0];
 
-    // 🔍 2. Validar se tem data de vencimento
-    if (!contrato.proximo_vencimento) {
+    // 🔍 Função auxiliar para calcular próximo vencimento e buscar parcela específica a partir de produtos_dados
+    const calcularProximoVencimentoDeProdutos = (produtosDados) => {
+      if (!produtosDados) return null;
+      
+      try {
+        const produtos = typeof produtosDados === 'string' 
+          ? JSON.parse(produtosDados) 
+          : produtosDados;
+        
+        if (!Array.isArray(produtos) || produtos.length === 0) {
+          return null;
+        }
+        
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0); // Zerar horas para comparação
+        
+        console.log(`🔍 DEBUG - Data de hoje: ${hoje.toISOString().split('T')[0]}`);
+        
+        let proximaData = null;
+        let parcelaEncontrada = null;
+        
+        // Iterar por todos os produtos
+        for (const produto of produtos) {
+          if (!produto.parcelas_detalhadas || !Array.isArray(produto.parcelas_detalhadas)) {
+            continue;
+          }
+          
+          console.log(`🔍 DEBUG - Produto: ${produto.nome || produto.id}, ${produto.parcelas_detalhadas.length} parcelas`);
+          
+          // Iterar por todas as parcelas
+          for (const parcela of produto.parcelas_detalhadas) {
+            if (!parcela.data_vencimento) continue;
+            
+            // Parse da data diretamente da string (evitar problemas de timezone)
+            const dataStr = parcela.data_vencimento.split('T')[0]; // Garantir formato YYYY-MM-DD
+            const [ano, mes, dia] = dataStr.split('-').map(Number);
+            const dataVencimento = new Date(ano, mes - 1, dia); // mes - 1 porque Date usa 0-11
+            dataVencimento.setHours(0, 0, 0, 0);
+            
+            console.log(`🔍 DEBUG - Parcela ${parcela.numero}: Data ${dataStr}, Valor R$ ${parcela.valor}, Comparação: ${dataVencimento >= hoje ? 'FUTURA' : 'PASSADA'}`);
+            
+            // Se a data ainda não passou e é a primeira encontrada, ou é mais próxima que a anterior
+            if (dataVencimento >= hoje) {
+              if (!proximaData || dataVencimento < proximaData) {
+                proximaData = dataVencimento;
+                parcelaEncontrada = parcela; // Guardar a parcela encontrada
+                console.log(`✅ DEBUG - Nova parcela mais próxima: Parcela ${parcela.numero}, Data ${dataStr}, Valor R$ ${parcela.valor}`);
+              }
+            }
+          }
+        }
+        
+        if (proximaData && parcelaEncontrada) {
+          console.log(`✅ DEBUG - Parcela final selecionada: Parcela ${parcelaEncontrada.numero}, Data ${proximaData.toISOString().split('T')[0]}, Valor R$ ${parcelaEncontrada.valor}`);
+        }
+        
+        return { data: proximaData, parcela: parcelaEncontrada };
+      } catch (error) {
+        console.error('Erro ao calcular próximo vencimento de produtos_dados:', error);
+        return null;
+      }
+    };
+
+    // 🔍 2. Calcular próximo vencimento e buscar parcela específica (priorizar produtos_dados, depois proximo_vencimento)
+    let proximoVencimento = contrato.proximo_vencimento;
+    let parcelaAtual = null;
+    let valorParcela = parseFloat(contrato.valor) || 0; // Valor padrão: valor total do contrato
+    let vendaId = null; // ID da venda correspondente (se existir)
+    
+    // Se tem produtos_dados, buscar a parcela específica
+    if (contrato.produtos_dados) {
+      const resultadoProdutos = calcularProximoVencimentoDeProdutos(contrato.produtos_dados);
+      if (resultadoProdutos && resultadoProdutos.data) {
+        proximoVencimento = resultadoProdutos.data;
+        parcelaAtual = resultadoProdutos.parcela;
+        
+        // Se encontrou a parcela, usar o valor dela
+        if (parcelaAtual && parcelaAtual.valor) {
+          valorParcela = parseFloat(parcelaAtual.valor) || valorParcela;
+          
+          // Converter data para formato YYYY-MM-DD para buscar venda
+          const dataVencimentoStr = proximoVencimento instanceof Date 
+            ? proximoVencimento.toISOString().split('T')[0] 
+            : new Date(proximoVencimento).toISOString().split('T')[0];
+          
+          // Buscar venda correspondente a esta parcela
+          const [vendasExistentes] = await pool.query(
+            `SELECT id, valor_venda, vencimento 
+             FROM vendas 
+             WHERE contrato_id = ? 
+               AND DATE(vencimento) = ? 
+               AND ABS(valor_venda - ?) < 0.01
+             ORDER BY id DESC 
+             LIMIT 1`,
+            [id, dataVencimentoStr, valorParcela]
+          );
+          
+          if (vendasExistentes.length > 0) {
+            vendaId = vendasExistentes[0].id;
+            console.log(`✅ Venda encontrada para parcela: ID ${vendaId}, Valor R$ ${valorParcela}, Vencimento: ${dataVencimentoStr}`);
+          } else {
+            console.log(`ℹ️ Nenhuma venda encontrada para esta parcela. Será gerado boleto diretamente do contrato.`);
+          }
+          
+          console.log(`✅ Parcela encontrada: Valor R$ ${valorParcela}, Vencimento: ${dataVencimentoStr}`);
+        }
+      }
+    }
+    
+    // Se não encontrou em produtos_dados mas tem proximo_vencimento, usar ele (apenas como fallback)
+    if (!proximoVencimento && contrato.proximo_vencimento) {
+      console.log(`⚠️ DEBUG - Usando proximo_vencimento do contrato como fallback: ${contrato.proximo_vencimento}`);
+      proximoVencimento = contrato.proximo_vencimento;
+    }
+    
+    // Validar se tem data de vencimento
+    if (!proximoVencimento) {
       return res.status(400).json({ error: "Contrato não possui data de vencimento definida." });
     }
+    
+    // Atualizar contrato.proximo_vencimento e valor para usar no restante da função
+    // IMPORTANTE: Se encontrou parcela em produtos_dados, usar APENAS os dados da parcela
+    if (parcelaAtual) {
+      // Garantir que estamos usando a data da parcela, não do contrato
+      const dataParcelaStr = parcelaAtual.data_vencimento.split('T')[0];
+      contrato.proximo_vencimento = dataParcelaStr;
+      contrato.valor = valorParcela;
+      console.log(`✅ DEBUG - Usando dados da parcela: Data ${dataParcelaStr}, Valor R$ ${valorParcela}`);
+    } else {
+      contrato.proximo_vencimento = proximoVencimento;
+      contrato.valor = valorParcela; // Pode ser o valor total se não encontrou parcela
+    }
 
-    // 🔍 2.1. Validar se tem conta corrente (verifica tanto contas quanto contas)
-    const contaCorrente = contrato.conta_corrente_contas || contrato.conta_corrente_api;
+    // 🔍 2.1. Buscar conta corrente (do contrato ou buscar diretamente se conta_api_id existe)
+    let contaCorrente = contrato.conta_corrente_contas || contrato.conta_corrente_api;
+    
+    console.log("🔍 DEBUG - Busca de conta corrente:", {
+      conta_api_id: contrato.conta_api_id,
+      empresa_id: contrato.empresa_id,
+      conta_corrente_contas: contrato.conta_corrente_contas,
+      conta_corrente_api: contrato.conta_corrente_api,
+      contaCorrente_inicial: contaCorrente
+    });
+    
+    // Se não tem conta corrente mas tem conta_api_id, buscar diretamente
+    if (!contaCorrente && contrato.conta_api_id) {
+      console.log(`🔍 Buscando conta diretamente com id ${contrato.conta_api_id}`);
+      const [contas] = await pool.query(
+        `SELECT numero_conta, inter_conta_corrente, inter_ativado, inter_status, empresa_id
+         FROM contas 
+         WHERE id = ?`,
+        [contrato.conta_api_id]
+      );
+      
+      console.log("🔍 Resultado da busca direta:", contas);
+      
+      if (contas.length > 0) {
+        contaCorrente = contas[0].inter_conta_corrente || contas[0].numero_conta;
+        console.log(`🔍 Conta encontrada: ${contaCorrente}`);
+      }
+    }
+    
+    // Se ainda não tem, buscar conta padrão da empresa
+    if (!contaCorrente && contrato.empresa_id) {
+      console.log(`🔍 Buscando conta padrão da empresa ${contrato.empresa_id}`);
+      
+      // Primeiro tentar buscar na tabela contas_inter
+      let [[contaInter]] = await pool.query(
+        `SELECT conta_corrente 
+         FROM contas_inter 
+         WHERE empresa_id = ? AND status = 'ativo' 
+         ORDER BY id ASC 
+         LIMIT 1`,
+        [contrato.empresa_id]
+      );
+
+      console.log("🔍 Resultado contas_inter:", contaInter);
+
+      // Se não encontrou, buscar na tabela contas
+      if (!contaInter || !contaInter.conta_corrente) {
+        [[contaInter]] = await pool.query(
+          `SELECT inter_conta_corrente as conta_corrente
+           FROM contas 
+           WHERE empresa_id = ? AND inter_ativado = TRUE AND inter_status = 'ativo'
+           ORDER BY inter_padrao DESC, id ASC 
+           LIMIT 1`,
+          [contrato.empresa_id]
+        );
+        
+        console.log("🔍 Resultado contas (inter):", contaInter);
+        
+        if (contaInter && contaInter.conta_corrente) {
+          contaCorrente = contaInter.conta_corrente;
+          console.log(`✅ Conta padrão encontrada: ${contaCorrente}`);
+        }
+      } else {
+        contaCorrente = contaInter.conta_corrente;
+        console.log(`✅ Conta padrão encontrada (contas_inter): ${contaCorrente}`);
+      }
+    }
+    
+    console.log("🔍 Conta corrente final:", contaCorrente);
+    
     if (!contaCorrente) {
       return res.status(400).json({ 
-        error: "Contrato não possui conta corrente definida. Verifique se o conta_id está vinculado a uma conta válida.",
+        error: "Contrato não possui conta corrente definida e nenhuma conta padrão foi encontrada para a empresa. Configure uma conta em /contas ou vincule uma conta ao contrato.",
         debug: {
-          conta_id: contrato.conta_id,
           conta_api_id: contrato.conta_api_id,
+          empresa_id: contrato.empresa_id,
           conta_corrente_contas: contrato.conta_corrente_contas,
           conta_corrente_api: contrato.conta_corrente_api
         }
@@ -839,11 +1067,15 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     // 🔍 6. Preparar dados para criação do boleto (sem conta_corrente - será definida depois)
     
     // Converter data para formato YYYY-MM-DD (sem timestamp)
-    const dataVencimento = new Date(contrato.proximo_vencimento).toISOString().split('T')[0];
+    // Garantir que funciona tanto com Date quanto com string
+    const dataVencimentoObj = contrato.proximo_vencimento instanceof Date 
+      ? contrato.proximo_vencimento 
+      : new Date(contrato.proximo_vencimento);
+    const dataVencimento = dataVencimentoObj.toISOString().split('T')[0];
     
     const dadosBoleto = {
       seuNumero: seuNumero,
-      valorNominal: parseFloat(contrato.valor) || 0,
+      valorNominal: valorParcela, // Usar o valor da parcela específica
       dataVencimento: dataVencimento,
       numDiasAgenda: 30,
       pagador: {
@@ -869,7 +1101,6 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     // 🔍 7. LOG para debug do contrato e conta
     console.log("🔍 DEBUG - Dados do contrato:", {
       id: contrato.id,
-      conta_id: contrato.conta_id,
       conta_api_id: contrato.conta_api_id,
       conta_corrente_contas: contrato.conta_corrente_contas,
       conta_corrente_api: contrato.conta_corrente_api,
@@ -890,11 +1121,22 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     // Buscar conta Inter configurada para a empresa
     let empresaId = contrato.empresa_id;
     
-    // Primeiro tentar buscar na tabela inter_accounts
+    // Primeiro tentar buscar na tabela contas_inter
     let [[contaInter]] = await pool.query(
-      `SELECT * FROM inter_accounts 
+      `SELECT 
+         id,
+         empresa_id,
+         apelido,
+         conta_corrente,
+         cliente_id as client_id,
+         cliente_secret as client_secret,
+         certificado as cert_b64,
+         \`key\` as key_b64,
+         status,
+         'prod' as ambiente
+       FROM contas_inter 
        WHERE empresa_id = ? AND status = 'ativo' 
-       ORDER BY is_default DESC, id ASC 
+       ORDER BY id ASC 
        LIMIT 1`,
       [empresaId]
     );
@@ -907,28 +1149,29 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
            empresa_id,
            inter_apelido as apelido,
            inter_conta_corrente as conta_corrente,
-           inter_client_id as client_id,
-           inter_client_secret as client_secret,
-           inter_cert_b64 as cert_b64,
-           inter_key_b64 as key_b64,
-           inter_is_default as is_default,
-           inter_status as status
+           inter_cliente_id as client_id,
+           inter_cliente_secret as client_secret,
+           inter_cert as cert_b64,
+           inter_key as key_b64,
+           inter_padrao as is_default,
+           inter_status as status,
+           'prod' as ambiente
          FROM contas 
          WHERE empresa_id = ? AND inter_ativado = TRUE AND inter_status = 'ativo'
-         ORDER BY inter_is_default DESC, id ASC 
+         ORDER BY inter_padrao DESC, id ASC 
          LIMIT 1`,
         [empresaId]
       );
     }
 
     if (!contaInter) {
-      return res.status(400).json({ error: `Nenhuma conta Inter configurada para a empresa ${empresaId}. Configure uma conta em /contas-api ou /inter-accounts.` });
+      return res.status(400).json({ error: `Nenhuma conta Inter configurada para a empresa ${empresaId}. Configure uma conta em /contas ou /contas-inter.` });
     }
 
     console.log(`🏦 Usando conta Inter: ${contaInter.apelido || contaInter.conta_corrente}`);
 
     // Gerar token usando as credenciais da conta
-    const automacao = require('../services/automacaoRecorrencia');
+    const automacao = require('../../services/financeiro/automacaoRecorrencia');
     const access_token = await automacao.gerarTokenInterComCredenciais(contaInter);
 
     // Configurar agente HTTPS com as credenciais da conta
@@ -937,13 +1180,15 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
     const https = require('https');
     const agent = new https.Agent({ cert, key });
 
-    // URL base baseada no ambiente
-    const baseUrl = contaInter.ambiente === 'hml' 
+    // URL base baseada no ambiente (padrão: produção)
+    // Se não tiver ambiente definido, usar produção
+    const ambiente = contaInter.ambiente || 'prod';
+    const baseUrl = ambiente === 'hml' 
       ? 'https://cdp.partners.bancointer.com.br' 
       : 'https://cdpj.partners.bancointer.com.br';
 
     // Usar conta corrente da conta configurada (normalizada)
-    const { normalizarContaCorrente } = require('../helpers/cnaeIbge');
+    const { normalizarContaCorrente } = require('../../services/financeiro/cnaeIbge');
     const contaCorrenteFinal = normalizarContaCorrente(contaInter.conta_corrente);
 
     // 🎯 9. Criar o boleto na API do Inter
@@ -965,25 +1210,32 @@ router.post("/:id/gerar-boleto", verifyToken, async (req, res) => {
 
     // 🎯 10. Salvar boleto no banco
     const { linkBoleto, codigoBarras, dataEmissao, dataVencimento: dataVenc, status, codigoSolicitacao } = boletoResult;
+    
+    // Converter dataEmissao para DATE se necessário
+    const dataEmissaoDate = dataEmissao ? new Date(dataEmissao).toISOString().split('T')[0] : null;
+    const dataVencimentoDate = dataVenc ? new Date(dataVenc).toISOString().split('T')[0] : new Date(contrato.proximo_vencimento).toISOString().split('T')[0];
+    
     const [boletoDbResult] = await pool.query(
       `INSERT INTO boletos 
-        (link_boleto, codigo_barras, data_emissao, data_vencimento, status, seu_numero, valor_nominal, 
-         pagador_nome, pagador_cpf_cnpj, pagador_email, codigo_solicitacao, inter_account_id, contrato_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (link_boleto, codigo_barras, data_emissao, data_vencimento, status, numero_venda, valor, 
+         pagador_nome, pagador_cpf_cnpj, pagador_email, codigo_solicitacao, inter_conta_id, contrato_id, venda_id, empresa_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        linkBoleto,
-        codigoBarras,
-        dataEmissao,
-        dataVenc || contrato.proximo_vencimento,
-        status,
-        seuNumero,
-        parseFloat(contrato.valor) || 0,
+        linkBoleto || null,
+        codigoBarras || null,
+        dataEmissaoDate,
+        dataVencimentoDate,
+        status || null,
+        seuNumero, // numero_venda
+        valorParcela, // Usar o valor da parcela específica
         contrato.nome_fantasia,
         contrato.cpf_cnpj,
         contrato.email,
         codigoSolicitacao || null,
-        contaInter.id,
-        id // contrato_id
+        contaInter.id, // inter_conta_id
+        id, // contrato_id
+        vendaId, // venda_id (se existir venda correspondente)
+        contrato.empresa_id // empresa_id (NOT NULL)
       ]
     );
 

@@ -99,41 +99,8 @@ export const useContratos = () => {
       let data = await response.json();
       console.log("Contratos encontrados:", data);
 
-      // Buscar modelos de contrato para filtrar por straton
-      try {
-        const modelosResponse = await fetch(`${API}/contratual/modelos-contrato/light`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'x-empresa-id': empresaId.toString(),
-          },
-        });
-
-        if (modelosResponse.ok) {
-          const modelos = await modelosResponse.json();
-          // Criar mapa de modelos_contrato_id -> straton
-          const modelosMap = new Map();
-          modelos.forEach(modelo => {
-            modelosMap.set(modelo.id, modelo.straton);
-          });
-
-          // Filtrar contratos: apenas os que têm modelos_contrato_id = null OU straton = 1
-          data = data.filter(contrato => {
-            const modelosContratoId = contrato.modelos_contrato_id;
-            
-            // Se modelos_contrato_id é null, incluir
-            if (!modelosContratoId || modelosContratoId === null) {
-              return true;
-            }
-            
-            // Se tem modelos_contrato_id, verificar se straton = 1
-            const straton = modelosMap.get(modelosContratoId);
-            return straton === 1;
-          });
-        }
-      } catch (modelosError) {
-        console.warn("Erro ao buscar modelos de contrato para filtro:", modelosError);
-        // Se houver erro ao buscar modelos, não aplicar filtro e retornar todos os contratos
-      }
+      // O backend já está filtrando apenas contratos financeiros (modelos_contrato_id IS NULL) 
+      // e contratos contratuais (straton = 1), então não precisamos filtrar no frontend
 
       setContratos(data);
     } catch (error) {

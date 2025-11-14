@@ -98,7 +98,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
       }
 
       // Buscar detalhes do contrato
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contratos/${contratoId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/contratos/${contratoId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -109,7 +109,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
       // Sempre buscar o e-mail do cliente, pois pode não estar incluído na resposta do contrato
       if (data.cliente_id) {
         try {
-          const clienteResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clientes/${data.cliente_id}`, {
+          const clienteResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/clientes/${data.cliente_id}`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -149,7 +149,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
 
       // Buscar boletos diretamente pelo contrato_id usando a rota correta
       try {
-        const boletoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inter-boletos/boletos/por-contrato/${contratoId}`, {
+        const boletoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/boletos/por-contrato/${contratoId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -270,9 +270,9 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
       }
 
       console.log(`🔍 Buscando vendas do contrato ${contratoId}...`);
-      console.log(`🔍 URL: ${process.env.NEXT_PUBLIC_API_URL}/vendas?contrato_origem_id=${contratoId}`);
+      console.log(`🔍 URL: ${process.env.NEXT_PUBLIC_API_URL}/financeiro/vendas?contrato_origem_id=${contratoId}`);
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendas?contrato_origem_id=${contratoId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financeiro/vendas?contrato_origem_id=${contratoId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -453,7 +453,61 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
     }
   };
 
+  // Função para calcular próximo vencimento a partir de produtos_dados
+  const calcularProximoVencimentoDeProdutos = () => {
+    if (!contrato?.produtos_dados) return null;
+    
+    try {
+      const produtosDados = typeof contrato.produtos_dados === 'string' 
+        ? JSON.parse(contrato.produtos_dados) 
+        : contrato.produtos_dados;
+      
+      if (!Array.isArray(produtosDados) || produtosDados.length === 0) {
+        return null;
+      }
+      
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0); // Zerar horas para comparação
+      
+      let proximaData = null;
+      
+      // Iterar por todos os produtos
+      for (const produto of produtosDados) {
+        if (!produto.parcelas_detalhadas || !Array.isArray(produto.parcelas_detalhadas)) {
+          continue;
+        }
+        
+        // Iterar por todas as parcelas
+        for (const parcela of produto.parcelas_detalhadas) {
+          if (!parcela.data_vencimento) continue;
+          
+          const dataVencimento = new Date(parcela.data_vencimento);
+          dataVencimento.setHours(0, 0, 0, 0);
+          
+          // Se a data ainda não passou e é a primeira encontrada, ou é mais próxima que a anterior
+          if (dataVencimento >= hoje) {
+            if (!proximaData || dataVencimento < proximaData) {
+              proximaData = dataVencimento;
+            }
+          }
+        }
+      }
+      
+      return proximaData;
+    } catch (error) {
+      console.error('Erro ao calcular próximo vencimento de produtos_dados:', error);
+      return null;
+    }
+  };
+
   const calcularProximoVencimento = () => {
+    // Primeiro tentar pegar de produtos_dados
+    const vencimentoProdutos = calcularProximoVencimentoDeProdutos();
+    if (vencimentoProdutos) {
+      return formatDate(vencimentoProdutos.toISOString().split('T')[0]);
+    }
+    
+    // Se não tiver, usar a lógica antiga
     if (!contrato?.data_inicio || !contrato?.dia_gerado) return "Indeterminado";
     
     try {
@@ -491,12 +545,23 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
   };
 
   const handleGerarBoleto = async () => {
+    console.log("🔵 handleGerarBoleto chamado", { 
+      contrato, 
+      proximo_vencimento: contrato?.proximo_vencimento,
+      produtos_dados: contrato?.produtos_dados 
+    });
+    
     if (!contrato) {
+      console.log("❌ Contrato não encontrado");
       toast.error('Dados do contrato não encontrados');
       return;
     }
 
-    if (!contrato.proximo_vencimento) {
+    // Calcular próximo vencimento (de produtos_dados ou proximo_vencimento)
+    const proximoVencimento = calcularProximoVencimentoDeProdutos() || contrato.proximo_vencimento;
+    
+    if (!proximoVencimento) {
+      console.log("❌ Contrato não possui próximo vencimento");
       toast.error('Contrato não possui data de vencimento definida');
       return;
     }
@@ -517,7 +582,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
 
       console.log("🔍 Gerando boleto para contrato:", contrato.id);
 
-      const response = await fetch(`${API}/contratos/${contrato.id}/gerar-boleto`, {
+      const response = await fetch(`${API}/financeiro/contratos/${contrato.id}/gerar-boleto`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -564,7 +629,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
 
       console.log(`🔍 Editando venda ${vendaId} para nova data: ${novaData}`);
 
-      const response = await fetch(`${API}/vendas/${vendaId}`, {
+      const response = await fetch(`${API}/financeiro/vendas/${vendaId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -776,7 +841,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
         observacoes: `Venda ${venda.mes_referencia}º mês - Contrato ${contrato?.numero_contrato || contrato?.id}`
       };
 
-      const response = await fetch(`${API}/vendas/${venda.id}/gerar-boleto`, {
+      const response = await fetch(`${API}/financeiro/vendas/${venda.id}/gerar-boleto`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1640,8 +1705,14 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                       // Mostrar cronograma específico deste contrato
                                       const anoAtual = parseInt(anoSelecionado);
                                       
-                                      // Verificar se o contrato tem data de início válida
-                                      if (!contrato?.data_inicio) {
+                                      // Verificar se o contrato tem data de início válida OU produtos_dados
+                                      const temProdutosDados = contrato?.produtos_dados && (
+                                        typeof contrato.produtos_dados === 'string' 
+                                          ? JSON.parse(contrato.produtos_dados)?.length > 0
+                                          : Array.isArray(contrato.produtos_dados) && contrato.produtos_dados.length > 0
+                                      );
+                                      
+                                      if (!contrato?.data_inicio && !temProdutosDados) {
                                         return (
                                           <tr>
                                             <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
@@ -1651,8 +1722,67 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                         );
                                       }
 
-                                      const dataInicio = parseDateSafe(contrato.data_inicio);
+                                      // Se tiver produtos_dados, usar a primeira data de vencimento como data de início
+                                      let dataInicio = null;
+                                      if (temProdutosDados) {
+                                        try {
+                                          const produtosDados = typeof contrato.produtos_dados === 'string' 
+                                            ? JSON.parse(contrato.produtos_dados) 
+                                            : contrato.produtos_dados;
+                                          
+                                          console.log('🔍 Processando produtos_dados para data de início:', produtosDados);
+                                          
+                                          // Encontrar a primeira data de vencimento (pode ser de qualquer parcela, não só a primeira)
+                                          let primeiraDataEncontrada = null;
+                                          
+                                          for (const produto of produtosDados) {
+                                            if (produto.parcelas_detalhadas && Array.isArray(produto.parcelas_detalhadas) && produto.parcelas_detalhadas.length > 0) {
+                                              // Ordenar parcelas por data para pegar a mais antiga
+                                              const parcelasOrdenadas = [...produto.parcelas_detalhadas].sort((a, b) => {
+                                                const dataA = parseDateSafe(a.data_vencimento);
+                                                const dataB = parseDateSafe(b.data_vencimento);
+                                                if (!dataA) return 1;
+                                                if (!dataB) return -1;
+                                                return dataA.getTime() - dataB.getTime();
+                                              });
+                                              
+                                              for (const parcela of parcelasOrdenadas) {
+                                                if (parcela.data_vencimento) {
+                                                  const dataParsed = parseDateSafe(parcela.data_vencimento);
+                                                  console.log('📅 Tentando parsear data:', parcela.data_vencimento, 'Resultado:', dataParsed);
+                                                  if (dataParsed) {
+                                                    primeiraDataEncontrada = dataParsed;
+                                                    break;
+                                                  }
+                                                }
+                                              }
+                                              
+                                              if (primeiraDataEncontrada) break;
+                                            }
+                                          }
+                                          
+                                          dataInicio = primeiraDataEncontrada;
+                                          console.log('✅ Data de início encontrada:', dataInicio);
+                                        } catch (error) {
+                                          console.error('❌ Erro ao processar produtos_dados:', error);
+                                          console.error('Stack:', error.stack);
+                                        }
+                                      }
+                                      
+                                      // Se não encontrou em produtos_dados, usar data_inicio
+                                      if (!dataInicio && contrato?.data_inicio) {
+                                        console.log('📅 Usando data_inicio do contrato:', contrato.data_inicio);
+                                        dataInicio = parseDateSafe(contrato.data_inicio);
+                                        console.log('📅 Data parseada:', dataInicio);
+                                      }
+                                      
                                       if (!dataInicio) {
+                                        console.error('❌ Não foi possível determinar data de início. Contrato:', {
+                                          id: contrato?.id,
+                                          temDataInicio: !!contrato?.data_inicio,
+                                          temProdutosDados: temProdutosDados,
+                                          produtosDados: contrato?.produtos_dados
+                                        });
                                         return (
                                           <tr>
                                             <td colSpan={6} className={`${styles.historicoBoletosTableCell} ${styles.historicoBoletosTableCellCenter} ${styles.historicoBoletosTableCellSecondary}`}>
@@ -1686,27 +1816,61 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                         );
                                       }
 
-                                      // Para o ano do contrato, começar do mês de início
-                                      let mesInicio = dataInicio.getMonth() + 1;
+                                      // Se tiver produtos_dados, usar as parcelas para gerar os meses
+                                      let mesesParaMostrar = [];
                                       
-                                      // Se tem boletos pagos, começar do primeiro boleto pago do ano
-                                      const primeiroBoletoPago = boletosPagamento.find(boleto => {
-                                        if (!boleto.data_pagamento) return false;
-                                        const dataPagamento = parseDateSafe(boleto.data_pagamento);
-                                        return dataPagamento && dataPagamento.getFullYear() === anoAtual;
-                                      });
-
-                                      if (primeiroBoletoPago && primeiroBoletoPago.data_pagamento) {
-                                        const dataPrimeiroBoleto = parseDateSafe(primeiroBoletoPago.data_pagamento);
-                                        if (dataPrimeiroBoleto) {
-                                          mesInicio = Math.min(mesInicio, dataPrimeiroBoleto.getMonth() + 1);
+                                      if (temProdutosDados) {
+                                        try {
+                                          const produtosDados = typeof contrato.produtos_dados === 'string' 
+                                            ? JSON.parse(contrato.produtos_dados) 
+                                            : contrato.produtos_dados;
+                                          
+                                          // Coletar todos os meses das parcelas do ano selecionado
+                                          const mesesDasParcelas = new Set();
+                                          
+                                          for (const produto of produtosDados) {
+                                            if (produto.parcelas_detalhadas && Array.isArray(produto.parcelas_detalhadas)) {
+                                              for (const parcela of produto.parcelas_detalhadas) {
+                                                if (parcela.data_vencimento) {
+                                                  const dataParcela = parseDateSafe(parcela.data_vencimento);
+                                                  if (dataParcela && dataParcela.getFullYear() === anoAtual) {
+                                                    mesesDasParcelas.add(dataParcela.getMonth() + 1);
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                          
+                                          // Converter Set para array ordenado
+                                          mesesParaMostrar = Array.from(mesesDasParcelas).sort((a, b) => a - b);
+                                        } catch (error) {
+                                          console.error('Erro ao processar parcelas de produtos_dados:', error);
                                         }
                                       }
+                                      
+                                      // Se não encontrou meses em produtos_dados, usar a lógica antiga
+                                      if (mesesParaMostrar.length === 0) {
+                                        // Para o ano do contrato, começar do mês de início
+                                        let mesInicio = dataInicio.getMonth() + 1;
+                                        
+                                        // Se tem boletos pagos, começar do primeiro boleto pago do ano
+                                        const primeiroBoletoPago = boletosPagamento.find(boleto => {
+                                          if (!boleto.data_pagamento) return false;
+                                          const dataPagamento = parseDateSafe(boleto.data_pagamento);
+                                          return dataPagamento && dataPagamento.getFullYear() === anoAtual;
+                                        });
 
-                                      // Gerar array de meses do mesInicio até dezembro
-                                      let mesesParaMostrar = [];
-                                      for (let mes = mesInicio; mes <= 12; mes++) {
-                                        mesesParaMostrar.push(mes);
+                                        if (primeiroBoletoPago && primeiroBoletoPago.data_pagamento) {
+                                          const dataPrimeiroBoleto = parseDateSafe(primeiroBoletoPago.data_pagamento);
+                                          if (dataPrimeiroBoleto) {
+                                            mesInicio = Math.min(mesInicio, dataPrimeiroBoleto.getMonth() + 1);
+                                          }
+                                        }
+
+                                        // Gerar array de meses do mesInicio até dezembro
+                                        for (let mes = mesInicio; mes <= 12; mes++) {
+                                          mesesParaMostrar.push(mes);
+                                        }
                                       }
 
                                       if (mesesParaMostrar.length === 0) {
@@ -1721,13 +1885,58 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
 
                                       return mesesParaMostrar.map((mes) => {
                                         // Buscar boleto para este mês (pago ou não pago) - específico deste contrato
-                                        const boletoMes = boletosPagamento.find(boleto => {
-                                          if (boleto.data_pagamento) {
-                                            const dataPagamento = parseDateSafe(boleto.data_pagamento);
-                                            return dataPagamento && dataPagamento.getMonth() + 1 === mes && dataPagamento.getFullYear() === anoAtual;
+                                        // Se tiver produtos_dados, buscar pela data exata da parcela
+                                        let boletoMes = null;
+                                        
+                                        if (temProdutosDados) {
+                                          try {
+                                            const produtosDados = typeof contrato.produtos_dados === 'string' 
+                                              ? JSON.parse(contrato.produtos_dados) 
+                                              : contrato.produtos_dados;
+                                            
+                                            // Encontrar a parcela deste mês
+                                            for (const produto of produtosDados) {
+                                              if (produto.parcelas_detalhadas && Array.isArray(produto.parcelas_detalhadas)) {
+                                                const parcelaDoMes = produto.parcelas_detalhadas.find(parcela => {
+                                                  if (parcela.data_vencimento) {
+                                                    const dataParcela = parseDateSafe(parcela.data_vencimento);
+                                                    return dataParcela && dataParcela.getMonth() + 1 === mes && dataParcela.getFullYear() === anoAtual;
+                                                  }
+                                                  return false;
+                                                });
+                                                
+                                                if (parcelaDoMes) {
+                                                  // Buscar boleto pela data exata da parcela
+                                                  boletoMes = boletosPagamento.find(boleto => {
+                                                    if (boleto.data_pagamento) {
+                                                      const dataPagamento = parseDateSafe(boleto.data_pagamento);
+                                                      const dataParcela = parseDateSafe(parcelaDoMes.data_vencimento);
+                                                      // Comparar apenas a data (sem hora)
+                                                      if (dataPagamento && dataParcela) {
+                                                        return dataPagamento.toDateString() === dataParcela.toDateString();
+                                                      }
+                                                    }
+                                                    return false;
+                                                  });
+                                                  if (boletoMes) break;
+                                                }
+                                              }
+                                            }
+                                          } catch (error) {
+                                            console.error('Erro ao buscar boleto por parcela:', error);
                                           }
-                                          return false;
-                                        });
+                                        }
+                                        
+                                        // Se não encontrou, usar a busca antiga
+                                        if (!boletoMes) {
+                                          boletoMes = boletosPagamento.find(boleto => {
+                                            if (boleto.data_pagamento) {
+                                              const dataPagamento = parseDateSafe(boleto.data_pagamento);
+                                              return dataPagamento && dataPagamento.getMonth() + 1 === mes && dataPagamento.getFullYear() === anoAtual;
+                                            }
+                                            return false;
+                                          });
+                                        }
 
                                         const isPago = boletoMes ? (
                                           boletoMes.status === "PAGO" || 
@@ -1736,12 +1945,43 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                           boletoMes.status === "LIQUIDADO"
                                         ) : false;
 
-                                        const valorBase = contrato?.valor || 0;
+                                        // Calcular valor base e data de vencimento
+                                        let valorBase = contrato?.valor || 0;
+                                        let dataVencimento = `${anoAtual}-${mes.toString().padStart(2, '0')}-06`; // Data padrão
+                                        
+                                        // Se tiver produtos_dados, usar o valor e data da parcela
+                                        if (temProdutosDados) {
+                                          try {
+                                            const produtosDados = typeof contrato.produtos_dados === 'string' 
+                                              ? JSON.parse(contrato.produtos_dados) 
+                                              : contrato.produtos_dados;
+                                            
+                                            for (const produto of produtosDados) {
+                                              if (produto.parcelas_detalhadas && Array.isArray(produto.parcelas_detalhadas)) {
+                                                const parcelaDoMes = produto.parcelas_detalhadas.find(parcela => {
+                                                  if (parcela.data_vencimento) {
+                                                    const dataParcela = parseDateSafe(parcela.data_vencimento);
+                                                    return dataParcela && dataParcela.getMonth() + 1 === mes && dataParcela.getFullYear() === anoAtual;
+                                                  }
+                                                  return false;
+                                                });
+                                                
+                                                if (parcelaDoMes) {
+                                                  dataVencimento = parcelaDoMes.data_vencimento;
+                                                  valorBase = parseFloat(parcelaDoMes.valor) || valorBase;
+                                                  break;
+                                                }
+                                              }
+                                            }
+                                          } catch (error) {
+                                            console.error('Erro ao buscar dados da parcela:', error);
+                                          }
+                                        }
 
                                         return (
                                           <tr key={mes} className={styles.historicoBoletosTableRow}>
                                             <td className={styles.historicoBoletosTableCell}>
-                                              {formatDate(`${anoAtual}-${mes.toString().padStart(2, '0')}-06`)}
+                                              {formatDate(dataVencimento)}
                                             </td>
                                             <td className={styles.historicoBoletosTableCell}>
                                               {contrato?.numero_contrato || contrato?.id}
@@ -1782,7 +2022,7 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
                                               <div className={styles.historicoBoletosActions}>
                                                 <button 
                                                   className={styles.historicoBoletosButton}
-                                                  onClick={() => handleEditarVencimento(`${anoAtual}-${mes.toString().padStart(2, '0')}-06`)}
+                                                  onClick={() => handleEditarVencimento(dataVencimento)}
                                                 >
                                                   Editar
                                                 </button>
@@ -1830,9 +2070,28 @@ export function DetalhesContratoDrawer({ isOpen, onClose, contratoId, mostrarApe
               Gerar Recibo
             </button>
             <button 
-              className={`${styles.button} ${styles.buttonGreen} ${(!contrato || !contrato.proximo_vencimento || gerandoBoleto) ? styles.buttonDisabled : ''}`}
-              onClick={handleGerarBoleto}
-              disabled={!contrato || !contrato.proximo_vencimento || gerandoBoleto}
+              className={`${styles.button} ${styles.buttonGreen} ${(() => {
+                const temVencimento = calcularProximoVencimentoDeProdutos() || contrato?.proximo_vencimento;
+                return (!contrato || !temVencimento || gerandoBoleto) ? styles.buttonDisabled : '';
+              })()}`}
+              onClick={(e) => {
+                const temVencimento = calcularProximoVencimentoDeProdutos() || contrato?.proximo_vencimento;
+                console.log("🟢 Botão Gerar Boleto clicado", { 
+                  contrato: !!contrato, 
+                  proximo_vencimento: contrato?.proximo_vencimento,
+                  vencimentoProdutos: calcularProximoVencimentoDeProdutos(),
+                  temVencimento,
+                  gerandoBoleto,
+                  disabled: !contrato || !temVencimento || gerandoBoleto
+                });
+                e.preventDefault();
+                e.stopPropagation();
+                handleGerarBoleto();
+              }}
+              disabled={(() => {
+                const temVencimento = calcularProximoVencimentoDeProdutos() || contrato?.proximo_vencimento;
+                return !contrato || !temVencimento || gerandoBoleto;
+              })()}
             >
               {gerandoBoleto ? (
                 <>

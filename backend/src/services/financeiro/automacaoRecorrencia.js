@@ -723,12 +723,23 @@ class AutomacaoRecorrencia {
 
       const { access_token, expires_in, token_type } = response.data;
 
-      // Salvar token no cache com inter_account_id
+      // Calcular data de expiração
+      const expiraEm = new Date();
+      expiraEm.setSeconds(expiraEm.getSeconds() + (expires_in || 3600));
+
+      // Salvar token no cache com inter_conta_id
       await pool.query(
-        `INSERT INTO inter_tokens_validate_cache 
-         (inter_account_id, access_token, token_type, scope, expires_in)
-         VALUES (?, ?, ?, ?, ?)`,
-        [contaInter.id, access_token, token_type || 'Bearer', scope, expires_in]
+        `INSERT INTO inter_tokens_cache 
+         (inter_conta_id, token_acesso, tipo_token, escopo, expira_em, expiracao_local)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          contaInter.id, 
+          access_token, 
+          token_type || 'Bearer', 
+          scope, 
+          expiraEm,
+          null // expiracao_local pode ser null se não houver referência a inter_tokens
+        ]
       );
 
       console.log("✅ Token gerado e salvo no cache");

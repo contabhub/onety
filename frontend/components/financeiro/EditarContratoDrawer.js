@@ -3,33 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Button } from "./botao";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./popover";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "./toggle-group";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./accordion";
-import { Calendar } from "./calendar";
+// Componentes removidos - usando elementos HTML nativos
 import {
   X,
   Plus,
@@ -102,6 +76,7 @@ export default function EditarContratoDrawer({
   const [isSaving, setIsSaving] = useState(false);
   const [isNovoProdutoServicoOpen, setIsNovoProdutoServicoOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [accordionOpen, setAccordionOpen] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
   
@@ -455,14 +430,13 @@ export default function EditarContratoDrawer({
                 Edite as informações do contrato
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={handleClose}
-              className={styles.closeButton}
+              className={`${styles.button} ${styles.buttonGhost} ${styles.buttonSmall} ${styles.closeButton}`}
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
 
           {/* Content */}
@@ -484,28 +458,28 @@ export default function EditarContratoDrawer({
                   <div className={styles.cardContent}>
                     <div className={styles.gridTwoCols}>
                       <div>
-                        <Label className={styles.label}>Número do contrato</Label>
+                        <label className={styles.label}>Número do contrato</label>
                         <div className={styles.input}>
                           {contratoOriginal.numero_contrato || contratoOriginal.id}
                         </div>
                       </div>
 
                       <div>
-                        <Label className={styles.label}>Cliente</Label>
+                        <label className={styles.label}>Cliente</label>
                         <div className={styles.input}>
                           {contratoOriginal.cliente_nome}
                         </div>
                       </div>
 
                       <div>
-                        <Label className={styles.label}>Data de início</Label>
+                        <label className={styles.label}>Data de início</label>
                         <div className={styles.input}>
                           {contratoOriginal.data_inicio ? new Date(contratoOriginal.data_inicio).toLocaleDateString('pt-BR') : 'N/A'}
                         </div>
                       </div>
 
                       <div>
-                        <Label className={styles.label}>Status</Label>
+                        <label className={styles.label}>Status</label>
                         <div className={styles.input}>
                           {contratoOriginal.status}
                         </div>
@@ -523,35 +497,19 @@ export default function EditarContratoDrawer({
                     <div className={styles.gridTwoCols}>
                       {/* Próximo vencimento */}
                       <div>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Próximo vencimento <span className={styles.textRed}>*</span>
-                        </Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                styles.buttonOutline,
-                                !formData.proximoVencimento && styles.textSecondary
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.proximoVencimento ? (
-                                format(formData.proximoVencimento, "dd/MM/yyyy", { locale: ptBR })
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={formData.proximoVencimento || undefined}
-                              onSelect={(date) => handleInputChange('proximoVencimento', date)}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.proximoVencimento ? format(formData.proximoVencimento, "yyyy-MM-dd") : ""}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleInputChange('proximoVencimento', new Date(e.target.value));
+                            }
+                          }}
+                          className={`${styles.input} ${!formData.proximoVencimento ? styles.textSecondary : ''}`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -566,175 +524,144 @@ export default function EditarContratoDrawer({
                     <div className={styles.gridTwoCols}>
                       {/* Categoria financeira */}
                       <div>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Categoria financeira
-                        </Label>
-                        <Select
+                        </label>
+                        <select
                           value={formData.categoriaFinanceira}
-                          onValueChange={(value) => handleInputChange('categoriaFinanceira', value)}
+                          onChange={(e) => handleInputChange('categoriaFinanceira', e.target.value)}
+                          className={styles.input}
                         >
-                          <SelectTrigger className={styles.input}>
-                            <SelectValue placeholder="Selecione a categoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {formDataFromAPI.categorias.map((categoria) => (
-                              <SelectItem key={categoria.id} value={categoria.id.toString()}>
-                                {categoria.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione a categoria</option>
+                          {formDataFromAPI.categorias.map((categoria) => (
+                            <option key={categoria.id} value={categoria.id.toString()}>
+                              {categoria.nome}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       {/* Sub-categoria */}
                       <div>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Sub-categoria
-                        </Label>
-                        <Select
+                        </label>
+                        <select
                           value={formData.subCategoria}
-                          onValueChange={(value) => handleInputChange('subCategoria', value)}
+                          onChange={(e) => handleInputChange('subCategoria', e.target.value)}
+                          className={styles.input}
                         >
-                          <SelectTrigger className={styles.input}>
-                            <SelectValue placeholder="Selecione a sub-categoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {formDataFromAPI.subCategorias.map((subCategoria) => (
-                              <SelectItem key={subCategoria.id} value={subCategoria.id.toString()}>
-                                {subCategoria.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione a sub-categoria</option>
+                          {formDataFromAPI.subCategorias.map((subCategoria) => (
+                            <option key={subCategoria.id} value={subCategoria.id.toString()}>
+                              {subCategoria.nome}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       {/* Produto/Serviço */}
                       <div>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Produto/Serviço <span className={styles.textRed}>*</span>
-                        </Label>
+                        </label>
                         <div className="flex items-center gap-2">
                           <div className="flex-1">
-                            <Select
+                            <select
                               value={formData.produtoServico}
-                              onValueChange={(value) => handleInputChange('produtoServico', value)}
+                              onChange={(e) => handleInputChange('produtoServico', e.target.value)}
+                              className={styles.input}
                             >
-                              <SelectTrigger className={styles.input}>
-                                <SelectValue placeholder="Selecione o produto/serviço" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {formDataFromAPI.produtosServicos.map((produto) => (
-                                  <SelectItem key={produto.id} value={produto.id.toString()}>
-                                    {produto.nome}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              <option value="">Selecione o produto/serviço</option>
+                              {formDataFromAPI.produtosServicos.map((produto) => (
+                                <option key={produto.id} value={produto.id.toString()}>
+                                  {produto.nome}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                          <Button
+                          <button
                             type="button"
-                            variant="ghost"
-                            size="sm"
                             onClick={() => setIsNovoProdutoServicoOpen(true)}
-                            className={styles.buttonSmall}
+                            className={`${styles.button} ${styles.buttonGhost} ${styles.buttonSmall}`}
                             title="Adicionar novo produto/serviço"
                           >
                             <Plus className="h-4 w-4" />
-                          </Button>
+                          </button>
                         </div>
                       </div>
 
                       {/* Centro de custo */}
                       <div>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Centro de custo
-                        </Label>
-                        <Select
+                        </label>
+                        <select
                           value={formData.centroCusto}
-                          onValueChange={(value) => handleInputChange('centroCusto', value)}
+                          onChange={(e) => handleInputChange('centroCusto', e.target.value)}
+                          className={styles.input}
                         >
-                          <SelectTrigger className={styles.input}>
-                            <SelectValue placeholder="Selecione o centro de custo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {formDataFromAPI.centrosCusto.map((centro) => (
-                              <SelectItem key={centro.id} value={centro.id.toString()}>
-                                {centro.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione o centro de custo</option>
+                          {formDataFromAPI.centrosCusto.map((centro) => (
+                            <option key={centro.id} value={centro.id.toString()}>
+                              {centro.nome}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       {/* Vendedor responsável */}
                       <div>
-                        <Label className={styles.label}>Vendedor responsável</Label>
-                        <Select
+                        <label className={styles.label}>Vendedor responsável</label>
+                        <select
                           value={formData.vendedorResponsavel}
-                          onValueChange={(value) => handleInputChange('vendedorResponsavel', value)}
+                          onChange={(e) => handleInputChange('vendedorResponsavel', e.target.value)}
+                          className={styles.input}
                         >
-                          <SelectTrigger className={styles.input}>
-                            <SelectValue placeholder="Selecione o vendedor" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {formDataFromAPI.users.map((user) => (
-                              <SelectItem key={user.id} value={user.id.toString()}>
-                                {user.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <option value="">Selecione o vendedor</option>
+                          {formDataFromAPI.users.map((user) => (
+                            <option key={user.id} value={user.id.toString()}>
+                              {user.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       {/* Conta de recebimento */}
                       <div>
-                        <Label className={styles.label}>
+                        <label className={styles.label}>
                           Conta de recebimento <HelpCircle className="inline h-4 w-4 ml-1" />
-                        </Label>
+                        </label>
                         <div className="flex items-center gap-2">
-                          <Select
+                          <select
                             value={formData.contaRecebimento}
-                            onValueChange={(value) => handleInputChange('contaRecebimento', value)}
+                            onChange={(e) => handleInputChange('contaRecebimento', e.target.value)}
+                            className={styles.input}
                           >
-                            <SelectTrigger className={styles.input}>
-                              <SelectValue placeholder="Selecione a conta" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {/* Contas ERP */}
-                              {formDataFromAPI.contas
-                                .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                                .map((conta) => (
-                                  <SelectItem
-                                    key={`erp-${conta.id}`}
-                                    value={`erp:${conta.id}`}
-                                    className="flex justify-between items-center"
-                                  >
-                                    <span>{conta.banco} — {conta.descricao_banco}</span>
-                                  </SelectItem>
-                                ))}
+                            <option value="">Selecione a conta</option>
+                            {/* Contas ERP */}
+                            {formDataFromAPI.contas
+                              .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
+                              .map((conta) => (
+                                <option key={`erp-${conta.id}`} value={`erp:${conta.id}`}>
+                                  {conta.banco} — {conta.descricao_banco}
+                                </option>
+                              ))}
 
-                              {/* Contas API (OpenFinance) */}
-                              {formDataFromAPI.contasApi
-                                .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
-                                .map((conta) => (
-                                  <SelectItem
-                                    key={`api-${conta.id}`}
-                                    value={`api:${conta.id}`}
-                                    className="flex justify-between items-center"
-                                  >
-                                    <span>{conta.descricao_banco}</span>
-                                    <span className={cn(styles.badge, styles.badgeInfo)}>OpenFinance</span>
-                                  </SelectItem>
-                                ))}
+                            {/* Contas API (OpenFinance) */}
+                            {formDataFromAPI.contasApi
+                              .filter((conta) => Boolean(conta.descricao_banco && String(conta.descricao_banco).trim()))
+                              .map((conta) => (
+                                <option key={`api-${conta.id}`} value={`api:${conta.id}`}>
+                                  {conta.descricao_banco} (OpenFinance)
+                                </option>
+                              ))}
 
-                              {formDataFromAPI.contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
-                               formDataFromAPI.contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
-                                <div className={styles.textSecondary}>
-                                  Nenhuma conta encontrada
-                                </div>
-                              )}
-                            </SelectContent>
-                          </Select>
+                            {formDataFromAPI.contas.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 &&
+                             formDataFromAPI.contasApi.filter(c=>c.descricao_banco && String(c.descricao_banco).trim()).length === 0 && (
+                              <option value="" disabled>Nenhuma conta encontrada</option>
+                            )}
+                          </select>
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-primary rounded-full"></div>
                             <div className="w-2 h-2 bg-warning rounded-full"></div>
@@ -766,24 +693,22 @@ export default function EditarContratoDrawer({
                           {itens.map((item, index) => (
                             <tr key={item.id} className={styles.tableRow}>
                               <td className={styles.tableCell}>
-                                <Select
+                                <select
                                   value={item.produtoServico}
-                                  onValueChange={(value) => handleItemChange(item.id, 'produtoServico', value)}
+                                  onChange={(e) => handleItemChange(item.id, 'produtoServico', e.target.value)}
+                                  className={styles.input}
                                 >
-                                  <SelectTrigger className={styles.input}>
-                                    <SelectValue placeholder="Selecione produto/serviço" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {formDataFromAPI.produtosServicos.map((produto) => (
-                                      <SelectItem key={produto.id} value={produto.id.toString()}>
-                                        {produto.nome}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                  <option value="">Selecione produto/serviço</option>
+                                  {formDataFromAPI.produtosServicos.map((produto) => (
+                                    <option key={produto.id} value={produto.id.toString()}>
+                                      {produto.nome}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td className={styles.tableCell}>
-                                <Input
+                                <input
+                                  type="text"
                                   value={item.detalhes}
                                   onChange={(e) => handleItemChange(item.id, 'detalhes', e.target.value)}
                                   placeholder="Detalhes do item"
@@ -791,7 +716,8 @@ export default function EditarContratoDrawer({
                                 />
                               </td>
                               <td className={styles.tableCell}>
-                                <Input
+                                <input
+                                  type="text"
                                   value={item.quantidade}
                                   onChange={(e) => handleItemChange(item.id, 'quantidade', e.target.value)}
                                   placeholder="1,00"
@@ -800,22 +726,24 @@ export default function EditarContratoDrawer({
                               </td>
                               <td className={styles.tableCell}>
                                 <div className="relative">
-                                  <Input
+                                  <input
+                                    type="text"
                                     value={item.valorUnitario}
                                     onChange={(e) => handleItemChange(item.id, 'valorUnitario', e.target.value)}
                                     placeholder="0,00"
-                                    className={cn(styles.input, "pl-8")}
+                                    className={`${styles.input} pl-8`}
                                   />
                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">R$</span>
                                 </div>
                               </td>
                               <td className={styles.tableCell}>
                                 <div className="relative">
-                                  <Input
+                                  <input
+                                    type="text"
                                     value={item.total}
                                     onChange={(e) => handleItemChange(item.id, 'total', e.target.value)}
                                     placeholder="0,00"
-                                    className={cn(styles.input, "pl-8 pr-8")}
+                                    className={`${styles.input} pl-8 pr-8`}
                                     readOnly
                                   />
                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">R$</span>
@@ -828,14 +756,14 @@ export default function EditarContratoDrawer({
                       </table>
                     </div>
 
-                    <Button
-                      variant="outline"
+                    <button
+                      type="button"
                       onClick={addItem}
-                      className={cn(styles.button, styles.buttonOutline)}
+                      className={`${styles.button} ${styles.buttonOutline}`}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Adicionar nova linha
-                    </Button>
+                    </button>
                   </div>
                 </div>
 
@@ -847,25 +775,32 @@ export default function EditarContratoDrawer({
                   <div className={styles.cardContent}>
                     {/* Desconto */}
                     <div>
-                      <Label className={styles.label}>Desconto</Label>
+                      <label className={styles.label}>Desconto</label>
                       <div className="flex items-center gap-2">
-                        <ToggleGroup
-                          type="single"
-                          value={formData.descontoTipo}
-                          onValueChange={(value) => value && handleInputChange('descontoTipo', value)}
-                        >
-                          <ToggleGroupItem value="reais">
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('descontoTipo', 'reais')}
+                            className={`${styles.button} ${formData.descontoTipo === 'reais' ? styles.buttonPrimary : styles.buttonOutline}`}
+                            style={{ padding: '8px 16px' }}
+                          >
                             R$
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="percentual">
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('descontoTipo', 'percentual')}
+                            className={`${styles.button} ${formData.descontoTipo === 'percentual' ? styles.buttonPrimary : styles.buttonOutline}`}
+                            style={{ padding: '8px 16px' }}
+                          >
                             %
-                          </ToggleGroupItem>
-                        </ToggleGroup>
+                          </button>
+                        </div>
                         <div className="relative">
-                          <Input
+                          <input
+                            type="text"
                             value={formData.descontoValor}
                             onChange={(e) => handleInputChange('descontoValor', e.target.value)}
-                            className={cn(styles.input, "w-32 pl-8")}
+                            className={`${styles.input} w-32 pl-8`}
                           />
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-textSecondary">
                             {formData.descontoTipo === 'reais' ? 'R$' : '%'}
@@ -895,16 +830,21 @@ export default function EditarContratoDrawer({
                 </div>
 
                 {/* Seções colapsáveis */}
-                <Accordion type="multiple">
-                  {/* Observações de pagamento */}
-                  <AccordionItem value="observacoes-pagamento" className={styles.card}>
-                    <AccordionTrigger className={styles.cardHeader}>
-                      <span className={styles.cardTitle}>Observações de pagamento</span>
-                    </AccordionTrigger>
-                    <AccordionContent className={styles.cardContent}>
+                <div className={styles.card}>
+                  <button
+                    type="button"
+                    onClick={() => setAccordionOpen(!accordionOpen)}
+                    className={styles.cardHeader}
+                    style={{ width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none', background: 'transparent' }}
+                  >
+                    <span className={styles.cardTitle}>Observações de pagamento</span>
+                    <span style={{ float: 'right' }}>{accordionOpen ? '−' : '+'}</span>
+                  </button>
+                  {accordionOpen && (
+                    <div className={styles.cardContent}>
                       <div>
-                        <Label className={styles.label}>Observações</Label>
-                        <Textarea
+                        <label className={styles.label}>Observações</label>
+                        <textarea
                           value={formData.observacoesPagamento}
                           onChange={(e) => handleInputChange('observacoesPagamento', e.target.value)}
                           placeholder="Inclua informações sobre o pagamento..."
@@ -915,9 +855,9 @@ export default function EditarContratoDrawer({
                           Inclua informações sobre o pagamento que podem ser relevantes para você e seu cliente.
                         </p>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -925,21 +865,22 @@ export default function EditarContratoDrawer({
           {/* Footer */}
           <div className={styles.drawerFooter}>
             <div className={styles.footerActions}>
-              <Button 
-                variant="outline" 
+              <button 
+                type="button"
                 onClick={handleClose} 
-                className={cn(styles.button, styles.buttonOutline)}
+                className={`${styles.button} ${styles.buttonOutline}`}
               >
                 Cancelar
-              </Button>
-              <Button 
+              </button>
+              <button 
+                type="button"
                 onClick={handleSave} 
                 disabled={isSaving || isLoadingFormData || isLoadingContrato}
-                className={cn(styles.button, styles.buttonPrimary)}
+                className={`${styles.button} ${styles.buttonPrimary}`}
               >
                 {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {isSaving ? "Salvando..." : "Salvar alterações"}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
