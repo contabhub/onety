@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import styles from '../../styles/auditoria/dashboard-simples.module.css';
 import { useRouter } from 'next/router';
 import PrincipalSidebar from '../../components/onety/principal/PrincipalSidebar';
@@ -57,6 +58,8 @@ const DashboardSimples = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState(null);
+  const [dropdownCliente, setDropdownCliente] = useState(null);
   const [deletingCliente, setDeletingCliente] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -134,6 +137,12 @@ const DashboardSimples = () => {
     }
   }, [selectedCompany, loadSimplesNacionalClientes]);
 
+  const closeDropdown = useCallback(() => {
+    setDropdownOpen(null);
+    setDropdownPosition(null);
+    setDropdownCliente(null);
+  }, []);
+
   const handleDeleteCliente = async (clienteId, clienteNome) => {
     if (typeof window === 'undefined') return;
     if (!window.confirm(`Tem certeza que deseja excluir a empresa "${clienteNome}"? Esta ação não pode ser desfeita.`)) {
@@ -141,7 +150,7 @@ const DashboardSimples = () => {
     }
     try {
       setDeletingCliente(clienteId);
-      setDropdownOpen(null);
+      closeDropdown();
       // Supondo endpoint
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clientes/${clienteId}`, {
         method: 'DELETE',
@@ -163,8 +172,22 @@ const DashboardSimples = () => {
     }
   };
 
-  const toggleDropdown = (clienteId) => {
-    setDropdownOpen(dropdownOpen === clienteId ? null : clienteId);
+  const handleDropdownToggle = (event, cliente) => {
+    event.stopPropagation();
+    if (dropdownOpen === cliente.id) {
+      closeDropdown();
+      return;
+    }
+    const buttonRect = event.currentTarget.getBoundingClientRect();
+    const menuWidth = 192;
+    const left = Math.max(
+      16,
+      buttonRect.right + window.scrollX - menuWidth
+    );
+    const top = buttonRect.bottom + window.scrollY + 8;
+    setDropdownOpen(cliente.id);
+    setDropdownPosition({ top, left });
+    setDropdownCliente(cliente);
   };
 
   // Filtrar clientes baseado no termo de busca
@@ -175,10 +198,10 @@ const DashboardSimples = () => {
   );
 
   useEffect(() => {
-    const handleClickOutside = () => setDropdownOpen(null);
+    const handleClickOutside = () => closeDropdown();
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+  }, [closeDropdown]);
 
   if (!selectedCompany) {
     return (
@@ -340,8 +363,7 @@ const DashboardSimples = () => {
                           <div className={styles.dropdownContainer}>
                             <button
                               onClick={(e) => {
-                                e.stopPropagation();
-                                toggleDropdown(analysis.id);
+                                handleDropdownToggle(e, analysis);
                               }}
                               className={styles.dropdownButton}
                               disabled={deletingCliente === analysis.id}
@@ -352,34 +374,6 @@ const DashboardSimples = () => {
                                 <MoreVertical className={styles.dropdownIcon} />
                               )}
                             </button>
-                            {dropdownOpen === analysis.id && (
-                              <div className={styles.dropdownMenu}>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDropdownOpen(null);
-                                    localStorage.setItem('selected_client_id', analysis.id);
-                                    localStorage.setItem('selected_client_name', analysis.nome || 'Sem nome');
-                                    localStorage.setItem('selected_client_cnpj', analysis.cnpj_exibicao || analysis.cnpj || '');
-                                    router.push('/consolidado-simples');
-                                  }}
-                                  className={styles.dropdownItem}
-                                >
-                                  <Eye className={styles.dropdownIcon} />
-                                  Ver Análises
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteCliente(analysis.id, analysis.nome || 'Sem nome');
-                                  }}
-                                  className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                                >
-                                  <Trash2 className={styles.dropdownIcon} />
-                                  Excluir Empresa
-                                </button>
-                              </div>
-                            )}
                           </div>
                         </td>
                       </tr>
@@ -408,9 +402,59 @@ const DashboardSimples = () => {
           </div>
         </div>
       </div>
+      {dropdownOpen && dropdownCliente && dropdownPosition && typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className={`${styles.dropdownMenu} ${styles.dropdownMenuDetached}`}
+            style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                closeDropdown();
+                // Verificar se é cliente ou pre_cliente
+                const clienteId = dropdownCliente.clientes_id;
+                const preClienteId = dropdownCliente.pre_clientes_id;
+                const tipoCadastro = dropdownCliente.tipo_cadastro || (clienteId ? 'cliente' : 'pre_cliente');
+                
+                // Priorizar clientes_id, mas usar pre_clientes_id se não houver clientes_id
+                const idParaUsar = clienteId || preClienteId;
+                
+                if (!idParaUsar) {
+                  alert('Erro: ID do cliente não encontrado');
+                  return;
+                }
+                
+                // Passar o ID e o tipo de cadastro via query params na URL
+                const params = new URLSearchParams({
+                  cliente_id: idParaUsar.toString(),
+                  tipo: tipoCadastro
+                });
+                
+                router.push(`/auditoria/consolidado-simples?${params.toString()}`);
+              }}
+              className={styles.dropdownItem}
+            >
+              <Eye className={styles.dropdownIcon} />
+              Ver Análises
+            </button>
+            <button
+              onClick={() => {
+                handleDeleteCliente(dropdownCliente.id, dropdownCliente.nome || 'Sem nome');
+              }}
+              className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+            >
+              <Trash2 className={styles.dropdownIcon} />
+              Excluir Empresa
+            </button>
+          </div>,
+          document.body
+        )
+      }
     </>
   );
 };
 
 export default DashboardSimples;
+
 

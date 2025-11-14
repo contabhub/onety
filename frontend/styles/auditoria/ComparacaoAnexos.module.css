@@ -1,0 +1,323 @@
+.container {
+  background-color: var(--onity-color-surface);
+  border-radius: var(--onity-radius-lg);
+  padding: var(--onity-spacing-lg);
+  margin: var(--onity-spacing-lg) 0;
+  border: 1px solid var(--onity-color-border);
+  box-shadow: var(--onity-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--onity-spacing-md);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--onity-spacing-md);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.15rem;
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.badgeError {
+  background-color: color-mix(in oklab, var(--onity-error) 30%, transparent);
+  color: color-mix(in oklab, var(--onity-error) 85%, white);
+  border-color: color-mix(in oklab, var(--onity-error) 40%, transparent);
+}
+
+.badgeWarning {
+  background-color: color-mix(in oklab, var(--onity-warning) 30%, transparent);
+  color: color-mix(in oklab, var(--onity-warning) 85%, white);
+  border-color: color-mix(in oklab, var(--onity-warning) 40%, transparent);
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--onity-icon-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.toggleButton:hover {
+  color: var(--onity-color-text);
+  transform: translateY(-1px);
+}
+
+.toggleButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggleIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--onity-icon-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.loadingSpinner {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 3px solid color-mix(in oklab, var(--onity-info) 35%, transparent);
+  border-bottom-color: var(--onity-info);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.errorBox {
+  background-color: color-mix(in oklab, var(--onity-error) 30%, transparent);
+  border: 1px solid color-mix(in oklab, var(--onity-error) 40%, transparent);
+  border-radius: var(--onity-radius-md);
+  padding: var(--onity-spacing-md);
+  color: color-mix(in oklab, var(--onity-error) 85%, white);
+}
+
+.errorRetry {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: color-mix(in oklab, var(--onity-error) 80%, white);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sectionCard {
+  background-color: color-mix(in oklab, var(--onity-color-surface) 95%, var(--onity-color-border));
+  border-radius: var(--onity-radius-md);
+  padding: var(--onity-spacing-md);
+  border: 1px solid var(--onity-color-border);
+}
+
+.sectionTitle {
+  font-size: 0.95rem;
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+  margin-bottom: 0.75rem;
+}
+
+.sectionBody {
+  font-size: 0.85rem;
+  color: var(--onity-text-med);
+}
+
+.strong {
+  font-weight: var(--onity-font-weight-semibold);
+}
+
+.smallText {
+  font-size: 0.85rem;
+  color: var(--onity-text-med);
+}
+
+.cnaeMeta {
+  font-size: 0.75rem;
+  color: var(--onity-text-med);
+  margin-top: 0.35rem;
+}
+
+.cnaeItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cnaeContent {
+  flex: 1;
+  background-color: color-mix(in oklab, var(--onity-color-surface) 70%, var(--onity-color-border));
+  border-radius: var(--onity-radius-sm);
+  padding: 0.75rem;
+  border: 1px solid var(--onity-color-border);
+  color: var(--onity-text-med);
+  font-size: 0.85rem;
+}
+
+.cnaeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: 9999px;
+  background-color: color-mix(in oklab, var(--onity-info) 35%, transparent);
+  color: color-mix(in oklab, var(--onity-info) 85%, white);
+  font-size: 0.7rem;
+  font-weight: var(--onity-font-weight-semibold);
+}
+
+.comparisonList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.itemCard {
+  border-radius: var(--onity-radius-md);
+  border: 1px solid transparent;
+  padding: var(--onity-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.itemCardError {
+  background-color: color-mix(in oklab, var(--onity-error) 40%, transparent);
+  border-color: color-mix(in oklab, var(--onity-error) 40%, transparent);
+}
+
+.itemCardWarning {
+  background-color: color-mix(in oklab, var(--onity-warning) 40%, transparent);
+  border-color: color-mix(in oklab, var(--onity-warning) 40%, transparent);
+}
+
+.itemCardSuccess {
+  background-color: color-mix(in oklab, var(--onity-success) 35%, transparent);
+  border-color: color-mix(in oklab, var(--onity-success) 40%, transparent);
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.itemTitle {
+  font-size: 0.95rem;
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-color-text);
+}
+
+.statusLabel {
+  font-size: 0.85rem;
+}
+
+.statusError {
+  color: color-mix(in oklab, var(--onity-error) 80%, white);
+}
+
+.statusWarning {
+  color: color-mix(in oklab, var(--onity-warning) 85%, white);
+}
+
+.statusSuccess {
+  color: color-mix(in oklab, var(--onity-success) 85%, white);
+}
+
+.itemGrid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .itemGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.itemField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fieldLabel {
+  font-size: 0.8rem;
+  font-weight: var(--onity-font-weight-semibold);
+  color: var(--onity-text-med);
+}
+
+.fieldValue {
+  font-size: 0.85rem;
+  color: var(--onity-color-text);
+}
+
+.differenceBox {
+  border-top: 1px solid color-mix(in oklab, var(--onity-color-border) 30%, transparent);
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.differenceText {
+  font-size: 0.85rem;
+}
+
+.differenceError {
+  color: color-mix(in oklab, var(--onity-error) 90%, white);
+}
+
+.differenceWarning {
+  color: color-mix(in oklab, var(--onity-warning) 95%, white);
+}
+
+.recommendation {
+  font-size: 0.85rem;
+}
+
+.recommendationError {
+  color: color-mix(in oklab, var(--onity-error) 90%, white);
+}
+
+.recommendationWarning {
+  color: color-mix(in oklab, var(--onity-warning) 95%, white);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--onity-icon-secondary);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.emptyStateText {
+  font-size: 0.85rem;
+  color: var(--onity-text-med);
+}
